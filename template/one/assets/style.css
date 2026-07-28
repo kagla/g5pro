@@ -1,0 +1,64 @@
+/* g5blade template/one — 반응형 + 다크모드 단일 소스 */
+:root {
+    --bg: #ffffff; --fg: #1c1e21; --muted: #6b7280;
+    --line: #e5e7eb; --card: #f8fafc;
+    --accent: #2563eb; --accent-fg: #ffffff;
+    --danger: #dc2626;
+}
+:root[data-theme="dark"] {
+    --bg: #111418; --fg: #e7e9ec; --muted: #9aa1aa;
+    --line: #2a2f36; --card: #1a1e24;
+    --accent: #3b82f6; --accent-fg: #ffffff;
+    --danger: #f87171;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+    font-family: -apple-system, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    font-size: 16px; line-height: 1.6; }
+a { color: inherit; text-decoration: none; }
+a:hover { color: var(--accent); }
+img { max-width: 100%; height: auto; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+.sound_only { position: absolute; left: -9999px; }
+
+/* header */
+.site-header { border-bottom: 1px solid var(--line); }
+.site-header .wrap { display: flex; align-items: center; gap: 24px; min-height: 60px; flex-wrap: wrap; }
+.logo { font-size: 20px; margin: 0; }
+.gnb { display: flex; gap: 4px; flex: 1; flex-wrap: wrap; }
+.gnb-item { position: relative; }
+.gnb-item > a { display: block; padding: 8px 12px; font-weight: 600; }
+.gnb-sub { display: none; position: absolute; top: 100%; left: 0; min-width: 160px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 6px; z-index: 50; }
+.gnb-item:hover .gnb-sub, .gnb-item:focus-within .gnb-sub { display: block; }
+.gnb-sub a { display: block; padding: 6px 10px; border-radius: 6px; }
+.gnb-sub a:hover { background: var(--bg); }
+.header-util { display: flex; align-items: center; gap: 10px; }
+#theme-toggle { background: none; border: 1px solid var(--line); border-radius: 50%;
+    width: 32px; height: 32px; cursor: pointer; color: var(--fg); }
+
+/* main·footer */
+.site-main { padding: 24px 16px 48px; min-height: 60vh; }
+.site-footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+.site-footer .wrap { padding: 20px 16px; }
+
+/* 공통 부품 */
+.btn { display: inline-block; padding: 8px 16px; border: 1px solid var(--line);
+    border-radius: 8px; background: var(--card); color: var(--fg); cursor: pointer; font-size: 15px; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+input[type=text], input[type=password], select, textarea {
+    background: var(--bg); color: var(--fg); border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 10px; font-size: 15px; }
+
+/* 레이어팝업 */
+.layer-popup { position: absolute; z-index: 100; background: var(--card);
+    border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.layer-popup-body { padding: 12px; }
+.layer-popup-foot { display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 12px; border-top: 1px solid var(--line); font-size: 13px; }
+
+@media (max-width: 720px) {
+    .site-header .wrap { gap: 10px; }
+    .gnb { order: 3; width: 100%; padding-bottom: 8px; }
+    .layer-popup { position: static; width: auto !important; margin: 12px 0; }
+}
