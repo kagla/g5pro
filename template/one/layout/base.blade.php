@@ -9,6 +9,8 @@
 (function () {
     var t = null;
     try { t = localStorage.getItem('g5-theme'); } catch (e) {}
+    var q = new URLSearchParams(location.search).get('g5theme');
+    if (q === 'dark' || q === 'light') t = q; // URL 오버라이드 (저장 안 함)
     if (t === 'dark' || (t !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.documentElement.dataset.theme = 'dark';
     } else {

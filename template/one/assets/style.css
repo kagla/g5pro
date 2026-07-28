@@ -48,7 +48,8 @@ img { max-width: 100%; height: auto; }
 .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
 input[type=text], input[type=password], select, textarea {
     background: var(--bg); color: var(--fg); border: 1px solid var(--line);
-    border-radius: 8px; padding: 8px 10px; font-size: 15px; }
+    border-radius: 8px; padding: 8px 10px; font-size: 15px; max-width: 100%; }
+.field input[type=text], .field input[type=password], .field select { width: 100%; }
 
 /* 레이어팝업 */
 .layer-popup { position: absolute; z-index: 100; background: var(--card);
@@ -74,8 +75,8 @@ input[type=text], input[type=password], select, textarea {
 .bbs-row { display: flex; justify-content: space-between; gap: 12px; padding: 12px 4px;
     border-bottom: 1px solid var(--line); flex-wrap: wrap; }
 .bbs-row.notice { background: var(--card); }
-.bbs-row-subject { display: flex; align-items: center; gap: 6px; min-width: 0; }
-.bbs-row-subject a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bbs-row-subject { display: flex; align-items: center; gap: 6px; min-width: 0; max-width: 100%; }
+.bbs-row-subject a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 0 1 auto; }
 .bbs-row-meta { display: flex; gap: 12px; color: var(--muted); font-size: 14px; white-space: nowrap; }
 .bbs-empty { padding: 40px 0; text-align: center; color: var(--muted); }
 .badge { font-size: 12px; padding: 1px 6px; border-radius: 4px; background: var(--card);
@@ -87,7 +88,8 @@ input[type=text], input[type=password], select, textarea {
     border: 1px solid var(--line); border-radius: 8px; }
 .paging-cur { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
 .bbs-toolbar { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.bbs-search { display: flex; gap: 6px; }
+.bbs-search { display: flex; gap: 6px; flex: 1; min-width: 0; }
+.bbs-search input[type=text] { flex: 1; min-width: 0; }
 .bbs-actions { display: flex; gap: 6px; }
 @media (max-width: 720px) {
     .bbs-row { flex-direction: column; gap: 4px; }
