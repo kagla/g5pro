@@ -1,5 +1,6 @@
 <?php
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
+if (function_exists('blade_takeover') && blade_takeover()) return; // g5blade
 
 if(!defined('G5_IS_ADMIN') && defined('G5_THEME_PATH') && is_file(G5_THEME_PATH.'/tail.sub.php')) {
     require_once(G5_THEME_PATH.'/tail.sub.php');
