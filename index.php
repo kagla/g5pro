@@ -14,7 +14,9 @@ if (G5_IS_MOBILE) {
     return;
 }
 
+define('G5_BLADE_PAGE', true); // g5blade
 include_once(G5_PATH.'/head.php');
+if (function_exists('g5_view')) { g5_view('index'); return; } // g5blade
 ?>
 
 <h2 class="sound_only">최신글</h2>

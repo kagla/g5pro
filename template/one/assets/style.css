@@ -122,3 +122,12 @@ input[type=text], input[type=password], select, textarea {
 .auto-login { font-size: 14px; color: var(--muted); }
 .btn-block { width: 100%; text-align: center; }
 .login-links { display: flex; justify-content: center; gap: 16px; font-size: 14px; }
+
+/* 메인 최신글 */
+.latest-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.latest { border: 1px solid var(--line); border-radius: 12px; padding: 16px; background: var(--card); }
+.latest h3 { margin: 0 0 10px; font-size: 17px; }
+.latest ul { list-style: none; margin: 0; padding: 0; }
+.latest li { display: flex; gap: 8px; align-items: baseline; padding: 5px 0; font-size: 15px; }
+.latest li a { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.latest li .muted { font-size: 13px; white-space: nowrap; }
