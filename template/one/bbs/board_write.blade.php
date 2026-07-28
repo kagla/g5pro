@@ -6,17 +6,21 @@
 
 <form name="fwrite" id="fwrite" class="write-form" method="post" action="{{ $action_url }}"
       enctype="multipart/form-data" onsubmit="return fwrite_check(this);" autocomplete="off">
+@foreach ($hidden as $hname => $hval)
+<input type="hidden" name="{{ $hname }}" value="{{ $hval }}">
+@endforeach
 {!! $option_hidden !!}
-<input type="hidden" name="token" value="{{ $token }}">
 
 @if (!$is_member && $is_name)
 <div class="field">
     <label for="wr_name">이름</label>
     <input type="text" id="wr_name" name="wr_name" value="{{ $name }}" required>
 </div>
+@endif
+@if ($is_password)
 <div class="field">
     <label for="wr_password">비밀번호</label>
-    <input type="password" id="wr_password" name="wr_password" required>
+    <input type="password" id="wr_password" name="wr_password" {{ $w === 'u' ? '' : 'required' }}>
 </div>
 @endif
 
@@ -43,10 +47,12 @@
     {!! $editor_html !!}
 </div>
 
-@if ($is_secret)
+@if (count($options))
 <div class="field-inline">
-    @php $chk = ($secret_checked || $is_secret == 2) ? 'checked' : ''; @endphp
-    <label><input type="checkbox" name="secret" value="secret" {{ $chk }}> 비밀글</label>
+    @foreach ($options as $o)
+    @php $chk = $o['checked'] ? 'checked' : ''; @endphp
+    <label><input type="checkbox" name="{{ $o['name'] }}" value="{{ $o['value'] }}" {{ $chk }}> {{ $o['label'] }}</label>
+    @endforeach
 </div>
 @endif
 

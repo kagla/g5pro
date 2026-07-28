@@ -33,8 +33,6 @@ for ($i = 1; $i <= 2; $i++) {
     );
 }
 
-$can_edit = isset($member['mb_id']) && $member['mb_id'] && ($is_admin || $member['mb_id'] == $view['mb_id']);
-
 g5_view('bbs.board_view', array(
     'board' => array(
         'bo_table'   => $bo_table,
@@ -55,12 +53,21 @@ g5_view('bbs.board_view', array(
     'list_href'   => short_url_clean(G5_BBS_URL.'/board.php?bo_table='.$bo_table.$qstr),
     'write_href'  => ($member['mb_level'] >= $board['bo_write_level'])
                      ? short_url_clean(G5_BBS_URL.'/write.php?bo_table='.$bo_table) : '',
-    // 순정 view.php 는 수정/삭제 링크를 만들지 않는다(스킨 몫) — 여기서 구성
-    'update_href' => $can_edit
-                     ? short_url_clean(G5_BBS_URL.'/write.php?bo_table='.$bo_table.'&w=u&wr_id='.$view['wr_id'].$qstr) : '',
-    'delete_href' => $can_edit
-                     ? short_url_clean(G5_BBS_URL.'/delete.php?bo_table='.$bo_table.'&wr_id='.$view['wr_id'].'&token='.(function_exists('get_token') ? get_token() : '').$qstr) : '',
-    'comment_action' => G5_BBS_URL.'/write_comment_update.php',
-    'comment_token'  => function_exists('get_token') ? get_token() : '',
+    // 순정 view.php 가 만든 링크 (&amp; 엔티티 포함 → 뷰에서 {!! !!})
+    'update_href' => $update_href,
+    'delete_href' => $delete_href,
+    'comment_action' => $comment_action_url,
+    'comment_hidden' => array(
+        'w'          => 'c',
+        'bo_table'   => $bo_table,
+        'wr_id'      => $view['wr_id'],
+        'comment_id' => '',
+        'sca'        => isset($sca) ? $sca : '',
+        'sfl'        => isset($sfl) ? $sfl : '',
+        'stx'        => isset($stx) ? $stx : '',
+        'spt'        => isset($spt) ? $spt : '',
+        'page'       => isset($page) ? $page : '',
+        'is_good'    => '',
+    ),
     'is_member'      => (bool)(isset($member['mb_id']) ? $member['mb_id'] : ''),
 ));

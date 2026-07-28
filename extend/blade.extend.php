@@ -78,7 +78,28 @@ function g5_blade_common()
 
 function g5_view($view, $data = array())
 {
+    g5_blade_connect();
     echo g5_blade()->run($view, array_merge(g5_blade_common(), $data));
+}
+
+// 현재접속자 기록 — 순정은 tail.sub.php 의 html_end()(html_process::run)가 수행하지만
+// blade 화면은 tail.sub 를 타지 않으므로 해당 블록을 이식 (lib/common.lib.php:3300)
+function g5_blade_connect()
+{
+    global $config, $g5, $member;
+    static $done = false;
+    if ($done) return;
+    $done = true;
+
+    $tmp_row = sql_fetch(" select count(*) as cnt from {$g5['login_table']} where lo_ip = '{$_SERVER['REMOTE_ADDR']}' ");
+    $mb_id = isset($member['mb_id']) ? $member['mb_id'] : '';
+
+    if (!empty($tmp_row['cnt'])) {
+        sql_query(" update {$g5['login_table']} set mb_id = '{$mb_id}', lo_datetime = '".G5_TIME_YMDHIS."', lo_location = '{$g5['lo_location']}', lo_url = '{$g5['lo_url']}' where lo_ip = '{$_SERVER['REMOTE_ADDR']}' ", false);
+    } else {
+        sql_query(" insert into {$g5['login_table']} ( lo_ip, mb_id, lo_datetime, lo_location, lo_url ) values ( '{$_SERVER['REMOTE_ADDR']}', '{$mb_id}', '".G5_TIME_YMDHIS."', '{$g5['lo_location']}', '{$g5['lo_url']}' ) ", false);
+        sql_query(" delete from {$g5['login_table']} where lo_datetime < '".date("Y-m-d H:i:s", G5_SERVER_TIME - (60 * $config['cf_login_minutes']))."' ", false);
+    }
 }
 
 // GNB 메뉴 트리 (me_code 2자리=1단, 4자리=2단)

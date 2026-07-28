@@ -44,15 +44,21 @@
     @endforeach
 
     @if ($is_member)
-    <form class="comment-form" method="post" action="{{ $comment_action }}">
-        <input type="hidden" name="bo_table" value="{{ $board['bo_table'] }}">
-        <input type="hidden" name="wr_id" value="{{ $post['wr_id'] }}">
-        <input type="hidden" name="w" value="c">
-        <input type="hidden" name="comment_id" value="">
-        <input type="hidden" name="token" value="{{ $comment_token }}">
+    <form name="fviewcomment" id="fviewcomment" class="comment-form" method="post" action="{{ $comment_action }}"
+          onsubmit="return fviewcomment_submit(this);" autocomplete="off">
+        @foreach ($comment_hidden as $hname => $hval)
+        <input type="hidden" name="{{ $hname }}" value="{{ $hval }}">
+        @endforeach
         <textarea name="wr_content" rows="3" required placeholder="댓글을 남겨주세요"></textarea>
         <button type="submit" class="btn btn-primary">댓글 등록</button>
     </form>
+    <script>
+    function fviewcomment_submit(f) {
+        if (!f.wr_content.value.trim()) { alert("댓글 내용을 입력하세요."); f.wr_content.focus(); return false; }
+        set_comment_token(f); // 순정 common.js — ajax.comment_token.php 에서 일회용 토큰 주입
+        return true;
+    }
+    </script>
     @else
     <p class="muted">댓글을 쓰려면 <a href="{{ G5_BBS_URL }}/login.php">로그인</a>하세요.</p>
     @endif
@@ -61,8 +67,8 @@
 <div class="bbs-toolbar">
     <a class="btn" href="{{ $list_href }}">목록</a>
     <div class="bbs-actions">
-        @if ($update_href)<a class="btn" href="{{ $update_href }}">수정</a>@endif
-        @if ($delete_href)<a class="btn" href="{{ $delete_href }}" onclick="return confirm('삭제하시겠습니까?');">삭제</a>@endif
+        @if ($update_href)<a class="btn" href="{!! $update_href !!}">수정</a>@endif
+        @if ($delete_href)<a class="btn" href="{!! $delete_href !!}" onclick="return confirm('삭제하시겠습니까?');">삭제</a>@endif
         @if ($write_href)<a class="btn btn-primary" href="{{ $write_href }}">글쓰기</a>@endif
     </div>
 </div>
