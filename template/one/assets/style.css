@@ -108,3 +108,10 @@ input[type=text], input[type=password], select, textarea {
 .comment-form { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
 .comment-form textarea { width: 100%; }
 .comment-form .btn { align-self: flex-end; }
+
+/* 글쓰기 */
+.write-form { display: flex; flex-direction: column; gap: 14px; border-top: 2px solid var(--fg); padding-top: 16px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-weight: 600; font-size: 14px; }
+.field textarea { width: 100%; min-height: 240px; }
+.field-inline { display: flex; gap: 16px; }
