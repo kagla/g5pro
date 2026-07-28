@@ -62,3 +62,33 @@ input[type=text], input[type=password], select, textarea {
     .gnb { order: 3; width: 100%; padding-bottom: 8px; }
     .layer-popup { position: static; width: auto !important; margin: 12px 0; }
 }
+
+/* 게시판 */
+.bbs-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; }
+.bbs-head h2 { margin: 0 0 4px; }
+.bbs-meta { color: var(--muted); font-size: 14px; }
+.bbs-cate { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.bbs-cate a { padding: 4px 12px; border: 1px solid var(--line); border-radius: 999px; font-size: 14px; }
+.bbs-cate a.active { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.bbs-list { list-style: none; margin: 16px 0; padding: 0; border-top: 2px solid var(--fg); }
+.bbs-row { display: flex; justify-content: space-between; gap: 12px; padding: 12px 4px;
+    border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.bbs-row.notice { background: var(--card); }
+.bbs-row-subject { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.bbs-row-subject a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bbs-row-meta { display: flex; gap: 12px; color: var(--muted); font-size: 14px; white-space: nowrap; }
+.bbs-empty { padding: 40px 0; text-align: center; color: var(--muted); }
+.badge { font-size: 12px; padding: 1px 6px; border-radius: 4px; background: var(--card);
+    border: 1px solid var(--line); color: var(--muted); }
+.badge.new { color: var(--danger); }
+.cmt-cnt { color: var(--accent); font-size: 13px; font-weight: 700; }
+.paging { display: flex; gap: 4px; justify-content: center; margin: 20px 0; }
+.paging a, .paging-cur { min-width: 34px; text-align: center; padding: 6px 0;
+    border: 1px solid var(--line); border-radius: 8px; }
+.paging-cur { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.bbs-toolbar { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.bbs-search { display: flex; gap: 6px; }
+.bbs-actions { display: flex; gap: 6px; }
+@media (max-width: 720px) {
+    .bbs-row { flex-direction: column; gap: 4px; }
+}
