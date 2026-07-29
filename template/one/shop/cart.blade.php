@@ -77,7 +77,7 @@
     </ul>
 </div>
 
-<div class="bbs-admin-acts">
+<div class="cart-acts">
     <button type="button" class="btn" onclick="return form_check('seldelete');">선택삭제</button>
     <button type="button" class="btn" onclick="return form_check('alldelete');">비우기</button>
 </div>
@@ -98,13 +98,31 @@
 </form>
 
 <script>
-// 표(넓은 화면)와 카드(좁은 화면)가 같은 상품의 체크박스를 각각 그린다.
-// 안 보이는 쪽이 함께 전송되면 화면에서 푼 체크가 무시되므로 전송에서 뺀다.
-document.getElementById('sod_bsk_list').addEventListener('submit', function (e) {
-    e.currentTarget.querySelectorAll('input[name^="ct_chk"]').forEach(function (c) {
-        c.disabled = (c.offsetParent === null);
-    });
-});
+// 순정 form_check() 는 shop/cart.php 가 매핑 훅 뒤에서 echo 하므로 blade 화면에는 오지 않는다.
+// 계약(act = buy | seldelete | alldelete → cartupdate.php)은 그대로 두고 여기서 다시 정의한다.
+function form_check(act) {
+    var f = document.frmcartlist;
+    var boxes = [].slice.call(f.querySelectorAll('input[name^="ct_chk"]'));
+    // 표(넓은 화면)와 카드(좁은 화면)가 같은 상품의 체크박스를 각각 그린다 — 보이는 쪽이 기준
+    var visible = boxes.filter(function (c) { return c.offsetParent !== null; });
+    var checked = visible.filter(function (c) { return c.checked; }).length;
+
+    if (act === 'buy' && !checked) {
+        alert('주문하실 상품을 하나이상 선택해 주십시오.');
+        return false;
+    }
+    if (act === 'seldelete') {
+        if (!checked) { alert('삭제하실 상품을 하나이상 선택해 주십시오.'); return false; }
+        if (!confirm('선택한 ' + checked + '개 상품을 장바구니에서 빼시겠습니까?')) return false;
+    }
+    if (act === 'alldelete' && !confirm('장바구니를 비우시겠습니까?')) return false;
+
+    // 안 보이는 쪽 체크는 전송에서 뺀다 — 그래야 화면에서 푼 체크가 반영된다
+    boxes.forEach(function (c) { c.disabled = (c.offsetParent === null); });
+    f.act.value = act;
+    f.submit();
+    return true;
+}
 </script>
 @endif
 @endsection

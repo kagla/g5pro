@@ -487,8 +487,8 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .bbs-search select { border: 0; background: none; font-size: var(--t-sm); padding: var(--s1); }
 .bbs-search input[type=text] { flex: 1; min-width: 0; border: 0; background: none; padding: var(--s1); }
 .bbs-search input:focus, .bbs-search select:focus { background: none; }
-/* 목록 아래 오른쪽 버튼 줄 (장바구니의 선택삭제·비우기 등) */
-.bbs-admin-acts { display: flex; justify-content: flex-end; gap: var(--s2); margin-top: var(--s3); }
+/* 장바구니 목록 아래 버튼 줄 — 목록 왼쪽 끝(체크박스 열)에 맞춘다 */
+.cart-acts { display: flex; justify-content: flex-start; gap: var(--s2); margin-top: var(--s3); }
 
 /* 관리자 선택 도구 — 목록 위 한 줄. 메뉴가 잘리지 않도록 .list-panel 바깥에 둔다.
    넓은 화면에선 게시물을 선택했을 때만 나타난다(.active 는 theme.js) — 빈 줄이 여백만 차지하는 것 방지 */
