@@ -12,5 +12,9 @@ for ($i = 0; $i < count($list); $i++) {
         'datetime'  => $list[$i]['wr_datetime'],
         'depth'     => strlen((string)$list[$i]['wr_comment_reply']),
         'is_secret' => strpos((string)$list[$i]['wr_option'], 'secret') !== false,
+        'del_link'  => isset($list[$i]['del_link']) ? $list[$i]['del_link'] : '',  // &amp; 포함 → {!! !!}, 비회원 글은 password.php 경유
+        'is_edit'   => (bool)$list[$i]['is_edit'],
+        'is_reply'  => (bool)$list[$i]['is_reply'],   // 깊이 제한(5) 포함 순정 판정
+        'raw'       => $list[$i]['content1'],         // 수정 폼 채움용 원문
     );
 }

@@ -56,6 +56,9 @@ g5_view('bbs.board_view', array(
     // 순정 view.php 가 만든 링크 (&amp; 엔티티 포함 → 뷰에서 {!! !!})
     'update_href' => $update_href,
     'delete_href' => $delete_href,
+    'reply_href'  => $reply_href,
+    'prev_href'   => $prev_href,
+    'next_href'   => $next_href,
     'comment_action' => $comment_action_url,
     'comment_hidden' => array(
         'w'          => 'c',

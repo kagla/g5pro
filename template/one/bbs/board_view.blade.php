@@ -38,7 +38,14 @@
     @foreach ($comments as $c)
     @php $pad = min($c['depth'], 5) * 20; @endphp
     <div class="comment" style="margin-left: {{ $pad }}px">
-        <div class="comment-meta"><span class="name">{!! $c['name'] !!}</span> <span class="muted">{{ $c['datetime'] }}</span></div>
+        <div class="comment-meta">
+            <span class="name">{!! $c['name'] !!}</span> <span class="muted">{{ $c['datetime'] }}</span>
+            <span class="comment-acts">
+                @if ($is_member && $c['is_reply'])<button type="button" class="linklike c-reply" data-id="{{ $c['id'] }}">답글</button>@endif
+                @if ($c['is_edit'])<button type="button" class="linklike c-edit" data-id="{{ $c['id'] }}" data-raw="{{ $c['raw'] }}">수정</button>@endif
+                @if ($c['del_link'])<a class="linklike" href="{!! $c['del_link'] !!}" onclick="return confirm('이 댓글을 삭제하시겠습니까?');">삭제</a>@endif
+            </span>
+        </div>
         <div class="comment-body">{!! $c['content'] !!}</div>
     </div>
     @endforeach
@@ -58,6 +65,21 @@
         set_comment_token(f); // 순정 common.js — ajax.comment_token.php 에서 일회용 토큰 주입
         return true;
     }
+    // 답글: 대상 댓글 지정(w=c + comment_id), 수정: 원문 채움(w=cu)
+    document.querySelectorAll('.c-reply').forEach(function (b) {
+        b.addEventListener('click', function () {
+            var f = document.fviewcomment;
+            f.w.value = 'c'; f.comment_id.value = b.dataset.id;
+            f.wr_content.value = ''; f.wr_content.focus();
+        });
+    });
+    document.querySelectorAll('.c-edit').forEach(function (b) {
+        b.addEventListener('click', function () {
+            var f = document.fviewcomment;
+            f.w.value = 'cu'; f.comment_id.value = b.dataset.id;
+            f.wr_content.value = b.dataset.raw; f.wr_content.focus();
+        });
+    });
     </script>
     @else
     <p class="muted">댓글을 쓰려면 <a href="{{ G5_BBS_URL }}/login.php">로그인</a>하세요.</p>
@@ -65,11 +87,19 @@
 </section>
 
 <div class="bbs-toolbar">
-    <a class="btn" href="{{ $list_href }}">목록</a>
+    <div class="bbs-actions">
+        <a class="btn" href="{{ $list_href }}">목록</a>
+        @if ($reply_href)<a class="btn" href="{!! $reply_href !!}">답변</a>@endif
+    </div>
     <div class="bbs-actions">
         @if ($update_href)<a class="btn" href="{!! $update_href !!}">수정</a>@endif
         @if ($delete_href)<a class="btn" href="{!! $delete_href !!}" onclick="return confirm('삭제하시겠습니까?');">삭제</a>@endif
         @if ($write_href)<a class="btn btn-primary" href="{{ $write_href }}">글쓰기</a>@endif
     </div>
 </div>
+
+<nav class="post-nav">
+    @if ($prev_href)<a class="btn" href="{!! $prev_href !!}">&laquo; 이전글</a>@endif
+    @if ($next_href)<a class="btn" href="{!! $next_href !!}">다음글 &raquo;</a>@endif
+</nav>
 @endsection
