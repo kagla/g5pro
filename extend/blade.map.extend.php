@@ -197,7 +197,7 @@ function g5_map_view_comment($list)
             'id'        => $list[$i]['wr_id'],
             'name'      => $list[$i]['name'],          // 사이드뷰 HTML → {!! !!}
             'content'   => $list[$i]['content'],       // 순정 가공 HTML → {!! !!}
-            'datetime'  => $list[$i]['wr_datetime'],
+            'datetime'  => g5_blade_dt($list[$i]['wr_datetime']),
             'depth'     => strlen((string)$list[$i]['wr_comment_reply']),
             'is_secret' => strpos((string)$list[$i]['wr_option'], 'secret') !== false,
             'del_link'  => isset($list[$i]['del_link']) ? $list[$i]['del_link'] : '',  // &amp; 포함 → {!! !!}
@@ -255,7 +255,7 @@ function g5_map_board_view($comments)
             'wr_id'    => $view['wr_id'],
             'subject'  => get_text($view['wr_subject']),   // 이스케이프 완료 → {!! !!}
             'name'     => $view['name'],                   // 사이드뷰 HTML → {!! !!}
-            'datetime' => $view['wr_datetime'],
+            'datetime' => g5_blade_dt($view['wr_datetime']),
             'hit'      => $view['wr_hit'],
             'ca_name'  => isset($view['ca_name']) ? $view['ca_name'] : '',
             'ca_href'  => isset($view['ca_name']) && $view['ca_name']
@@ -279,8 +279,8 @@ function g5_map_board_view($comments)
         'next_href'   => $next_href,
         'scrap_href'  => $scrap_href,   // 회원일 때만 값 있음 — win_scrap 팝업으로 연다
         // 이전·다음글 — 제목과 날짜까지 (순정 view.php 가 함께 만들어 둔다)
-        'prev' => $prev_href ? array('href' => $prev_href, 'subject' => $prev_wr_subject, 'date' => substr($prev_wr_date, 2, 8)) : null,
-        'next' => $next_href ? array('href' => $next_href, 'subject' => $next_wr_subject, 'date' => substr($next_wr_date, 2, 8)) : null,
+        'prev' => $prev_href ? array('href' => $prev_href, 'subject' => $prev_wr_subject, 'date' => g5_blade_dt($prev_wr_date, false)) : null,
+        'next' => $next_href ? array('href' => $next_href, 'subject' => $next_wr_subject, 'date' => g5_blade_dt($next_wr_date, false)) : null,
         // 추천·비추천 — href 는 회원이고 게시판이 켠 경우에만 값이 있다
         'good' => array(
             'use'    => (bool)$board['bo_use_good'],
@@ -490,7 +490,7 @@ function g5_map_memo()
             'me_id'     => $row['me_id'],
             'name'      => get_text($row['mb_nick'] ? $row['mb_nick'] : $row['mb_id']),
             'preview'   => get_text(cut_str($row['me_memo'], 60)),
-            'datetime'  => $row['me_send_datetime'],
+            'datetime'  => g5_blade_dt($row['me_send_datetime']),
             'is_read'   => (isset($row['me_read_datetime']) && $row['me_read_datetime'] !== '0000-00-00 00:00:00'),
             'view_href' => $row['view_href'],   // &amp; 포함 → {!! !!}
             'del_href'  => $row['del_href'],    // 세션 토큰 포함 → {!! !!}
@@ -526,7 +526,7 @@ function g5_map_memo_view()
     g5_view('bbs.memo_view', array(
         'kind'       => $kind,
         'name'       => get_text($counterpart),
-        'datetime'   => $memo['me_send_datetime'],
+        'datetime'   => g5_blade_dt($memo['me_send_datetime']),
         'content'    => get_text($memo['me_memo'], 1),   // 이스케이프+개행 처리 → {!! !!}
         'reply_href' => ($kind === 'recv')
                         ? G5_BBS_URL.'/memo_form.php?me_recv_mb_id='.urlencode($counterpart).'&me_id='.$memo['me_id'] : '',
@@ -564,7 +564,7 @@ function g5_map_point()
         $items[] = array(
             'content'  => get_text($row['po_content']),
             'point'    => (int)$row['po_point'],
-            'datetime' => $row['po_datetime'],
+            'datetime' => g5_blade_dt($row['po_datetime']),
         );
     }
 
@@ -594,7 +594,7 @@ function g5_map_search()
                 'subject'  => $row['subject'],   // search_font 처리(검색어 강조 HTML) → {!! !!}
                 'content'  => $row['content'],   // 동일
                 'name'     => $row['name'],      // 사이드뷰 HTML → {!! !!}
-                'datetime' => substr($row['wr_datetime'], 0, 10),
+                'datetime' => g5_blade_dt($row['wr_datetime'], false),
                 'hit'      => $row['wr_hit'],
                 'comment_cnt' => (int)$row['wr_comment'],
             );
@@ -634,7 +634,7 @@ function g5_map_scrap()
             'subject'    => $row['subject'],      // get_text 완료 → {!! !!}
             'href'       => $row['opener_href_wr_id'],
             'board_href' => $row['opener_href'],
-            'datetime'   => substr($row['ms_datetime'], 0, 10),
+            'datetime'   => g5_blade_dt($row['ms_datetime'], false),
             'del_href'   => G5_BBS_URL.'/'.ltrim($row['del_href'], './'),  // &amp; 포함 → {!! !!}
         );
     }
