@@ -121,10 +121,10 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
             <input type="hidden" name="sop" value="and">
             <svg class="search-panel-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
             <label for="hd_stx" class="sound_only">검색어</label>
-            <input type="text" id="hd_stx" name="stx" maxlength="20" placeholder="궁금한 내용을 검색해 보세요" autocomplete="off">
+            <input type="text" id="hd_stx" name="stx" maxlength="20" placeholder="무엇을 찾으시나요?" autocomplete="off">
             <button type="submit" class="btn btn-primary">검색</button>
         </form>
-        <p class="search-hint">두 글자 이상 입력하세요 · <kbd>Esc</kbd> 로 닫기</p>
+        <p class="search-hint">두 글자 이상 입력하세요<span class="esc-hint"> · <kbd>Esc</kbd> 로 닫기</span></p>
     </div>
 </div>
 <script>

@@ -641,7 +641,9 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 
     .header-util { margin-left: auto; gap: var(--s1); }
     .login-link { padding: var(--s1) var(--s2); }
-    .search-panel { margin-top: 6vh; padding: var(--s4); border-radius: var(--r-xl); }
+    .search-panel { margin-top: 6vh; padding: var(--s6) var(--s4) var(--s4); border-radius: var(--r-xl); }
+    .search-close { width: 40px; height: 40px; }   /* 터치 영역 확보 */
+    .search-hint .esc-hint { display: none; }      /* 모바일엔 Esc 가 없다 */
     .profile-menu { min-width: 190px; }
     .site-main { padding: var(--s4) var(--s4) var(--s6); }
     .hero { padding: var(--s5) var(--s4); border-radius: var(--r-xl); }
