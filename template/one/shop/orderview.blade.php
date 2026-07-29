@@ -86,7 +86,30 @@
     <a class="btn btn-primary" href="{{ $shop_href }}">쇼핑 계속하기</a>
 </div>
 
-{{-- 순정이 취소 가능하다고 판단한 주문에서만 JS 가 결제합계 카드 안으로 옮겨 보여준다 --}}
+{{-- 취소·반품·품절 내역 — 순정은 "내역이 있습니다" 한 줄뿐이라 목록으로 만든다.
+     JS 가 결제합계 카드 아래로 옮긴다 --}}
+@if (count($cancel_items))
+<section class="odv-cancelled" id="odv-cancelled">
+    <h2>취소·반품 내역</h2>
+    <ul>
+        @foreach ($cancel_items as $it)
+        <li>
+            <div class="s">
+                <a class="t" href="{{ $it['href'] }}">{{ $it['name'] }}</a>
+                <span class="chip c4">{{ $it['status'] }}</span>
+            </div>
+            @if ($it['option'])<p class="odv-opt">{{ $it['option'] }}</p>@endif
+            <p class="odv-line"><span>{{ number_format($it['qty']) }}개</span><strong>{{ number_format($it['sum']) }}원</strong></p>
+        </li>
+        @endforeach
+    </ul>
+    @if ($cancel_price)
+    <p class="odv-cancelled-tot"><span>취소 금액</span><strong>{{ number_format($cancel_price) }}원</strong></p>
+    @endif
+</section>
+@endif
+
+{{-- 순정이 취소 가능하다고 판단한 주문에서만 JS 가 결제합계 카드 아래로 옮겨 보여준다 --}}
 <button type="button" class="linklike odv-cancel-open" id="odv-cancel-open" hidden>주문 취소</button>
 
 {{-- 주문 취소 — 순정 폼(주문번호·토큰·검사 함수)을 그대로 이 안으로 옮겨 담는다 --}}
@@ -118,17 +141,20 @@
     var sec = document.getElementById('sod_fin_cancel');
     var open = document.getElementById('odv-cancel-open');
     var modal = document.getElementById('odv-cancel-modal');
-    if (!sec || !open || !modal) return;
-
-    // 순정 카드에서 폼만 꺼내 모달로 옮기고 카드는 없앤다
-    var form = sec.querySelector('form');
-    if (!form) return;
-    document.getElementById('odv-cancel-slot').appendChild(form);
-    sec.parentNode.removeChild(sec);
-
-    // 취소 링크는 결제합계 카드 '바깥' 오른쪽 아래에 둔다
     var tot = document.getElementById('sod_fin_tot');
-    if (tot) tot.insertAdjacentElement('afterend', open);
+    var anchor = tot;           // 결제합계 카드 아래로 차례차례 붙인다
+
+    // 취소·반품 내역 목록을 결제합계 아래로
+    var cancelled = document.getElementById('odv-cancelled');
+    if (cancelled && anchor) { anchor.insertAdjacentElement('afterend', cancelled); anchor = cancelled; }
+
+    // 순정 취소 카드는 폼만 꺼내고 없앤다 (내역만 있는 경우엔 문장뿐이라 그냥 없앤다)
+    var form = sec ? sec.querySelector('form') : null;
+    if (sec) sec.parentNode.removeChild(sec);
+    if (!form || !open || !modal) return;
+
+    document.getElementById('odv-cancel-slot').appendChild(form);
+    if (anchor) anchor.insertAdjacentElement('afterend', open);
     else document.querySelector('.odv').appendChild(open);
     open.hidden = false;
 
