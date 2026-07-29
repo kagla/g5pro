@@ -27,6 +27,8 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
 <script src="{{ G5_JS_URL }}/jquery-1.12.4.min.js"></script>
 <script src="{{ G5_JS_URL }}/jquery-migrate-1.4.1.min.js"></script>
 <script src="{{ G5_JS_URL }}/common.js"></script>
+{{-- 순정이 add_javascript()/add_stylesheet() 로 요청한 것들 (주소검색 postcode.v2.js 등) --}}
+{!! $page_assets !!}
 @yield('head')
 </head>
 <body>
@@ -34,17 +36,25 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
     <div class="wrap">
         <h1 class="logo"><a href="{{ G5_URL }}/">{{ $site['title'] }}</a></h1>
         {{-- 쇼핑몰이 설치된 경우에만 커뮤니티/쇼핑몰 전환을 보여준다.
+             두 영역을 모두 표시하고 현재 위치에 on — 하나만 보이면 현재 위치로 오해된다.
              메뉴(.gnb) 밖에 두어 햄버거로 접히지 않고 항상 상단에 남는다 --}}
-        @foreach ($areas as $a)
-        <a class="area-link" href="{{ $a['href'] }}" title="{{ $a['name'] }}" aria-label="{{ $a['name'] }}">
-            @if ($a['icon'] === 'bag')
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
-            @else
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6.5 9.5V20h11V9.5"/></svg>
-            @endif
-            <span class="area-label">{{ $a['name'] }}</span>
-        </a>
-        @endforeach
+        @if (count($areas))
+        <nav class="area-switch" aria-label="커뮤니티/쇼핑몰 전환">
+            @foreach ($areas as $a)
+            @php $acls = 'area-link'.($a['active'] ? ' on' : ''); @endphp
+            <a class="{{ $acls }}" href="{{ $a['href'] }}" title="{{ $a['name'] }}" aria-label="{{ $a['name'] }}"
+               @if ($a['active']) aria-current="page" @endif>
+                @if ($a['icon'] === 'bag')
+                {{-- 쇼핑몰: 장바구니 카트 --}}
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9.5" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2.4l2.2 11.2h10.2L20 7H6.2"/></svg>
+                @else
+                {{-- 커뮤니티: 말풍선 --}}
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H9.5L4 20.5V6.5Z"/><path d="M8.5 9h7M8.5 12h4.5"/></svg>
+                @endif
+            </a>
+            @endforeach
+        </nav>
+        @endif
         <nav class="gnb" id="gnb">
             @foreach ($menu as $m)
             @php $cls = 'gnb-item'.($m['on'] ? ' on' : ($m['section'] ? ' section' : '')); @endphp
@@ -92,7 +102,7 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
                     <div class="profile-nick">{{ $me['mb_nick'] }}</div>
                     <a href="{{ G5_BBS_URL }}/member_confirm.php?url={{ urlencode(G5_BBS_URL.'/register_form.php') }}">정보수정</a>
                     <a href="{{ G5_BBS_URL }}/point.php">포인트 <b>{{ number_format($me['mb_point']) }}</b></a>
-                    <a href="{{ G5_BBS_URL }}/scrap.php">스크랩</a>
+                    <a href="{{ G5_BBS_URL }}/scrap.php" class="win_scrap" target="_blank">스크랩</a>
                     <a href="{{ G5_BBS_URL }}/memo.php?kind=recv">쪽지
                         @if ($me['memo_cnt'])<b class="dot">{{ $me['memo_cnt'] }}</b>@endif
                     </a>

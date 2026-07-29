@@ -291,12 +291,12 @@ if($is_kakaopay_use) {
                 <?php } ?>
 
                 <tr>
-                    <th scope="row"><label for="od_tel">전화번호<strong class="sound_only"> 필수</strong></label></th>
-                    <td><input type="text" name="od_tel" value="<?php echo get_text($member['mb_tel']); ?>" id="od_tel" required class="frm_input required" maxlength="20"></td>
+                    <th scope="row"><label for="od_tel">전화번호</label></th>
+                    <td><input type="text" name="od_tel" value="<?php echo get_text($member['mb_tel']); ?>" id="od_tel" class="frm_input" maxlength="20"></td>
                 </tr>
                 <tr>
-                    <th scope="row"><label for="od_hp">핸드폰</label></th>
-                    <td><input type="text" name="od_hp" value="<?php echo get_text($member['mb_hp']); ?>" id="od_hp" class="frm_input" maxlength="20"></td>
+                    <th scope="row"><label for="od_hp">연락처<strong class="sound_only"> 필수</strong></label></th>
+                    <td><input type="text" name="od_hp" value="<?php echo get_text($member['mb_hp']); ?>" id="od_hp" required class="frm_input required" maxlength="20"></td>
                 </tr>
                 <tr>
                     <th scope="row">주소</th>
@@ -309,8 +309,7 @@ if($is_kakaopay_use) {
                         <input type="text" name="od_addr2" value="<?php echo get_text($member['mb_addr2']) ?>" id="od_addr2" class="frm_input frm_address" size="60" placeholder="상세주소">
                         <label for="od_addr2" class="sound_only">상세주소</label>
                         <br>
-                        <input type="text" name="od_addr3" value="<?php echo get_text($member['mb_addr3']) ?>" id="od_addr3" class="frm_input frm_address" size="60" readonly="readonly" placeholder="참고항목">
-                        <label for="od_addr3" class="sound_only">참고항목</label><br>
+                        <input type="hidden" name="od_addr3" value="<?php echo get_text($member['mb_addr3']) ?>" id="od_addr3">
                         <input type="hidden" name="od_addr_jibeon" value="<?php echo get_text($member['mb_addr_jibeon']); ?>">
                     </td>
                 </tr>
@@ -418,12 +417,12 @@ if($is_kakaopay_use) {
                     <td><input type="text" name="od_b_name" id="od_b_name" required class="frm_input required" maxlength="20"></td>
                 </tr>
                 <tr>
-                    <th scope="row"><label for="od_b_tel">전화번호<strong class="sound_only"> 필수</strong></label></th>
-                    <td><input type="text" name="od_b_tel" id="od_b_tel" required class="frm_input required" maxlength="20"></td>
+                    <th scope="row"><label for="od_b_tel">전화번호</label></th>
+                    <td><input type="text" name="od_b_tel" id="od_b_tel" class="frm_input" maxlength="20"></td>
                 </tr>
                 <tr>
-                    <th scope="row"><label for="od_b_hp">핸드폰</label></th>
-                    <td><input type="text" name="od_b_hp" id="od_b_hp" class="frm_input" maxlength="20"></td>
+                    <th scope="row"><label for="od_b_hp">연락처<strong class="sound_only"> 필수</strong></label></th>
+                    <td><input type="text" name="od_b_hp" id="od_b_hp" required class="frm_input required" maxlength="20"></td>
                 </tr>
                 <tr>
                     <th scope="row">주소</th>
@@ -436,8 +435,7 @@ if($is_kakaopay_use) {
                         <input type="text" name="od_b_addr2" id="od_b_addr2" class="frm_input frm_address" size="60" placeholder="상세주소">
                         <label for="od_b_addr2" class="sound_only">상세주소</label>
                         <br>
-                        <input type="text" name="od_b_addr3" id="od_b_addr3" readonly="readonly" class="frm_input frm_address" size="60" placeholder="참고항목">
-                        <label for="od_b_addr3" class="sound_only">참고항목</label><br>
+                        <input type="hidden" name="od_b_addr3" id="od_b_addr3">
                         <input type="hidden" name="od_b_addr_jibeon" value="">
                     </td>
                 </tr>
@@ -1307,7 +1305,7 @@ function forderform_check(f)
         if( (f.od_pwd.value.length<3) || (f.od_pwd.value.search(/([^A-Za-z0-9]+)/)!=-1) )
             error_field(f.od_pwd, "회원이 아니신 경우 주문서 조회시 필요한 비밀번호를 3자리 이상 입력해 주십시오.");
     }
-    check_field(f.od_tel, "주문하시는 분 전화번호를 입력하십시오.");
+    check_field(f.od_hp, "주문하시는 분 연락처를 입력하십시오.");
     check_field(f.od_addr1, "주소검색을 이용하여 주문하시는 분 주소를 입력하십시오.");
     //check_field(f.od_addr2, " 주문하시는 분의 상세주소를 입력하십시오.");
     check_field(f.od_zip, "");
@@ -1324,7 +1322,7 @@ function forderform_check(f)
     }
 
     check_field(f.od_b_name, "받으시는 분 이름을 입력하십시오.");
-    check_field(f.od_b_tel, "받으시는 분 전화번호를 입력하십시오.");
+    check_field(f.od_b_hp, "받으시는 분 연락처를 입력하십시오.");
     check_field(f.od_b_addr1, "주소검색을 이용하여 받으시는 분 주소를 입력하십시오.");
     //check_field(f.od_b_addr2, "받으시는 분의 상세주소를 입력하십시오.");
     check_field(f.od_b_zip, "");

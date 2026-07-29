@@ -69,6 +69,8 @@ function g5_blade_common()
         'areas'  => g5_blade_areas(),
         'title'  => (isset($g5['title']) && $g5['title']) ? $g5['title'] : (isset($config['cf_title']) ? $config['cf_title'] : ''),
         'popups' => g5_blade_popups(),
+        // 순정 add_stylesheet()/add_javascript() 큐 — 레이아웃 <head> 에서 그대로 내보낸다
+        'page_assets' => g5_blade_page_assets(),
         'template' => array(
             'name'   => G5_TEMPLATE,
             'url'    => G5_URL.'/template/'.G5_TEMPLATE,
@@ -105,6 +107,29 @@ function g5_blade_capture_end($key)
 function g5_blade_captured($key)
 {
     return isset($GLOBALS['g5_blade_cap_'.$key]) ? $GLOBALS['g5_blade_cap_'.$key] : '';
+}
+
+// 순정은 add_stylesheet()/add_javascript() 로 모아 둔 것을 tail.sub.php 의 html_end() 가
+// <head> 에 끼워 넣는다. blade 화면은 tail.sub 를 타지 않으므로 여기서 직접 꺼내 쓴다.
+// (주문서의 카카오 우편번호 postcode.v2.js, 재고체크 shop.order.js 등이 이 큐에 있다)
+class g5_blade_assets extends html_process
+{
+    public static function collect()
+    {
+        $out = array_merge(self::$css, self::$js);
+        usort($out, function ($a, $b) {
+            if ($a[0] == $b[0]) return 0;
+            return ($a[0] < $b[0]) ? -1 : 1;    // order 가 작을수록 먼저
+        });
+        $html = '';
+        foreach ($out as $row) $html .= $row[1]."\n";
+        return $html;
+    }
+}
+
+function g5_blade_page_assets()
+{
+    return class_exists('html_process') ? g5_blade_assets::collect() : '';
 }
 
 function g5_view($view, $data = array())
@@ -284,6 +309,16 @@ function g5_blade_stats()
         'posts'   => (int)(isset($wr['cnt']) ? $wr['cnt'] : 0),
     );
     return $s;
+}
+
+// 화면에 쓰는 날짜 형식 — 순정 'YYYY-MM-DD HH:II:SS' 를 'YY-MM-DD HH:II' 로 줄인다.
+// 목록의 순정 datetime2('YY-MM-DD')와 같은 눈금이라 화면 전체가 한 형식으로 읽힌다.
+// 값이 비었거나(0000-00-00) 형식이 다르면 그대로 돌려준다.
+function g5_blade_dt($s, $with_time = true)
+{
+    $s = (string)$s;
+    if (strlen($s) < 10 || $s[0] === '0') return $s;
+    return substr($s, 2, 8).($with_time && strlen($s) >= 16 ? ' '.substr($s, 11, 5) : '');
 }
 
 // 회원 프로필 이미지 URL — 순정 get_member_profile_img() 는 <img> 태그를 돌려주므로 src 만 뽑는다

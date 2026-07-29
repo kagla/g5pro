@@ -16,6 +16,7 @@
 })();
 </script>
 <link rel="stylesheet" href="{{ $template['assets'] }}/style.css">
+{!! $page_assets !!}
 @yield('head')
 </head>
 {{-- 새 창(window.open)으로 열리는 작은 화면 — 헤더·메뉴·푸터 없이 내용만 --}}
