@@ -1,5 +1,6 @@
 <?php
 include_once('./_common.php');
+define('G5_BLADE_PAGE', true); // g5blade 직통 화면
 include_once(G5_CAPTCHA_PATH.'/captcha.lib.php');
 include_once(G5_LIB_PATH.'/register.lib.php');
 
@@ -163,7 +164,7 @@ $member['mb_sms_date']         = isset($member['mb_sms_date']) ? $member['mb_sms
 if ($config['cf_use_addr'])
     add_javascript(G5_POSTCODE_JS, 0);    //다음 주소 js
 
-include_once($member_skin_path.'/register_form.skin.php');
+g5_map_register_form(); // g5blade
 
 run_event('register_form_after', $w, $agree, $agree2);
 

@@ -1,0 +1,327 @@
+<?php
+/**
+ * g5blade 화면 매핑 모음 — 변환된 순정 화면이 스킨 include 자리에서 g5_map_*() 를 호출한다.
+ * 한 화면 = 한 함수. 순정 전역변수를 뷰용 배열로 정리해 g5_view() 를 호출하는 것이 전부다.
+ * (런타임·공통 데이터는 blade.extend.php)
+ */
+if (!defined('_GNUBOARD_')) exit;
+
+// ── 게시판 목록 (bbs/list.php) ─ 뷰 변형: bo_skin='blade_gallery' 면 갤러리 그리드
+function g5_map_board_list()
+{
+    global $list, $board, $bo_table, $is_category, $sca, $sfl, $stx;
+    global $total_count, $page, $total_page, $write_href, $rss_href, $admin_href, $is_checkbox;
+
+    $is_gallery = (isset($board['bo_skin']) && $board['bo_skin'] === 'blade_gallery');
+    if ($is_gallery) include_once(G5_LIB_PATH.'/thumbnail.lib.php');
+
+    $items = array();
+    foreach ($list as $row) {
+        $items[] = array(
+            'wr_id'       => $row['wr_id'],
+            'num'         => isset($row['num']) ? $row['num'] : '',
+            'href'        => $row['href'],
+            'subject'     => $row['subject'],              // get_text 완료 HTML-safe → {!! !!}
+            'name'        => $row['name'],                 // 사이드뷰 HTML → {!! !!}
+            'datetime'    => $row['datetime2'],
+            'hit'         => $row['wr_hit'],
+            'comment_cnt' => (int)$row['wr_comment'],
+            'is_notice'   => !empty($row['is_notice']),
+            'icon_new'    => !empty($row['icon_new']),
+            'icon_file'   => !empty($row['icon_file']),
+            'icon_secret' => !empty($row['icon_secret']),
+            'thumb'       => $is_gallery
+                ? get_list_thumbnail($bo_table, $row['wr_id'],
+                      ($board['bo_gallery_width'] ?: 300), ($board['bo_gallery_height'] ?: 225), false, true)
+                : null,   // ['src'=>URL, 'alt'] — src 비면 이미지 없음
+        );
+    }
+
+    $categories = array();
+    if ($is_category && $board['bo_category_list']) {
+        foreach (explode('|', (string)$board['bo_category_list']) as $c) {
+            $categories[] = array(
+                'name'   => $c,
+                'href'   => short_url_clean(G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&sca='.urlencode($c)),
+                'active' => ($sca === $c),
+            );
+        }
+    }
+
+    g5_view($is_gallery ? 'bbs.board_list_gallery' : 'bbs.board_list', array(
+        'board' => array(
+            'bo_table'   => $bo_table,
+            'bo_subject' => $board['bo_subject'],
+        ),
+        'items'       => $items,
+        'categories'  => $categories,
+        'total_count' => (int)$total_count,
+        'page'        => (int)$page,
+        'total_page'  => (int)$total_page,
+        'page_href'   => short_url_clean(G5_BBS_URL.'/board.php?bo_table='.$bo_table
+                         .'&sca='.urlencode($sca).'&sfl='.urlencode($sfl).'&stx='.urlencode($stx).'&page='),
+        'write_href'  => $write_href,
+        'rss_href'    => $rss_href,
+        'admin_href'  => $admin_href,
+        'search'      => array('sfl' => $sfl, 'stx' => $stx),
+        'board_url'   => short_url_clean(G5_BBS_URL.'/board.php?bo_table='.$bo_table),
+        'is_checkbox' => (bool)$is_checkbox,
+        'list_update_action' => G5_BBS_URL.'/board_list_update.php',
+    ));
+}
+
+// ── 댓글 매핑 (bbs/view_comment.php 의 스킨 include 자리에서 호출) — echo 없이 배열 반환
+function g5_map_view_comment($list)
+{
+    $comments = array();
+    for ($i = 0; $i < count($list); $i++) {
+        $comments[] = array(
+            'id'        => $list[$i]['wr_id'],
+            'name'      => $list[$i]['name'],          // 사이드뷰 HTML → {!! !!}
+            'content'   => $list[$i]['content'],       // 순정 가공 HTML → {!! !!}
+            'datetime'  => $list[$i]['wr_datetime'],
+            'depth'     => strlen((string)$list[$i]['wr_comment_reply']),
+            'is_secret' => strpos((string)$list[$i]['wr_option'], 'secret') !== false,
+            'del_link'  => isset($list[$i]['del_link']) ? $list[$i]['del_link'] : '',  // &amp; 포함 → {!! !!}
+            'is_edit'   => (bool)$list[$i]['is_edit'],
+            'is_reply'  => (bool)$list[$i]['is_reply'],   // 깊이 제한(5) 포함 순정 판정
+            'raw'       => $list[$i]['content1'],         // 수정 폼 채움용 원문
+        );
+    }
+    return $comments;
+}
+
+// ── 게시판 읽기 (bbs/view.php) — $comments 는 호출부가 view_comment.php 로 수집해 전달
+function g5_map_board_view($comments)
+{
+    global $view, $board, $bo_table, $member, $is_admin, $qstr;
+    global $update_href, $delete_href, $reply_href, $prev_href, $next_href, $comment_action_url;
+    global $sca, $sfl, $stx, $spt, $page;
+
+    include_once(G5_LIB_PATH.'/thumbnail.lib.php'); // get_view_thumbnail()
+
+    $files = array();
+    if (isset($view['file']) && is_array($view['file'])) {
+        for ($i = 0; $i < (int)$view['file']['count']; $i++) {
+            if (empty($view['file'][$i]['source'])) continue;
+            $files[] = array(
+                'source'   => $view['file'][$i]['source'],
+                'href'     => $view['file'][$i]['href'],
+                'size'     => $view['file'][$i]['size'],
+                'download' => $view['file'][$i]['download'],
+                'is_image' => (bool)$view['file'][$i]['view'],
+                'view'     => $view['file'][$i]['view'],   // 이미지면 <img> HTML
+            );
+        }
+    }
+
+    $links = array();
+    for ($i = 1; $i <= 2; $i++) {
+        if (empty($view['link'][$i])) continue;
+        $links[] = array(
+            'url'  => $view['link'][$i],
+            'href' => $view['link_href'][$i],
+            'hit'  => $view['link_hit'][$i],
+        );
+    }
+
+    g5_view('bbs.board_view', array(
+        'board' => array(
+            'bo_table'   => $bo_table,
+            'bo_subject' => $board['bo_subject'],
+        ),
+        'post' => array(
+            'wr_id'    => $view['wr_id'],
+            'subject'  => get_text($view['wr_subject']),   // 이스케이프 완료 → {!! !!}
+            'name'     => $view['name'],                   // 사이드뷰 HTML → {!! !!}
+            'datetime' => $view['wr_datetime'],
+            'hit'      => $view['wr_hit'],
+            'ca_name'  => isset($view['ca_name']) ? $view['ca_name'] : '',
+            'content'  => get_view_thumbnail($view['content']),  // 순정 가공 HTML → {!! !!}
+        ),
+        'files'       => $files,
+        'links'       => $links,
+        'comments'    => $comments,
+        'list_href'   => short_url_clean(G5_BBS_URL.'/board.php?bo_table='.$bo_table.$qstr),
+        'write_href'  => ($member['mb_level'] >= $board['bo_write_level'])
+                         ? short_url_clean(G5_BBS_URL.'/write.php?bo_table='.$bo_table) : '',
+        // 순정 view.php 가 만든 링크 (&amp; 엔티티 포함 → 뷰에서 {!! !!})
+        'update_href' => $update_href,
+        'delete_href' => $delete_href,
+        'reply_href'  => $reply_href,
+        'prev_href'   => $prev_href,
+        'next_href'   => $next_href,
+        'comment_action' => $comment_action_url,
+        'comment_hidden' => array(
+            'w'          => 'c',
+            'bo_table'   => $bo_table,
+            'wr_id'      => $view['wr_id'],
+            'comment_id' => '',
+            'sca'        => isset($sca) ? $sca : '',
+            'sfl'        => isset($sfl) ? $sfl : '',
+            'stx'        => isset($stx) ? $stx : '',
+            'spt'        => isset($spt) ? $spt : '',
+            'page'       => isset($page) ? $page : '',
+            'is_good'    => '',
+        ),
+        'is_member'      => (bool)(isset($member['mb_id']) ? $member['mb_id'] : ''),
+    ));
+}
+
+// ── 게시판 쓰기 (bbs/write.php) — 순정 write_update.php 계약 유지
+function g5_map_board_write()
+{
+    global $w, $write, $board, $bo_table, $wr_id, $sca, $sfl, $stx, $spt, $sst, $sod, $page;
+    global $action_url, $subject, $is_member, $name, $is_name, $is_password;
+    global $editor_html, $editor_js, $is_use_captcha, $file_count, $file;
+    global $is_category, $is_notice, $is_html, $is_dhtml_editor, $html_value, $html_checked;
+    global $is_secret, $secret_checked, $is_mail, $recv_email_checked, $is_admin, $notice_checked;
+
+    $categories = array();
+    if ($is_category && $board['bo_category_list']) {
+        $w_ca_name = isset($write['ca_name']) ? $write['ca_name'] : (isset($sca) ? $sca : '');
+        foreach (explode('|', (string)$board['bo_category_list']) as $c) {
+            $categories[] = array('name' => $c, 'selected' => ($w_ca_name === $c));
+        }
+    }
+
+    // 순정 write_update.php 계약: 필수 hidden (token 은 js/common.js 가 제출 시 주입)
+    $hidden = array(
+        'uid'      => get_uniqid(),
+        'w'        => $w,
+        'bo_table' => $bo_table,
+        'wr_id'    => isset($wr_id) ? $wr_id : '',
+        'sca'      => isset($sca) ? $sca : '',
+        'sfl'      => isset($sfl) ? $sfl : '',
+        'stx'      => isset($stx) ? $stx : '',
+        'spt'      => isset($spt) ? $spt : '',
+        'sst'      => isset($sst) ? $sst : '',
+        'sod'      => isset($sod) ? $sod : '',
+        'page'     => isset($page) ? $page : '',
+    );
+
+    // 옵션: 순정 basic 스킨 로직 이식 (마크업은 뷰에서)
+    $option_hidden = '';
+    $options = array(); // ['name','value','label','checked']
+    if ($is_notice) {
+        $options[] = array('name' => 'notice', 'value' => '1', 'label' => '공지', 'checked' => (bool)$notice_checked);
+    }
+    if ($is_html) {
+        if ($is_dhtml_editor) {
+            $option_hidden .= '<input type="hidden" value="html1" name="html">';
+        } else {
+            $options[] = array('name' => 'html', 'value' => $html_value, 'label' => 'html', 'checked' => (bool)$html_checked);
+        }
+    }
+    if ($is_secret) {
+        if ($is_admin || $is_secret == 1) {
+            $options[] = array('name' => 'secret', 'value' => 'secret', 'label' => '비밀글', 'checked' => (bool)$secret_checked);
+        } else {
+            $option_hidden .= '<input type="hidden" name="secret" value="secret">';
+        }
+    }
+    if ($is_mail) {
+        $options[] = array('name' => 'mail', 'value' => 'mail', 'label' => '답변메일받기', 'checked' => (bool)$recv_email_checked);
+    }
+
+    $files_exist = array();
+    if ($w === 'u' && isset($file) && is_array($file)) {
+        for ($i = 0; $i < $file_count; $i++) {
+            $files_exist[$i] = isset($file[$i]['source']) ? $file[$i]['source'] : '';
+        }
+    }
+
+    g5_view('bbs.board_write', array(
+        'board' => array(
+            'bo_table'   => $bo_table,
+            'bo_subject' => $board['bo_subject'],
+        ),
+        'w'          => $w,                       // '' 새글, 'u' 수정, 'r' 답변
+        'action_url' => $action_url,
+        'subject'    => $subject,                 // write.php 가공 완료(get_text) → 뷰 value 에 {!! !!}
+        'categories' => $categories,
+        'hidden'     => $hidden,
+        'options'    => $options,
+        'option_hidden' => $option_hidden,        // hidden HTML → {!! !!}
+        'is_member'  => (bool)$is_member,
+        'name'       => $name,
+        'is_name'    => (bool)$is_name,
+        'is_password'=> (bool)$is_password,
+        'editor_html'    => $editor_html,          // 순정 에디터/textarea HTML → {!! !!}
+        'editor_js'      => $editor_js,
+        'is_use_captcha' => (bool)$is_use_captcha,
+        'captcha_html'   => $is_use_captcha ? captcha_html() : '',
+        'captcha_js'     => $is_use_captcha ? captcha_js() : '',
+        'file_count'     => (int)$file_count,
+        'files_exist'    => $files_exist,
+        'list_href'      => short_url_clean(G5_BBS_URL.'/board.php?bo_table='.$bo_table),
+    ));
+}
+
+// ── 로그인 (bbs/login.php)
+function g5_map_login()
+{
+    global $login_action_url, $url;
+
+    g5_view('bbs.login', array(
+        'login_action_url' => $login_action_url,
+        'url'              => $url,
+    ));
+}
+
+// ── 비밀번호 확인 (bbs/member_confirm.php)
+function g5_map_member_confirm()
+{
+    global $url, $member;
+
+    g5_view('bbs.member_confirm', array(
+        'action_url' => $url,                     // 확인 후 이동할 대상 (register_form.php 등)
+        'mb_id'      => $member['mb_id'],
+    ));
+}
+
+// ── 회원가입 약관 (bbs/register.php)
+function g5_map_register()
+{
+    global $register_action_url, $config;
+
+    g5_view('bbs.register', array(
+        'action_url'  => $register_action_url,   // register_form.php
+        'stipulation' => get_text($config['cf_stipulation']),  // 이스케이프 완료 → {!! !!}
+        'privacy'     => get_text($config['cf_privacy']),
+    ));
+}
+
+// ── 가입/정보수정 폼 (bbs/register_form.php)
+function g5_map_register_form()
+{
+    global $w, $register_action_url, $urlencode, $agree, $agree2, $member;
+
+    g5_view('bbs.register_form', array(
+        'w'          => $w,
+        'action_url' => $register_action_url,   // register_form_update.php
+        'url'        => isset($urlencode) ? $urlencode : '',
+        'agree'      => $agree,
+        'agree2'     => $agree2,
+        'me' => array(
+            'mb_id'       => isset($member['mb_id']) ? $member['mb_id'] : '',
+            'mb_name'     => isset($member['mb_name']) ? get_text($member['mb_name']) : '',
+            'mb_nick'     => isset($member['mb_nick']) ? get_text($member['mb_nick']) : '',
+            'mb_email'    => isset($member['mb_email']) ? $member['mb_email'] : '',
+            'mb_homepage' => isset($member['mb_homepage']) ? get_text($member['mb_homepage']) : '',
+        ),
+        'captcha_html' => captcha_html(),
+        'captcha_js'   => chk_captcha_js(),
+    ));
+}
+
+// ── 가입 결과 (bbs/register_result.php)
+function g5_map_register_result()
+{
+    global $mb;
+
+    g5_view('bbs.register_result', array(
+        'mb_id'   => isset($mb['mb_id']) ? get_text($mb['mb_id']) : '',
+        'mb_nick' => isset($mb['mb_nick']) ? get_text($mb['mb_nick']) : '',
+    ));
+}

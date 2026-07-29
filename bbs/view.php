@@ -142,6 +142,7 @@ if ($board['bo_use_signature'] && $view['mb_id']) {
     $signature = conv_content($signature, 1);
 }
 
-include_once($board_skin_path.'/view.skin.php');
+$g5_blade_comments = array(); include_once(G5_BBS_PATH.'/view_comment.php'); // g5blade: 댓글 백엔드(전역 스코프)
+g5_map_board_view($g5_blade_comments); // g5blade
 
 @include_once($board_skin_path.'/view.tail.skin.php');

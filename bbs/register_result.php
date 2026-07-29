@@ -1,5 +1,6 @@
 <?php
 include_once('./_common.php');
+define('G5_BLADE_PAGE', true); // g5blade 직통 화면
 
 if (isset($_SESSION['ss_mb_reg']))
     $mb = get_member($_SESSION['ss_mb_reg']);
@@ -10,5 +11,5 @@ if (!(isset($mb['mb_id']) && $mb['mb_id']))
 
 $g5['title'] = '회원가입 완료';
 include_once('./_head.php');
-include_once($member_skin_path.'/register_result.skin.php');
+g5_map_register_result(); // g5blade
 include_once('./_tail.php');

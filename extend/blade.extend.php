@@ -40,36 +40,10 @@ function g5_blade()
 }
 
 // 현재 요청이 blade 로 렌더되는가 — head/tail 가드가 호출
+// 변환된 순정 화면이 상단에서 define('G5_BLADE_PAGE', true) 로 스스로 선언한다 (직통 방식)
 function blade_takeover()
 {
-    global $board, $config;
-
-    // 스킨 시스템이 없는 화면 (index.php 등)
-    if (defined('G5_BLADE_PAGE') && G5_BLADE_PAGE) return true;
-
-    // 게시판: 해당 보드의 스킨이 blade 또는 blade_* 파생 (blade_gallery 등)
-    if (!empty($board['bo_skin']) && strpos($board['bo_skin'], 'blade') === 0) return true;
-
-    // 회원 영역: 스킨이 blade 이고 "변환된" 화면일 때만 (미변환 화면은 순정 head/tail 유지)
-    if (!empty($config['cf_member_skin']) && $config['cf_member_skin'] === 'blade') {
-        $converted = array(
-            '/bbs/login.php',
-            '/bbs/register.php',
-            '/bbs/register_form.php',
-            '/bbs/register_result.php',
-            '/bbs/member_confirm.php',
-            '/bbs/memo.php',
-            '/bbs/memo_form.php',
-            '/bbs/memo_view.php',
-            '/bbs/point.php',
-        );
-        $script = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '';
-        foreach ($converted as $page) {
-            if (substr($script, -strlen($page)) === $page) return true;
-        }
-    }
-
-    return false;
+    return defined('G5_BLADE_PAGE') && G5_BLADE_PAGE;
 }
 
 // 모든 뷰 공통 데이터 (설계 §7)

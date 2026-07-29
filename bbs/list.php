@@ -319,4 +319,4 @@ if ($board['bo_use_rss_view']) {
 }
 
 $stx = get_text(stripslashes($stx));
-include_once($board_skin_path.'/list.skin.php');
+g5_map_board_list(); // g5blade
