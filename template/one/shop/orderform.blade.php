@@ -32,7 +32,18 @@
         return n.slice(0, 3) + '-' + n.slice(3, 7) + '-' + n.slice(7, 11);
     }
 
-    ['od_tel', 'od_hp', 'od_b_tel', 'od_b_hp'].forEach(function (id) {
+    // 전화번호 칸은 화면에서 뺐다. od_tel / od_b_tel 은 주문 저장·PG 파라미터가 참조하므로
+    // hidden 으로 남겨 두고 연락처 값을 그대로 따라가게 한다.
+    function mirror(fromId, toId) {
+        var from = document.getElementById(fromId), to = document.getElementById(toId);
+        if (!from || !to) return;
+        var sync = function () { to.value = from.value; };
+        from.addEventListener('input', sync);
+        from.addEventListener('change', sync);
+        sync();
+    }
+
+    ['od_hp', 'od_b_hp'].forEach(function (id) {
         var el = document.getElementById(id);
         if (!el) return;
         el.setAttribute('inputmode', 'tel');
@@ -47,8 +58,11 @@
     // 배송지목록에서 값을 채워 넣는 순정 코드 뒤에도 형식을 맞춘다
     var f = document.forderform;
     if (f) f.addEventListener('change', function (e) {
-        if (/^od_(b_)?(tel|hp)$/.test(e.target.id)) e.target.value = format(e.target.value);
+        if (/^od_(b_)?hp$/.test(e.target.id)) e.target.value = format(e.target.value);
     }, true);
+
+    mirror('od_hp', 'od_tel');
+    mirror('od_b_hp', 'od_b_tel');
 })();
 </script>
 @endsection

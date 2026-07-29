@@ -290,10 +290,7 @@ if($is_kakaopay_use) {
                 </tr>
                 <?php } ?>
 
-                <tr>
-                    <th scope="row"><label for="od_tel">전화번호</label></th>
-                    <td><input type="text" name="od_tel" value="<?php echo get_text($member['mb_tel']); ?>" id="od_tel" class="frm_input" maxlength="20"></td>
-                </tr>
+                <input type="hidden" name="od_tel" value="<?php echo get_text($member['mb_tel']); ?>" id="od_tel">
                 <tr>
                     <th scope="row"><label for="od_hp">연락처<strong class="sound_only"> 필수</strong></label></th>
                     <td><input type="text" name="od_hp" value="<?php echo get_text($member['mb_hp']); ?>" id="od_hp" required class="frm_input required" maxlength="20"></td>
@@ -416,10 +413,7 @@ if($is_kakaopay_use) {
                     <th scope="row"><label for="od_b_name">이름<strong class="sound_only"> 필수</strong></label></th>
                     <td><input type="text" name="od_b_name" id="od_b_name" required class="frm_input required" maxlength="20"></td>
                 </tr>
-                <tr>
-                    <th scope="row"><label for="od_b_tel">전화번호</label></th>
-                    <td><input type="text" name="od_b_tel" id="od_b_tel" class="frm_input" maxlength="20"></td>
-                </tr>
+                <input type="hidden" name="od_b_tel" id="od_b_tel">
                 <tr>
                     <th scope="row"><label for="od_b_hp">연락처<strong class="sound_only"> 필수</strong></label></th>
                     <td><input type="text" name="od_b_hp" id="od_b_hp" required class="frm_input required" maxlength="20"></td>
