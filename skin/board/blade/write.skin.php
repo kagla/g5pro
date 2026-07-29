@@ -54,9 +54,9 @@ g5_view('bbs.board_write', array(
         'bo_table'   => $bo_table,
         'bo_subject' => $board['bo_subject'],
     ),
-    'w'          => $w,                       // '' 새글, 'u' 수정
+    'w'          => $w,                       // '' 새글, 'u' 수정, 'r' 답변
     'action_url' => $action_url,
-    'subject'    => isset($write['wr_subject']) ? get_text($write['wr_subject'], 0) : '',
+    'subject'    => $subject,                 // write.php 가공 완료(get_text) → 뷰 value 에 {!! !!}
     'categories' => $categories,
     'hidden'     => $hidden,
     'options'    => $options,
@@ -71,5 +71,14 @@ g5_view('bbs.board_write', array(
     'captcha_html'   => $is_use_captcha ? captcha_html() : '',
     'captcha_js'     => $is_use_captcha ? captcha_js() : '',
     'file_count'     => (int)$file_count,
+    'files_exist'    => (function () use ($w, $file, $file_count) {
+        // 수정 모드에서 기존 첨부 파일명 (인덱스 = 파일 슬롯)
+        if ($w !== 'u' || !isset($file) || !is_array($file)) return array();
+        $r = array();
+        for ($i = 0; $i < $file_count; $i++) {
+            $r[$i] = isset($file[$i]['source']) ? $file[$i]['source'] : '';
+        }
+        return $r;
+    })(),
     'list_href'      => short_url_clean(G5_BBS_URL.'/board.php?bo_table='.$bo_table),
 ));

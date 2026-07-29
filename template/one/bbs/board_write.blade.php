@@ -1,7 +1,7 @@
 @extends('layout.bbs')
 @section('bbs_content')
 <header class="bbs-head">
-    <h2>{{ $board['bo_subject'] }} — {{ $w === 'u' ? '수정' : '글쓰기' }}</h2>
+    <h2>{{ $board['bo_subject'] }} — {{ $w === 'u' ? '수정' : ($w === 'r' ? '답변' : '글쓰기') }}</h2>
 </header>
 
 <form name="fwrite" id="fwrite" class="write-form" method="post" action="{{ $action_url }}"
@@ -39,7 +39,7 @@
 
 <div class="field">
     <label for="wr_subject">제목</label>
-    <input type="text" id="wr_subject" name="wr_subject" value="{{ $subject }}" required>
+    <input type="text" id="wr_subject" name="wr_subject" value="{!! $subject !!}" required>
 </div>
 
 <div class="field">
@@ -58,7 +58,9 @@
 
 @for ($i = 0; $i < $file_count; $i++)
 <div class="field">
-    <label for="bf_file_{{ $i }}">파일 #{{ $i + 1 }}</label>
+    <label for="bf_file_{{ $i }}">파일 #{{ $i + 1 }}
+        @if (!empty($files_exist[$i]))<span class="muted">(현재: {{ $files_exist[$i] }})</span>@endif
+    </label>
     <input type="file" id="bf_file_{{ $i }}" name="bf_file[]">
 </div>
 @endfor
