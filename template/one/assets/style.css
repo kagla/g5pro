@@ -1372,11 +1372,13 @@ a.chip.cate:hover { background: var(--teal); color: #fff; }
     display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3);
 }
 .sit-embed #sit_use_list > h3, .sit-embed #sit_qa_list > h3 {
-    font-size: var(--t-lg); font-weight: 700; margin: 0 auto 0 0;
+    font-size: var(--t-lg); font-weight: 700; margin: 0;
 }
+/* 버튼 묶음은 auto 로 민다 — 같은 줄이면 오른쪽 끝, 좁아서 줄바꿈돼도 오른쪽에 남는다 */
+.sit-embed .sit_use_top, .sit-embed #sit_qa_wbtn { margin-left: auto; }
 .sit-embed #sit_use_list > *:not(h3):not(.sit_use_top),
 .sit-embed #sit_qa_list  > *:not(h3):not(#sit_qa_wbtn) { flex: 1 0 100%; }
-.sit-embed .sit_use_top { display: flex; align-items: center; margin: 0; }
+.sit-embed .sit_use_top { display: flex; align-items: center; }
 .sit-embed #sit_use_wbtn, .sit-embed #sit_qa_wbtn { display: flex; gap: var(--s2); }
 .sit-embed .btn01, .sit-embed .btn02 {
     display: inline-flex; align-items: center; justify-content: center;
