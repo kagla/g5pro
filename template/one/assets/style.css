@@ -1587,6 +1587,7 @@ input[type=checkbox], input[type=radio] {
     #display_pay_button .btn_submit, #display_pay_button .btn01 { width: 100%; }
 }
 
-/* 분류 줄 오른쪽의 관리 바로가기 (상품 수정) */
-.bbs-cate .cate-admin { width: 32px; height: 32px; margin-left: auto; }
-.bbs-cate .cate-admin svg { width: 17px; height: 17px; }
+/* 분류 줄 + 오른쪽 관리 바로가기 (상품 수정) */
+.bbs-cate-row { display: flex; align-items: center; gap: var(--s3); }
+.bbs-cate-row .bbs-cate { flex: 1; min-width: 0; }
+.bbs-cate-row .bbs-admin-link { flex: none; }
