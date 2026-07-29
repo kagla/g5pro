@@ -1071,12 +1071,16 @@ a.chip.cate:hover { background: var(--teal); color: #fff; }
 
 /* ── 읽기 화면 ── */
 .post-ip { font-size: var(--t-xs); color: var(--muted); font-variant-numeric: tabular-nums; }
+/* 서명·추천 줄은 카드 안의 다른 구획(.post-files 등)과 같은 좌우 여백을 쓴다 */
 .post-sign {
-    margin-top: var(--s5); padding-top: var(--s4); border-top: 1px dashed var(--line);
+    padding: var(--s4) var(--s5); border-top: 1px dashed var(--line);
     font-size: var(--t-sm); color: var(--muted);
 }
 
-.post-react { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; margin-top: var(--s5); }
+.post-react {
+    display: flex; align-items: center; justify-content: center; gap: var(--s2); flex-wrap: wrap;
+    padding: var(--s5); border-top: 1px solid var(--line);
+}
 .react {
     display: inline-flex; align-items: center; gap: var(--s2);
     padding: var(--s2) var(--s4); border-radius: var(--r-btn);
@@ -1089,7 +1093,10 @@ a.chip.cate:hover { background: var(--teal); color: #fff; }
 .react svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linejoin: round; }
 .react b { font-variant-numeric: tabular-nums; }
 .react-msg { font-size: var(--t-sm); font-weight: 700; color: var(--accent); }
-.post-share { display: flex; gap: var(--s2); margin-left: auto; }
+/* 비어 있을 때도 flex gap 을 차지해 버튼이 4px 왼쪽으로 밀린다 */
+.react-msg:empty { display: none; }
+/* 공유 버튼도 같은 줄 가운데에 — 구분선 하나로 추천과 나눈다 */
+.post-share { display: flex; gap: var(--s2); padding-left: var(--s3); border-left: 1px solid var(--line); }
 
 /* 이전글은 왼쪽, 다음글은 오른쪽 — 한쪽만 있어도 제자리를 지킨다 */
 .post-nav { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); margin-top: var(--s4); }
