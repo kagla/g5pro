@@ -1079,7 +1079,7 @@ a.chip.cate:hover { background: var(--teal); color: #fff; }
 
 .post-react {
     display: flex; align-items: center; justify-content: center; gap: var(--s2); flex-wrap: wrap;
-    padding: var(--s5); border-top: 1px solid var(--line);
+    padding: var(--s5);
 }
 .react {
     display: inline-flex; align-items: center; gap: var(--s2);
