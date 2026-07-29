@@ -384,8 +384,12 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
     content: ""; position: absolute; right: -40px; top: -50px;
     width: 190px; height: 190px; border-radius: 50%; background: rgba(255,255,255,.18);
 }
-.hero h2 { font-size: var(--t-2xl); letter-spacing: -.02em; margin-bottom: var(--s2); position: relative; }
-.hero p { margin: 0; font-size: var(--t-md); opacity: .92; position: relative; }
+.hero::before {
+    content: ""; position: absolute; inset: 0; z-index: 1;
+    background: linear-gradient(100deg, rgba(4,26,48,.42), rgba(4,26,48,.18) 55%, rgba(4,26,48,0));
+}
+.hero h2 { font-size: var(--t-2xl); letter-spacing: -.02em; margin-bottom: var(--s2); position: relative; z-index: 2; }
+.hero p { margin: 0; font-size: var(--t-md); position: relative; z-index: 2; }
 
 /* 카드 그리드 (L1) */
 .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--s4); }
@@ -603,8 +607,15 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
     content: ""; position: absolute; right: -30px; bottom: -60px;
     width: 160px; height: 160px; border-radius: 50%; background: rgba(255,255,255,.16);
 }
-.search-summary h2 { font-size: var(--t-xl); font-weight: 700; margin-bottom: var(--s1); position: relative; }
-.search-summary p { margin: 0; font-size: var(--t-md); opacity: .92; position: relative; }
+/* 밝은 그라디언트 위 흰 글씨는 대비가 2:1 수준이라 읽기 어렵다 → 어두운 막을 깐다 */
+.search-summary::before {
+    content: ""; position: absolute; inset: 0; z-index: 1;
+    background: linear-gradient(100deg, rgba(4,26,48,.42), rgba(4,26,48,.18) 55%, rgba(4,26,48,0));
+}
+.search-summary h2 { font-size: var(--t-xl); font-weight: 700; margin-bottom: var(--s1); position: relative; z-index: 2; }
+.search-summary p { margin: 0; font-size: var(--t-md); position: relative; z-index: 2; }
+/* 그라디언트 배너 안에서는 흰 글씨를 강제한다 — 뷰에서 .muted 등이 섞여도 흐려지지 않게 */
+.hero, .hero *, .search-summary, .search-summary * { color: #fff; }
 .search-group { margin-bottom: var(--s6); }
 .search-group-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); margin-bottom: var(--s3); }
 .search-group-head h3 { display: flex; align-items: center; gap: var(--s2); font-size: var(--t-md); font-weight: 700; }

@@ -2,7 +2,7 @@
 @section('content')
 <div class="search-summary">
     <h2><span class="q">{{ $stx }}</span> 검색 결과</h2>
-    <p class="muted">게시판 {{ number_format($board_count) }}곳에서 {{ number_format($total_count) }}건을 찾았습니다.</p>
+    <p>게시판 {{ number_format($board_count) }}곳에서 {{ number_format($total_count) }}건을 찾았습니다.</p>
 </div>
 
 @forelse ($groups as $g)
