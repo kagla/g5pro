@@ -33,10 +33,6 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
 <header class="site-header">
     <div class="wrap">
         <h1 class="logo"><a href="{{ G5_URL }}/">{{ $site['title'] }}</a></h1>
-        <button type="button" class="nav-toggle" aria-controls="gnb" aria-expanded="false">
-            <span class="bars" aria-hidden="true"></span>
-            <span class="sound_only">메뉴 열기</span>
-        </button>
         <nav class="gnb" id="gnb">
             @foreach ($menu as $m)
             <div class="gnb-item">
@@ -50,6 +46,19 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
                 @endif
             </div>
             @endforeach
+            {{-- 접힘 모드에서만 보이는 계정 영역 --}}
+            <div class="gnb-util">
+                @if ($me)
+                <span class="me">{{ $me['mb_nick'] }}님</span>
+                <a href="{{ G5_BBS_URL }}/member_confirm.php?url={{ urlencode(G5_BBS_URL.'/register_form.php') }}">정보수정</a>
+                <a href="{{ G5_BBS_URL }}/memo.php?kind=recv">쪽지함</a>
+                <a href="{{ G5_BBS_URL }}/point.php">포인트</a>
+                <a href="{{ G5_BBS_URL }}/logout.php">로그아웃</a>
+                @else
+                <a href="{{ G5_BBS_URL }}/login.php?url={{ urlencode(G5_URL) }}">로그인</a>
+                <a href="{{ G5_BBS_URL }}/register.php">회원가입</a>
+                @endif
+            </div>
         </nav>
         <form class="hd-search" name="fsearchbox" method="get" action="{{ G5_BBS_URL }}/search.php"
               onsubmit="return hd_search_check(this);">
@@ -60,15 +69,24 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
             <button type="submit" class="btn">검색</button>
         </form>
         <div class="header-util">
-            @if ($me)
-            <span class="me">{{ $me['mb_nick'] }}</span>
-            <a href="{{ G5_BBS_URL }}/logout.php">로그아웃</a>
-            @else
-            <a href="{{ G5_BBS_URL }}/login.php?url={{ urlencode(G5_URL) }}">로그인</a>
-            <a href="{{ G5_BBS_URL }}/register.php">회원가입</a>
-            @endif
-            <button type="button" id="theme-toggle" aria-label="테마 전환">◐</button>
+            <span class="util-links">
+                @if ($me)
+                <span class="me">{{ $me['mb_nick'] }}</span>
+                <a href="{{ G5_BBS_URL }}/logout.php">로그아웃</a>
+                @else
+                <a href="{{ G5_BBS_URL }}/login.php?url={{ urlencode(G5_URL) }}">로그인</a>
+                <a href="{{ G5_BBS_URL }}/register.php">회원가입</a>
+                @endif
+            </span>
+            <button type="button" id="theme-toggle" aria-label="테마 전환" title="테마 전환">
+                <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 13.3A8.2 8.2 0 0 1 10.7 3.5a8.5 8.5 0 1 0 9.8 9.8Z"/></svg>
+                <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M4.2 12H2M22 12h-2.2M6.5 6.5 5 5M19 19l-1.5-1.5M17.5 6.5 19 5M5 19l1.5-1.5"/></svg>
+            </button>
         </div>
+        <button type="button" class="nav-toggle" aria-controls="gnb" aria-expanded="false">
+            <span class="bars" aria-hidden="true"></span>
+            <span class="sound_only">메뉴 열기</span>
+        </button>
     </div>
 </header>
 <main class="site-main wrap">

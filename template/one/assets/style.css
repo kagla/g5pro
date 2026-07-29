@@ -191,6 +191,7 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 
 /* ── 헤더 (L1 pill nav + L2 검색) ── */
 .site-header { background: var(--card); box-shadow: var(--sh-sm); position: relative; z-index: 60; }
+.site-header .wrap { position: relative; }
 .site-header .wrap { display: flex; align-items: center; gap: var(--s4); min-height: 62px; flex-wrap: wrap; }
 .logo { font-size: 18px; font-weight: 800; letter-spacing: -.02em; color: var(--accent); }
 .logo a:hover { color: var(--accent-deep); }
@@ -198,10 +199,13 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .gnb { display: flex; gap: var(--s1); flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .gnb::-webkit-scrollbar { display: none; }
 
-/* 햄버거 — 모바일에서만 보인다 */
+/* 접힘 모드에서만 보이는 계정 영역 (햄버거 패널 안) */
+.gnb-util { display: none; }
+
+/* 햄버거 — 메뉴가 실제로 잘릴 때 JS 가 .nav-collapsed 를 붙이면 나타난다 */
 .nav-toggle {
     display: none; align-items: center; justify-content: center;
-    width: 36px; height: 36px; flex: none;
+    width: 36px; height: 36px; flex: none; order: 10;   /* 검색창(50)보다 앞 = 항상 첫 줄 우측 */
     background: var(--bg); border: 0; border-radius: var(--r-md); cursor: pointer; color: var(--fg);
 }
 .nav-toggle .bars, .nav-toggle .bars::before, .nav-toggle .bars::after {
@@ -245,12 +249,48 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .hd-search .btn { padding: var(--s1) var(--s3); font-size: var(--t-xs); }
 
 .header-util { display: flex; align-items: center; gap: var(--s3); font-size: var(--t-sm); color: var(--muted); }
+.header-util .util-links { display: flex; align-items: center; gap: var(--s3); white-space: nowrap; }
 .header-util .me { color: var(--fg); font-weight: 700; }
+
+/* 테마 토글 — 해/달 아이콘 */
 #theme-toggle {
+    display: flex; align-items: center; justify-content: center; flex: none;
     background: var(--bg); border: 0; border-radius: var(--r-full);
-    width: 32px; height: 32px; cursor: pointer; color: var(--muted); font-size: var(--t-sm);
+    width: 36px; height: 36px; cursor: pointer; color: var(--muted);
+    transition: color .15s, background .15s;
 }
-#theme-toggle:hover { color: var(--accent); }
+#theme-toggle:hover { color: var(--accent); background: var(--accent-soft); }
+#theme-toggle svg {
+    width: 18px; height: 18px; fill: none;
+    stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+#theme-toggle .icon-sun { display: none; }
+:root[data-theme="dark"] #theme-toggle .icon-moon { display: none; }
+:root[data-theme="dark"] #theme-toggle .icon-sun { display: block; }
+
+/* ── 접힘 모드: 메뉴를 햄버거 패널로 ── */
+.nav-collapsed .nav-toggle { display: flex; }
+.nav-collapsed .header-util { margin-left: auto; }   /* 접히면 gnb 가 흐름에서 빠지므로 직접 민다 */
+.nav-collapsed .header-util .util-links { display: none; }
+.nav-collapsed .gnb {
+    display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 65;
+    flex-direction: column; gap: 2px; overflow: visible;
+    background: var(--card); box-shadow: var(--sh-md);
+    border-radius: 0 0 var(--r-lg) var(--r-lg); padding: var(--s3);
+}
+.nav-collapsed .gnb.open { display: flex; }
+.nav-collapsed .gnb-item > a { padding: var(--s3) var(--s4); border-radius: var(--r-md); font-size: var(--t-md); }
+.nav-collapsed .gnb-sub {
+    display: block; position: static; margin: 0 0 var(--s1) var(--s4);
+    padding: 0; box-shadow: none; background: none; min-width: 0;
+}
+.nav-collapsed .gnb-sub a { padding: var(--s2) var(--s4); }
+.nav-collapsed .gnb-util {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3);
+    margin-top: var(--s2); padding: var(--s3) var(--s4) var(--s2);
+    border-top: 1px solid var(--line); font-size: var(--t-sm); color: var(--muted);
+}
+.nav-collapsed .gnb-util .me { color: var(--fg); font-weight: 700; }
 
 /* ── 본문·푸터 ── */
 .site-main { padding: var(--s5) var(--s5) var(--s7); min-height: 60vh; }
@@ -523,22 +563,10 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
     .wrap { padding: 0 var(--s4); }
     .site-header .wrap { gap: var(--s2); padding-top: var(--s3); padding-bottom: var(--s3); }
 
-    /* 헤더 배치: [로고] … [유틸] [☰] / [검색] / [메뉴(열었을 때)] */
-    .logo { order: 0; }
-    .header-util { order: 1; margin-left: auto; }
-    .nav-toggle { order: 2; display: flex; }
-    .hd-search { order: 3; flex: 1 0 100%; width: 100%; }
+    /* 좁은 화면: 검색창을 아래 줄로 (flex-basis 100% 라야 줄바꿈된다) */
+    .header-util { margin-left: auto; }
+    .hd-search { order: 50; flex: 1 0 100%; width: 100%; }
     .hd-search input[type=text] { flex: 1; width: auto; }
-
-    /* 햄버거로 여닫는 세로 메뉴. flex-basis 를 100% 로 줘야 줄바꿈된다 */
-    .gnb { order: 4; flex: 1 0 100%; width: 100%; display: none; flex-direction: column; gap: 2px; overflow: visible; }
-    .gnb.open { display: flex; }
-    .gnb-item > a { padding: var(--s3) var(--s4); border-radius: var(--r-md); font-size: var(--t-md); }
-    .gnb-sub {
-        display: block; position: static; margin: 0 0 var(--s1) var(--s4);
-        padding: 0; box-shadow: none; background: none; min-width: 0;
-    }
-    .gnb-sub a { padding: var(--s2) var(--s4); }
     .site-main { padding: var(--s4) var(--s4) var(--s6); }
     .hero { padding: var(--s5) var(--s4); border-radius: var(--r-xl); }
     .hero h2 { font-size: var(--t-xl); }
