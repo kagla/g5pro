@@ -1,6 +1,11 @@
 <?php
 // blade 스킨: 마크업 없음 — 전역변수를 배열로 매핑해 g5_view() 호출만 한다
+// 파생 스킨(blade_gallery 등)은 $g5_blade_list_view / $g5_blade_list_thumb 지정 후 이 파일을 include
 if (!defined('_GNUBOARD_')) exit;
+
+$g5_blade_list_view  = isset($g5_blade_list_view) ? $g5_blade_list_view : 'bbs.board_list';
+$g5_blade_list_thumb = !empty($g5_blade_list_thumb);
+if ($g5_blade_list_thumb) include_once(G5_LIB_PATH.'/thumbnail.lib.php');
 
 $items = array();
 foreach ($list as $row) {
@@ -17,6 +22,11 @@ foreach ($list as $row) {
         'icon_new'    => !empty($row['icon_new']),
         'icon_file'   => !empty($row['icon_file']),
         'icon_secret' => !empty($row['icon_secret']),
+        // 갤러리 변형: ['src'=>URL, 'alt'=>...] — src 비면 이미지 없음
+        'thumb'       => $g5_blade_list_thumb
+            ? get_list_thumbnail($bo_table, $row['wr_id'],
+                  ($board['bo_gallery_width'] ?: 300), ($board['bo_gallery_height'] ?: 225), false, true)
+            : null,
     );
 }
 
@@ -31,7 +41,7 @@ if ($is_category && $board['bo_category_list']) {
     }
 }
 
-g5_view('bbs.board_list', array(
+g5_view($g5_blade_list_view, array(
     'board' => array(
         'bo_table'   => $bo_table,
         'bo_subject' => $board['bo_subject'],

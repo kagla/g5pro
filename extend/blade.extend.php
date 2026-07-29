@@ -47,8 +47,8 @@ function blade_takeover()
     // 스킨 시스템이 없는 화면 (index.php 등)
     if (defined('G5_BLADE_PAGE') && G5_BLADE_PAGE) return true;
 
-    // 게시판: 해당 보드의 스킨이 blade
-    if (!empty($board['bo_skin']) && $board['bo_skin'] === 'blade') return true;
+    // 게시판: 해당 보드의 스킨이 blade 또는 blade_* 파생 (blade_gallery 등)
+    if (!empty($board['bo_skin']) && strpos($board['bo_skin'], 'blade') === 0) return true;
 
     // 회원 영역: 스킨이 blade 이고 "변환된" 화면일 때만 (미변환 화면은 순정 head/tail 유지)
     if (!empty($config['cf_member_skin']) && $config['cf_member_skin'] === 'blade') {
