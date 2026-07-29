@@ -88,11 +88,16 @@
     @endforeach
 
     @if ($is_member)
+    <div id="comment-form-home" hidden></div>{{-- 답글·수정을 마치면 폼이 이 자리로 돌아온다 --}}
     <form name="fviewcomment" id="fviewcomment" class="comment-form" method="post" action="{{ $comment_action }}"
           onsubmit="return fviewcomment_submit(this);" autocomplete="off">
         @foreach ($comment_hidden as $hname => $hval)
         <input type="hidden" name="{{ $hname }}" value="{{ $hval }}">
         @endforeach
+        <div class="comment-form-state" hidden>
+            <span class="s"></span>
+            <button type="button" class="linklike c-cancel">취소</button>
+        </div>
         <textarea name="wr_content" rows="3" required placeholder="댓글을 남겨주세요"></textarea>
         <button type="submit" class="btn btn-primary">댓글 등록</button>
     </form>
@@ -102,21 +107,37 @@
         set_comment_token(f); // 순정 common.js — ajax.comment_token.php 에서 일회용 토큰 주입
         return true;
     }
-    // 답글: 대상 댓글 지정(w=c + comment_id), 수정: 원문 채움(w=cu)
-    document.querySelectorAll('.c-reply').forEach(function (b) {
-        b.addEventListener('click', function () {
-            var f = document.fviewcomment;
-            f.w.value = 'c'; f.comment_id.value = b.dataset.id;
-            f.wr_content.value = ''; f.wr_content.focus();
+    // 답글(w=c + comment_id)·수정(w=cu)은 해당 댓글 바로 아래로 입력폼을 옮겨서 받는다.
+    // 폼은 하나뿐이라 순정 write_comment_update.php 계약이 그대로 유지된다.
+    (function () {
+        var f = document.getElementById('fviewcomment');
+        var home = document.getElementById('comment-form-home');
+        var state = f.querySelector('.comment-form-state');
+        var label = state.querySelector('.s');
+        var submit = f.querySelector('button[type="submit"]');
+
+        function reset() {
+            f.w.value = 'c'; f.comment_id.value = ''; f.wr_content.value = '';
+            state.hidden = true; submit.textContent = '댓글 등록';
+            f.classList.remove('inline'); f.style.marginLeft = '';
+            home.insertAdjacentElement('afterend', f);
+        }
+        function attach(btn, w, content, text, btnText) {
+            var c = btn.closest('.comment');
+            c.insertAdjacentElement('afterend', f);
+            f.classList.add('inline'); f.style.marginLeft = c.style.marginLeft;
+            f.w.value = w; f.comment_id.value = btn.dataset.id; f.wr_content.value = content;
+            label.textContent = text; state.hidden = false; submit.textContent = btnText;
+            f.wr_content.focus();
+        }
+        document.querySelectorAll('.c-reply').forEach(function (b) {
+            b.addEventListener('click', function () { attach(b, 'c', '', '이 댓글에 답글 쓰는 중', '답글 등록'); });
         });
-    });
-    document.querySelectorAll('.c-edit').forEach(function (b) {
-        b.addEventListener('click', function () {
-            var f = document.fviewcomment;
-            f.w.value = 'cu'; f.comment_id.value = b.dataset.id;
-            f.wr_content.value = b.dataset.raw; f.wr_content.focus();
+        document.querySelectorAll('.c-edit').forEach(function (b) {
+            b.addEventListener('click', function () { attach(b, 'cu', b.dataset.raw, '댓글 수정 중', '수정 완료'); });
         });
-    });
+        state.querySelector('.c-cancel').addEventListener('click', reset);
+    })();
     </script>
     @else
     <p class="muted">댓글을 쓰려면 <a href="{{ G5_BBS_URL }}/login.php">로그인</a>하세요.</p>
@@ -132,27 +153,52 @@
         @if ($scrap_href)<a class="btn" href="{!! $scrap_href !!}" target="_blank" onclick="win_scrap(this.href); return false;">스크랩</a>@endif
     </div>
     <div class="bbs-actions">
-        {{-- 복사·이동은 게시판 관리자 이상에게만 값이 온다 --}}
-        @if ($copy_href)<a class="btn" href="{!! $copy_href !!}" onclick="window.open(this.href, 'g5move', 'left=60,top=60,width=560,height=640,scrollbars=1'); return false;">복사</a>@endif
-        @if ($move_href)<a class="btn" href="{!! $move_href !!}" onclick="window.open(this.href, 'g5move', 'left=60,top=60,width=560,height=640,scrollbars=1'); return false;">이동</a>@endif
         @if ($update_href)<a class="btn" href="{!! $update_href !!}">수정</a>@endif
-        @if ($delete_href)<a class="btn" href="{!! $delete_href !!}" onclick="return confirm('삭제하시겠습니까?');">삭제</a>@endif
         @if ($write_href)<a class="btn btn-primary" href="{{ $write_href }}">글쓰기</a>@endif
+        {{-- 가끔 쓰는 복사(관리자)·이동(관리자)·삭제는 점 세 개 메뉴로 접어 줄 폭을 아낀다 --}}
+        @if ($copy_href || $move_href || $delete_href)
+        <div class="kebab">
+            <button type="button" class="icon-btn kebab-btn" aria-haspopup="true" aria-expanded="false"
+                    aria-label="게시물 관리" title="게시물 관리">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>
+            </button>
+            <div class="kebab-menu" role="menu">
+                @if ($copy_href)
+                <a href="{!! $copy_href !!}" role="menuitem" onclick="window.open(this.href, 'g5move', 'left=60,top=60,width=560,height=640,scrollbars=1'); return false;">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 5.5A1.5 1.5 0 0 0 13.5 4h-8A1.5 1.5 0 0 0 4 5.5v8A1.5 1.5 0 0 0 5.5 15"/></svg>
+                    복사
+                </a>
+                @endif
+                @if ($move_href)
+                <a href="{!! $move_href !!}" role="menuitem" onclick="window.open(this.href, 'g5move', 'left=60,top=60,width=560,height=640,scrollbars=1'); return false;">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h14"/><path d="m13 7 5 5-5 5"/></svg>
+                    이동
+                </a>
+                @endif
+                @if ($delete_href)
+                <a href="{!! $delete_href !!}" role="menuitem" class="danger" onclick="return confirm('삭제하시겠습니까?');">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 7h15"/><path d="M9.5 7V5h5v2"/><path d="M6.5 7 7.6 20h8.8L17.5 7"/></svg>
+                    삭제
+                </a>
+                @endif
+            </div>
+        </div>
+        @endif
     </div>
 </div>
 
 @if ($prev || $next)
 <nav class="post-nav">
     @if ($prev)
-    <a class="post-nav-item" href="{!! $prev['href'] !!}">
-        <span class="k">↑ 이전글</span>
+    <a class="post-nav-item prev" href="{!! $prev['href'] !!}">
+        <span class="k">← 이전글</span>
         <span class="t">{{ $prev['subject'] }}</span>
         <span class="d">{{ $prev['date'] }}</span>
     </a>
     @endif
     @if ($next)
-    <a class="post-nav-item" href="{!! $next['href'] !!}">
-        <span class="k">↓ 다음글</span>
+    <a class="post-nav-item next" href="{!! $next['href'] !!}">
+        <span class="k">다음글 →</span>
         <span class="t">{{ $next['subject'] }}</span>
         <span class="d">{{ $next['date'] }}</span>
     </a>
