@@ -1281,7 +1281,7 @@ a.chip.cate:hover { background: var(--teal); color: #fff; }
 
 /* ── 탭 ── */
 .sit-tabs { background: var(--card); border-radius: var(--r-xl); box-shadow: var(--sh-md); overflow: hidden; }
-.sit-tabs .tab-tit { display: flex; overflow-x: auto; border-bottom: 1px solid var(--line); }
+.sit-tabs .tab-tit { display: flex; border-bottom: 1px solid var(--line); }
 .sit-tabs .tab-tit button {
     flex: 1 0 auto; padding: var(--s4) var(--s5); border: 0; border-bottom: 2px solid transparent;
     background: none; color: var(--muted); font: inherit; font-size: var(--t-md); font-weight: 700;
@@ -1291,6 +1291,19 @@ a.chip.cate:hover { background: var(--teal); color: #fff; }
 .sit-tabs .tab-tit button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
 .sit-tabs .tab-tit b { font-weight: 800; font-variant-numeric: tabular-nums; }
 .tab-con { padding: var(--s5); }
+
+/* 좁은 화면 — 탭 4개를 가로로 늘어놓으면 넘쳐서 선택한 탭이 화면 밖으로 나간다.
+   2×2 로 접어 네 개가 한눈에 보이게 한다. */
+@media (max-width: 620px) {
+    .sit-tabs .tab-tit { flex-wrap: wrap; }
+    .sit-tabs .tab-tit button {
+        flex: 1 0 50%; max-width: 50%; padding: var(--s3) var(--s2);
+        font-size: var(--t-sm); border-bottom-width: 2px;
+    }
+    .sit-tabs .tab-tit button:nth-child(-n+2) { border-top: 0; }
+    .tab-con { padding: var(--s4); }
+    .sit-sub { font-size: var(--t-md); }
+}
 .tab-con[hidden] { display: none; }
 .sit-sub { font-size: var(--t-lg); font-weight: 700; margin: var(--s5) 0 var(--s3); }
 .sit-sub:first-child { margin-top: 0; }
