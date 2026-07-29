@@ -484,3 +484,29 @@ function g5_map_search()
         'action_url'  => G5_BBS_URL.'/search.php',
     ));
 }
+
+// ── 스크랩 목록 (bbs/scrap.php)
+function g5_map_scrap()
+{
+    global $list, $total_count, $page, $total_page;
+
+    $items = array();
+    foreach ((array)$list as $row) {
+        $items[] = array(
+            'num'        => $row['num'],
+            'bo_subject' => get_text($row['bo_subject']),
+            'subject'    => $row['subject'],      // get_text 완료 → {!! !!}
+            'href'       => $row['opener_href_wr_id'],
+            'datetime'   => substr($row['ms_datetime'], 0, 10),
+            'del_href'   => G5_BBS_URL.'/'.ltrim($row['del_href'], './'),  // &amp; 포함 → {!! !!}
+        );
+    }
+
+    g5_view('bbs.scrap', array(
+        'items'       => $items,
+        'total_count' => (int)$total_count,
+        'page'        => (int)$page,
+        'total_page'  => (int)$total_page,
+        'page_href'   => G5_BBS_URL.'/scrap.php?page=',
+    ));
+}
