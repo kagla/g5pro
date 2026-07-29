@@ -1390,3 +1390,9 @@ a.chip.cate:hover { background: var(--teal); color: #fff; }
     margin-top: var(--s1); font-size: var(--t-md); color: var(--muted);
 }
 .list-cards .cart-m strong { font-size: var(--t-lg); font-weight: 800; color: var(--fg); }
+
+/* 장바구니 좁은 화면 — 표 머리줄이 숨겨지므로 전체선택을 카드 목록 위에 둔다 */
+.cart-cards-head { display: none; align-items: center; gap: var(--s2); padding: var(--s3) var(--s4); border-bottom: 1px solid var(--line); }
+.cart-cards-head label { display: inline-flex; align-items: center; gap: var(--s2); font-size: var(--t-sm); font-weight: 600; color: var(--muted); cursor: pointer; }
+.cart-cards-head .chk-count { margin-left: auto; }
+@media (max-width: 620px) { .cart-cards-head { display: flex; } }

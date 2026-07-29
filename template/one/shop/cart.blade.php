@@ -20,7 +20,7 @@
         <table class="list-table cart-table">
             <thead>
                 <tr>
-                    <th class="col-chk"><span class="sound_only">선택</span></th>
+                    <th class="col-chk"><input type="checkbox" class="ct-all" aria-label="상품 전체 선택"></th>
                     <th class="col-subject">상품</th>
                     <th>수량</th>
                     <th>판매가</th>
@@ -60,6 +60,10 @@
         </table>
     </div>
 
+    <div class="cart-cards-head">
+        <label><input type="checkbox" class="ct-all"> 전체 선택</label>
+        <span class="chk-count" aria-live="polite"></span>
+    </div>
     <ul class="list-cards">
         @foreach ($items as $it)
         <li>
@@ -100,6 +104,37 @@
 <script>
 // 순정 form_check() 는 shop/cart.php 가 매핑 훅 뒤에서 echo 하므로 blade 화면에는 오지 않는다.
 // 계약(act = buy | seldelete | alldelete → cartupdate.php)은 그대로 두고 여기서 다시 정의한다.
+// 전체선택 — 표와 카드 두 레이아웃에 각각 있으므로 지금 보이는 쪽만 다루고 서로 맞춘다
+(function () {
+    var f = document.frmcartlist;
+    var alls = [].slice.call(f.querySelectorAll('.ct-all'));
+    var count = f.querySelector('.chk-count');
+
+    function visible() {
+        return [].slice.call(f.querySelectorAll('input[name^="ct_chk"]'))
+                 .filter(function (c) { return c.offsetParent !== null; });
+    }
+    function sync() {
+        var v = visible(), n = v.filter(function (c) { return c.checked; }).length;
+        alls.forEach(function (a) {
+            a.checked = (n > 0 && n === v.length);
+            a.indeterminate = (n > 0 && n < v.length);
+        });
+        if (count) count.textContent = n ? n + '개 선택' : '';
+    }
+    alls.forEach(function (a) {
+        a.addEventListener('change', function () {
+            visible().forEach(function (c) { c.checked = a.checked; });
+            sync();
+        });
+    });
+    f.addEventListener('change', function (e) {
+        if (e.target.name && e.target.name.indexOf('ct_chk') === 0) sync();
+    });
+    window.addEventListener('resize', sync);   // 보이는 레이아웃이 바뀐다
+    sync();
+})();
+
 function form_check(act) {
     var f = document.frmcartlist;
     var boxes = [].slice.call(f.querySelectorAll('input[name^="ct_chk"]'));
