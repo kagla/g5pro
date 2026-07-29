@@ -2,6 +2,7 @@
 @section('bbs_content')
 <header class="bbs-head">
     <h2><a href="{{ $list_href }}">{{ $board['bo_subject'] }}</a></h2>
+    <div class="bbs-meta">조회 {{ $post['hit'] }} · 댓글 {{ count($comments) }}</div>
 </header>
 
 <article class="post">
@@ -19,7 +20,7 @@
     @if (count($files))
     <ul class="post-files">
         @foreach ($files as $f)
-        <li><a href="{{ $f['href'] }}">{{ $f['source'] }}</a> <span class="muted">({{ $f['size'] }}) {{ $f['download'] }}회</span></li>
+        <li><a href="{{ $f['href'] }}">{{ $f['source'] }}</a> <span class="muted">{{ $f['size'] }} · 다운로드 {{ $f['download'] }}회</span></li>
         @endforeach
     </ul>
     @endif

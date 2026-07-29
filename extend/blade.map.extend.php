@@ -440,3 +440,46 @@ function g5_map_point()
         'page_href'   => G5_BBS_URL.'/point.php?page=',
     ));
 }
+
+// ── 검색 결과 (bbs/search.php) — 게시판별 그룹
+function g5_map_search()
+{
+    global $stx, $sfl, $sop, $total_count, $list, $bo_subject, $search_table;
+    global $board_count, $page, $total_page, $srows;
+
+    $groups = array();
+    foreach ((array)$list as $idx => $rows) {
+        if (!$rows) continue;
+        $items = array();
+        foreach ($rows as $row) {
+            $items[] = array(
+                'href'     => $row['href'],
+                'subject'  => $row['subject'],   // search_font 처리(검색어 강조 HTML) → {!! !!}
+                'content'  => $row['content'],   // 동일
+                'name'     => $row['name'],      // 사이드뷰 HTML → {!! !!}
+                'datetime' => substr($row['wr_datetime'], 0, 10),
+                'hit'      => $row['wr_hit'],
+                'comment_cnt' => (int)$row['wr_comment'],
+            );
+        }
+        $groups[] = array(
+            'bo_table'   => $search_table[$idx],
+            'bo_subject' => isset($bo_subject[$idx]) ? $bo_subject[$idx] : $search_table[$idx],
+            'href'       => G5_BBS_URL.'/board.php?bo_table='.$search_table[$idx],
+            'items'      => $items,
+        );
+    }
+
+    g5_view('bbs.search', array(
+        'stx'         => get_text($stx),
+        'sfl'         => $sfl,
+        'sop'         => $sop,
+        'total_count' => (int)$total_count,
+        'board_count' => (int)$board_count,
+        'groups'      => $groups,
+        'page'        => (int)$page,
+        'total_page'  => (int)$total_page,
+        'page_href'   => G5_BBS_URL.'/search.php?sfl='.urlencode($sfl).'&stx='.urlencode($stx).'&sop='.urlencode($sop).'&page=',
+        'action_url'  => G5_BBS_URL.'/search.php',
+    ));
+}

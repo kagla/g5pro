@@ -1,5 +1,6 @@
 <?php
 include_once('./_common.php');
+define('G5_BLADE_PAGE', true); // g5blade 직통 화면
 
 $g5['title'] = '전체검색 결과';
 include_once('./_head.php');
@@ -238,6 +239,6 @@ $group_select .= '</select>';
 if (!$sfl) $sfl = 'wr_subject';
 if (!$sop) $sop = 'or';
 
-include_once($search_skin_path.'/search.skin.php');
+g5_map_search(); // g5blade
 
 include_once('./_tail.php');
