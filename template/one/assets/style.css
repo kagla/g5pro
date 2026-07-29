@@ -1423,3 +1423,139 @@ input[type=checkbox], input[type=radio] {
 @media (max-width: 620px) {
     input[type=checkbox], input[type=radio] { width: 18px; height: 18px; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   주문서 (shop/orderform.php)
+   마크업은 순정 orderform.sub.php 그대로 — 결제수단·PG 연동 JS 가
+   이 id/class 를 잡으므로 구조는 건드리지 않고 겉모습만 맞춘다.
+   순정이 의도한 2단(왼쪽 입력 / 오른쪽 합계·결제)을 살린다.
+   ═══════════════════════════════════════════════════════════ */
+#sod_frm { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--s5); align-items: start; }
+.od_prd_list, #display_pay_button { grid-column: 1 / -1; }
+.sod_left { display: flex; flex-direction: column; gap: var(--s5); min-width: 0; }
+.sod_right { display: flex; flex-direction: column; gap: var(--s5); position: sticky; top: var(--s4); }
+
+#sod_frm section, #sod_bsk_tot, .od_prd_list {
+    background: var(--card); border-radius: var(--r-xl); box-shadow: var(--sh-md); overflow: hidden;
+}
+#sod_frm section > h2 {
+    padding: var(--s4) var(--s5); font-size: var(--t-lg); font-weight: 700;
+    border-bottom: 1px solid var(--line);
+}
+#sod_frm section > h3, #sod_frm .od_pay_buttons_el h3 {
+    font-size: var(--t-md); font-weight: 700; margin: var(--s4) var(--s5) var(--s2);
+}
+
+/* 주문상품 */
+#sod_list { width: 100%; border-collapse: collapse; }
+#sod_list th {
+    padding: var(--s3) var(--s4); font-size: var(--t-sm); font-weight: 700; color: var(--muted);
+    text-align: center; white-space: nowrap; border-bottom: 1px solid var(--line);
+}
+#sod_list td { padding: var(--s4); font-size: var(--t-md); text-align: center; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+#sod_list tbody tr:first-child td { border-top: 0; }
+#sod_list td:first-child { text-align: left; }
+#sod_list .sod_img { float: left; margin-right: var(--s3); }
+#sod_list .sod_img img { width: 64px; height: 64px; object-fit: cover; border-radius: var(--r-md); display: block; }
+#sod_list .sod_name { overflow: hidden; }
+#sod_list .sod_name b { font-size: var(--t-md); font-weight: 700; }
+#sod_list .sod_opt { font-size: var(--t-sm); color: var(--muted); margin-top: var(--s1); }
+#sod_list .text_right { text-align: right; }
+
+/* 입력 표 (주문자·배송지·결제정보) */
+.tbl_frm01 table { width: 100%; border-collapse: collapse; }
+.tbl_frm01 th, .tbl_frm01 td { padding: var(--s3) var(--s5); text-align: left; vertical-align: middle; border-top: 1px solid var(--line); }
+.tbl_frm01 tr:first-child th, .tbl_frm01 tr:first-child td { border-top: 0; }
+.tbl_frm01 th { width: 30%; font-size: var(--t-md); font-weight: 600; color: var(--muted); white-space: nowrap; }
+.tbl_frm01 td { font-size: var(--t-md); }
+.tbl_frm01 .frm_input { width: 100%; max-width: 320px; height: 40px; }
+.tbl_frm01 input[size="5"], .tbl_frm01 input[maxlength="6"], #od_zip, #od_b_zip { max-width: 120px; }
+.tbl_frm01 textarea { width: 100%; max-width: 460px; }
+.tbl_frm01 td > input + input,
+.tbl_frm01 td > input + a,
+.tbl_frm01 td > a + input { margin-top: var(--s2); }
+.btn_frmline {
+    display: inline-flex; align-items: center; height: 40px; padding: 0 var(--s4);
+    border: 1px solid var(--line); border-radius: var(--r-btn); background: var(--card);
+    font-size: var(--t-sm); font-weight: 700; color: var(--fg); cursor: pointer; white-space: nowrap;
+}
+.btn_frmline:hover { border-color: var(--accent); color: var(--accent); }
+
+/* 배송지 선택 라디오 */
+.order_choice_place { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s2) var(--s3); padding: var(--s3) var(--s5) var(--s4); }
+.order_choice_place label { display: inline-flex; align-items: center; gap: var(--s1); margin-right: var(--s3); font-size: var(--t-md); cursor: pointer; }
+.order_choice_place #order_address { height: 34px; }
+
+/* 합계 */
+#sod_bsk_tot { padding: var(--s4) var(--s5); }
+#sod_bsk_tot ul { display: flex; flex-direction: column; gap: var(--s3); font-size: var(--t-md); font-variant-numeric: tabular-nums; }
+#sod_bsk_tot li { display: flex; align-items: baseline; justify-content: flex-end; gap: 2px; }
+#sod_bsk_tot li > span:first-child { margin-right: auto; }
+#sod_bsk_tot li span { color: var(--muted); }
+#sod_bsk_tot li strong { font-weight: 700; }
+#sod_bsk_tot .sod_bsk_cnt { padding-top: var(--s3); border-top: 1px solid var(--line); font-size: var(--t-lg); }
+#sod_bsk_tot .sod_bsk_cnt span { color: var(--fg); font-weight: 700; }
+#sod_bsk_tot .sod_bsk_cnt strong { font-size: var(--t-2xl); font-weight: 800; color: var(--accent); }
+
+/* 결제정보 */
+.pay_tbl { padding-bottom: var(--s2); }
+.pay_tbl .tbl_frm01 td { font-size: var(--t-sm); line-height: 1.6; }
+.pay_tbl .tbl_frm01 td strong, .pay_tbl .tbl_frm01 td b { font-size: var(--t-md); }
+#od_tot_price { padding: var(--s3) var(--s5); font-size: var(--t-md); font-variant-numeric: tabular-nums; }
+#od_tot_price strong { font-size: var(--t-xl); font-weight: 800; color: var(--accent); }
+#sod_frm_pt_alert { margin: 0 var(--s5) var(--s3); font-size: var(--t-sm); color: var(--muted); }
+
+/* 결제수단 — 라디오는 숨기고 라벨을 고르는 칩으로 */
+#sod_frm_paysel { display: flex; flex-wrap: wrap; gap: var(--s2); padding: 0 var(--s5) var(--s4); border: 0; margin: 0; }
+#sod_frm_paysel legend { position: absolute; left: -9999px; }
+#sod_frm_paysel input[type=radio] { position: absolute; opacity: 0; width: 0; height: 0; }
+#sod_frm_paysel label {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 104px; padding: var(--s3) var(--s4);
+    border: 1px solid var(--line); border-radius: var(--r-btn); background: var(--card);
+    font-size: var(--t-md); font-weight: 600; cursor: pointer;
+    transition: border-color .15s, color .15s, background .15s;
+}
+#sod_frm_paysel label:hover { border-color: var(--accent); color: var(--accent); }
+#sod_frm_paysel input[type=radio]:checked + label {
+    border-color: var(--accent); background: var(--accent-soft); color: var(--accent-deep); font-weight: 700;
+}
+#sod_frm_paysel input[type=radio]:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* 무통장 계좌 안내는 결제수단 칩과 같은 flex 줄에 들어가므로 한 줄을 통째로 쓰게 한다 */
+#settle_bank { flex: 1 0 100%; margin-top: var(--s2); font-size: var(--t-md); line-height: 1.7; }
+#settle_bank input[type=text] { max-width: 240px; margin-top: var(--s2); }
+
+/* 결제 버튼 */
+#display_pay_button { display: flex; gap: var(--s2); margin-top: var(--s2); }
+#display_pay_button .btn_submit, #display_pay_button .btn01 {
+    display: inline-flex; align-items: center; justify-content: center; flex: 1;
+    height: 52px; padding: 0 var(--s5); border-radius: var(--r-btn);
+    font: inherit; font-size: var(--t-lg); font-weight: 700; cursor: pointer;
+}
+#display_pay_button .btn_submit { flex: 2; background: var(--accent); border: 1px solid var(--accent); color: var(--accent-fg); box-shadow: var(--sh-btn); }
+#display_pay_button .btn_submit:hover { background: var(--accent-deep); border-color: var(--accent-deep); }
+#display_pay_button .btn01 { background: var(--card); border: 1px solid var(--line); color: var(--fg); }
+#display_pay_button .btn01:hover { border-color: var(--accent); color: var(--accent); }
+#display_pay_process { display: flex; align-items: center; justify-content: center; gap: var(--s2); padding: var(--s5); }
+
+@media (max-width: 900px) {
+    #sod_frm { grid-template-columns: 1fr; }
+    .sod_right { position: static; }
+}
+@media (max-width: 620px) {
+    #sod_frm section > h2 { padding: var(--s3) var(--s4); }
+    .tbl_frm01 th, .tbl_frm01 td { display: block; width: auto; padding: 0 var(--s4); border-top: 0; }
+    .tbl_frm01 th { padding-top: var(--s3); }
+    .tbl_frm01 td { padding-bottom: var(--s3); }
+    .tbl_frm01 tr + tr th { border-top: 1px solid var(--line); padding-top: var(--s3); margin-top: var(--s3); }
+    .tbl_frm01 .frm_input, .tbl_frm01 textarea { max-width: none; }
+    /* 좁은 화면 주문상품 — 상품명과 소계만. 수량은 옵션 줄에 이미 들어 있다 */
+    #sod_list th:nth-child(2), #sod_list td:nth-child(2),
+    #sod_list th:nth-child(3), #sod_list td:nth-child(3),
+    #sod_list th:nth-child(n+5), #sod_list td:nth-child(n+5) { display: none; }
+    #sod_list th, #sod_list td { padding: var(--s3); white-space: normal; }
+    #sod_list .sod_img img { width: 52px; height: 52px; }
+    #sod_list td:last-child { text-align: right; font-weight: 700; white-space: nowrap; }
+    #display_pay_button { flex-direction: column-reverse; }
+    #display_pay_button .btn_submit, #display_pay_button .btn01 { width: 100%; }
+}
