@@ -52,7 +52,17 @@ function blade_takeover()
 
     // 회원 영역: 스킨이 blade 이고 "변환된" 화면일 때만 (미변환 화면은 순정 head/tail 유지)
     if (!empty($config['cf_member_skin']) && $config['cf_member_skin'] === 'blade') {
-        $converted = array('/bbs/login.php');
+        $converted = array(
+            '/bbs/login.php',
+            '/bbs/register.php',
+            '/bbs/register_form.php',
+            '/bbs/register_result.php',
+            '/bbs/member_confirm.php',
+            '/bbs/memo.php',
+            '/bbs/memo_form.php',
+            '/bbs/memo_view.php',
+            '/bbs/point.php',
+        );
         $script = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '';
         foreach ($converted as $page) {
             if (substr($script, -strlen($page)) === $page) return true;
