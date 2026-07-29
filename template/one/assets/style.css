@@ -152,3 +152,7 @@ input[type=text], input[type=password], select, textarea {
 .gallery-info { padding: 10px 12px; }
 .gallery-subject { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .gallery-subject a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 0 1 auto; }
+
+/* 목록 관리자 */
+.bbs-admin-acts { margin: 10px 0; text-align: right; }
+.bbs-row-subject input[type=checkbox] { margin-right: 4px; }

@@ -15,11 +15,17 @@
 </nav>
 @endif
 
+@if ($is_checkbox)
+<form name="fboardlist" id="fboardlist" method="post" action="{{ $list_update_action }}"
+      onsubmit="return fboardlist_check(this);">
+<input type="hidden" name="bo_table" value="{{ $board['bo_table'] }}">
+@endif
 <ul class="bbs-list">
     @forelse ($items as $it)
     @php $cls = $it['is_notice'] ? 'bbs-row notice' : 'bbs-row'; @endphp
     <li class="{{ $cls }}">
         <div class="bbs-row-subject">
+            @if ($is_checkbox)<input type="checkbox" name="chk_wr_id[]" value="{{ $it['wr_id'] }}" aria-label="선택">@endif
             @if ($it['is_notice'])<span class="badge">공지</span>@endif
             <a href="{{ $it['href'] }}">{!! $it['subject'] !!}</a>
             @if ($it['comment_cnt'])<span class="cmt-cnt">{{ $it['comment_cnt'] }}</span>@endif
@@ -36,6 +42,20 @@
     <li class="bbs-empty">게시물이 없습니다.</li>
     @endforelse
 </ul>
+@if ($is_checkbox)
+<div class="bbs-admin-acts">
+    <button type="submit" name="btn_submit" value="선택삭제" class="btn"
+            onclick="return confirm('선택한 게시물을 정말 삭제하시겠습니까?\n\n한번 삭제한 자료는 복구할 수 없습니다.');">선택삭제</button>
+</div>
+</form>
+<script>
+function fboardlist_check(f) {
+    var n = f.querySelectorAll('input[name="chk_wr_id[]"]:checked').length;
+    if (!n) { alert("삭제할 게시물을 하나 이상 선택하세요."); return false; }
+    return true;
+}
+</script>
+@endif
 
 @include('partials.paging', ['page' => $page, 'total_page' => $total_page, 'page_href' => $page_href])
 

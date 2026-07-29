@@ -58,4 +58,6 @@ g5_view($g5_blade_list_view, array(
     'admin_href'  => $admin_href,
     'search'      => array('sfl' => $sfl, 'stx' => $stx),
     'board_url'   => short_url_clean(G5_BBS_URL.'/board.php?bo_table='.$bo_table),
+    'is_checkbox' => (bool)$is_checkbox,   // 관리자에게만 true (순정 판정)
+    'list_update_action' => G5_BBS_URL.'/board_list_update.php',
 ));
