@@ -66,7 +66,8 @@
 @endfor
 
 @if ($is_use_captcha)
-<div class="field">{!! $captcha_html !!}</div>
+{{-- 순정 captcha_html() 그대로 — id 들이 kcaptcha.js 와의 계약이라 손대지 않고 CSS 로만 다듬는다 --}}
+{!! $captcha_html !!}
 @endif
 
 <div class="bbs-toolbar">
@@ -75,12 +76,13 @@
 </div>
 </form>
 
-{!! $editor_js !!}
-{!! $captcha_js !!}
 <script>
+// $editor_js·$captcha_js 는 완성된 스크립트가 아니라 submit 검사 안에 들어가야 할 조각이다
+// (순정 write.skin.php 의 fwrite_submit 과 같은 자리). 밖에 두면 글자로 찍힌다.
 function fwrite_check(f) {
-    if (typeof g5_editor_check === "function" && !g5_editor_check()) return false;
     if (!f.wr_subject.value.trim()) { alert("제목을 입력하세요."); f.wr_subject.focus(); return false; }
+    {!! $editor_js !!}
+    {!! $captcha_js !!}
     return true;
 }
 </script>

@@ -15,18 +15,18 @@
             <label for="me_memo">내용</label>
             <textarea id="me_memo" name="me_memo" rows="8" required>{!! $content !!}</textarea>
         </div>
-        <div class="field">{!! $captcha_html !!}</div>
+        {!! $captcha_html !!}
         <div class="bbs-toolbar">
             <a class="btn" href="{{ $list_href }}">취소</a>
             <button type="submit" class="btn btn-primary">보내기</button>
         </div>
     </form>
 </div>
-{!! $captcha_js !!}
 <script>
 function fmemoform_check(f) {
     if (!f.me_recv_mb_id.value.trim()) { alert("받는 회원 아이디를 입력하세요."); return false; }
     if (!f.me_memo.value.trim()) { alert("내용을 입력하세요."); return false; }
+    {!! $captcha_js !!}
     return true;
 }
 </script>

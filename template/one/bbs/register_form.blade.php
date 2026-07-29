@@ -53,14 +53,13 @@
         <input type="text" id="reg_mb_homepage" name="mb_homepage" value="{!! $me['mb_homepage'] !!}">
     </div>
 
-    <div class="field">{!! $captcha_html !!}</div>
+    {!! $captcha_html !!}
 
     <button type="submit" class="btn btn-primary btn-block">{{ $w === 'u' ? '정보수정' : '회원가입' }}</button>
     </form>
 </div>
 
 <script src="{{ G5_JS_URL }}/jquery.register_form.js"></script>
-{!! $captcha_js !!}
 <script>
 function fregisterform_check(f) {
     if (f.mb_password.value !== f.mb_password_re.value) {
@@ -72,6 +71,7 @@ function fregisterform_check(f) {
     var msg = reg_mb_nick_check() || reg_mb_email_check();
     @endif
     if (msg) { alert(msg); return false; }
+    {!! $captcha_js !!}
     return true;
 }
 </script>

@@ -353,6 +353,10 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 /* ── 접힘 모드: 메뉴를 햄버거 패널로 ── */
 .nav-collapsed .nav-toggle { display: flex; }
 .nav-collapsed .header-util { margin-left: auto; }   /* 접히면 gnb 가 흐름에서 빠지므로 직접 민다 */
+/* 접힘 모드에선 한 줄 강제 — 폭이 모자라면 줄바꿈 대신 로고가 줄며 말줄임된다 */
+.nav-collapsed .wrap { flex-wrap: nowrap; }
+.nav-collapsed .logo { flex: 0 1 auto; min-width: 0; }
+.nav-collapsed .logo a { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* 좁은 화면에서는 헤더를 비우고 검색·회원가입을 햄버거 패널로 내린다 */
 .nav-collapsed .join-link,
 .nav-collapsed #search-open { display: none; }
@@ -383,6 +387,18 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 }
 .nav-collapsed .gnb-sub::before { content: none; }
 .nav-collapsed .gnb-sub a { padding: var(--s2) var(--s4); }
+
+/* 좁은 화면 — 헤더를 컴팩트하게 (로고·영역 전환·유틸·햄버거가 375px 한 줄에 들어가게) */
+@media (max-width: 560px) {
+    .site-header .wrap { gap: var(--s2); padding: 0 var(--s3); min-height: 56px; }
+    .logo { font-size: 16px; }
+    .area-switch { padding: 2px; }
+    .area-link { width: 32px; height: 32px; }
+    .area-link svg { width: 18px; height: 18px; }
+    .header-util { gap: var(--s1); }
+    .icon-btn, .nav-toggle { width: 34px; height: 34px; }
+    .profile-btn { width: 34px; height: 34px; }
+}
 
 /* ── 본문·푸터 ── */
 .site-main { padding: var(--s5) var(--s5) var(--s7); min-height: 60vh; }
@@ -609,7 +625,8 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .post { background: var(--card); border-radius: var(--r-xl); box-shadow: var(--sh-md); overflow: hidden; }
 .post-head { padding: var(--s5); border-bottom: 1px solid var(--line); }
 .post-head h3 { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; font-size: var(--t-xl); font-weight: 700; margin-bottom: var(--s2); }
-.post-meta { display: flex; gap: var(--s3); flex-wrap: wrap; font-size: var(--t-sm); color: var(--muted); font-variant-numeric: tabular-nums; }
+/* baseline — 글자 크기가 다른 항목(post-ip)과 아이콘이 붙은 이름이 한 줄에 맞게 */
+.post-meta { display: flex; align-items: baseline; gap: var(--s3); flex-wrap: wrap; font-size: var(--t-sm); color: var(--muted); font-variant-numeric: tabular-nums; }
 .post-content { padding: var(--s6) var(--s5); font-size: var(--t-lg); line-height: 1.8; overflow-wrap: break-word; }
 .post-files, .post-links { padding: var(--s3) var(--s5); border-top: 1px solid var(--line); font-size: var(--t-sm); }
 
@@ -620,7 +637,7 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
     background: var(--card); border-radius: var(--r-lg); padding: var(--s3) var(--s4);
     box-shadow: var(--sh-sm); margin-bottom: var(--s2);
 }
-.comment-meta { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; font-size: var(--t-sm); margin-bottom: var(--s1); }
+.comment-meta { display: flex; align-items: baseline; gap: var(--s2); flex-wrap: wrap; font-size: var(--t-sm); margin-bottom: var(--s1); }
 .comment-meta .name { font-weight: 700; }
 .comment-acts { display: inline-flex; gap: var(--s2); margin-left: auto; }
 .comment-body { font-size: var(--t-base); line-height: 1.7; overflow-wrap: break-word; }
@@ -630,6 +647,10 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 }
 .comment-form textarea { width: 100%; min-height: 84px; }
 .comment-form .btn { align-self: flex-end; }
+/* 답글·수정 때 댓글 바로 아래로 옮겨 붙은 상태 */
+.comment-form.inline { margin: 0 0 var(--s3); border: 1px solid var(--accent); }
+.comment-form-state { display: flex; align-items: center; gap: var(--s2); font-size: var(--t-sm); font-weight: 700; color: var(--accent); }
+.comment-form-state .c-cancel { margin-left: auto; }
 
 /* ═══════════ 폼 ═══════════ */
 .write-form, .member-box form {
@@ -698,6 +719,12 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .sv_wrap .sv_on { display: block; }
 .sv_wrap .sv img { display: none; }
 .sv_member, .sv_guest { color: inherit; }
+/* 회원 아이콘(순정 cf_use_member_icon) — 크기가 설정값 그대로면 글자 줄을 밀어낸다.
+   작은 원형으로 고정하고 글자 가운데에 맞춰 띄운다. */
+.profile_img img {
+    width: 18px; height: 18px; margin-right: 2px;
+    border-radius: 50%; object-fit: cover; vertical-align: -4px;
+}
 
 /* ═══════════ 레이어팝업 ═══════════ */
 .layer-popup {
@@ -1089,3 +1116,43 @@ a.chip.cate:hover { background: var(--teal); color: #fff; }
 /* 전체목록보이기 — 읽은 글 아래에 붙는 목록 */
 .list-below { margin-top: var(--s6); padding-top: var(--s5); border-top: 1px solid var(--line); }
 .list-below-title { font-size: var(--t-lg); margin-bottom: var(--s3); }
+
+/* ═══════════ 자동등록방지 (kcaptcha) ═══════════
+   마크업은 순정 captcha_html() 그대로 — id 가 kcaptcha.js 와의 계약이라 건드리지 않는다.
+   fieldset 을 flex 로 두면 legend 도 보통 항목처럼 배치된다. */
+#captcha {
+    display: flex; align-items: center; flex-wrap: wrap; gap: var(--s2) var(--s3);
+    margin: 0; padding: var(--s3) var(--s4);
+    border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--card);
+}
+#captcha legend, #captcha > legend {
+    float: left; width: 100%; padding: 0; margin-bottom: var(--s1);
+    font-size: var(--t-sm); font-weight: 700; color: var(--muted);
+}
+/* 순정 이미지는 160×60. 로드 전에는 dot.gif 라 자리를 미리 잡아 둔다 */
+#captcha_img {
+    display: block; flex: none; width: 160px; height: 60px; object-fit: cover;
+    border: 1px solid var(--line); border-radius: var(--r-md); background: #fff;
+}
+#captcha_key {
+    flex: none; width: 132px; height: 60px;
+    text-align: center; letter-spacing: .28em; text-indent: .28em;
+    font-size: var(--t-xl); font-weight: 700; font-variant-numeric: tabular-nums;
+}
+#captcha button {
+    display: inline-flex; align-items: center; gap: var(--s1); flex: none;
+    height: 34px; padding: 0 var(--s3);
+    border: 1px solid var(--line); border-radius: var(--r-btn);
+    background: var(--bg); color: var(--muted);
+    font: inherit; font-size: var(--t-sm); font-weight: 600; cursor: pointer;
+    transition: border-color .15s, color .15s;
+}
+#captcha button:hover { border-color: var(--accent); color: var(--accent); }
+#captcha button span { display: none; }     /* 순정 스프라이트 자리 — 우리는 글자만 쓴다 */
+#captcha_key { margin-right: auto; }
+#captcha_info { flex: 1 0 100%; font-size: var(--t-xs); color: var(--muted); }
+#captcha_audio { flex: 1 0 100%; height: 32px; }
+
+@media (max-width: 620px) {
+    #captcha_key { width: 100%; margin-right: 0; }
+}
