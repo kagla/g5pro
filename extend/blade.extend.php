@@ -95,25 +95,7 @@ function g5_view($view, $data = array())
 {
     g5_blade_buffer_drop();
     g5_blade_connect();
-    echo g5_blade_strip_php(g5_blade()->run($view, array_merge(g5_blade_common(), $data)));
-}
-
-// 링크에서 .php 를 감춘다 (.htaccess 가 확장자 없는 주소를 받아준다).
-// href·action 속성만 손대므로 JS 안의 ajax 주소(write_token.php 등)는 그대로 둔다.
-// POST 도 내부 rewrite 라 본문이 보존된다 — 리다이렉트가 아니다.
-function g5_blade_strip_php($html)
-{
-    return preg_replace_callback('/\b(href|action)=(["\'])([^"\']+)\2/i', function ($m) {
-        $url = $m[3];
-        if (strpos($url, '.php') === false) return $m[0];
-        // 외부 사이트는 건드리지 않는다
-        if (preg_match('#^[a-z]+://#i', $url) && strpos($url, G5_URL) !== 0) return $m[0];
-        // 관리자는 순정 그대로 둔다
-        if (strpos($url, '/'.G5_ADMIN_DIR.'/') !== false) return $m[0];
-
-        $new = preg_replace('/\.php(?=$|[?#])/', '', $url);
-        return $m[1].'='.$m[2].$new.$m[2];
-    }, $html);
+    echo g5_blade()->run($view, array_merge(g5_blade_common(), $data));
 }
 
 // 현재접속자 기록 — 순정은 tail.sub.php 의 html_end()(html_process::run)가 수행하지만
