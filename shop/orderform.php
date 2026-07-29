@@ -51,7 +51,9 @@ if ($default['de_hope_date_use']) {
 }
 
 // 기기별 주문폼 include
-if($is_mobile_order) {
+// g5blade: 템플릿이 한 벌의 반응형이라 기기별 주문서로 갈라지지 않는다.
+// (기기 판별값 $is_mobile_order 자체는 PG 쪽에서 쓰므로 그대로 둔다)
+if($is_mobile_order && !defined('G5_BLADE_PAGE')) {
     $order_action_url = G5_HTTPS_MSHOP_URL.'/orderformupdate.php';
     require_once(G5_MSHOP_PATH.'/orderform.sub.php');
 } else {
