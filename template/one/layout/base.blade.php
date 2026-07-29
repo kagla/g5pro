@@ -46,15 +46,19 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
                 @endif
             </div>
             @endforeach
-            @unless ($me)
-            {{-- 접힘 모드에서 헤더의 회원가입을 숨기는 대신 여기로 옮긴다 --}}
-            <div class="gnb-join">
+            {{-- 접힘 모드에서 헤더의 검색·회원가입을 대신 받는 자리 --}}
+            <div class="gnb-extra">
+                <button type="button" class="btn btn-block search-open">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+                    검색
+                </button>
+                @unless ($me)
                 <a class="btn btn-primary btn-block" href="{{ G5_BBS_URL }}/register.php">회원가입</a>
+                @endunless
             </div>
-            @endunless
         </nav>
         <div class="header-util">
-            <button type="button" class="icon-btn" id="search-open" aria-label="검색" title="검색">
+            <button type="button" class="icon-btn search-open" id="search-open" aria-label="검색" title="검색">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
             </button>
             <button type="button" class="icon-btn" id="theme-toggle" aria-label="테마 전환" title="테마 전환">
@@ -108,6 +112,10 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
     <div class="search-backdrop" data-close></div>
     <div class="search-panel">
         <h2 id="search-modal-title" class="sound_only">사이트 검색</h2>
+        {{-- 닫기는 폼 흐름에서 빼고 패널 우측 상단에 띄운다 --}}
+        <button type="button" class="icon-btn search-close" data-close aria-label="검색 닫기">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
         <form name="fsearchbox" method="get" action="{{ G5_BBS_URL }}/search.php" onsubmit="return hd_search_check(this);">
             <input type="hidden" name="sfl" value="wr_subject||wr_content">
             <input type="hidden" name="sop" value="and">
@@ -115,9 +123,6 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
             <label for="hd_stx" class="sound_only">검색어</label>
             <input type="text" id="hd_stx" name="stx" maxlength="20" placeholder="궁금한 내용을 검색해 보세요" autocomplete="off">
             <button type="submit" class="btn btn-primary">검색</button>
-            <button type="button" class="icon-btn" data-close aria-label="검색 닫기">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
-            </button>
         </form>
         <p class="search-hint">두 글자 이상 입력하세요 · <kbd>Esc</kbd> 로 닫기</p>
     </div>

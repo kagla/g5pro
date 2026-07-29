@@ -70,21 +70,31 @@
     });
 })();
 
-// 검색 모달
+// 검색 모달 — 트리거는 헤더 아이콘과 햄버거 패널 버튼 둘 다
 (function () {
-    var open = document.getElementById('search-open');
+    var triggers = document.querySelectorAll('.search-open');
     var modal = document.getElementById('search-modal');
-    if (!open || !modal) return;
+    if (!triggers.length || !modal) return;
     var input = modal.querySelector('input[name=stx]');
+    var opener = null;   // 닫을 때 포커스를 돌려줄 대상
 
     function setOpen(on) {
         modal.hidden = !on;
         document.body.style.overflow = on ? 'hidden' : '';
-        if (on && input) input.focus();
-        else open.focus();
+        if (on) { if (input) input.focus(); }
+        else if (opener) opener.focus();
     }
 
-    open.addEventListener('click', function () { setOpen(true); });
+    Array.prototype.forEach.call(triggers, function (btn) {
+        btn.addEventListener('click', function () {
+            opener = btn;
+            // 햄버거 패널에서 열었다면 패널은 닫는다
+            var gnb = document.getElementById('gnb');
+            var navBtn = document.querySelector('.nav-toggle');
+            if (gnb && gnb.contains(btn) && navBtn) navBtn.click();
+            setOpen(true);
+        });
+    });
     modal.addEventListener('click', function (e) {
         if (e.target.closest('[data-close]')) setOpen(false);
     });

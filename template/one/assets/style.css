@@ -310,10 +310,12 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .search-modal[hidden] { display: none; }
 .search-backdrop { position: absolute; inset: 0; background: rgba(14,25,40,.45); backdrop-filter: blur(2px); }
 .search-panel {
-    position: relative; max-width: 620px; margin: 12vh auto 0; padding: var(--s5);
+    position: relative; max-width: 620px; margin: 12vh auto 0;
+    padding: var(--s6) var(--s5) var(--s5);   /* 위쪽을 넉넉히 — 닫기 버튼 자리 */
     background: var(--card); border-radius: var(--r-2xl); box-shadow: var(--sh-lg);
     animation: search-in .16s ease;
 }
+.search-close { position: absolute; top: var(--s3); right: var(--s3); }
 @keyframes search-in { from { opacity: 0; transform: translateY(-10px); } }
 @media (prefers-reduced-motion: reduce) { .search-panel { animation: none; } }
 .search-panel form { display: flex; align-items: center; gap: var(--s2); }
@@ -335,12 +337,20 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 /* ── 접힘 모드: 메뉴를 햄버거 패널로 ── */
 .nav-collapsed .nav-toggle { display: flex; }
 .nav-collapsed .header-util { margin-left: auto; }   /* 접히면 gnb 가 흐름에서 빠지므로 직접 민다 */
-/* 좁은 화면에서는 헤더를 비우고 회원가입을 햄버거 패널로 내린다 */
-.nav-collapsed .join-link { display: none; }
-.gnb-join { display: none; }
-.nav-collapsed .gnb-join {
-    display: block; margin-top: var(--s2);
-    padding-top: var(--s3); border-top: 1px solid var(--line);
+/* 좁은 화면에서는 헤더를 비우고 검색·회원가입을 햄버거 패널로 내린다 */
+.nav-collapsed .join-link,
+.nav-collapsed #search-open { display: none; }
+.gnb-extra { display: none; }
+.nav-collapsed .gnb-extra {
+    display: flex; flex-direction: column; gap: var(--s2);
+    margin-top: var(--s2); padding-top: var(--s3); border-top: 1px solid var(--line);
+}
+.gnb-extra .search-open {
+    display: flex; align-items: center; justify-content: center; gap: var(--s2);
+}
+.gnb-extra .search-open svg {
+    width: 17px; height: 17px; fill: none;
+    stroke: currentColor; stroke-width: 1.8; stroke-linecap: round;
 }
 .nav-collapsed .gnb {
     display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 65;
