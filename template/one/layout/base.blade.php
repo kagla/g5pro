@@ -47,12 +47,16 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
         @endforeach
         <nav class="gnb" id="gnb">
             @foreach ($menu as $m)
-            <div class="gnb-item">
-                <a href="{{ $m['link'] }}" target="{{ $m['target'] ?: '_self' }}">{{ $m['name'] }}</a>
+            @php $cls = 'gnb-item'.($m['on'] ? ' on' : ($m['section'] ? ' section' : '')); @endphp
+            <div class="{{ $cls }}">
+                <a href="{{ $m['link'] }}" target="{{ $m['target'] ?: '_self' }}"
+                   @if ($m['on']) aria-current="page" @endif>{{ $m['name'] }}</a>
                 @if (count($m['sub']))
                 <div class="gnb-sub">
                     @foreach ($m['sub'] as $s)
-                    <a href="{{ $s['link'] }}" target="{{ $s['target'] ?: '_self' }}">{{ $s['name'] }}</a>
+                    @php $scls = $s['on'] ? 'on' : ''; @endphp
+                    <a href="{{ $s['link'] }}" target="{{ $s['target'] ?: '_self' }}" class="{{ $scls }}"
+                       @if ($s['on']) aria-current="page" @endif>{{ $s['name'] }}</a>
                     @endforeach
                 </div>
                 @endif

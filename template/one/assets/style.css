@@ -240,6 +240,7 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 }
 .gnb-item > a:hover { background: var(--bg); color: var(--fg); }
 .gnb-item.on > a { background: var(--accent-soft); color: var(--accent-deep); font-weight: 700; }
+.gnb-item.section > a { color: var(--accent); }   /* 하위가 현재 화면 — 문맥만 표시 */
 .gnb-sub {
     position: absolute; top: 100%; left: 0; min-width: 160px; z-index: 70;
     background: var(--card); border-radius: var(--r-lg); padding: var(--s2);
@@ -260,6 +261,7 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 }
 .gnb-sub a { display: block; padding: var(--s2) var(--s3); border-radius: var(--r-sm); font-size: var(--t-sm); color: var(--muted); }
 .gnb-sub a:hover { background: var(--bg); color: var(--fg); }
+.gnb-sub a.on { color: var(--accent); font-weight: 700; }
 
 .header-util { display: flex; align-items: center; gap: var(--s2); font-size: var(--t-sm); color: var(--muted); }
 .login-link { font-weight: 600; padding: var(--s2); white-space: nowrap; }

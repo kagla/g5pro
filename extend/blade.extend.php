@@ -146,7 +146,56 @@ function g5_blade_menu()
             }
         }
     }
+
+    // 현재 위치 표시 — 두 단계로 구분한다.
+    //   on      : 이 메뉴가 정확히 지금 화면 (진하게)
+    //   section : 하위 중 하나가 지금 화면 (은은하게 — 문맥 표시)
+    foreach ($menu as $code => $m) {
+        $section = false;
+        foreach ($m['sub'] as $i => $sub) {
+            $sub_on = g5_blade_menu_is_current($sub['link']);
+            $menu[$code]['sub'][$i]['on'] = $sub_on;
+            if ($sub_on) $section = true;
+        }
+        $menu[$code]['on'] = g5_blade_menu_is_current($m['link']);
+        $menu[$code]['section'] = $section && !$menu[$code]['on'];
+    }
+
     return array_values($menu);
+}
+
+// 메뉴 링크가 지금 보고 있는 화면인가.
+// 게시판은 글읽기·글쓰기까지 같은 메뉴로 보고(bo_table 일치), 그 밖에는 경로+주요 파라미터로 판정한다.
+function g5_blade_menu_is_current($link)
+{
+    if (!$link) return false;
+
+    $parts = parse_url(html_entity_decode($link, ENT_QUOTES, 'UTF-8'));
+    if (!isset($parts['path'])) return false;
+
+    // 다른 도메인 링크는 대상 아님
+    if (isset($parts['host'])) {
+        $here = parse_url(G5_URL);
+        if (isset($here['host']) && strcasecmp($parts['host'], $here['host']) !== 0) return false;
+    }
+
+    $q = array();
+    if (isset($parts['query'])) parse_str($parts['query'], $q);
+
+    // 게시판: bo_table 만 같으면 목록·읽기·쓰기 모두 해당 메뉴로 본다
+    if (!empty($q['bo_table'])) {
+        return isset($_REQUEST['bo_table']) && $_REQUEST['bo_table'] === $q['bo_table'];
+    }
+    // 내용·그룹 등 식별자 기반
+    foreach (array('co_id', 'gr_id', 'ca_id', 'it_id') as $key) {
+        if (!empty($q[$key])) {
+            return isset($_REQUEST[$key]) && $_REQUEST[$key] === $q[$key];
+        }
+    }
+
+    // 그 밖에는 경로 일치 (쿼리 없는 링크)
+    $script = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '';
+    return rtrim($parts['path'], '/') === rtrim($script, '/');
 }
 
 // 레이어팝업 (head 스킵으로 누락되는 newwin.inc.php 이식)

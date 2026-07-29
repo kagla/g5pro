@@ -511,8 +511,16 @@ function g5_map_scrap()
     ));
 }
 
-/* ═══════════════════════════════════════════════════════════
-   쇼핑몰
-   ═══════════════════════════════════════════════════════════ */
+// ── 게시판 그룹 (bbs/group.php) — $boards 는 호출부가 순정 쿼리(접근레벨 필터)로 수집해 전달
+function g5_map_group($boards)
+{
+    global $group, $gr_id;
 
-// item_list 에서 상품 배열만 뽑는다 (출력 없음) — extend/blade.shop_items.php 참고
+    g5_view('bbs.group', array(
+        'group' => array(
+            'gr_id'      => $gr_id,
+            'gr_subject' => get_text($group['gr_subject']),   // 이스케이프 완료 → {!! !!}
+        ),
+        'boards' => $boards,   // [['bo_table','bo_subject'], ...] — 최신글은 뷰가 partials.latest 로 조회
+    ));
+}
