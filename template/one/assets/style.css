@@ -1675,21 +1675,29 @@ input[type=checkbox], input[type=radio] {
 }
 .odv #sod_fin_tot li strong { color: var(--fg); font-weight: 700; }
 
-/* 주문 취소 — 여는 버튼과 그 안의 폼 */
-.odv #sod_fin_cancel > button {
-    display: block; width: calc(100% - var(--s5) * 2); margin: var(--s4) var(--s5);
-    height: 44px; border-radius: var(--r-btn);
-    background: var(--card); border: 1px solid var(--danger); color: var(--danger);
-    font: inherit; font-size: var(--t-md); font-weight: 700; cursor: pointer;
+/* 주문 취소 — 오른쪽 아래 텍스트 링크 + 모달 (순정 카드는 JS 가 걷어낸다) */
+.odv-cancel-open { font-size: var(--t-sm); color: var(--muted); padding: var(--s2) var(--s3); }
+.odv-cancel-open:hover { color: var(--danger); }
+
+.odv-modal { position: fixed; inset: 0; z-index: 200; }
+.odv-modal[hidden] { display: none; }
+.odv-backdrop { position: absolute; inset: 0; background: rgba(14,25,40,.45); backdrop-filter: blur(2px); }
+.odv-panel {
+    position: relative; max-width: 420px; margin: 14vh auto 0; padding: var(--s5);
+    background: var(--card); border-radius: var(--r-xl); box-shadow: var(--sh-lg);
 }
-.odv #sod_fin_cancel > button:hover { background: var(--danger); color: #fff; }
-.odv #sod_fin_cancelfrm { padding: 0 var(--s5) var(--s4); }
-.odv #sod_fin_cancelfrm form { display: flex; flex-direction: column; gap: var(--s2); }
-.odv #sod_fin_cancelfrm input[type=text] { width: 100%; height: 40px; }
-.odv #sod_fin_cancelfrm input[type=submit] {
-    height: 44px; border-radius: var(--r-btn);
+.odv-panel h2 { font-size: var(--t-xl); margin-bottom: var(--s2); }
+.odv-panel-lead { margin: 0 0 var(--s4); font-size: var(--t-sm); color: var(--muted); }
+.odv-panel form { display: flex; flex-direction: column; gap: var(--s3); }
+.odv-panel input[type=text] { width: 100%; height: 44px; }
+.odv-panel input[type=submit] {
+    height: 46px; border-radius: var(--r-btn);
     background: var(--danger); border: 1px solid var(--danger); color: #fff;
     font: inherit; font-size: var(--t-md); font-weight: 700; cursor: pointer;
+}
+.odv-cancel-close { display: block; width: 100%; margin-top: var(--s2); }
+@media (max-width: 620px) {
+    .odv-panel { margin: 8vh var(--s4) 0; padding: var(--s4); }
 }
 
 .odv .btn_frmline {
