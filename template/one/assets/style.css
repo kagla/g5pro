@@ -329,10 +329,6 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 }
 .search-panel input[type=text]:focus { background: none; outline: none; }
 .search-hint { margin: var(--s3) 0 0; font-size: var(--t-sm); color: var(--muted); }
-.search-hint kbd {
-    font: inherit; font-size: var(--t-xs); padding: 1px var(--s1);
-    border: 1px solid var(--line); border-radius: var(--r-sm);
-}
 
 /* ── 접힘 모드: 메뉴를 햄버거 패널로 ── */
 .nav-collapsed .nav-toggle { display: flex; }
@@ -654,7 +650,6 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
     .login-link { padding: var(--s1) var(--s2); }
     .search-panel { margin-top: 6vh; padding: var(--s3) var(--s4) var(--s4); border-radius: var(--r-xl); }
     .search-close { width: 40px; height: 40px; }   /* 터치 영역 확보 */
-    .search-hint .esc-hint { display: none; }      /* 모바일엔 Esc 가 없다 */
     .profile-menu { min-width: 190px; }
     .site-main { padding: var(--s4) var(--s4) var(--s6); }
     .hero { padding: var(--s5) var(--s4); border-radius: var(--r-xl); }
