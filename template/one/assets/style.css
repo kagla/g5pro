@@ -209,6 +209,9 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
     font-size: var(--t-sm); font-weight: 700; white-space: nowrap;
 }
 .area-link:hover { background: var(--accent); color: var(--accent-fg); }
+/* 좁은 화면에서는 글자를 빼고 아이콘만 — 헤더가 두 줄로 넘어가지 않게 */
+.nav-collapsed .area-link { width: 36px; height: 36px; padding: 0; justify-content: center; }
+.nav-collapsed .area-label { position: absolute; left: -9999px; }
 .area-link svg {
     width: 15px; height: 15px; fill: none;
     stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round;

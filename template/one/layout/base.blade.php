@@ -36,13 +36,13 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
         {{-- 쇼핑몰이 설치된 경우에만 커뮤니티/쇼핑몰 전환을 보여준다.
              메뉴(.gnb) 밖에 두어 햄버거로 접히지 않고 항상 상단에 남는다 --}}
         @foreach ($areas as $a)
-        <a class="area-link" href="{{ $a['href'] }}">
+        <a class="area-link" href="{{ $a['href'] }}" title="{{ $a['name'] }}" aria-label="{{ $a['name'] }}">
             @if ($a['icon'] === 'bag')
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
             @else
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6.5 9.5V20h11V9.5"/></svg>
             @endif
-            {{ $a['name'] }}
+            <span class="area-label">{{ $a['name'] }}</span>
         </a>
         @endforeach
         <nav class="gnb" id="gnb">
