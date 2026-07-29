@@ -1339,13 +1339,15 @@ a.chip.cate:hover { background: var(--teal); color: #fff; }
 
 /* 이전/다음 상품 */
 #sit_siblings { display: flex; gap: var(--s2); margin-top: var(--s4); }
-#sit_siblings a {
+#sit_siblings a, #sit_siblings .sit-sibling-off {
     display: inline-flex; align-items: center; gap: var(--s1);
     padding: var(--s2) var(--s4); border-radius: var(--r-btn);
     background: var(--card); box-shadow: var(--sh-sm);
     font-size: var(--t-sm); font-weight: 600; color: var(--muted);
 }
 #sit_siblings a:hover { color: var(--accent); }
+/* 해당 상품이 없는 쪽 — 자리는 지키되 누를 수 없음을 보이게 */
+#sit_siblings .sit-sibling-off { opacity: .45; cursor: default; box-shadow: none; background: none; border: 1px dashed var(--line); }
 #siblings_prev::before { content: "←"; }
 #siblings_next::after { content: "→"; }
 

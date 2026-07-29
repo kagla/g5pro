@@ -80,6 +80,24 @@
 @endif
 
 <script>
+// 이전/다음 상품 — 순정은 해당 상품이 없으면 그 링크를 아예 그리지 않는다.
+// 자리가 들쭉날쭉해지므로 없는 쪽은 비활성 버튼으로 채우고 순서(이전 → 다음)를 맞춘다.
+(function () {
+    var wrap = document.getElementById('sit_siblings');
+    if (!wrap) return;
+    [['siblings_prev', '이전상품'], ['siblings_next', '다음 상품']].forEach(function (pair) {
+        var el = document.getElementById(pair[0]);
+        if (!el) {
+            el = document.createElement('span');
+            el.id = pair[0];
+            el.className = 'sit-sibling-off';
+            el.setAttribute('aria-disabled', 'true');
+            el.textContent = pair[1];
+        }
+        wrap.appendChild(el);   // 이미 있던 것도 다시 붙여 순서를 정리한다
+    });
+})();
+
 // 위시리스트 담기 — 순정 item_wish() 는 확인 없이 바로 폼을 보낸다.
 // 마크업(javascript: href)은 그대로 두고 클릭을 가로채 한 번 묻는다.
 document.querySelectorAll('.sit_btn_wish').forEach(function (a) {
