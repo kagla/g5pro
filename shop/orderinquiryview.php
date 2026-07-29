@@ -480,11 +480,7 @@ if($od['od_pg'] == 'lg') {
                     <td><?php echo get_text($od['od_name']); ?></td>
                 </tr>
                 <tr>
-                    <th scope="row">전화번호</th>
-                    <td><?php echo get_text($od['od_tel']); ?></td>
-                </tr>
-                <tr>
-                    <th scope="row">핸드폰</th>
+                    <th scope="row">연락처</th>
                     <td><?php echo get_text($od['od_hp']); ?></td>
                 </tr>
                 <tr>
@@ -512,11 +508,7 @@ if($od['od_pg'] == 'lg') {
                     <td><?php echo get_text($od['od_b_name']); ?></td>
                 </tr>
                 <tr>
-                    <th scope="row">전화번호</th>
-                    <td><?php echo get_text($od['od_b_tel']); ?></td>
-                </tr>
-                <tr>
-                    <th scope="row">핸드폰</th>
+                    <th scope="row">연락처</th>
                     <td><?php echo get_text($od['od_b_hp']); ?></td>
                 </tr>
                 <tr>
