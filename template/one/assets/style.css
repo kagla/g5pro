@@ -538,20 +538,20 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .list-table-wrap { overflow-x: auto; }
 .list-table { width: 100%; border-collapse: collapse; }
 .list-table th {
-    font-size: var(--t-xs); font-weight: 700; color: var(--muted); letter-spacing: .03em;
+    font-size: var(--t-sm); font-weight: 700; color: var(--muted); letter-spacing: .03em;
     padding: var(--s3) var(--s4); text-align: center; white-space: nowrap;
     border-bottom: 1px solid var(--line);
 }
 .list-table th.col-subject { text-align: left; }
 .list-table td {
     padding: var(--s3) var(--s4); text-align: center; white-space: nowrap;
-    font-size: var(--t-sm); color: var(--muted); font-variant-numeric: tabular-nums;
+    font-size: var(--t-md); color: var(--muted); font-variant-numeric: tabular-nums;
     border-top: 1px solid var(--line);
 }
 .list-table tbody tr:first-child td { border-top: 0; }
 .list-table tr:hover td { background: var(--row-hover); }
 .list-table td.col-subject {
-    text-align: left; color: var(--fg); font-size: var(--t-base); font-weight: 500;
+    text-align: left; color: var(--fg); font-size: var(--t-md); font-weight: 500;
     width: 100%; max-width: 1px; overflow: hidden; text-overflow: ellipsis;
 }
 .list-table .col-no { width: 60px; }
@@ -859,7 +859,7 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .cart-name { font-weight: 600; }
 .cart-opt { font-size: var(--t-xs); color: var(--muted); margin-top: var(--s1); }
 .cart-opt table { font-size: var(--t-xs); }
-.cart-sum strong { font-size: var(--t-md); }
+.cart-sum strong { font-size: var(--t-lg); color: var(--fg); }
 
 .cart-total {
     margin-top: var(--s4); padding: var(--s4) var(--s5);
@@ -1401,21 +1401,21 @@ a.chip.cate:hover { background: var(--teal); color: #fff; }
    기본 13px 은 손가락으로 맞추기 어렵다. 크기를 키우고, 목록에서는 셀 전체가
    눌리도록 여백까지 클릭 영역으로 쓴다. */
 input[type=checkbox], input[type=radio] {
-    width: 18px; height: 18px; margin: 0;
+    width: 16px; height: 16px; margin: 0;
     accent-color: var(--accent); cursor: pointer; flex: none;
 }
 /* 목록·장바구니의 선택 칸 — 셀 어디를 눌러도 체크되게 넓힌다 */
 .list-table .col-chk { padding: 0; }
 /* 라벨이 셀을 가득 채워서 칸 어디를 눌러도 체크된다 */
-.chk-cell { display: flex; align-items: center; justify-content: center; padding: var(--s3); cursor: pointer; }
-.list-table .col-chk input { width: 20px; height: 20px; }
+.chk-cell { display: flex; align-items: center; justify-content: center; padding: 14px; cursor: pointer; }
+.list-table .col-chk input { width: 16px; height: 16px; }
 .list-cards .s input[type=checkbox],
 .cart-cards-head input[type=checkbox],
-.move-list input[type=checkbox] { width: 22px; height: 22px; }
+.move-list input[type=checkbox] { width: 18px; height: 18px; }
 .list-cards .s input[type=checkbox] { margin-right: var(--s1); }
 /* 라벨을 함께 눌러도 되게 */
 .chk-all-label, .cart-cards-head label, .move-list label { padding: var(--s1) 0; }
 
 @media (max-width: 620px) {
-    input[type=checkbox], input[type=radio] { width: 22px; height: 22px; }
+    input[type=checkbox], input[type=radio] { width: 18px; height: 18px; }
 }
