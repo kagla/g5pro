@@ -900,7 +900,7 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 }
 
 /* ═══════════ 내용 페이지 (bbs/content.php — 회사소개·약관 등) ═══════════ */
-.ctt { max-width: 860px; margin: 0 auto; }
+/* 폭은 헤더·게시판과 같은 컨테이너(.wrap 1080)를 그대로 쓴다 */
 .ctt-hero { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); }
 .ctt-hero h2 { margin-bottom: 0; }
 .ctt-admin {
