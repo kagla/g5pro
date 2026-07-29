@@ -1676,8 +1676,12 @@ input[type=checkbox], input[type=radio] {
 .odv #sod_fin_tot li strong { color: var(--fg); font-weight: 700; }
 
 /* 주문 취소 — 오른쪽 아래 텍스트 링크 + 모달 (순정 카드는 JS 가 걷어낸다) */
-.odv-cancel-open { font-size: var(--t-sm); color: var(--muted); padding: var(--s2) var(--s3); }
-.odv-cancel-open:hover { color: var(--danger); }
+/* 결제합계 카드 오른쪽 아래 */
+.odv #sod_fin_tot .odv-cancel-open {
+    display: block; width: fit-content; margin: 0 var(--s5) var(--s4) auto; padding: var(--s1) 0;
+    font-size: var(--t-sm); color: var(--muted); text-decoration: underline; text-underline-offset: 3px;
+}
+.odv #sod_fin_tot .odv-cancel-open:hover { color: var(--danger); }
 
 .odv-modal { position: fixed; inset: 0; z-index: 200; }
 .odv-modal[hidden] { display: none; }
@@ -1813,3 +1817,14 @@ input[type=checkbox], input[type=radio] {
 .btn-primary, #sit_ov_btn .sit_btn_buy, #display_pay_button .btn_submit,
 #sod_frm_paysel input[type=radio]:checked + label { border-color: var(--accent); }
 .odv #sod_fin_cancel > button { border-color: var(--danger); }
+
+/* 주문서 "회원정보에 저장" — 주문하시는 분 섹션 머리, 이름 칸 위 */
+.order-form .od_save_mb {
+    display: flex; align-items: center; gap: var(--s2);
+    margin: 0 0 var(--s3); padding: var(--s2) var(--s3);
+    background: var(--row-hover); border: 1px solid var(--line); border-radius: var(--r-md);
+    font-size: var(--t-sm); font-weight: 600; color: var(--fg); cursor: pointer;
+    width: fit-content; max-width: 100%;
+}
+.order-form .od_save_mb:hover { border-color: var(--accent); color: var(--accent); }
+.order-form .od_save_mb input { flex: none; margin: 0; accent-color: var(--accent); }
