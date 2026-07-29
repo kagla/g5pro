@@ -70,6 +70,54 @@
     });
 })();
 
+// 검색 모달
+(function () {
+    var open = document.getElementById('search-open');
+    var modal = document.getElementById('search-modal');
+    if (!open || !modal) return;
+    var input = modal.querySelector('input[name=stx]');
+
+    function setOpen(on) {
+        modal.hidden = !on;
+        document.body.style.overflow = on ? 'hidden' : '';
+        if (on && input) input.focus();
+        else open.focus();
+    }
+
+    open.addEventListener('click', function () { setOpen(true); });
+    modal.addEventListener('click', function (e) {
+        if (e.target.closest('[data-close]')) setOpen(false);
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && !modal.hidden) setOpen(false);
+    });
+})();
+
+// 프로필 드롭다운
+(function () {
+    var wrap = document.getElementById('profile');
+    if (!wrap) return;
+    var btn = wrap.querySelector('.profile-btn');
+    var menu = document.getElementById('profile-menu');
+    if (!btn || !menu) return;
+
+    function setOpen(on) {
+        menu.classList.toggle('open', on);
+        btn.setAttribute('aria-expanded', String(on));
+    }
+
+    btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        setOpen(btn.getAttribute('aria-expanded') !== 'true');
+    });
+    document.addEventListener('click', function (e) {
+        if (btn.getAttribute('aria-expanded') === 'true' && !wrap.contains(e.target)) setOpen(false);
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && btn.getAttribute('aria-expanded') === 'true') { setOpen(false); btn.focus(); }
+    });
+})();
+
 // 라이트/다크 토글 + 레이어팝업 닫기
 (function () {
     var btn = document.getElementById('theme-toggle');

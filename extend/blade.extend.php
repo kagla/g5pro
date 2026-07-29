@@ -61,7 +61,9 @@ function g5_blade_common()
             'mb_nick'  => $member['mb_nick'],
             'mb_name'  => $member['mb_name'],
             'mb_level' => $member['mb_level'],
-            'mb_point' => $member['mb_point'],
+            'mb_point' => (int)$member['mb_point'],
+            'memo_cnt' => (int)(isset($member['mb_memo_cnt']) ? $member['mb_memo_cnt'] : 0),  // 안 읽은 쪽지
+            'photo'    => g5_blade_profile_src($member['mb_id']),
         ) : null,
         'menu'   => g5_blade_menu(),
         'title'  => (isset($g5['title']) && $g5['title']) ? $g5['title'] : (isset($config['cf_title']) ? $config['cf_title'] : ''),
@@ -195,4 +197,12 @@ function g5_blade_stats()
         'posts'   => (int)(isset($wr['cnt']) ? $wr['cnt'] : 0),
     );
     return $s;
+}
+
+// 회원 프로필 이미지 URL — 순정 get_member_profile_img() 는 <img> 태그를 돌려주므로 src 만 뽑는다
+function g5_blade_profile_src($mb_id)
+{
+    if (!function_exists('get_member_profile_img')) return '';
+    $html = get_member_profile_img($mb_id);
+    return preg_match('/src="([^"]*)"/i', $html, $m) ? $m[1] : '';
 }
