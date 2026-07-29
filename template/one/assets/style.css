@@ -1680,10 +1680,10 @@ input[type=checkbox], input[type=radio] {
 .odv .odv-cancel-open {
     align-self: flex-end; width: fit-content;
     display: inline-flex; align-items: center; justify-content: center;
-    height: 42px; padding: 0 var(--s5); margin-top: calc(-1 * var(--s3));
+    height: 32px; padding: 0 var(--s3); margin-top: calc(-1 * var(--s3));
     border: 1px solid var(--btn-line); border-radius: var(--r-btn);
-    background: var(--card); color: var(--fg);
-    font-size: var(--t-md); font-weight: 700; text-decoration: none;
+    background: var(--card); color: var(--muted);
+    font-size: var(--t-sm); font-weight: 600; text-decoration: none;
     transition: border-color .15s, color .15s, background .15s;
 }
 .odv .odv-cancel-open:hover { border-color: var(--danger); background: var(--danger); color: #fff; }
