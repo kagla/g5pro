@@ -229,11 +229,23 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .gnb-item > a:hover { background: var(--bg); color: var(--fg); }
 .gnb-item.on > a { background: var(--accent-soft); color: var(--accent-deep); font-weight: 700; }
 .gnb-sub {
-    display: none; position: absolute; top: 100%; left: 0; min-width: 160px; z-index: 70;
+    position: absolute; top: 100%; left: 0; min-width: 160px; z-index: 70;
     background: var(--card); border-radius: var(--r-lg); padding: var(--s2);
     box-shadow: var(--sh-md); margin-top: var(--s1);
+    /* display 대신 visibility 로 숨긴다 — 사라질 때 유예(0.16s)를 줘서
+       메뉴와 드롭다운 사이를 오갈 때 깜빡 닫히지 않는다 */
+    visibility: hidden; opacity: 0; transform: translateY(-4px);
+    transition: opacity .14s ease, transform .14s ease, visibility 0s .16s;
 }
-.gnb-item:hover .gnb-sub, .gnb-item:focus-within .gnb-sub { display: block; }
+/* 메뉴와 드롭다운 사이 간격을 덮는 투명 다리 — 마우스가 지나가도 hover 가 끊기지 않는다 */
+.gnb-sub::before {
+    content: ""; position: absolute; left: 0; right: 0;
+    top: calc(var(--s1) * -1); height: var(--s1);
+}
+.gnb-item:hover .gnb-sub, .gnb-item:focus-within .gnb-sub {
+    visibility: visible; opacity: 1; transform: none;
+    transition: opacity .14s ease, transform .14s ease, visibility 0s;
+}
 .gnb-sub a { display: block; padding: var(--s2) var(--s3); border-radius: var(--r-sm); font-size: var(--t-sm); color: var(--muted); }
 .gnb-sub a:hover { background: var(--bg); color: var(--fg); }
 
@@ -282,9 +294,11 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .nav-collapsed .gnb.open { display: flex; }
 .nav-collapsed .gnb-item > a { padding: var(--s3) var(--s4); border-radius: var(--r-md); font-size: var(--t-md); }
 .nav-collapsed .gnb-sub {
-    display: block; position: static; margin: 0 0 var(--s1) var(--s4);
+    position: static; margin: 0 0 var(--s1) var(--s4);
     padding: 0; box-shadow: none; background: none; min-width: 0;
+    visibility: visible; opacity: 1; transform: none; transition: none;
 }
+.nav-collapsed .gnb-sub::before { content: none; }
 .nav-collapsed .gnb-sub a { padding: var(--s2) var(--s4); }
 .nav-collapsed .gnb-util {
     display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3);
