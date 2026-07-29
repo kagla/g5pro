@@ -66,6 +66,7 @@ function g5_blade_common()
             'photo'    => g5_blade_profile_src($member['mb_id']),
         ) : null,
         'menu'   => g5_blade_menu(),
+        'areas'  => g5_blade_areas(),
         'title'  => (isset($g5['title']) && $g5['title']) ? $g5['title'] : (isset($config['cf_title']) ? $config['cf_title'] : ''),
         'popups' => g5_blade_popups(),
         'template' => array(
@@ -221,4 +222,18 @@ function g5_blade_profile_src($mb_id)
     if (!function_exists('get_member_profile_img')) return '';
     $html = get_member_profile_img($mb_id);
     return preg_match('/src="([^"]*)"/i', $html, $m) ? $m[1] : '';
+}
+
+// 커뮤니티 ↔ 쇼핑몰 이동 링크 — 쇼핑몰이 설치된 경우에만.
+// 현재 위치는 빼고 "갈 곳" 하나만 돌려준다 (헤더 폭을 아끼고, 할 일이 분명해진다).
+function g5_blade_areas()
+{
+    if (!defined('G5_USE_SHOP') || !G5_USE_SHOP) return array();
+
+    $script  = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '';
+    $in_shop = (strpos($script, '/'.G5_SHOP_DIR.'/') !== false);
+
+    return $in_shop
+        ? array(array('name' => '커뮤니티', 'href' => G5_URL.'/',      'icon' => 'home'))
+        : array(array('name' => '쇼핑몰',   'href' => G5_SHOP_URL.'/', 'icon' => 'bag'));
 }
