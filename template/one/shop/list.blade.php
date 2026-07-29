@@ -23,7 +23,5 @@
 
 @include('partials.shop_items', ['items' => $items])
 
-<div class="paging-wrap">
-    @include('partials.paging', ['page' => $page, 'total_page' => $total_page, 'page_href' => $page_href])
-</div>
+@include('partials.paging', ['page' => $page, 'total_page' => $total_page, 'page_href' => $page_href])
 @endsection
