@@ -555,7 +555,7 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
     width: 100%; max-width: 1px; overflow: hidden; text-overflow: ellipsis;
 }
 .list-table .col-no { width: 60px; }
-.list-table .col-chk { width: 38px; }
+.list-table .col-chk { width: 44px; }   /* 손가락 터치 권장치(44px)에 맞춘 선택 칸 */
 
 /* 모바일 카드 (표 변형 전용) */
 .list-cards { display: none; }
@@ -1396,3 +1396,26 @@ a.chip.cate:hover { background: var(--teal); color: #fff; }
 .cart-cards-head label { display: inline-flex; align-items: center; gap: var(--s2); font-size: var(--t-sm); font-weight: 600; color: var(--muted); cursor: pointer; }
 .cart-cards-head .chk-count { margin-left: auto; }
 @media (max-width: 620px) { .cart-cards-head { display: flex; } }
+
+/* ── 체크박스·라디오 ──
+   기본 13px 은 손가락으로 맞추기 어렵다. 크기를 키우고, 목록에서는 셀 전체가
+   눌리도록 여백까지 클릭 영역으로 쓴다. */
+input[type=checkbox], input[type=radio] {
+    width: 18px; height: 18px; margin: 0;
+    accent-color: var(--accent); cursor: pointer; flex: none;
+}
+/* 목록·장바구니의 선택 칸 — 셀 어디를 눌러도 체크되게 넓힌다 */
+.list-table .col-chk { padding: 0; }
+/* 라벨이 셀을 가득 채워서 칸 어디를 눌러도 체크된다 */
+.chk-cell { display: flex; align-items: center; justify-content: center; padding: var(--s3); cursor: pointer; }
+.list-table .col-chk input { width: 20px; height: 20px; }
+.list-cards .s input[type=checkbox],
+.cart-cards-head input[type=checkbox],
+.move-list input[type=checkbox] { width: 22px; height: 22px; }
+.list-cards .s input[type=checkbox] { margin-right: var(--s1); }
+/* 라벨을 함께 눌러도 되게 */
+.chk-all-label, .cart-cards-head label, .move-list label { padding: var(--s1) 0; }
+
+@media (max-width: 620px) {
+    input[type=checkbox], input[type=radio] { width: 22px; height: 22px; }
+}

@@ -20,7 +20,7 @@
         <table class="list-table cart-table">
             <thead>
                 <tr>
-                    <th class="col-chk"><input type="checkbox" class="ct-all" aria-label="상품 전체 선택"></th>
+                    <th class="col-chk"><label class="chk-cell"><input type="checkbox" class="ct-all" aria-label="상품 전체 선택"></label></th>
                     <th class="col-subject">상품</th>
                     <th>수량</th>
                     <th>판매가</th>
@@ -33,8 +33,10 @@
                 @foreach ($items as $it)
                 <tr>
                     <td class="col-chk">
-                        <input type="checkbox" name="ct_chk[{{ $it['idx'] }}]" value="1" id="ct_chk_{{ $it['idx'] }}" checked>
-                        <label for="ct_chk_{{ $it['idx'] }}" class="sound_only">{{ $it['name'] }} 선택</label>
+                        <label class="chk-cell" for="ct_chk_{{ $it['idx'] }}">
+                            <input type="checkbox" name="ct_chk[{{ $it['idx'] }}]" value="1" id="ct_chk_{{ $it['idx'] }}" checked>
+                            <span class="sound_only">{{ $it['name'] }} 선택</span>
+                        </label>
                     </td>
                     <td class="col-subject">
                         <input type="hidden" name="it_id[{{ $it['idx'] }}]" value="{{ $it['it_id'] }}">

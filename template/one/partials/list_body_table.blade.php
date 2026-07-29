@@ -47,7 +47,7 @@
         <caption class="sound_only">{{ $board['bo_subject'] }} 목록</caption>
         <thead>
             <tr>
-                @if ($is_checkbox)<th class="col-chk"><input type="checkbox" class="chk-all" aria-label="전체 선택"></th>@endif
+                @if ($is_checkbox)<th class="col-chk"><label class="chk-cell"><input type="checkbox" class="chk-all" aria-label="전체 선택"></label></th>@endif
                 <th class="col-no">번호</th>
                 <th class="col-subject">제목</th>
                 <th>글쓴이</th>
@@ -61,7 +61,7 @@
             @forelse ($items as $it)
             @php $cls = trim(($it['is_notice'] ? 'notice ' : '').($it['is_current'] ? 'current' : '')); @endphp
             <tr class="{{ $cls }}">
-                @if ($is_checkbox)<td class="col-chk"><input type="checkbox" name="chk_wr_id[]" value="{{ $it['wr_id'] }}" aria-label="선택"></td>@endif
+                @if ($is_checkbox)<td class="col-chk"><label class="chk-cell"><input type="checkbox" name="chk_wr_id[]" value="{{ $it['wr_id'] }}" aria-label="선택"></label></td>@endif
                 <td class="col-no">
                     @if ($it['is_notice'])공지
                     @elseif ($it['is_current'])<span class="chip c2">열람중</span>
