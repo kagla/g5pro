@@ -1888,3 +1888,13 @@ input[type=checkbox], input[type=radio] {
 }
 .odv-cancelled-tot span { color: var(--muted); }
 .odv-cancelled-tot strong { font-size: var(--t-lg); font-weight: 800; color: var(--danger); font-variant-numeric: tabular-nums; }
+
+/* 취소 사유 */
+.odv-cancelled .odv-why { border-bottom: 1px solid var(--line); background: var(--bg); }
+.odv-cancelled .odv-why li { padding: var(--s3) var(--s5); border-top: 1px solid var(--line); }
+.odv-cancelled .odv-why li:first-child { border-top: 0; }
+.odv-cancelled .odv-why .r { margin: 0; font-size: var(--t-md); font-weight: 600; overflow-wrap: break-word; }
+.odv-cancelled .odv-why .m {
+    display: flex; align-items: center; gap: var(--s2);
+    margin: var(--s2) 0 0; font-size: var(--t-xs); color: var(--muted); font-variant-numeric: tabular-nums;
+}
