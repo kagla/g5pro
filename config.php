@@ -144,8 +144,7 @@ define('G5_PHPMAILER_PATH', G5_PLUGIN_PATH.'/'.G5_PHPMAILER_DIR);
 define('G5_SET_DEVICE', 'both');
 
 define('G5_USE_MOBILE', false); // 모바일 홈페이지를 사용하지 않을 경우 false 로 설정
-define('G5_TEMPLATE',    'one'); // g5blade 활성 템플릿
-define('G5_BLADE_DEBUG', true);  // BladeOne 항상 재컴파일 (운영 전환 시 false)
+define('G5_BLADE_DEBUG', true);  // BladeOne 항상 재컴파일 (운영 전환 시 false) — 템플릿 선택은 g5_config.cf_template
 define('G5_USE_CACHE',  true); // 최신글등에 cache 기능 사용 여부
 
 
