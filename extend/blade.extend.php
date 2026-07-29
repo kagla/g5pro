@@ -117,6 +117,8 @@ function g5_blade_connect()
 
     $tmp_row = sql_fetch(" select count(*) as cnt from {$g5['login_table']} where lo_ip = '{$_SERVER['REMOTE_ADDR']}' ");
     $mb_id = isset($member['mb_id']) ? $member['mb_id'] : '';
+    if (!isset($g5['lo_location'])) $g5['lo_location'] = '';
+    if (!isset($g5['lo_url']))      $g5['lo_url'] = '';
 
     if (!empty($tmp_row['cnt'])) {
         sql_query(" update {$g5['login_table']} set mb_id = '{$mb_id}', lo_datetime = '".G5_TIME_YMDHIS."', lo_location = '{$g5['lo_location']}', lo_url = '{$g5['lo_url']}' where lo_ip = '{$_SERVER['REMOTE_ADDR']}' ", false);
