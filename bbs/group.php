@@ -15,19 +15,16 @@ if (G5_IS_MOBILE) {
     return;
 }
 
+define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+
 if(!$is_admin && $group['gr_device'] == 'mobile')
     alert($group['gr_subject'].' 그룹은 모바일에서만 접근할 수 있습니다.');
 
 $g5['title'] = $group['gr_subject'];
 include_once('./_head.php');
-include_once(G5_LIB_PATH.'/latest.lib.php');
-?>
 
-<div class="latest_wr">
-
-<!-- 메인화면 최신글 시작 -->
-<?php
-//  최신글
+// 그룹 소속 게시판 (순정 쿼리 그대로 — 접근레벨·기기·본인인증 조건 유지)
+$boards = array();
 $sql = " select bo_table, bo_subject
             from {$g5['board_table']}
             where gr_id = '{$gr_id}'
@@ -37,22 +34,10 @@ if(!$is_admin)
     $sql .= " and bo_use_cert = '' ";
 $sql .= " order by bo_order ";
 $result = sql_query($sql);
-for ($i=0; $row=sql_fetch_array($result); $i++) {
-    $lt_style = "";
-    if ($i%3 !== 0) $lt_style = "margin-left:2%";
-    else $lt_style = "";
-?>
-    <div style="float:left;<?php echo $lt_style ?>"  class="lt_wr">
-    <?php
-    // 이 함수가 바로 최신글을 추출하는 역할을 합니다.
-    // 사용방법 : latest(스킨, 게시판아이디, 출력라인, 글자수);
-    echo latest('basic', $row['bo_table'], 6, 25);
-    ?>
-    </div>
-<?php
+while ($row = sql_fetch_array($result)) {
+    $boards[] = $row;
 }
-?>
-<!-- 메인화면 최신글 끝 -->
-</div>
-<?php
+
+g5_map_group($boards); // g5blade
+
 include_once('./_tail.php');
