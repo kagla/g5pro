@@ -50,9 +50,18 @@ function g5_map_shop_orderview($body_html)
 {
     global $od, $is_admin;
 
+    $items = g5_shop_order_items(isset($od['od_id']) ? $od['od_id'] : '');
+    // 취소·반품·품절된 줄 — 순정은 "내역이 있습니다" 한 줄만 찍고 목록을 안 준다
+    $cancelled = array();
+    foreach ($items as $row) {
+        if (in_array($row['status'], array('취소', '반품', '품절'), true)) $cancelled[] = $row;
+    }
+
     g5_view('shop.orderview', array(
-        'body_html'  => $body_html,
-        'items'      => g5_shop_order_items(isset($od['od_id']) ? $od['od_id'] : ''),
+        'body_html'    => $body_html,
+        'items'        => $items,
+        'cancel_items' => $cancelled,
+        'cancel_price' => isset($od['od_cancel_price']) ? (int)$od['od_cancel_price'] : 0,
         'od_id'      => isset($od['od_id']) ? $od['od_id'] : '',
         'od_time'    => isset($od['od_time']) ? $od['od_time'] : '',
         'status'     => isset($od['od_status']) ? $od['od_status'] : '',
