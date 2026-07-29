@@ -1724,3 +1724,58 @@ input[type=checkbox], input[type=radio] {
     .odv .sod_img img { width: 52px; height: 52px; }
     .odv #sod_bsk_tot, .odv #sod_sts_wrap, .odv #sod_fin_cancelfrm { padding-left: var(--s4); padding-right: var(--s4); }
 }
+
+/* ── 주문 상품 (우리 표/카드) — 순정 rowspan 표는 감춘다 ── */
+.odv #sod_fin_list > h2, .odv #sod_fin_list .tbl_head03, .odv #sod_fin_no { display: none; }
+.odv-no {
+    padding: var(--s3) var(--s4); margin-bottom: var(--s3);
+    border-radius: var(--r-lg); background: var(--accent-soft); color: var(--accent-deep);
+    font-size: var(--t-md);
+}
+.odv-no strong { font-weight: 800; font-variant-numeric: tabular-nums; }
+.odv-items { background: var(--card); border-radius: var(--r-xl); box-shadow: var(--sh-md); overflow: hidden; margin-bottom: var(--s5); }
+.odv-items > h2 { padding: var(--s4) var(--s5); font-size: var(--t-lg); font-weight: 700; border-bottom: 1px solid var(--line); }
+.odv-items-table { overflow-x: auto; }
+.odv-items-table table { width: 100%; border-collapse: collapse; }
+.odv-items-table th {
+    padding: var(--s3) var(--s4); font-size: var(--t-sm); font-weight: 700; color: var(--muted);
+    text-align: center; white-space: nowrap; border-bottom: 1px solid var(--line); background: var(--bg);
+}
+.odv-items-table td {
+    padding: var(--s4); font-size: var(--t-md); text-align: center; white-space: nowrap;
+    border-top: 1px solid var(--line); font-variant-numeric: tabular-nums;
+}
+.odv-items-table tbody tr:first-child td { border-top: 0; }
+.odv-items-table .col-subject { text-align: left; width: 100%; white-space: normal; }
+.odv-items-table .odv-sum { font-weight: 700; color: var(--fg); }
+
+.odv-prd { display: flex; align-items: flex-start; gap: var(--s3); }
+.odv-thumb { flex: none; }
+.odv-thumb img { width: 60px; height: 60px; object-fit: cover; border-radius: var(--r-md); display: block; }
+.odv-prd-info { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: var(--s2); }
+.odv-name { font-size: var(--t-md); font-weight: 700; }
+.odv-opt { margin: 0; font-size: var(--t-sm); color: var(--muted); }
+.odv-opt .chip { margin-right: var(--s1); }
+
+.odv-items-cards { display: none; }
+.odv-items-cards li { padding: var(--s4); border-top: 1px solid var(--line); }
+.odv-items-cards li:first-child { border-top: 0; }
+.odv-items-cards .odv-opt { margin: var(--s3) 0 0; }
+.odv-facts {
+    display: grid; grid-template-columns: auto 1fr auto 1fr; gap: var(--s2) var(--s3);
+    margin: var(--s3) 0 0; font-size: var(--t-md); font-variant-numeric: tabular-nums;
+}
+.odv-facts dt { color: var(--muted); }
+.odv-facts dd { margin: 0; text-align: right; font-weight: 600; }
+.odv-line {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin: var(--s3) 0 0; padding: var(--s3) var(--s4);
+    border-radius: var(--r-md); background: var(--bg); font-size: var(--t-md);
+}
+.odv-line span { color: var(--muted); }
+.odv-line strong { font-size: var(--t-lg); font-weight: 800; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 720px) {
+    .odv-items-table { display: none; }
+    .odv-items-cards { display: block; }
+}
