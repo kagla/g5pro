@@ -33,7 +33,11 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
 <header class="site-header">
     <div class="wrap">
         <h1 class="logo"><a href="{{ G5_URL }}/">{{ $site['title'] }}</a></h1>
-        <nav class="gnb">
+        <button type="button" class="nav-toggle" aria-controls="gnb" aria-expanded="false">
+            <span class="bars" aria-hidden="true"></span>
+            <span class="sound_only">메뉴 열기</span>
+        </button>
+        <nav class="gnb" id="gnb">
             @foreach ($menu as $m)
             <div class="gnb-item">
                 <a href="{{ $m['link'] }}" target="{{ $m['target'] ?: '_self' }}">{{ $m['name'] }}</a>

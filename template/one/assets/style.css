@@ -197,6 +197,25 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 
 .gnb { display: flex; gap: var(--s1); flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .gnb::-webkit-scrollbar { display: none; }
+
+/* 햄버거 — 모바일에서만 보인다 */
+.nav-toggle {
+    display: none; align-items: center; justify-content: center;
+    width: 36px; height: 36px; flex: none;
+    background: var(--bg); border: 0; border-radius: var(--r-md); cursor: pointer; color: var(--fg);
+}
+.nav-toggle .bars, .nav-toggle .bars::before, .nav-toggle .bars::after {
+    display: block; width: 17px; height: 2px; border-radius: 2px;
+    background: currentColor; transition: transform .18s ease, opacity .18s ease;
+}
+.nav-toggle .bars { position: relative; }
+.nav-toggle .bars::before, .nav-toggle .bars::after { content: ""; position: absolute; left: 0; }
+.nav-toggle .bars::before { top: -6px; }
+.nav-toggle .bars::after  { top: 6px; }
+.nav-toggle[aria-expanded="true"] { background: var(--accent-soft); color: var(--accent-deep); }
+.nav-toggle[aria-expanded="true"] .bars { background: transparent; }
+.nav-toggle[aria-expanded="true"] .bars::before { transform: translateY(6px) rotate(45deg); }
+.nav-toggle[aria-expanded="true"] .bars::after  { transform: translateY(-6px) rotate(-45deg); }
 .gnb-item { position: relative; flex: none; }
 .gnb-item > a {
     display: block; padding: var(--s2) var(--s3); border-radius: var(--r-full);
@@ -503,10 +522,23 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 @media (max-width: 620px) {
     .wrap { padding: 0 var(--s4); }
     .site-header .wrap { gap: var(--s2); padding-top: var(--s3); padding-bottom: var(--s3); }
-    .gnb { order: 3; width: 100%; }
-    .hd-search { order: 4; width: 100%; }
+
+    /* 헤더 배치: [로고] … [유틸] [☰] / [검색] / [메뉴(열었을 때)] */
+    .logo { order: 0; }
+    .header-util { order: 1; margin-left: auto; }
+    .nav-toggle { order: 2; display: flex; }
+    .hd-search { order: 3; flex: 1 0 100%; width: 100%; }
     .hd-search input[type=text] { flex: 1; width: auto; }
-    .header-util { margin-left: auto; }
+
+    /* 햄버거로 여닫는 세로 메뉴. flex-basis 를 100% 로 줘야 줄바꿈된다 */
+    .gnb { order: 4; flex: 1 0 100%; width: 100%; display: none; flex-direction: column; gap: 2px; overflow: visible; }
+    .gnb.open { display: flex; }
+    .gnb-item > a { padding: var(--s3) var(--s4); border-radius: var(--r-md); font-size: var(--t-md); }
+    .gnb-sub {
+        display: block; position: static; margin: 0 0 var(--s1) var(--s4);
+        padding: 0; box-shadow: none; background: none; min-width: 0;
+    }
+    .gnb-sub a { padding: var(--s2) var(--s4); }
     .site-main { padding: var(--s4) var(--s4) var(--s6); }
     .hero { padding: var(--s5) var(--s4); border-radius: var(--r-xl); }
     .hero h2 { font-size: var(--t-xl); }
