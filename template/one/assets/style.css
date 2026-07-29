@@ -1591,3 +1591,136 @@ input[type=checkbox], input[type=radio] {
 .bbs-cate-row { display: flex; align-items: center; gap: var(--s3); }
 .bbs-cate-row .bbs-cate { flex: 1; min-width: 0; }
 .bbs-cate-row .bbs-admin-link { flex: none; }
+
+/* ═══════════════════════════════════════════════════════════
+   주문 상세 조회 (shop/orderinquiryview.php)
+   마크업은 순정 그대로 — 주문취소·환불 폼과 영수증 팝업 JS 가 이 id 를 잡는다.
+   순정이 나눠 둔 .sod_left(결제·배송 정보) / .sod_right(합계·취소)를 2단으로 살린다.
+   ═══════════════════════════════════════════════════════════ */
+.odv #sod_fin { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--s5); align-items: start; }
+/* 그리드 자식은 기본 min-width:auto 라 안의 넓은 표가 칸을 밀어낸다 — 0 으로 풀고
+   표는 제 상자 안에서 가로 스크롤되게 한다 (페이지가 옆으로 밀리지 않도록) */
+.odv #sod_fin > * { min-width: 0; }
+.odv .tbl_wrap { overflow-x: auto; }
+.odv #sod_fin_no, .odv #sod_fin_list { grid-column: 1 / -1; }
+.odv .sod_left { display: flex; flex-direction: column; gap: var(--s5); min-width: 0; }
+.odv .sod_right { display: flex; flex-direction: column; gap: var(--s5); }
+
+.odv #sod_fin_no { font-size: var(--t-md); color: var(--muted); }
+.odv #sod_fin_no strong { color: var(--fg); font-weight: 700; }
+
+.odv section, .odv #sod_bsk_tot {
+    background: var(--card); border-radius: var(--r-xl); box-shadow: var(--sh-md); overflow: hidden;
+}
+.odv .sod_left > h2 { font-size: var(--t-lg); font-weight: 700; margin-bottom: calc(-1 * var(--s2)); }
+.odv section > h2, .odv section > h3 {
+    padding: var(--s4) var(--s5); font-size: var(--t-md); font-weight: 700;
+    border-bottom: 1px solid var(--line);
+}
+.odv section > h2 { font-size: var(--t-lg); }
+
+/* 주문 상품 표 */
+.odv .tbl_head03 table, .odv .tbl_head01 table { width: 100%; border-collapse: collapse; }
+.odv .tbl_head03 th {
+    padding: var(--s3) var(--s4); font-size: var(--t-sm); font-weight: 700; color: var(--muted);
+    text-align: center; white-space: nowrap; border-bottom: 1px solid var(--line);
+}
+.odv .tbl_head03 td {
+    padding: var(--s4); font-size: var(--t-md); text-align: center;
+    border-top: 1px solid var(--line); font-variant-numeric: tabular-nums;
+}
+.odv .tbl_head03 tbody tr:first-child td { border-top: 0; }
+.odv .tbl_head03 td:first-child { text-align: left; }
+.odv .sod_img { float: left; margin-right: var(--s3); }
+.odv .sod_img img { width: 60px; height: 60px; object-fit: cover; border-radius: var(--r-md); display: block; }
+.odv .sod_name { overflow: hidden; }
+.odv .sod_opt { font-size: var(--t-sm); color: var(--muted); margin-top: var(--s1); }
+
+/* 정보 표 (결제·주문자·받는분·배송) */
+.odv .tbl_head01 th, .odv .tbl_head01 td {
+    padding: var(--s3) var(--s5); text-align: left; vertical-align: top;
+    font-size: var(--t-md); border-top: 1px solid var(--line);
+}
+.odv .tbl_head01 tr:first-child th, .odv .tbl_head01 tr:first-child td { border-top: 0; }
+.odv .tbl_head01 th { width: 34%; color: var(--muted); font-weight: 600; white-space: nowrap; }
+
+/* 상태 설명 */
+.odv #sod_sts_wrap { padding: var(--s3) var(--s5) var(--s4); }
+.odv #sod_sts_explan { margin-top: var(--s3); padding: var(--s4); border-radius: var(--r-lg); background: var(--bg); }
+.odv #sod_fin_legend { display: grid; grid-template-columns: auto 1fr; gap: var(--s2) var(--s4); margin: 0 0 var(--s3); font-size: var(--t-sm); }
+.odv #sod_fin_legend dt { font-weight: 700; }
+.odv #sod_fin_legend dd { margin: 0; color: var(--muted); }
+
+/* 합계 */
+.odv #sod_bsk_tot { padding: var(--s4) var(--s5); }
+.odv #sod_bsk_tot li {
+    display: flex; align-items: baseline; justify-content: flex-end; gap: 2px;
+    padding: var(--s2) 0; font-size: var(--t-md); font-variant-numeric: tabular-nums;
+}
+.odv #sod_bsk_tot li > span:first-child, .odv #sod_bsk_tot li > .sod_bsk_left { margin-right: auto; color: var(--muted); }
+.odv #sod_bsk_tot li strong { font-weight: 700; }
+.odv #sod_bsk_tot li:last-child { border-top: 1px solid var(--line); margin-top: var(--s2); padding-top: var(--s3); font-size: var(--t-lg); }
+.odv #sod_bsk_tot li:last-child strong { font-size: var(--t-2xl); font-weight: 800; color: var(--accent); }
+
+/* 결제합계 — 합계 카드와 같은 모양으로 */
+.odv #sod_fin_tot ul { padding: var(--s4) var(--s5); }
+.odv #sod_fin_tot li {
+    display: flex; align-items: baseline; justify-content: space-between; gap: var(--s3);
+    padding: var(--s2) 0; font-size: var(--t-md); color: var(--muted); font-variant-numeric: tabular-nums;
+}
+.odv #sod_fin_tot li strong { color: var(--fg); font-weight: 700; }
+
+/* 주문 취소 — 여는 버튼과 그 안의 폼 */
+.odv #sod_fin_cancel > button {
+    display: block; width: calc(100% - var(--s5) * 2); margin: var(--s4) var(--s5);
+    height: 44px; border-radius: var(--r-btn);
+    background: var(--card); border: 1px solid var(--danger); color: var(--danger);
+    font: inherit; font-size: var(--t-md); font-weight: 700; cursor: pointer;
+}
+.odv #sod_fin_cancel > button:hover { background: var(--danger); color: #fff; }
+.odv #sod_fin_cancelfrm { padding: 0 var(--s5) var(--s4); }
+.odv #sod_fin_cancelfrm form { display: flex; flex-direction: column; gap: var(--s2); }
+.odv #sod_fin_cancelfrm input[type=text] { width: 100%; height: 40px; }
+.odv #sod_fin_cancelfrm input[type=submit] {
+    height: 44px; border-radius: var(--r-btn);
+    background: var(--danger); border: 1px solid var(--danger); color: #fff;
+    font: inherit; font-size: var(--t-md); font-weight: 700; cursor: pointer;
+}
+
+.odv .btn_frmline {
+    display: inline-flex; align-items: center; height: 34px; padding: 0 var(--s3);
+    border: 1px solid var(--line); border-radius: var(--r-btn); background: var(--card);
+    font-size: var(--t-sm); font-weight: 600; color: var(--muted); cursor: pointer;
+}
+.odv .btn_frmline:hover { border-color: var(--accent); color: var(--accent); }
+.odv .btn01, .odv .btn02, .odv .btn_cancel {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: var(--s2) var(--s4); border-radius: var(--r-btn);
+    border: 1px solid var(--line); background: var(--card); color: var(--fg);
+    font-size: var(--t-sm); font-weight: 700; cursor: pointer;
+}
+
+@media (max-width: 900px) {
+    .odv #sod_fin { grid-template-columns: 1fr; }
+}
+@media (max-width: 620px) {
+    .odv section > h2, .odv section > h3 { padding: var(--s3) var(--s4); }
+    /* 좁은 화면 — 정보 표는 라벨/값을 세로로 쌓는다 */
+    .odv .tbl_head01 th, .odv .tbl_head01 td {
+        display: block; width: auto; padding: 0 var(--s4); border-top: 0;
+    }
+    .odv .tbl_head01 th { padding-top: var(--s3); font-size: var(--t-sm); }
+    .odv .tbl_head01 td { padding-bottom: var(--s3); }
+    .odv .tbl_head01 tr + tr th { border-top: 1px solid var(--line); padding-top: var(--s3); margin-top: var(--s3); }
+    /* 주문 상품 — 순정 표가 rowspan/colspan 2줄 머리라 headers 로 열을 고른다.
+       좁은 화면에서는 수량·소계·상태만 남긴다 (옵션명은 상품명과 겹치고 나머지는 부차적) */
+    .odv .tbl_head03 #th_itopt,  .odv .tbl_head03 [headers="th_itopt"],
+    .odv .tbl_head03 #th_itprice,.odv .tbl_head03 [headers="th_itprice"],
+    .odv .tbl_head03 #th_itpt,   .odv .tbl_head03 [headers="th_itpt"],
+    .odv .tbl_head03 #th_itsd,   .odv .tbl_head03 [headers="th_itsd"] { display: none; }
+    .odv .tbl_head03 th, .odv .tbl_head03 td { padding: var(--s2); white-space: normal; font-size: var(--t-sm); }
+    .odv .tbl_head03 [headers="th_itsum"] { text-align: right; font-weight: 700; white-space: nowrap; }
+    .odv .td_imgsmall img { width: 46px; height: 46px; }
+    .odv .sod_img img { width: 52px; height: 52px; }
+    .odv #sod_bsk_tot, .odv #sod_sts_wrap, .odv #sod_fin_cancelfrm { padding-left: var(--s4); padding-right: var(--s4); }
+}
