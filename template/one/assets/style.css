@@ -474,11 +474,13 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 /* 목록 아래 오른쪽 버튼 줄 (장바구니의 선택삭제·비우기 등) */
 .bbs-admin-acts { display: flex; justify-content: flex-end; gap: var(--s2); margin-top: var(--s3); }
 
-/* 관리자 선택 도구 — 목록 위 한 줄. 메뉴가 잘리지 않도록 .list-panel 바깥에 둔다 */
+/* 관리자 선택 도구 — 목록 위 한 줄. 메뉴가 잘리지 않도록 .list-panel 바깥에 둔다.
+   넓은 화면에선 게시물을 선택했을 때만 나타난다(.active 는 theme.js) — 빈 줄이 여백만 차지하는 것 방지 */
 .list-tools {
-    display: flex; align-items: center; gap: var(--s2);
+    display: none; align-items: center; gap: var(--s2);
     margin-bottom: var(--s2); padding: 0 var(--s1);
 }
+.list-tools.active { display: flex; }
 .chk-all-label {
     display: none; align-items: center; gap: var(--s2);
     font-size: var(--t-sm); font-weight: 600; color: var(--muted); cursor: pointer;
@@ -500,19 +502,20 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
     visibility: visible; opacity: 1; transform: none;
     transition: opacity .14s ease, transform .14s ease, visibility 0s;
 }
-.kebab-menu button {
+.kebab-menu button,
+.kebab-menu a {
     display: flex; align-items: center; gap: var(--s3); width: 100%;
     padding: var(--s3) var(--s4); border: 0; border-radius: var(--r-md);
     background: none; color: var(--fg); font-size: var(--t-md); font-weight: 500;
     text-align: left; cursor: pointer;
 }
-.kebab-menu button:hover { background: var(--bg); color: var(--accent); }
-.kebab-menu button svg {
+.kebab-menu button:hover, .kebab-menu a:hover { background: var(--bg); color: var(--accent); }
+.kebab-menu button svg, .kebab-menu a svg {
     width: 17px; height: 17px; flex: none; fill: none;
     stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
 }
-.kebab-menu button.danger { border-top: 1px solid var(--line); margin-top: var(--s2); padding-top: var(--s3); border-radius: 0 0 var(--r-md) var(--r-md); }
-.kebab-menu button.danger:hover { background: rgba(239,68,68,.10); color: var(--danger); }
+.kebab-menu .danger { border-top: 1px solid var(--line); margin-top: var(--s2); padding-top: var(--s3); border-radius: 0 0 var(--r-md) var(--r-md); }
+.kebab-menu .danger:hover { background: rgba(239,68,68,.10); color: var(--danger); }
 
 /* ═══════════ 목록 변형 1 · 표 (기본) — 흰 카드 안의 행 ═══════════ */
 .list-panel { background: var(--card); border-radius: var(--r-xl); box-shadow: var(--sh-md); overflow: hidden; }
@@ -550,7 +553,8 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 @media (max-width: 620px) {
     .list-table-wrap { display: none; }
     .list-cards { display: block; }
-    /* 표 헤더의 전체선택이 사라지므로 툴바 쪽 라벨을 대신 쓴다 */
+    /* 표 헤더의 전체선택이 사라지므로 도구 줄을 항상 보여주고 라벨을 대신 쓴다 */
+    .list-tools { display: flex; }
     .chk-all-label { display: inline-flex; }
 }
 
@@ -626,8 +630,6 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 }
 .comment-form textarea { width: 100%; min-height: 84px; }
 .comment-form .btn { align-self: flex-end; }
-
-.post-nav { display: flex; justify-content: space-between; gap: var(--s2); margin-top: var(--s3); }
 
 /* ═══════════ 폼 ═══════════ */
 .write-form, .member-box form {
@@ -971,14 +973,14 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .move-list .b { font-weight: 600; }
 .move-list .t { color: var(--muted); font-size: var(--t-xs); font-family: ui-monospace, monospace; }
 
-/* ── 팝업 창 (bbs/scrap_popin.php 등 win_* 소형 창) ── */
-.popup-body { background: var(--bg); padding: var(--s5); }
-.popup {
-    max-width: 520px; margin: 0 auto;
-    background: var(--card); border-radius: var(--r-xl);
-    box-shadow: var(--sh-md); padding: var(--s5);
+/* ── 카드형 소형 팝업 변형 (bbs/scrap_popin.php 등 본문이 폼 하나인 창) ── */
+.popup--card {
+    max-width: 520px;
+    background: var(--card); border-radius: var(--r-xl); box-shadow: var(--sh-md);
 }
-.popup-title { font-size: var(--t-xl); margin-bottom: var(--s4); }
+.popup--card .popup-title { margin-bottom: var(--s4); }
+.popup--card .popup-btns { justify-content: flex-end; }
+.popup--card .popup-btns .btn { flex: 0 0 auto; }
 .popup-subject {
     margin: 0 0 var(--s4); padding: var(--s3) var(--s4);
     background: var(--row-hover); border: 1px solid var(--line);
@@ -986,4 +988,104 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 }
 .popup-label { display: block; font-size: var(--t-sm); font-weight: 700; margin-bottom: var(--s2); }
 .popup textarea { width: 100%; min-height: 110px; }
-.popup-btns { display: flex; justify-content: flex-end; gap: var(--s2); margin-top: var(--s4); }
+
+/* ── 스크랩 목록 (bbs/scrap.php — win_scrap 창, 링크는 부모 창에서 열림) ── */
+.scrap-list { background: var(--card); border-radius: var(--r-xl); box-shadow: var(--sh-md); overflow: hidden; }
+.scrap-list li { padding: var(--s3) var(--s4); border-top: 1px solid var(--line); }
+.scrap-list li:first-child { border-top: 0; }
+.scrap-list li:hover { background: var(--row-hover); }
+.scrap-list .s { display: flex; align-items: center; gap: var(--s2); min-width: 0; }
+.scrap-list .s .chip { flex: 0 0 auto; }
+.scrap-list .t { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.scrap-list .m { display: flex; gap: var(--s2); margin-top: var(--s1); color: var(--muted); font-size: var(--t-xs); }
+.scrap-list li.bbs-empty { padding: var(--s7) 0; }
+
+/* ═══════════ 게시판 설정에서 켜는 표시들 ═══════════ */
+/* 관리자가 게시판 설정에 넣은 상단·하단 HTML — 우리 스타일을 강요하지 않는다 */
+.board-extra { margin: var(--s4) 0; font-size: var(--t-md); }
+.board-extra img { border-radius: var(--r-md); }
+
+/* 카테고리 칩 — 목록·읽기 공용, 누르면 그 분류만 본다 */
+.chip.cate { background: var(--teal-soft); color: var(--teal-deep); }
+a.chip.cate:hover { background: var(--teal); color: #fff; }
+
+/* 답변글 */
+.reply-arrow { color: var(--muted); font-weight: 700; margin-right: 2px; }
+
+/* 상태 아이콘 (비밀·인기·첨부·링크) */
+.flag { display: inline-flex; vertical-align: -2px; color: var(--muted); }
+.flag svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.flag.hot { color: var(--danger); }
+.flag.hot svg { fill: currentColor; stroke: none; }
+
+/* 목록 본문 미리보기·첨부 (bo_use_list_content / bo_use_list_file) */
+.row-excerpt {
+    margin: var(--s1) 0 0; font-size: var(--t-sm); color: var(--muted);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.row-files { display: flex; flex-wrap: wrap; gap: var(--s2); margin: var(--s2) 0 0; }
+.row-files a {
+    font-size: var(--t-xs); font-weight: 600; color: var(--accent-deep);
+    background: var(--accent-soft); border-radius: var(--r-btn); padding: 2px var(--s2);
+}
+.row-files a:hover { background: var(--accent); color: var(--accent-fg); }
+
+/* 정렬 가능한 열 머리 */
+.list-table th.col-sort a { display: inline-block; color: inherit; }
+.list-table th.col-sort a:hover { color: var(--accent); }
+
+/* 지금 읽고 있는 글 */
+.list-table tr.current, .list-simple li.current, .list-card li.current { background: var(--accent-soft); }
+
+/* 갤러리 열 수 — 게시판 설정 bo_gallery_cols */
+.gallery-grid { grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); }
+@media (max-width: 900px) { .gallery-grid { grid-template-columns: repeat(min(var(--cols, 3), 2), minmax(0, 1fr)); } }
+@media (max-width: 560px) { .gallery-grid { grid-template-columns: 1fr; } }
+
+/* ── 읽기 화면 ── */
+.post-ip { font-size: var(--t-xs); color: var(--muted); font-variant-numeric: tabular-nums; }
+.post-sign {
+    margin-top: var(--s5); padding-top: var(--s4); border-top: 1px dashed var(--line);
+    font-size: var(--t-sm); color: var(--muted);
+}
+
+.post-react { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; margin-top: var(--s5); }
+.react {
+    display: inline-flex; align-items: center; gap: var(--s2);
+    padding: var(--s2) var(--s4); border-radius: var(--r-btn);
+    background: var(--card); border: 1px solid var(--line); color: var(--fg);
+    font: inherit; font-size: var(--t-sm); font-weight: 700; cursor: pointer;
+    transition: border-color .15s, color .15s;
+}
+.react:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.react:disabled { opacity: .55; cursor: default; }
+.react svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linejoin: round; }
+.react b { font-variant-numeric: tabular-nums; }
+.react-msg { font-size: var(--t-sm); font-weight: 700; color: var(--accent); }
+.post-share { display: flex; gap: var(--s2); margin-left: auto; }
+
+/* 이전글은 왼쪽, 다음글은 오른쪽 — 한쪽만 있어도 제자리를 지킨다 */
+.post-nav { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); margin-top: var(--s4); }
+.post-nav-item {
+    display: flex; align-items: center; gap: var(--s3); min-width: 0;
+    padding: var(--s3) var(--s4); border-radius: var(--r-lg);
+    background: var(--card); box-shadow: var(--sh-sm); font-size: var(--t-md);
+}
+.post-nav-item:hover { box-shadow: var(--sh-md); }
+.post-nav-item.prev { grid-column: 1; }
+.post-nav-item.next { grid-column: 2; flex-direction: row-reverse; }
+.post-nav-item .k { flex: none; font-size: var(--t-sm); font-weight: 700; color: var(--muted); }
+.post-nav-item .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.post-nav-item.next .t { text-align: right; }
+.post-nav-item .d { flex: none; font-size: var(--t-xs); color: var(--muted); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 640px) {
+    /* 좁은 화면에선 제목·날짜 없이 이전글/다음글 라벨만 */
+    .post-nav-item .t, .post-nav-item .d { display: none; }
+    .post-nav-item { justify-content: center; }
+    .post-nav-item.next { flex-direction: row; }
+}
+
+/* 전체목록보이기 — 읽은 글 아래에 붙는 목록 */
+.list-below { margin-top: var(--s6); padding-top: var(--s5); border-top: 1px solid var(--line); }
+.list-below-title { font-size: var(--t-lg); margin-bottom: var(--s3); }

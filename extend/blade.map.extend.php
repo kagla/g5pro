@@ -11,18 +11,19 @@ if (!defined('_GNUBOARD_')) exit;
 function g5_blade_list_views()
 {
     return array(
-        'blade'         => array('view' => 'bbs.board_list',         'thumb' => false),
-        'blade_simple'  => array('view' => 'bbs.board_list_simple',  'thumb' => false),
-        'blade_card'    => array('view' => 'bbs.board_list_card',    'thumb' => true),
-        'blade_gallery' => array('view' => 'bbs.board_list_gallery', 'thumb' => true),
+        'blade'         => array('view' => 'bbs.board_list',         'body' => 'partials.list_body_table',   'thumb' => false),
+        'blade_simple'  => array('view' => 'bbs.board_list_simple',  'body' => 'partials.list_body_simple',  'thumb' => false),
+        'blade_card'    => array('view' => 'bbs.board_list_card',    'body' => 'partials.list_body_card',    'thumb' => true),
+        'blade_gallery' => array('view' => 'bbs.board_list_gallery', 'body' => 'partials.list_body_gallery', 'thumb' => true),
     );
 }
 
 // ── 게시판 목록 (bbs/list.php)
 function g5_map_board_list()
 {
-    global $list, $board, $bo_table, $is_category, $sca, $sfl, $stx;
+    global $list, $board, $bo_table, $is_category, $sca, $sfl, $stx, $sst, $sod, $sop, $wr_id;
     global $total_count, $page, $total_page, $write_href, $rss_href, $admin_href, $is_checkbox;
+    global $is_good, $is_nogood;
 
     $views = g5_blade_list_views();
     $skin  = isset($board['bo_skin']) ? $board['bo_skin'] : '';
@@ -41,9 +42,25 @@ function g5_map_board_list()
             'hit'         => $row['wr_hit'],
             'comment_cnt' => (int)$row['wr_comment'],
             'is_notice'   => !empty($row['is_notice']),
+            'is_current'  => (!empty($wr_id) && $wr_id == $row['wr_id']),   // 열람중
             'icon_new'    => !empty($row['icon_new']),
             'icon_file'   => !empty($row['icon_file']),
             'icon_secret' => !empty($row['icon_secret']),
+            'icon_hot'    => !empty($row['icon_hot']),      // bo_hot 이상 조회
+            'icon_link'   => !empty($row['icon_link']),
+            'icon_reply'  => !empty($row['icon_reply']),
+            // 답변글 들여쓰기 — wr_reply 한 글자당 한 단계
+            'depth'       => strlen((string)$row['wr_reply']),
+            'ca_name'     => isset($row['ca_name']) ? $row['ca_name'] : '',
+            'ca_href'     => isset($row['ca_name_href']) ? $row['ca_name_href'] : '',
+            'good'        => (int)$row['wr_good'],
+            'nogood'      => (int)$row['wr_nogood'],
+            // bo_use_list_content — 목록에 본문 미리보기 (태그를 걷어낸 발췌)
+            'excerpt'     => isset($row['content'])
+                             ? cut_str(trim(preg_replace('/\s+/u', ' ', strip_tags(str_replace('<', ' <', $row['content'])))), 160, '…')
+                             : '',
+            // bo_use_list_file — 목록에 첨부 파일
+            'files'       => g5_blade_list_files($row),
             // 썸네일 변형(카드·갤러리)에서만 조회
             'thumb'       => $variant['thumb']
                 ? get_list_thumbnail($bo_table, $row['wr_id'],
@@ -63,7 +80,7 @@ function g5_map_board_list()
         }
     }
 
-    g5_view($variant['view'], array(
+    $data = array(
         'board' => array(
             'bo_table'   => $bo_table,
             'bo_subject' => $board['bo_subject'],
@@ -78,12 +95,66 @@ function g5_map_board_list()
         'write_href'  => $write_href,
         'rss_href'    => $rss_href,
         'admin_href'  => $admin_href,
-        'search'      => array('sfl' => $sfl, 'stx' => $stx),
+        'search'      => array('sfl' => $sfl, 'stx' => $stx, 'sca' => $sca),
         'board_url'   => short_url_clean(G5_BBS_URL.'/board.php?bo_table='.$bo_table),
         'is_checkbox' => (bool)$is_checkbox,
         'list_update_action' => G5_BBS_URL.'/board_list_update.php',
         'move_action'        => G5_BBS_URL.'/move.php',
-    ));
+        // 게시판 설정에서 켠 것만 화면에 나타난다
+        'is_good'     => (bool)$is_good,
+        'is_nogood'   => (bool)$is_nogood,
+        'use_search'  => (bool)$board['bo_use_search'],
+        'use_content' => (bool)$board['bo_use_list_content'],
+        'use_file'    => (bool)$board['bo_use_list_file'],
+        'gallery_cols'=> max(1, (int)$board['bo_gallery_cols']),
+        'sfl_options' => get_board_sfl_select_options($sfl),   // 순정 옵션 HTML → {!! !!}
+        'sort'        => g5_blade_sort_links($bo_table, $sop, $is_good, $is_nogood),
+        'sort_now'    => array('sst' => $sst, 'sod' => $sod),
+        'content_head'=> g5_blade_captured('content_head'),    // 관리자가 넣은 HTML → {!! !!}
+        'content_tail'=> g5_blade_captured('content_tail'),
+    );
+
+    // 전체목록보이기(bo_use_list_view) — 읽기 화면이 먼저 목록을 수집한 뒤 자기 아래에 붙인다
+    if (!empty($GLOBALS['g5_blade_collect_list'])) {
+        $GLOBALS['g5_blade_list_below'] = array('body' => $variant['body'], 'data' => $data);
+        return;
+    }
+    g5_view($variant['view'], $data);
+}
+
+// 목록의 첨부 파일 (bo_use_list_file 을 켜야 get_list 가 채운다)
+function g5_blade_list_files($row)
+{
+    $out = array();
+    if (empty($row['file']) || !is_array($row['file'])) return $out;
+    for ($i = 0; $i < (int)$row['file']['count']; $i++) {
+        if (empty($row['file'][$i]['source'])) continue;
+        $out[] = array(
+            'source' => $row['file'][$i]['source'],
+            'href'   => $row['file'][$i]['href'],
+            'size'   => $row['file'][$i]['size'],
+        );
+    }
+    return $out;
+}
+
+// 정렬 링크 — 순정 subject_sort_link() 가 여는 <a> 태그만 돌려주므로 href 만 뽑아 쓴다
+function g5_blade_sort_links($bo_table, $sop, $is_good, $is_nogood)
+{
+    $qstr2 = 'bo_table='.$bo_table.'&amp;sop='.$sop;
+    $cols = array('wr_hit' => '조회', 'wr_datetime' => '날짜');
+    if ($is_good)   $cols['wr_good']   = '추천';
+    if ($is_nogood) $cols['wr_nogood'] = '비추천';
+
+    $out = array();
+    foreach ($cols as $col => $label) {
+        $tag = subject_sort_link($col, $qstr2, 1);
+        $out[$col] = array(
+            'label' => $label,
+            'href'  => preg_match('/href="([^"]*)"/', $tag, $m) ? $m[1] : '',
+        );
+    }
+    return $out;
 }
 
 // ── 게시물 복사·이동 대상 고르기 (bbs/move.php) — 목록에서 팝업으로 연다
@@ -143,7 +214,10 @@ function g5_map_board_view($comments)
 {
     global $view, $board, $bo_table, $member, $is_admin, $qstr;
     global $update_href, $delete_href, $reply_href, $prev_href, $next_href, $comment_action_url;
-    global $sca, $sfl, $stx, $spt, $page;
+    global $scrap_href, $sca, $sfl, $stx, $spt, $page;
+    global $good_href, $nogood_href, $copy_href, $move_href, $search_href;
+    global $is_ip_view, $is_signature, $signature;
+    global $prev_wr_subject, $prev_wr_date, $next_wr_subject, $next_wr_date;
 
     include_once(G5_LIB_PATH.'/thumbnail.lib.php'); // get_view_thumbnail()
 
@@ -184,7 +258,12 @@ function g5_map_board_view($comments)
             'datetime' => $view['wr_datetime'],
             'hit'      => $view['wr_hit'],
             'ca_name'  => isset($view['ca_name']) ? $view['ca_name'] : '',
-            'content'  => get_view_thumbnail($view['content']),  // 순정 가공 HTML → {!! !!}
+            'ca_href'  => isset($view['ca_name']) && $view['ca_name']
+                          ? short_url_clean(G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&sca='.urlencode($view['ca_name'])) : '',
+            // rich_content — 본문의 {이미지:n} 치환까지 끝난 순정 결과
+            'content'  => get_view_thumbnail($view['rich_content']),  // 순정 가공 HTML → {!! !!}
+            'comment_cnt' => (int)$view['wr_comment'],
+            'ip'       => $is_ip_view ? $view['wr_ip'] : '',   // bo_use_ip_view
         ),
         'files'       => $files,
         'links'       => $links,
@@ -198,6 +277,31 @@ function g5_map_board_view($comments)
         'reply_href'  => $reply_href,
         'prev_href'   => $prev_href,
         'next_href'   => $next_href,
+        'scrap_href'  => $scrap_href,   // 회원일 때만 값 있음 — win_scrap 팝업으로 연다
+        // 이전·다음글 — 제목과 날짜까지 (순정 view.php 가 함께 만들어 둔다)
+        'prev' => $prev_href ? array('href' => $prev_href, 'subject' => $prev_wr_subject, 'date' => substr($prev_wr_date, 2, 8)) : null,
+        'next' => $next_href ? array('href' => $next_href, 'subject' => $next_wr_subject, 'date' => substr($next_wr_date, 2, 8)) : null,
+        // 추천·비추천 — href 는 회원이고 게시판이 켠 경우에만 값이 있다
+        'good' => array(
+            'use'    => (bool)$board['bo_use_good'],
+            'href'   => $good_href ? $good_href.'&amp;'.$qstr : '',
+            'count'  => (int)$view['wr_good'],
+        ),
+        'nogood' => array(
+            'use'    => (bool)$board['bo_use_nogood'],
+            'href'   => $nogood_href ? $nogood_href.'&amp;'.$qstr : '',
+            'count'  => (int)$view['wr_nogood'],
+        ),
+        'signature'   => $is_signature ? $signature : '',   // bo_use_signature, 순정 가공 HTML
+        'copy_href'   => $copy_href,     // 게시판 관리자 이상
+        'move_href'   => $move_href,
+        'search_href' => $search_href,   // 검색 결과에서 들어왔을 때만 값 있음
+        'use_sns'     => (bool)($board['bo_use_sns'] && (!empty($GLOBALS['config']['cf_facebook_appid']) || !empty($GLOBALS['config']['cf_twitter_key']))),
+        'share_url'   => G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$view['wr_id'],
+        'content_head'=> g5_blade_captured('content_head'),
+        'content_tail'=> g5_blade_captured('content_tail'),
+        // 전체목록보이기를 켠 게시판에서만 값이 있다
+        'list_below'  => isset($GLOBALS['g5_blade_list_below']) ? $GLOBALS['g5_blade_list_below'] : null,
         'comment_action' => $comment_action_url,
         'comment_hidden' => array(
             'w'          => 'c',
@@ -517,7 +621,7 @@ function g5_map_search()
     ));
 }
 
-// ── 스크랩 목록 (bbs/scrap.php)
+// ── 스크랩 목록 (bbs/scrap.php) — win_scrap 600px 창, 링크는 opener(부모 창)에서 연다
 function g5_map_scrap()
 {
     global $list, $total_count, $page, $total_page;
@@ -529,6 +633,7 @@ function g5_map_scrap()
             'bo_subject' => get_text($row['bo_subject']),
             'subject'    => $row['subject'],      // get_text 완료 → {!! !!}
             'href'       => $row['opener_href_wr_id'],
+            'board_href' => $row['opener_href'],
             'datetime'   => substr($row['ms_datetime'], 0, 10),
             'del_href'   => G5_BBS_URL.'/'.ltrim($row['del_href'], './'),  // &amp; 포함 → {!! !!}
         );
@@ -540,6 +645,19 @@ function g5_map_scrap()
         'page'        => (int)$page,
         'total_page'  => (int)$total_page,
         'page_href'   => G5_BBS_URL.'/scrap.php?page=',
+    ));
+}
+
+// ── 스크랩 팝업 (bbs/scrap_popin.php) — win_scrap 600px 창, 사이트 골격 없는 독립 뷰
+function g5_map_scrap_popin()
+{
+    global $bo_table, $wr_id, $write;
+
+    g5_view('bbs.scrap_popin', array(
+        'bo_table' => $bo_table,
+        'wr_id'    => $wr_id,
+        'subject'  => get_text(cut_str($write['wr_subject'], 255)),  // 이스케이프 완료 → {!! !!}
+        'action'   => G5_BBS_URL.'/scrap_popin_update.php',
     ));
 }
 

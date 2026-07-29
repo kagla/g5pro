@@ -219,16 +219,26 @@ $admin_href = "";
 if ($member['mb_id'] && ($is_admin === 'super' || $group['gr_admin'] === $member['mb_id']))
     $admin_href = G5_ADMIN_URL.'/board_form.php?w=u&amp;bo_table='.$bo_table;
 
-include_once(G5_BBS_PATH.'/board_head.php');
+// g5blade: 상단·하단 내용을 미리 잡아 두었다가 뷰가 제자리에 넣는다.
+// 하단도 지금 잡는다 — 아래 목록/읽기가 화면 전체를 이미 출력해 버리기 때문.
+g5_blade_capture_start(); include_once(G5_BBS_PATH.'/board_head.php'); g5_blade_capture_end('content_head');
+g5_blade_capture_start(); include_once(G5_BBS_PATH.'/board_tail.php'); g5_blade_capture_end('content_tail');
+
+// 전체목록보이기 + 읽기가 겹치면, 순정은 두 스킨을 잇달아 출력한다.
+// blade 는 화면이 하나이므로 목록을 먼저 "수집"해 두었다가 읽기 화면 아래에 붙인다. (g5blade)
+$g5_blade_show_list = ($member['mb_level'] >= $board['bo_list_level'] && $board['bo_use_list_view']) || empty($wr_id);
+if (isset($wr_id) && $wr_id && $g5_blade_show_list) {
+    $GLOBALS['g5_blade_collect_list'] = true;
+    include_once (G5_BBS_PATH.'/list.php');
+    $GLOBALS['g5_blade_collect_list'] = false;
+}
 
 // 게시물 아이디가 있다면 게시물 보기를 INCLUDE
 if (isset($wr_id) && $wr_id) {
     include_once(G5_BBS_PATH.'/view.php');
 }
 
-// 전체목록보이기 사용이 "예" 또는 wr_id 값이 없다면 목록을 보임
-//if ($board['bo_use_list_view'] || empty($wr_id))
-if ($member['mb_level'] >= $board['bo_list_level'] && $board['bo_use_list_view'] || empty($wr_id))
+if ($g5_blade_show_list && empty($wr_id))
     include_once (G5_BBS_PATH.'/list.php');
 
 include_once(G5_BBS_PATH.'/board_tail.php');

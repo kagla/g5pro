@@ -92,8 +92,29 @@ function g5_blade_buffer_drop()
     }
 }
 
+// 게시판 상단·하단 내용(bo_content_head/tail, 포함 파일)을 잡아 뷰로 넘긴다.
+// 순정은 스킨 앞뒤로 그대로 흘려보내지만 blade 는 <!DOCTYPE> 보다 먼저 나가면 안 된다.
+function g5_blade_capture_start()
+{
+    ob_start();
+}
+function g5_blade_capture_end($key)
+{
+    $GLOBALS['g5_blade_cap_'.$key] = trim(ob_get_clean());
+}
+function g5_blade_captured($key)
+{
+    return isset($GLOBALS['g5_blade_cap_'.$key]) ? $GLOBALS['g5_blade_cap_'.$key] : '';
+}
+
 function g5_view($view, $data = array())
 {
+    // 한 요청에 화면은 하나. 순정이 두 화면을 잇달아 include 하는 경우
+    // (board.php 의 전체목록보이기) 문서가 두 번 나가는 것을 막는다.
+    static $rendered = false;
+    if ($rendered) return;
+    $rendered = true;
+
     g5_blade_buffer_drop();
     g5_blade_connect();
     echo g5_blade()->run($view, array_merge(g5_blade_common(), $data));
@@ -273,8 +294,9 @@ function g5_blade_profile_src($mb_id)
     return preg_match('/src="([^"]*)"/i', $html, $m) ? $m[1] : '';
 }
 
-// 커뮤니티 ↔ 쇼핑몰 이동 링크 — 쇼핑몰이 설치된 경우에만.
-// 현재 위치는 빼고 "갈 곳" 하나만 돌려준다 (헤더 폭을 아끼고, 할 일이 분명해진다).
+// 커뮤니티 ↔ 쇼핑몰 전환 — 쇼핑몰이 설치된 경우에만.
+// 두 영역을 모두 돌려주고 현재 위치를 active 로 표시한다 (헤더 세그먼트 토글).
+// 하나만 보여주면 "갈 곳" 이름이 현재 위치처럼 읽히는 혼동이 있었다.
 function g5_blade_areas()
 {
     if (!defined('G5_USE_SHOP') || !G5_USE_SHOP) return array();
@@ -282,7 +304,8 @@ function g5_blade_areas()
     $script  = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '';
     $in_shop = (strpos($script, '/'.G5_SHOP_DIR.'/') !== false);
 
-    return $in_shop
-        ? array(array('name' => '커뮤니티', 'href' => G5_URL.'/',      'icon' => 'home'))
-        : array(array('name' => '쇼핑몰',   'href' => G5_SHOP_URL.'/', 'icon' => 'bag'));
+    return array(
+        array('name' => '커뮤니티', 'href' => G5_URL.'/',      'icon' => 'home', 'active' => !$in_shop),
+        array('name' => '쇼핑몰',   'href' => G5_SHOP_URL.'/', 'icon' => 'bag',  'active' => $in_shop),
+    );
 }

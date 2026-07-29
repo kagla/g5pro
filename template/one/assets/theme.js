@@ -147,6 +147,7 @@
     var count = f.querySelector('.chk-count');
     var kebab = f.querySelector('.kebab');
     var kbtn = kebab && kebab.querySelector('.kebab-btn');
+    var tools = f.querySelector('.list-tools');
 
     function sync() {
         var v = visible();
@@ -156,6 +157,8 @@
             a.indeterminate = (n > 0 && n < v.length);
         });
         if (count) count.textContent = n ? n + '개 선택' : '';
+        // 넓은 화면에선 선택이 있을 때만 도구 줄을 보인다 (좁은 화면은 CSS 가 항상 표시)
+        if (tools) tools.classList.toggle('active', n > 0);
     }
 
     alls.forEach(function (a) {
