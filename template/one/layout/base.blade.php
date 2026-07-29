@@ -47,12 +47,21 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
             </div>
             @endforeach
         </nav>
+        <form class="hd-search" name="fsearchbox" method="get" action="{{ G5_BBS_URL }}/search.php"
+              onsubmit="return hd_search_check(this);">
+            <input type="hidden" name="sfl" value="wr_subject||wr_content">
+            <input type="hidden" name="sop" value="and">
+            <label for="hd_stx" class="sound_only">검색어</label>
+            <input type="text" id="hd_stx" name="stx" maxlength="20" placeholder="검색어">
+            <button type="submit" class="btn">검색</button>
+        </form>
         <div class="header-util">
             @if ($me)
             <span class="me">{{ $me['mb_nick'] }}</span>
             <a href="{{ G5_BBS_URL }}/logout.php">로그아웃</a>
             @else
             <a href="{{ G5_BBS_URL }}/login.php?url={{ urlencode(G5_URL) }}">로그인</a>
+            <a href="{{ G5_BBS_URL }}/register.php">회원가입</a>
             @endif
             <button type="button" id="theme-toggle" aria-label="테마 전환">◐</button>
         </div>
@@ -67,6 +76,14 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
     </div>
 </footer>
 @include('partials.popups')
+<script>
+function hd_search_check(f) {
+    var stx = f.stx.value.trim();
+    if (stx.length < 2) { alert("검색어는 두 글자 이상 입력하세요."); f.stx.focus(); return false; }
+    f.stx.value = stx;
+    return true;
+}
+</script>
 <script src="{{ $template['assets'] }}/theme.js"></script>
 </body>
 </html>
