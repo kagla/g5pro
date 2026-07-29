@@ -62,6 +62,7 @@ function g5_map_shop_orderview($body_html)
         'items'        => $items,
         'cancel_items' => $cancelled,
         'cancel_price' => isset($od['od_cancel_price']) ? (int)$od['od_cancel_price'] : 0,
+        'cancel_notes' => g5_shop_cancel_notes(isset($od['od_shop_memo']) ? $od['od_shop_memo'] : ''),
         'od_id'      => isset($od['od_id']) ? $od['od_id'] : '',
         'od_time'    => isset($od['od_time']) ? $od['od_time'] : '',
         'status'     => isset($od['od_status']) ? $od['od_status'] : '',
@@ -70,6 +71,26 @@ function g5_map_shop_orderview($body_html)
         'admin_href' => ($is_admin === 'super' && !empty($od['od_id']))
                         ? G5_ADMIN_URL.'/shop_admin/orderform.php?od_id='.$od['od_id'] : '',
     ));
+}
+
+// 취소 사유 — 순정은 od_shop_memo 에 로그처럼 덧붙인다:
+//   "주문자 본인 직접 취소 - 2026-07-29 20:41:35 (취소이유 : …)"
+// 이 칸에는 결제·PG 내부 이력도 함께 쌓이므로 통째로 보여주면 안 된다. 취소 사유 줄만 골라낸다.
+function g5_shop_cancel_notes($memo)
+{
+    $out = array();
+    if (!$memo) return $out;
+    $re = '/주문자 본인 직접 취소 - ([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}) \(취소이유 : (.*?)\)/u';
+    if (preg_match_all($re, stripslashes($memo), $m, PREG_SET_ORDER)) {
+        foreach ($m as $row) {
+            $out[] = array(
+                'who'    => '주문자 직접 취소',
+                'time'   => $row[1],
+                'reason' => get_text(trim($row[2])),
+            );
+        }
+    }
+    return $out;
 }
 
 // 주문 상품 — 순정 orderinquiryview.php 와 같은 질의를 옵션 한 줄씩으로 편다.
