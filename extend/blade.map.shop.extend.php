@@ -44,6 +44,24 @@ function g5_shop_item_rows($rows)
     return $out;
 }
 
+// ── 주문 상세 조회 (shop/orderinquiryview.php)
+// 취소·환불 폼과 영수증 팝업 JS 가 얽혀 있어 순정 출력을 그대로 담고 CSS 로만 다듬는다.
+function g5_map_shop_orderview($body_html)
+{
+    global $od, $is_admin;
+
+    g5_view('shop.orderview', array(
+        'body_html'  => $body_html,
+        'od_id'      => isset($od['od_id']) ? $od['od_id'] : '',
+        'od_time'    => isset($od['od_time']) ? $od['od_time'] : '',
+        'status'     => isset($od['od_status']) ? $od['od_status'] : '',
+        'list_href'  => G5_SHOP_URL.'/orderinquiry.php',
+        'shop_href'  => G5_SHOP_URL.'/',
+        'admin_href' => ($is_admin === 'super' && !empty($od['od_id']))
+                        ? G5_ADMIN_URL.'/shop_admin/orderform.php?od_id='.$od['od_id'] : '',
+    ));
+}
+
 // ── 쇼핑몰 메인 (shop/index.php)
 function g5_map_shop_index()
 {
