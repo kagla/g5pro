@@ -866,17 +866,20 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
     background: var(--card); border-radius: var(--r-xl); box-shadow: var(--sh-md);
 }
 .cart-total dl {
-    display: grid; grid-template-columns: 1fr auto; gap: var(--s2) var(--s4);
-    margin: 0; font-variant-numeric: tabular-nums;
+    display: grid; grid-template-columns: 1fr auto; gap: var(--s3) var(--s4);
+    margin: 0; font-size: var(--t-md); font-variant-numeric: tabular-nums;
 }
 .cart-total dt { color: var(--muted); }
-.cart-total dd { margin: 0; text-align: right; }
-.cart-total .cart-total-key { color: var(--fg); font-weight: 700; padding-top: var(--s2); border-top: 1px solid var(--line); }
-.cart-total .cart-total-val {
-    padding-top: var(--s2); border-top: 1px solid var(--line);
-    font-size: var(--t-xl); font-weight: 800; color: var(--accent);
+.cart-total dd { margin: 0; text-align: right; font-weight: 600; }
+.cart-total .cart-total-key {
+    color: var(--fg); font-size: var(--t-lg); font-weight: 700;
+    padding-top: var(--s3); border-top: 1px solid var(--line);
 }
-.cart-total .won { font-size: var(--t-md); margin-left: 1px; }
+.cart-total .cart-total-val {
+    padding-top: var(--s3); border-top: 1px solid var(--line);
+    font-size: var(--t-2xl); font-weight: 800; color: var(--accent);
+}
+.cart-total .won { font-size: var(--t-lg); margin-left: 2px; }
 
 /* 순정 주문폼을 감싸는 카드 — 내부 마크업은 순정 그대로 둔다 */
 .order-form {
