@@ -12,6 +12,7 @@
     --fg: #23303F;
     --muted: #64748B;
     --line: #E2ECF8;
+    --btn-line: #7C8EA6;   /* 버튼 테두리 — 카드 위에서 3:1 이상 보이게 (--line 은 1.19:1 이라 안 보인다) */
     --row-hover: #F5FAFF;
 
     /* 소다 블루 */
@@ -55,6 +56,7 @@
         --fg: #E6EDF5;
         --muted: #8B9BB0;
         --line: #23303F;
+        --btn-line: #57718E;
         --row-hover: #1B2837;
 
         --accent: #4A90FF;
@@ -81,6 +83,7 @@
     --fg: #E6EDF5;
     --muted: #8B9BB0;
     --line: #23303F;
+    --btn-line: #57718E;
     --row-hover: #1B2837;
 
     --accent: #4A90FF;
@@ -106,6 +109,7 @@
     --fg: #23303F;
     --muted: #64748B;
     --line: #E2ECF8;
+    --btn-line: #7C8EA6;   /* 버튼 테두리 — 카드 위에서 3:1 이상 보이게 (--line 은 1.19:1 이라 안 보인다) */
     --row-hover: #F5FAFF;
 
     --accent: #2E7CF6;
@@ -1780,3 +1784,24 @@ input[type=checkbox], input[type=radio] {
     .odv-items-table { display: none; }
     .odv-items-cards { display: block; }
 }
+
+/* ── 테두리만 있는 버튼들 ──
+   --line 은 표·구분선용이라 카드 위 버튼 테두리로 쓰면 1.2:1 로 거의 안 보인다.
+   버튼은 눌 수 있음이 보여야 하므로 --btn-line (3:1 이상) 을 쓴다. */
+.btn,
+.btn_frmline, .odv .btn_frmline, .tbl_frm01 .btn_frmline,
+.sit-embed .btn01,
+.react,
+#captcha button,
+#sit_btn_opt button, #btn_wish, #sit_btn_rec,
+#sit_ov_btn button, #sit_ov_btn > a,
+#sit_sel_option li button,
+#sod_frm_paysel label,
+#display_pay_button .btn01,
+.odv .btn01, .odv .btn02, .odv .btn_cancel,
+.kebab-menu button.danger { border-color: var(--btn-line); }
+
+/* 강조 버튼은 제 색 테두리를 그대로 쓴다 */
+.btn-primary, #sit_ov_btn .sit_btn_buy, #display_pay_button .btn_submit,
+#sod_frm_paysel input[type=radio]:checked + label { border-color: var(--accent); }
+.odv #sod_fin_cancel > button { border-color: var(--danger); }
