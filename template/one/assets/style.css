@@ -46,6 +46,7 @@
 
     /* 모서리 — 넉넉하게 */
     --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px; --r-2xl: 24px; --r-full: 999px;
+    --r-btn: 8px;   /* 버튼·페이징·필터 — 알약이 아니라 살짝 둥근 사각 */
 }
 @media (prefers-color-scheme: dark) {
     :root {
@@ -161,7 +162,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* ── 버튼·입력 ── */
 .btn {
     display: inline-block; font-size: var(--t-sm); font-weight: 700;
-    padding: var(--s2) var(--s4); border-radius: var(--r-full);
+    padding: var(--s2) var(--s4); border-radius: var(--r-btn);
     background: var(--card); color: var(--fg); border: 1px solid var(--line);
     cursor: pointer; white-space: nowrap; font-family: inherit;
     transition: border-color .15s, color .15s, box-shadow .15s;
@@ -220,7 +221,7 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .nav-toggle[aria-expanded="true"] .bars::after  { transform: translateY(-6px) rotate(-45deg); }
 .gnb-item { position: relative; flex: none; }
 .gnb-item > a {
-    display: block; padding: var(--s2) var(--s3); border-radius: var(--r-full);
+    display: block; padding: var(--s2) var(--s3); border-radius: var(--r-btn);
     color: var(--muted); font-weight: 600; white-space: nowrap;
 }
 .gnb-item > a:hover { background: var(--bg); color: var(--fg); }
@@ -252,7 +253,7 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 /* 헤더 아이콘 버튼 (검색·테마·닫기) */
 .icon-btn {
     display: flex; align-items: center; justify-content: center; flex: none;
-    background: none; border: 0; border-radius: var(--r-full);
+    background: none; border: 0; border-radius: var(--r-md);
     width: 36px; height: 36px; cursor: pointer; color: var(--muted);
     transition: color .15s, background .15s;
 }
@@ -398,7 +399,7 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .bbs-cate { display: flex; gap: var(--s2); flex-wrap: wrap; margin-bottom: var(--s4); }
 .bbs-cate a {
     padding: var(--s2) var(--s3); font-size: var(--t-sm); font-weight: 600;
-    border-radius: var(--r-full); background: var(--card); color: var(--muted); box-shadow: var(--sh-sm);
+    border-radius: var(--r-btn); background: var(--card); color: var(--muted); box-shadow: var(--sh-sm);
 }
 .bbs-cate a:hover { color: var(--accent); }
 .bbs-cate a.active { background: var(--accent); color: var(--accent-fg); box-shadow: var(--sh-btn); }
@@ -410,7 +411,7 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .paging { display: flex; gap: var(--s1); font-size: var(--t-sm); font-variant-numeric: tabular-nums; }
 .paging a, .paging-cur {
     min-width: 34px; text-align: center; padding: var(--s2) var(--s3);
-    border-radius: var(--r-full); background: var(--card); color: var(--muted); box-shadow: var(--sh-sm);
+    border-radius: var(--r-btn); background: var(--card); color: var(--muted); box-shadow: var(--sh-sm);
 }
 .paging a:hover { color: var(--accent); }
 .paging-cur { background: var(--accent); color: var(--accent-fg); font-weight: 700; box-shadow: var(--sh-btn); }
@@ -423,7 +424,7 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .bbs-actions { display: flex; gap: var(--s2); }
 .bbs-search {
     display: flex; align-items: center; gap: var(--s2); flex: 1; min-width: 0; max-width: 420px;
-    background: var(--card); border-radius: var(--r-full); padding: var(--s1) var(--s1) var(--s1) var(--s3);
+    background: var(--card); border-radius: var(--r-btn); padding: var(--s1) var(--s1) var(--s1) var(--s3);
     box-shadow: var(--sh-sm);
 }
 .bbs-search select { border: 0; background: none; font-size: var(--t-sm); padding: var(--s1); }
@@ -710,7 +711,7 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .item-form input[type=text], .item-form select { max-width: 100%; }
 .item-form .btn_cart, .item-form .btn_buy, .item-form input[type=submit], .item-form button {
     font: inherit; font-size: var(--t-md); font-weight: 700; cursor: pointer;
-    border-radius: var(--r-full); padding: var(--s3) var(--s5); border: 1px solid var(--accent);
+    border-radius: var(--r-btn); padding: var(--s3) var(--s5); border: 1px solid var(--accent);
     background: var(--accent); color: var(--accent-fg);
 }
 .item-form .btn_cart { background: var(--card); color: var(--accent); }
