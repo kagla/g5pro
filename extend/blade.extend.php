@@ -98,22 +98,53 @@ function g5_view($view, $data = array())
     echo g5_blade_strip_php(g5_blade()->run($view, array_merge(g5_blade_common(), $data)));
 }
 
-// 링크에서 .php 를 감춘다 (.htaccess 가 확장자 없는 주소를 받아준다).
-// href·action 속성만 손대므로 JS 안의 ajax 주소(write_token.php 등)는 그대로 둔다.
-// POST 도 내부 rewrite 라 본문이 보존된다 — 리다이렉트가 아니다.
+// 렌더된 HTML 의 링크를 정리한다 — href·action 속성만 손대므로
+// JS 안의 ajax 주소(write_token.php 등)는 그대로 두고 계속 동작한다.
+// POST 도 내부 rewrite 라 본문이 보존된다 (리다이렉트가 아니다).
+//   1) 게시판 주소를 /board/{게시판}[/{글번호}|/write] 로
+//   2) 나머지는 .php 확장자 제거
+// 한곳에서 처리하므로 뷰·매핑은 물론 관리자에 등록된 메뉴 링크까지 함께 정리된다.
 function g5_blade_strip_php($html)
 {
     return preg_replace_callback('/\b(href|action)=(["\'])([^"\']+)\2/i', function ($m) {
         $url = $m[3];
-        if (strpos($url, '.php') === false) return $m[0];
+        if (strpos($url, '.php') === false && strpos($url, '/'.G5_BBS_DIR.'/') === false) return $m[0];
         // 외부 사이트는 건드리지 않는다
         if (preg_match('#^[a-z]+://#i', $url) && strpos($url, G5_URL) !== 0) return $m[0];
         // 관리자는 순정 그대로 둔다
         if (strpos($url, '/'.G5_ADMIN_DIR.'/') !== false) return $m[0];
 
-        $new = preg_replace('/\.php(?=$|[?#])/', '', $url);
+        $new = g5_blade_board_link($url);
+        $new = preg_replace('/\.php(?=$|[?#])/', '', $new);
         return $m[1].'='.$m[2].$new.$m[2];
     }, $html);
+}
+
+// /bbs/board.php?bo_table=free&wr_id=3  →  /board/free/3
+// /bbs/write.php?bo_table=free          →  /board/free/write
+function g5_blade_board_link($url)
+{
+    if (!preg_match('#(/'.preg_quote(G5_BBS_DIR, '#').'/(board|write)(?:\.php)?)\?(.+)$#', $url, $m)) return $url;
+
+    $query = html_entity_decode($m[3], ENT_QUOTES, 'UTF-8');
+    parse_str($query, $q);
+    if (empty($q['bo_table'])) return $url;
+
+    $bo_table = $q['bo_table'];
+    unset($q['bo_table']);
+
+    $path = '/board/'.rawurlencode($bo_table);
+    if ($m[2] === 'write') {
+        $path .= '/write';
+    } else if (!empty($q['wr_id'])) {
+        $path .= '/'.rawurlencode($q['wr_id']);
+        unset($q['wr_id']);
+    }
+    unset($q['rewrite']);
+
+    $base = substr($url, 0, strpos($url, $m[1]));
+    $rest = $q ? '?'.http_build_query($q, '', '&amp;') : '';
+    return $base.$path.$rest;
 }
 
 // 현재접속자 기록 — 순정은 tail.sub.php 의 html_end()(html_process::run)가 수행하지만
@@ -239,4 +270,39 @@ function g5_blade_profile_src($mb_id)
     if (!function_exists('get_member_profile_img')) return '';
     $html = get_member_profile_img($mb_id);
     return preg_match('/src="([^"]*)"/i', $html, $m) ? $m[1] : '';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   주소 규칙 — 게시판은 /board/{게시판}[/{글번호}|/write]
+   루트(/)는 비워 둔다 (순정 짧은주소는 /{게시판} 을 쓰지만 쓰지 않는다)
+   ═══════════════════════════════════════════════════════════ */
+
+// 순정 get_pretty_url() 최상단 훅 — 값을 돌려주면 순정 로직을 건너뛴다.
+// get_list()·view.php 의 이전/다음글 등 순정이 만드는 링크가 전부 여기를 지난다.
+add_replace('get_pretty_url', 'g5_blade_pretty_url', 10, 5);
+function g5_blade_pretty_url($url, $folder, $no = '', $query_string = '', $action = '')
+{
+    if (!in_array($folder, get_board_names())) return $url;   // 게시판만 담당
+
+    $u = G5_URL.'/board/'.$folder;
+    if ($no)          $u .= '/'.urlencode($no);
+    else if ($action) $u .= '/'.urlencode($action);
+
+    if ($query_string) {
+        // 순정과 같은 규칙: 앞이 & 면 ? 로 바꾼다
+        $u .= (substr($query_string, 0, 1) === '&')
+            ? preg_replace('/&(amp;)?/', '?', $query_string, 1)
+            : '?'.$query_string;
+    }
+    return $u;
+}
+
+// 매핑·뷰에서 쓰는 게시판 주소 헬퍼 (short_url_clean 대신)
+function g5_board_url($bo_table, $no = '', $query_string = '')
+{
+    return g5_blade_pretty_url('', $bo_table, $no, $query_string);
+}
+function g5_board_write_url($bo_table, $query_string = '')
+{
+    return g5_blade_pretty_url('', $bo_table, '', $query_string, 'write');
 }

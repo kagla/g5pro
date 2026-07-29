@@ -1,7 +1,9 @@
 <?php
 /**
- * g5blade 화면 매핑 모음 — 변환된 순정 화면이 스킨 include 자리에서 g5_map_*() 를 호출한다.
+ * g5blade 화면 매핑 — 기본 서비스(bbs·회원). 변환된 순정 화면이 스킨 include 자리에서 g5_map_*() 를 호출한다.
  * 한 화면 = 한 함수. 순정 전역변수를 뷰용 배열로 정리해 g5_view() 를 호출하는 것이 전부다.
+ * 매핑은 서비스 단위로 파일을 나눈다 — 쇼핑몰은 blade.map.shop.extend.php,
+ * 새 서비스가 생기면 blade.map.<서비스>.extend.php 로 추가한다.
  * (런타임·공통 데이터는 blade.extend.php)
  */
 if (!defined('_GNUBOARD_')) exit;
@@ -57,7 +59,7 @@ function g5_map_board_list()
         foreach (explode('|', (string)$board['bo_category_list']) as $c) {
             $categories[] = array(
                 'name'   => $c,
-                'href'   => short_url_clean(G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&sca='.urlencode($c)),
+                'href'   => g5_board_url($bo_table, '', 'sca='.urlencode($c)),
                 'active' => ($sca === $c),
             );
         }
@@ -73,13 +75,12 @@ function g5_map_board_list()
         'total_count' => (int)$total_count,
         'page'        => (int)$page,
         'total_page'  => (int)$total_page,
-        'page_href'   => short_url_clean(G5_BBS_URL.'/board.php?bo_table='.$bo_table
-                         .'&sca='.urlencode($sca).'&sfl='.urlencode($sfl).'&stx='.urlencode($stx).'&page='),
+        'page_href'   => g5_board_url($bo_table, '', 'sca='.urlencode($sca).'&sfl='.urlencode($sfl).'&stx='.urlencode($stx).'&page='),
         'write_href'  => $write_href,
         'rss_href'    => $rss_href,
         'admin_href'  => $admin_href,
         'search'      => array('sfl' => $sfl, 'stx' => $stx),
-        'board_url'   => short_url_clean(G5_BBS_URL.'/board.php?bo_table='.$bo_table),
+        'board_url'   => g5_board_url($bo_table),
         'is_checkbox' => (bool)$is_checkbox,
         'list_update_action' => G5_BBS_URL.'/board_list_update.php',
     ));
@@ -157,9 +158,9 @@ function g5_map_board_view($comments)
         'files'       => $files,
         'links'       => $links,
         'comments'    => $comments,
-        'list_href'   => short_url_clean(G5_BBS_URL.'/board.php?bo_table='.$bo_table.$qstr),
+        'list_href'   => g5_board_url($bo_table, '', ltrim($qstr, '&')),
         'write_href'  => ($member['mb_level'] >= $board['bo_write_level'])
-                         ? short_url_clean(G5_BBS_URL.'/write.php?bo_table='.$bo_table) : '',
+                         ? g5_board_write_url($bo_table) : '',
         // 순정 view.php 가 만든 링크 (&amp; 엔티티 포함 → 뷰에서 {!! !!})
         'update_href' => $update_href,
         'delete_href' => $delete_href,
@@ -270,7 +271,7 @@ function g5_map_board_write()
         'captcha_js'     => $captcha_js,
         'file_count'     => (int)$file_count,
         'files_exist'    => $files_exist,
-        'list_href'      => short_url_clean(G5_BBS_URL.'/board.php?bo_table='.$bo_table),
+        'list_href'      => g5_board_url($bo_table),
     ));
 }
 
@@ -511,152 +512,3 @@ function g5_map_scrap()
     ));
 }
 
-/* ═══════════════════════════════════════════════════════════
-   쇼핑몰
-   ═══════════════════════════════════════════════════════════ */
-
-// item_list 에서 상품 배열만 뽑는다 (출력 없음) — extend/blade.shop_items.php 참고
-function g5_shop_items($il)
-{
-    $GLOBALS['g5_blade_items'] = array();
-    $il->set_list_skin(G5_PATH.'/extend/blade.shop_items.php');
-    $il->run();   // 반환 HTML 은 버린다
-    return $GLOBALS['g5_blade_items'];
-}
-
-// 상품 한 건을 뷰용으로 정리
-function g5_shop_item_row($row)
-{
-    $it_id = $row['it_id'];
-    $price = (int)$row['it_price'];
-    $cust  = (int)$row['it_cust_price'];
-
-    return array(
-        'it_id'      => $it_id,
-        'name'       => get_text($row['it_name']),
-        'href'       => G5_SHOP_URL.'/item.php?it_id='.$it_id,
-        'img'        => get_it_imageurl($it_id),           // 대표 이미지 URL
-        'basic'      => isset($row['it_basic']) ? $row['it_basic'] : '',   // 순정 conv_content 완료 → {!! !!}
-        'price'      => $price,
-        'cust_price' => $cust,
-        'discount'   => ($cust > 0 && $price > 0 && $cust > $price) ? (int)round((1 - $price / $cust) * 100) : 0,
-        'is_soldout' => (isset($row['it_soldout']) && $row['it_soldout']) ? true : false,
-        'use_cart'   => !isset($row['it_use']) || $row['it_use'] == 1,
-    );
-}
-
-function g5_shop_item_rows($rows)
-{
-    $out = array();
-    foreach ((array)$rows as $r) $out[] = g5_shop_item_row($r);
-    return $out;
-}
-
-// ── 쇼핑몰 메인 (shop/index.php)
-function g5_map_shop_index()
-{
-    global $default;
-
-    // 순정 index.php 와 같은 상품유형 4종 (설정에서 켠 것만)
-    $blocks = array();
-    $titles = array(1 => '히트상품', 2 => '추천상품', 3 => '최신상품', 4 => '인기상품');
-    foreach ($titles as $type => $title) {
-        if (empty($default['de_type'.$type.'_list_use'])) continue;
-        $il = new item_list();
-        $il->set_type($type);
-        $items = g5_shop_items($il);
-        if (!$items) continue;
-        $blocks[] = array(
-            'title' => $title,
-            'href'  => shop_type_url((string)$type),
-            'items' => g5_shop_item_rows($items),
-        );
-    }
-
-    g5_view('shop.index', array(
-        'blocks'    => $blocks,
-        'cate_href' => G5_SHOP_URL.'/list.php?ca_id=',
-        'categories'=> g5_shop_categories(),
-    ));
-}
-
-// 1단계 상품분류 목록
-function g5_shop_categories()
-{
-    global $g5;
-    $out = array();
-    $result = sql_query(" select ca_id, ca_name from `{$g5['g5_shop_category_table']}`
-                           where length(ca_id) = 2 and ca_use = '1' order by ca_order, ca_id ", false);
-    while ($result && ($row = sql_fetch_array($result))) {
-        $out[] = array(
-            'ca_id' => $row['ca_id'],
-            'name'  => get_text($row['ca_name']),
-            'href'  => G5_SHOP_URL.'/list.php?ca_id='.$row['ca_id'],
-        );
-    }
-    return $out;
-}
-
-// ── 상품분류 목록 (shop/list.php)
-function g5_map_shop_list($items, $total_count, $page, $total_page, $qstr2)
-{
-    global $ca, $ca_id, $sort, $sortodr;
-
-    g5_view('shop.list', array(
-        'category' => array(
-            'ca_id' => $ca_id,
-            'name'  => get_text($ca['ca_name']),
-        ),
-        'items'       => g5_shop_item_rows($items),
-        'total_count' => (int)$total_count,
-        'page'        => (int)$page,
-        'total_page'  => (int)$total_page,
-        'page_href'   => G5_SHOP_URL.'/list.php?ca_id='.$ca_id.'&sort='.$sort.'&sortodr='.$sortodr.'&page=',
-        'sorts' => array(
-            array('name' => '최신순',   'href' => G5_SHOP_URL.'/list.php?ca_id='.$ca_id.'&sort=it_id&sortodr=desc',      'active' => ($sort === 'it_id')),
-            array('name' => '낮은가격', 'href' => G5_SHOP_URL.'/list.php?ca_id='.$ca_id.'&sort=it_price&sortodr=asc',     'active' => ($sort === 'it_price' && $sortodr === 'asc')),
-            array('name' => '높은가격', 'href' => G5_SHOP_URL.'/list.php?ca_id='.$ca_id.'&sort=it_price&sortodr=desc',    'active' => ($sort === 'it_price' && $sortodr === 'desc')),
-            array('name' => '이름순',   'href' => G5_SHOP_URL.'/list.php?ca_id='.$ca_id.'&sort=it_name&sortodr=asc',      'active' => ($sort === 'it_name')),
-        ),
-        'categories' => g5_shop_categories(),
-    ));
-}
-
-// ── 상품 상세 (shop/item.php)
-function g5_map_shop_item($form_html, $related)
-{
-    global $it, $ca, $default;
-
-    $it_id = $it['it_id'];
-    $price = (int)$it['it_price'];
-    $cust  = (int)$it['it_cust_price'];
-
-    g5_view('shop.item', array(
-        'item' => array(
-            'it_id'      => $it_id,
-            'name'       => get_text($it['it_name']),
-            'img'        => get_it_imageurl($it_id),
-            'basic'      => conv_content($it['it_basic'], 1),        // 상품 설명 HTML → {!! !!}
-            'explan'     => conv_content($it['it_explan'], 1),       // 상세 설명 HTML → {!! !!}
-            'price'      => $price,
-            'cust_price' => $cust,
-            'discount'   => ($cust > 0 && $price > 0 && $cust > $price) ? (int)round((1 - $price / $cust) * 100) : 0,
-            'point'      => (int)$it['it_point'],
-            'maker'      => get_text($it['it_maker']),
-            'origin'     => get_text($it['it_origin']),
-            'brand'      => get_text($it['it_brand']),
-            'model'      => get_text($it['it_model']),
-            'delivery'   => (int)$it['it_sc_price'],
-            'is_soldout' => (bool)$it['it_soldout'],
-            'stock'      => get_it_stock_qty($it_id),
-        ),
-        'category' => array(
-            'ca_id' => $it['ca_id'],
-            'name'  => isset($ca['ca_name']) ? get_text($ca['ca_name']) : '',
-            'href'  => G5_SHOP_URL.'/list.php?ca_id='.$it['ca_id'],
-        ),
-        'form_html' => $form_html,   // 순정 item.form.skin.php 출력(옵션·수량·장바구니 버튼) → {!! !!}
-        'related'   => g5_shop_item_rows($related),
-        'cart_href' => G5_SHOP_URL.'/cart.php',
-    ));
-}

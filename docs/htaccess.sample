@@ -23,9 +23,10 @@ RewriteRule ^shop/([^/]+)/$  shop/item.php?it_seo_title=$1&rewrite=1  [QSA,L]
 RewriteRule ^content/([0-9a-zA-Z_]+)$ bbs/content.php?co_id=$1&rewrite=1 [QSA,L]
 RewriteRule ^content/([^/]+)/$ bbs/content.php?co_seo_title=$1&rewrite=1 [QSA,L]
 RewriteRule ^rss/([0-9a-zA-Z_]+)$ bbs/rss.php?bo_table=$1 [QSA,L]
-RewriteRule ^([0-9a-zA-Z_]+)$ bbs/board.php?bo_table=$1&rewrite=1 [QSA,L]
-RewriteRule ^([0-9a-zA-Z_]+)/([^/]+)/$ bbs/board.php?bo_table=$1&wr_seo_title=$2&rewrite=1 [QSA,L]
-RewriteRule ^([0-9a-zA-Z_]+)/write$ bbs/write.php?bo_table=$1&rewrite=1 [QSA,L]
-RewriteRule ^([0-9a-zA-Z_]+)/([0-9]+)$ bbs/board.php?bo_table=$1&wr_id=$2&rewrite=1 [QSA,L]
+# 게시판 — /board/{게시판}[/{글번호}|/write]. 루트(/)는 비워 둔다.
+RewriteRule ^board/([0-9a-zA-Z_]+)$ bbs/board.php?bo_table=$1&rewrite=1 [QSA,L]
+RewriteRule ^board/([0-9a-zA-Z_]+)/write$ bbs/write.php?bo_table=$1&rewrite=1 [QSA,L]
+RewriteRule ^board/([0-9a-zA-Z_]+)/([0-9]+)$ bbs/board.php?bo_table=$1&wr_id=$2&rewrite=1 [QSA,L]
+RewriteRule ^board/([0-9a-zA-Z_]+)/([^/]+)/$ bbs/board.php?bo_table=$1&wr_seo_title=$2&rewrite=1 [QSA,L]
 </IfModule>
 #### g5blade rewrite END #####
