@@ -311,11 +311,10 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .search-backdrop { position: absolute; inset: 0; background: rgba(14,25,40,.45); backdrop-filter: blur(2px); }
 .search-panel {
     position: relative; max-width: 620px; margin: 12vh auto 0;
-    padding: var(--s3) var(--s5) var(--s5);
+    padding: var(--s5);
     background: var(--card); border-radius: var(--r-2xl); box-shadow: var(--sh-lg);
     animation: search-in .16s ease;
 }
-.search-panel-head { display: flex; justify-content: flex-end; margin-bottom: var(--s2); }
 @keyframes search-in { from { opacity: 0; transform: translateY(-10px); } }
 @media (prefers-reduced-motion: reduce) { .search-panel { animation: none; } }
 .search-panel form { display: flex; align-items: center; gap: var(--s2); }
@@ -648,8 +647,7 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 
     .header-util { margin-left: auto; gap: var(--s1); }
     .login-link { padding: var(--s1) var(--s2); }
-    .search-panel { margin-top: 6vh; padding: var(--s3) var(--s4) var(--s4); border-radius: var(--r-xl); }
-    .search-close { width: 40px; height: 40px; }   /* 터치 영역 확보 */
+    .search-panel { margin-top: 6vh; padding: var(--s4); border-radius: var(--r-xl); }
     .profile-menu { min-width: 190px; }
     .site-main { padding: var(--s4) var(--s4) var(--s6); }
     .hero { padding: var(--s5) var(--s4); border-radius: var(--r-xl); }

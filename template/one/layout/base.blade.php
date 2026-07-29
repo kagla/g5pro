@@ -112,12 +112,6 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
     <div class="search-backdrop" data-close></div>
     <div class="search-panel">
         <h2 id="search-modal-title" class="sound_only">사이트 검색</h2>
-        {{-- 닫기는 자체 줄에 둔다 — 절대배치는 폼과 겹칠 수 있다 --}}
-        <div class="search-panel-head">
-            <button type="button" class="icon-btn search-close" data-close aria-label="검색 닫기">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
-            </button>
-        </div>
         <form name="fsearchbox" method="get" action="{{ G5_BBS_URL }}/search.php" onsubmit="return hd_search_check(this);">
             <input type="hidden" name="sfl" value="wr_subject||wr_content">
             <input type="hidden" name="sop" value="and">
