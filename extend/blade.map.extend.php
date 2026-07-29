@@ -82,6 +82,38 @@ function g5_map_board_list()
         'board_url'   => short_url_clean(G5_BBS_URL.'/board.php?bo_table='.$bo_table),
         'is_checkbox' => (bool)$is_checkbox,
         'list_update_action' => G5_BBS_URL.'/board_list_update.php',
+        'move_action'        => G5_BBS_URL.'/move.php',
+    ));
+}
+
+// ── 게시물 복사·이동 대상 고르기 (bbs/move.php) — 목록에서 팝업으로 연다
+function g5_map_move($sw, $act, $wr_id_list, $list)
+{
+    global $bo_table, $sfl, $stx, $spt, $sst, $sod, $page;
+
+    $boards = array();
+    foreach ($list as $row) {
+        $boards[] = array(
+            'bo_table'   => $row['bo_table'],
+            'bo_subject' => $row['bo_subject'],
+            'gr_subject' => $row['gr_subject'],
+            'current'    => ($row['bo_table'] === $bo_table),
+        );
+    }
+
+    g5_view('bbs.move', array(
+        'sw'          => $sw,
+        'act'         => $act,           // '복사' | '이동'
+        'wr_id_list'  => $wr_id_list,
+        'boards'      => $boards,
+        'action'      => G5_BBS_URL.'/move_update.php',
+        'count'       => count(array_filter(explode(',', (string)$wr_id_list), 'strlen')),
+        'keep'        => array(          // 순정 move_update.php 가 그대로 되돌려받는 검색 상태
+            'bo_table' => $bo_table,
+            'sfl' => $sfl, 'stx' => $stx, 'spt' => $spt,
+            'sst' => $sst, 'sod' => $sod, 'page' => $page,
+        ),
+        'referer'     => isset($_SERVER['HTTP_REFERER']) ? get_text(clean_xss_tags($_SERVER['HTTP_REFERER'])) : '',
     ));
 }
 
@@ -522,5 +554,20 @@ function g5_map_group($boards)
             'gr_subject' => get_text($group['gr_subject']),   // 이스케이프 완료 → {!! !!}
         ),
         'boards' => $boards,   // [['bo_table','bo_subject'], ...] — 최신글은 뷰가 partials.latest 로 조회
+    ));
+}
+
+// ── 내용 페이지 (bbs/content.php) — $html 은 호출부가 conv_content·치환코드 처리를 마친 본문
+function g5_map_content($html)
+{
+    global $co, $co_id, $is_admin;
+
+    g5_view('bbs.content', array(
+        'co_id'      => $co_id,
+        'subject'    => get_text($co['co_subject']),   // 이스케이프 완료 → {!! !!}
+        'content'    => $html,                         // conv_content 완료 HTML → {!! !!}
+        'head_img'   => file_exists(G5_DATA_PATH.'/content/'.$co_id.'_h') ? G5_DATA_URL.'/content/'.$co_id.'_h' : '',
+        'tail_img'   => file_exists(G5_DATA_PATH.'/content/'.$co_id.'_t') ? G5_DATA_URL.'/content/'.$co_id.'_t' : '',
+        'admin_href' => $is_admin ? G5_ADMIN_URL.'/contentform.php?w=u&co_id='.$co_id : '',
     ));
 }

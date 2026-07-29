@@ -128,6 +128,103 @@
     });
 })();
 
+// 게시판 목록 관리 도구 — 전체 선택 + 점 세 개 메뉴(선택이동·복사·삭제)
+// 순정 board_list_update.php 가 btn_submit 값으로 갈라지고, 복사·이동은 move.php 팝업으로 넘긴다.
+(function () {
+    var f = document.getElementById('fboardlist');
+    if (!f) return;
+
+    function items() {
+        return [].slice.call(f.querySelectorAll('input[name="chk_wr_id[]"]'));
+    }
+    // 표(넓은 화면)와 카드(좁은 화면) 레이아웃이 같은 글을 각각 그린다.
+    // 지금 보이는 쪽만 다뤄야 같은 wr_id 가 두 번 전송되지 않는다.
+    function visible() {
+        return items().filter(function (c) { return c.offsetParent !== null; });
+    }
+
+    var alls = [].slice.call(f.querySelectorAll('.chk-all'));
+    var count = f.querySelector('.chk-count');
+    var kebab = f.querySelector('.kebab');
+    var kbtn = kebab && kebab.querySelector('.kebab-btn');
+
+    function sync() {
+        var v = visible();
+        var n = v.filter(function (c) { return c.checked; }).length;
+        alls.forEach(function (a) {
+            a.checked = (n > 0 && n === v.length);
+            a.indeterminate = (n > 0 && n < v.length);
+        });
+        if (count) count.textContent = n ? n + '개 선택' : '';
+    }
+
+    alls.forEach(function (a) {
+        a.addEventListener('change', function () {
+            visible().forEach(function (c) { c.checked = a.checked; });
+            sync();
+        });
+    });
+    f.addEventListener('change', function (e) {
+        if (e.target.name === 'chk_wr_id[]') sync();
+    });
+    // 창 크기가 바뀌면 보이는 레이아웃이 달라진다
+    window.addEventListener('resize', sync);
+    sync();
+
+    function setMenu(on) {
+        kebab.classList.toggle('open', on);
+        kbtn.setAttribute('aria-expanded', String(on));
+    }
+    if (kebab) {
+        kbtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            setMenu(kbtn.getAttribute('aria-expanded') !== 'true');
+        });
+        document.addEventListener('click', function (e) {
+            if (!kebab.contains(e.target)) setMenu(false);
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && kbtn.getAttribute('aria-expanded') === 'true') { setMenu(false); kbtn.focus(); }
+        });
+    }
+
+    var pressed = '';
+    f.addEventListener('click', function (e) {
+        var b = e.target.closest ? e.target.closest('button[name="btn_submit"]') : null;
+        if (b) pressed = b.value;
+    });
+
+    f.addEventListener('submit', function (e) {
+        function restore() { items().forEach(function (c) { c.disabled = false; }); }
+
+        if (!visible().filter(function (c) { return c.checked; }).length) {
+            alert(pressed + '할 게시물을 하나 이상 선택하세요.');
+            e.preventDefault();
+            return;
+        }
+        // 안 보이는 레이아웃의 체크는 전송에서 뺀다
+        items().forEach(function (c) { c.disabled = (c.offsetParent === null); });
+
+        if (pressed === '선택삭제') {
+            if (!confirm('선택한 게시물을 정말 삭제하시겠습니까?\n\n한번 삭제한 자료는 복구할 수 없습니다.\n답변글이 있다면 답변글도 함께 선택해야 삭제됩니다.')) {
+                e.preventDefault();
+                restore();
+                return;
+            }
+            f.removeAttribute('target');
+            f.action = f.dataset.deleteAction;
+        } else {
+            // 복사·이동은 대상 게시판을 새 창에서 고른다 (순정 move.php 와 같은 계약)
+            f.sw.value = (pressed === '선택복사') ? 'copy' : 'move';
+            window.open('', 'g5move', 'left=60,top=60,width=560,height=640,scrollbars=1');
+            f.target = 'g5move';
+            f.action = f.dataset.moveAction;
+        }
+        // 제출 직렬화가 끝난 뒤 되돌린다 (팝업 제출이면 이 화면은 그대로 남는다)
+        setTimeout(function () { restore(); if (kebab) setMenu(false); }, 0);
+    });
+})();
+
 // 라이트/다크 토글 + 레이어팝업 닫기
 (function () {
     var btn = document.getElementById('theme-toggle');

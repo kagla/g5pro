@@ -4,9 +4,36 @@
 @include('partials.bbs_head')
 
 @if ($is_checkbox)
+{{-- 관리자 전용 선택 도구. 순정 board_list_update.php 가 btn_submit 값(선택삭제/복사/이동)으로 갈라진다 --}}
 <form name="fboardlist" id="fboardlist" method="post" action="{{ $list_update_action }}"
-      onsubmit="return fboardlist_check(this);">
+      data-delete-action="{{ $list_update_action }}" data-move-action="{{ $move_action }}">
 <input type="hidden" name="bo_table" value="{{ $board['bo_table'] }}">
+<input type="hidden" name="sw" value="">{{-- move.php 가 copy/move 를 여기서 읽는다 --}}
+
+<div class="list-tools">
+    <label class="chk-all-label"><input type="checkbox" class="chk-all"> 전체 선택</label>
+    <span class="chk-count" aria-live="polite"></span>
+    <div class="kebab">
+        <button type="button" class="icon-btn kebab-btn" aria-haspopup="true" aria-expanded="false"
+                aria-label="선택한 게시물 관리" title="선택한 게시물 관리">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>
+        </button>
+        <div class="kebab-menu" role="menu">
+            <button type="submit" name="btn_submit" value="선택이동" role="menuitem">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h14"/><path d="m13 7 5 5-5 5"/></svg>
+                선택이동
+            </button>
+            <button type="submit" name="btn_submit" value="선택복사" role="menuitem">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 5.5A1.5 1.5 0 0 0 13.5 4h-8A1.5 1.5 0 0 0 4 5.5v8A1.5 1.5 0 0 0 5.5 15"/></svg>
+                선택복사
+            </button>
+            <button type="submit" name="btn_submit" value="선택삭제" role="menuitem" class="danger">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 7h15"/><path d="M9.5 7V5h5v2"/><path d="M6.5 7 7.6 20h8.8L17.5 7"/></svg>
+                선택삭제
+            </button>
+        </div>
+    </div>
+</div>
 @endif
 
 <div class="list-panel">
@@ -14,7 +41,7 @@
     <table class="list-table">
         <thead>
             <tr>
-                @if ($is_checkbox)<th class="col-chk"><span class="sound_only">선택</span></th>@endif
+                @if ($is_checkbox)<th class="col-chk"><input type="checkbox" class="chk-all" aria-label="전체 선택"></th>@endif
                 <th class="col-no">번호</th>
                 <th class="col-subject">제목</th>
                 <th>글쓴이</th>
@@ -70,18 +97,7 @@
 </div>
 
 @if ($is_checkbox)
-<div class="bbs-admin-acts">
-    <button type="submit" name="btn_submit" value="선택삭제" class="btn"
-            onclick="return confirm('선택한 게시물을 정말 삭제하시겠습니까?\n\n한번 삭제한 자료는 복구할 수 없습니다.');">선택삭제</button>
-</div>
 </form>
-<script>
-function fboardlist_check(f) {
-    var n = f.querySelectorAll('input[name="chk_wr_id[]"]:checked').length;
-    if (!n) { alert("삭제할 게시물을 하나 이상 선택하세요."); return false; }
-    return true;
-}
-</script>
 @endif
 
 @include('partials.bbs_toolbar')
