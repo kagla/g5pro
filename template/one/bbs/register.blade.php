@@ -1,6 +1,6 @@
 @extends('layout.default')
 @section('content')
-<div class="member-box">
+<div class="member-box wide">
     <h2>회원가입 약관</h2>
     <form name="fregister" id="fregister" method="post" action="{{ $action_url }}" autocomplete="off"
           onsubmit="return fregister_check(this);">

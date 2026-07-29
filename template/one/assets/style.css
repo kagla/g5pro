@@ -197,7 +197,27 @@ textarea { line-height: 1.6; }
 
 .bbs-empty { padding: var(--s7) 0; text-align: center; color: var(--muted); }
 
+/* 사이드뷰 — 순정 get_sideview() 마크업. 순정 CSS 를 로드하지 않으므로 여기서 책임진다.
+   드롭다운은 기본 숨김이고 common.js 가 .sv_on 을 붙여 연다. */
+.sv_wrap { position: relative; display: inline-block; font-weight: inherit; }
+.sv_wrap .sv {
+    display: none; position: absolute; top: 100%; left: 0; z-index: 100;
+    min-width: 120px; margin-top: var(--s1);
+    background: var(--bg); border: 1px solid var(--line); border-radius: var(--r-md);
+    padding: var(--s1); box-shadow: 0 4px 12px rgba(0,0,0,.12);
+}
+.sv_wrap .sv a {
+    display: block; padding: var(--s1) var(--s2); border-radius: var(--r-sm);
+    font-size: var(--t-sm); font-weight: 400; color: var(--muted); white-space: nowrap;
+}
+.sv_wrap .sv a:hover { background: var(--card); color: var(--fg); }
+.sv_wrap .sv_on { display: block; }
+.sv_wrap .sv img { display: none; }   /* 아바타 중복 방지 */
+.sv_member, .sv_guest { color: inherit; }
+
 /* 페이징 */
+.paging-wrap { display: flex; justify-content: center; margin-top: var(--s4); }
+.paging-wrap:empty { display: none; }
 .paging { display: flex; gap: var(--s1); font-size: var(--t-sm); font-variant-numeric: tabular-nums; }
 .paging a, .paging-cur {
     min-width: 28px; text-align: center; padding: var(--s1) var(--s2);

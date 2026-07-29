@@ -1,10 +1,6 @@
 {{-- 게시판 하단: 페이징·검색·글쓰기 — 목록 변형 4종이 공용으로 쓴다 --}}
-<div class="bbs-toolbar">
+<div class="paging-wrap">
     @include('partials.paging', ['page' => $page, 'total_page' => $total_page, 'page_href' => $page_href])
-    <div class="bbs-actions">
-        @if ($rss_href)<a class="btn" href="{{ $rss_href }}">RSS</a>@endif
-        @if ($write_href)<a class="btn btn-primary" href="{{ $write_href }}">글쓰기</a>@endif
-    </div>
 </div>
 
 <div class="bbs-toolbar">
@@ -22,4 +18,8 @@
         <input type="text" id="bbs_stx" name="stx" value="{{ $search['stx'] }}" required>
         <button type="submit" class="btn">검색</button>
     </form>
+    <div class="bbs-actions">
+        @if ($rss_href)<a class="btn" href="{{ $rss_href }}">RSS</a>@endif
+        @if ($write_href)<a class="btn btn-primary" href="{{ $write_href }}">글쓰기</a>@endif
+    </div>
 </div>

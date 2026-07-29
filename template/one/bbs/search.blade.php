@@ -32,8 +32,11 @@
 <p class="bbs-empty">검색 결과가 없습니다. 다른 검색어로 찾아보세요.</p>
 @endforelse
 
-<div class="bbs-toolbar">
+<div class="paging-wrap">
     @include('partials.paging', ['page' => $page, 'total_page' => $total_page, 'page_href' => $page_href])
+</div>
+
+<div class="bbs-toolbar">
     <form class="bbs-search" method="get" action="{{ $action_url }}">
         <input type="hidden" name="sop" value="{{ $sop }}">
         <label for="sch_sfl" class="sound_only">검색 대상</label>

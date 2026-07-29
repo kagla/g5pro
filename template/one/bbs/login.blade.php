@@ -1,6 +1,6 @@
 @extends('layout.default')
 @section('content')
-<div class="login-box">
+<div class="member-box">
     <h2>로그인</h2>
     <form name="flogin" method="post" action="{{ $login_action_url }}" autocomplete="off">
         <input type="hidden" name="url" value="{{ $url }}">
