@@ -80,6 +80,16 @@
 @endif
 
 <script>
+// 위시리스트 담기 — 순정 item_wish() 는 확인 없이 바로 폼을 보낸다.
+// 마크업(javascript: href)은 그대로 두고 클릭을 가로채 한 번 묻는다.
+document.querySelectorAll('.sit_btn_wish').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+        if (!confirm('이 상품을 위시리스트에 보관하시겠습니까?')) e.preventDefault();
+    });
+});
+</script>
+
+<script>
 // 탭 — 클릭한 것만 보인다. 순정 링크가 쓰는 #sit_use 같은 앵커도 받아 준다.
 (function () {
     var wrap = document.getElementById('sit-tabs');

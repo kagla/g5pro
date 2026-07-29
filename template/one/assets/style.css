@@ -1363,3 +1363,23 @@ a.chip.cate:hover { background: var(--teal); color: #fff; }
 .sit-embed ul > li:first-child { border-top: 0; }
 .sit-embed .sit_use_li_title, .sit-embed .sit_qa_li_title { cursor: pointer; font-weight: 600; }
 .sit-embed .sit_use_con, .sit-embed .sit_qa_con { margin-top: var(--s2); font-size: var(--t-sm); color: var(--muted); line-height: 1.7; }
+
+/* 상단 하트는 "이 상품을 담은 사람 수"를 보여주는 표시일 뿐 버튼이 아니다 (순정도 <span>).
+   버튼처럼 보이지 않게 되돌린다 — 담기는 아래 하트 버튼으로 한다. */
+#btn_wish {
+    border: 0; background: none; padding: 0 var(--s1); height: auto;
+    color: var(--muted); font-weight: 600; cursor: default;
+}
+#btn_wish:hover { border: 0; color: var(--muted); }
+
+/* SNS 공유 — 화살표(↗)는 '새 창으로 이동'으로 읽힌다. 공유 아이콘으로 바꾼다. */
+.btn_sns_share .fa::before { content: ""; }
+.btn_sns_share .fa {
+    display: inline-block; width: 15px; height: 15px; background-color: currentColor;
+    -webkit-mask: var(--ico-share) center/contain no-repeat;
+            mask: var(--ico-share) center/contain no-repeat;
+}
+:root {
+    --ico-share: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='18' cy='5' r='2.6'/%3E%3Ccircle cx='6' cy='12' r='2.6'/%3E%3Ccircle cx='18' cy='19' r='2.6'/%3E%3Cpath d='M8.6 13.5l6.8 4M15.4 6.5l-6.8 4'/%3E%3C/svg%3E");
+}
+.btn_sns_share::after { content: "공유"; }
