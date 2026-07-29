@@ -196,8 +196,9 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .logo { font-size: 18px; font-weight: 800; letter-spacing: -.02em; color: var(--accent); }
 .logo a:hover { color: var(--accent-deep); }
 
-.gnb { display: flex; gap: var(--s1); flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
-.gnb::-webkit-scrollbar { display: none; }
+/* overflow 를 주면 안 된다 — 절대배치된 .gnb-sub 드롭다운이 잘린다.
+   넘치는 경우는 JS 가 .nav-collapsed 로 접어서 처리한다. */
+.gnb { display: flex; gap: var(--s1); flex: 1; min-width: 0; }
 
 /* 접힘 모드에서만 보이는 계정 영역 (햄버거 패널 안) */
 .gnb-util { display: none; }

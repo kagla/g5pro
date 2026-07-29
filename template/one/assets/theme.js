@@ -12,14 +12,31 @@
         btn.querySelector('.sound_only').textContent = open ? '메뉴 닫기' : '메뉴 열기';
     }
 
+    // 메뉴가 자리에 다 들어가는지 잰다. .gnb 에 overflow 를 줄 수 없으므로
+    // (드롭다운이 잘린다) scrollWidth 대신 자식 폭을 직접 더한다.
+    function contentWidth(el) {
+        var cs = getComputedStyle(el);
+        var gap = parseFloat(cs.columnGap || cs.gap) || 0;
+        var w = 0, n = 0;
+        for (var i = 0; i < el.children.length; i++) {
+            var kid = el.children[i];
+            if (getComputedStyle(kid).display === 'none') continue;  // .gnb-util 은 펼침 모드에서 숨김
+            w += kid.getBoundingClientRect().width;
+            n++;
+        }
+        return n > 1 ? w + gap * (n - 1) : w;
+    }
+
     // 펼친 상태로 되돌려 폭을 재고, 넘치면 다시 접는다.
     // 클래스 변경-측정-복원이 한 작업 안에서 끝나므로 화면 깜빡임은 없다.
     function updateMode() {
-        var wasCollapsed = header.classList.contains('nav-collapsed');
-        if (wasCollapsed) { setOpen(false); header.classList.remove('nav-collapsed'); }
+        if (header.classList.contains('nav-collapsed')) {
+            setOpen(false);
+            header.classList.remove('nav-collapsed');
+        }
 
         // 여유 2px — 반올림 오차로 접혔다 펴졌다 하는 것을 막는다
-        var overflows = gnb.scrollWidth > gnb.clientWidth + 2;
+        var overflows = contentWidth(gnb) > gnb.clientWidth + 2;
 
         header.classList.toggle('nav-collapsed', overflows);
         if (!overflows) setOpen(false);
