@@ -117,7 +117,8 @@ function g5_map_shop_list($items, $total_count, $page, $total_page, $qstr2)
 // ── 상품 상세 (shop/item.php)
 function g5_map_shop_item($form_html, $related)
 {
-    global $it, $ca, $default;
+    global $it, $ca, $g5, $default, $item_info, $is_orderable;
+    global $item_use_count, $item_qa_count, $sns_share_links;
 
     $it_id = $it['it_id'];
     $price = (int)$it['it_price'];
@@ -127,30 +128,85 @@ function g5_map_shop_item($form_html, $related)
         'item' => array(
             'it_id'      => $it_id,
             'name'       => get_text($it['it_name']),
-            'img'        => get_it_imageurl($it_id),
             'basic'      => conv_content($it['it_basic'], 1),        // 상품 설명 HTML → {!! !!}
             'explan'     => conv_content($it['it_explan'], 1),       // 상세 설명 HTML → {!! !!}
             'price'      => $price,
             'cust_price' => $cust,
             'discount'   => ($cust > 0 && $price > 0 && $cust > $price) ? (int)round((1 - $price / $cust) * 100) : 0,
-            'point'      => (int)$it['it_point'],
-            'maker'      => get_text($it['it_maker']),
-            'origin'     => get_text($it['it_origin']),
-            'brand'      => get_text($it['it_brand']),
-            'model'      => get_text($it['it_model']),
-            'delivery'   => (int)$it['it_sc_price'],
             'is_soldout' => (bool)$it['it_soldout'],
-            'stock'      => get_it_stock_qty($it_id),
         ),
         'category' => array(
             'ca_id' => $it['ca_id'],
             'name'  => isset($ca['ca_name']) ? get_text($ca['ca_name']) : '',
             'href'  => G5_SHOP_URL.'/list.php?ca_id='.$it['ca_id'],
         ),
-        'form_html' => $form_html,   // 순정 item.form.skin.php 출력(옵션·수량·장바구니 버튼) → {!! !!}
-        'related'   => g5_shop_item_rows($related),
+        // 순정 item.form.skin.php 출력 그대로 — 이미지 갤러리·옵션·수량·장바구니가 모두 여기 들어 있고
+        // js/shop.js 가 이 안의 id/class 를 잡는다. 우리가 다시 그리지 않고 CSS 로만 다듬는다.
+        'form_html'    => $form_html,
+        'is_orderable' => (bool)$is_orderable,
+        'shop_js'      => G5_JS_URL.'/shop.js?ver='.G5_JS_VER,
+
+        // ── 탭 내용
+        'info_notice'  => g5_shop_item_info_rows($it, $item_info),                  // 상품 정보 고시
+        'use_html'     => g5_blade_capture_include(G5_SHOP_PATH.'/itemuse.php'),    // 사용후기 (순정 스킨 HTML)
+        'qa_html'      => g5_blade_capture_include(G5_SHOP_PATH.'/itemqa.php'),     // 상품문의
+        'use_count'    => (int)$item_use_count,
+        'qa_count'     => (int)$item_qa_count,
+        'delivery_html'=> isset($default['de_baesong_content']) ? conv_content($default['de_baesong_content'], 1) : '',
+        'change_html'  => isset($default['de_change_content'])  ? conv_content($default['de_change_content'], 1)  : '',
+
+        'related'   => $related ? g5_shop_item_rows($related) : g5_shop_related_items($it_id),
         'cart_href' => G5_SHOP_URL.'/cart.php',
     ));
+}
+
+// 관련상품 — 순정 item.info.skin.php 와 같은 질의
+function g5_shop_related_items($it_id)
+{
+    global $g5, $default;
+    if (empty($default['de_rel_list_use'])) return array();
+
+    $sql = " select b.* from {$g5['g5_shop_item_relation_table']} a
+               left join {$g5['g5_shop_item_table']} b on (a.it_id2 = b.it_id)
+              where a.it_id = '".sql_real_escape_string($it_id)."' and b.it_use = '1' ";
+    $rows = array();
+    $res = sql_query($sql);
+    while ($row = sql_fetch_array($res)) $rows[] = $row;
+    return g5_shop_item_rows($rows);
+}
+
+// 상품 정보 고시 — it_info_value(직렬화)를 lib/iteminfo.lib.php 의 항목표와 맞춰 푼다
+function g5_shop_item_info_rows($it, $item_info)
+{
+    if (empty($it['it_info_value'])) return array();
+    $data = @unserialize(stripslashes($it['it_info_value']));
+    if (!is_array($data)) return array();
+
+    $gubun = $it['it_info_gubun'];
+    if (!isset($item_info[$gubun]['article'])) return array();
+    $article = $item_info[$gubun]['article'];
+
+    $out = array();
+    foreach ($data as $key => $val) {
+        if (!isset($article[$key][0])) continue;
+        $out[] = array('title' => $article[$key][0], 'value' => $val);
+    }
+    return $out;
+}
+
+// 순정 파일의 출력을 문자열로 받는다 (사용후기·상품문의처럼 echo 로 그리는 화면).
+// 순정은 이런 파일이 전역 스코프에서 도는 것을 전제로 짰다 — 함수 안에서 그냥 include 하면
+// $config·$g5·$it_id 가 안 보여 죽는다(cf_write_pages 가 없어 0 나눗셈). 전역을 끌어와 스코프를 맞춘다.
+function g5_blade_capture_include($file)
+{
+    if (!is_file($file)) return '';
+    foreach (array_keys($GLOBALS) as $g5b_key) {
+        if ($g5b_key === 'GLOBALS' || $g5b_key === 'file' || $g5b_key === 'g5b_key') continue;
+        global $$g5b_key;
+    }
+    ob_start();
+    include($file);
+    return trim(ob_get_clean());
 }
 
 // ── 장바구니 (shop/cart.php)
