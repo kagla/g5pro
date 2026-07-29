@@ -83,6 +83,47 @@
 
 <div class="bbs-toolbar">
     <a class="btn" href="{{ $list_href }}">주문 목록</a>
-    <a class="btn btn-primary" href="{{ $shop_href }}">쇼핑 계속하기</a>
+    <div class="bbs-actions">
+        {{-- 순정이 취소 가능하다고 판단한 주문에서만 JS 가 보이게 한다 --}}
+        <button type="button" class="linklike odv-cancel-open" id="odv-cancel-open" hidden>주문 취소</button>
+        <a class="btn btn-primary" href="{{ $shop_href }}">쇼핑 계속하기</a>
+    </div>
 </div>
+
+{{-- 주문 취소 — 순정 폼(주문번호·토큰·검사 함수)을 그대로 이 안으로 옮겨 담는다 --}}
+<div class="odv-modal" id="odv-cancel-modal" role="dialog" aria-modal="true" aria-labelledby="odv-cancel-title" hidden>
+    <div class="odv-backdrop" data-close></div>
+    <div class="odv-panel">
+        <h2 id="odv-cancel-title">주문 취소</h2>
+        <p class="odv-panel-lead">취소 사유를 남겨 주세요. 취소한 주문은 되돌릴 수 없습니다.</p>
+        <div id="odv-cancel-slot"></div>
+        <button type="button" class="btn odv-cancel-close" data-close>닫기</button>
+    </div>
+</div>
+
+<script>
+(function () {
+    var sec = document.getElementById('sod_fin_cancel');
+    var open = document.getElementById('odv-cancel-open');
+    var modal = document.getElementById('odv-cancel-modal');
+    if (!sec || !open || !modal) return;
+
+    // 순정 카드에서 폼만 꺼내 모달로 옮기고 카드는 없앤다
+    var form = sec.querySelector('form');
+    if (!form) return;
+    document.getElementById('odv-cancel-slot').appendChild(form);
+    sec.parentNode.removeChild(sec);
+    open.hidden = false;
+
+    function setOpen(on) {
+        modal.hidden = !on;
+        document.body.style.overflow = on ? 'hidden' : '';
+        if (on) { var i = form.querySelector('input[type=text]'); if (i) i.focus(); }
+        else open.focus();
+    }
+    open.addEventListener('click', function () { setOpen(true); });
+    modal.addEventListener('click', function (e) { if (e.target.closest('[data-close]')) setOpen(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) setOpen(false); });
+})();
+</script>
 @endsection
