@@ -188,7 +188,7 @@ function g5_map_board_write()
 {
     global $w, $write, $board, $bo_table, $wr_id, $sca, $sfl, $stx, $spt, $sst, $sod, $page;
     global $action_url, $subject, $is_member, $name, $is_name, $is_password;
-    global $editor_html, $editor_js, $is_use_captcha, $file_count, $file;
+    global $editor_html, $editor_js, $is_use_captcha, $captcha_js, $file_count, $file;
     global $is_category, $is_notice, $is_html, $is_dhtml_editor, $html_value, $html_checked;
     global $is_secret, $secret_checked, $is_mail, $recv_email_checked, $is_admin, $notice_checked;
 
@@ -265,8 +265,9 @@ function g5_map_board_write()
         'editor_html'    => $editor_html,          // 순정 에디터/textarea HTML → {!! !!}
         'editor_js'      => $editor_js,
         'is_use_captcha' => (bool)$is_use_captcha,
+        // write.php 가 이미 준비한 값을 그대로 쓴다 (403·408행)
         'captcha_html'   => $is_use_captcha ? captcha_html() : '',
-        'captcha_js'     => $is_use_captcha ? captcha_js() : '',
+        'captcha_js'     => $captcha_js,
         'file_count'     => (int)$file_count,
         'files_exist'    => $files_exist,
         'list_href'      => short_url_clean(G5_BBS_URL.'/board.php?bo_table='.$bo_table),
