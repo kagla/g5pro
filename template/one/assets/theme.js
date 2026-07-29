@@ -128,6 +128,33 @@
     });
 })();
 
+// 점 세 개(kebab) 메뉴 — 목록 관리 도구·읽기 화면 관리 메뉴가 함께 쓰는 공용 열고닫기
+(function () {
+    function setOpen(k, on) {
+        k.classList.toggle('open', on);
+        var b = k.querySelector('.kebab-btn');
+        if (b) b.setAttribute('aria-expanded', String(on));
+    }
+    function closeAll(except) {
+        [].forEach.call(document.querySelectorAll('.kebab.open'), function (k) {
+            if (k !== except) setOpen(k, false);
+        });
+    }
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.kebab-btn');
+        if (btn) {
+            var k = btn.closest('.kebab');
+            closeAll(k);
+            setOpen(k, !k.classList.contains('open'));
+            return;
+        }
+        closeAll(null);
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeAll(null);
+    });
+})();
+
 // 게시판 목록 관리 도구 — 전체 선택 + 점 세 개 메뉴(선택이동·복사·삭제)
 // 순정 board_list_update.php 가 btn_submit 값으로 갈라지고, 복사·이동은 move.php 팝업으로 넘긴다.
 (function () {
@@ -145,8 +172,6 @@
 
     var alls = [].slice.call(f.querySelectorAll('.chk-all'));
     var count = f.querySelector('.chk-count');
-    var kebab = f.querySelector('.kebab');
-    var kbtn = kebab && kebab.querySelector('.kebab-btn');
     var tools = f.querySelector('.list-tools');
 
     function sync() {
@@ -173,23 +198,6 @@
     // 창 크기가 바뀌면 보이는 레이아웃이 달라진다
     window.addEventListener('resize', sync);
     sync();
-
-    function setMenu(on) {
-        kebab.classList.toggle('open', on);
-        kbtn.setAttribute('aria-expanded', String(on));
-    }
-    if (kebab) {
-        kbtn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            setMenu(kbtn.getAttribute('aria-expanded') !== 'true');
-        });
-        document.addEventListener('click', function (e) {
-            if (!kebab.contains(e.target)) setMenu(false);
-        });
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && kbtn.getAttribute('aria-expanded') === 'true') { setMenu(false); kbtn.focus(); }
-        });
-    }
 
     var pressed = '';
     f.addEventListener('click', function (e) {
@@ -224,7 +232,7 @@
             f.action = f.dataset.moveAction;
         }
         // 제출 직렬화가 끝난 뒤 되돌린다 (팝업 제출이면 이 화면은 그대로 남는다)
-        setTimeout(function () { restore(); if (kebab) setMenu(false); }, 0);
+        setTimeout(restore, 0);
     });
 })();
 
