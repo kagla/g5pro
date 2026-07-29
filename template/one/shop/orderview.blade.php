@@ -95,6 +95,19 @@
     <div class="odv-panel">
         <h2 id="odv-cancel-title">주문 취소</h2>
         <p class="odv-panel-lead">취소 사유를 남겨 주세요. 취소한 주문은 되돌릴 수 없습니다.</p>
+
+        {{-- 자주 쓰는 사유를 고르면 아래 입력칸이 채워진다. 고른 뒤 고쳐 쓸 수 있다 --}}
+        <label for="odv-cancel-preset" class="sound_only">자주 쓰는 취소 사유</label>
+        <select id="odv-cancel-preset" class="odv-cancel-preset">
+            <option value="">사유 선택 (직접 입력도 가능합니다)</option>
+            <option>단순 변심</option>
+            <option>다른 상품으로 다시 주문하려고</option>
+            <option>주문을 잘못했어요 (수량·옵션)</option>
+            <option>배송이 늦어져서</option>
+            <option>상품 정보가 생각과 달라서</option>
+            <option>결제 수단을 바꾸려고</option>
+        </select>
+
         <div id="odv-cancel-slot"></div>
         <button type="button" class="btn odv-cancel-close" data-close>닫기</button>
     </div>
@@ -125,6 +138,21 @@
         if (on) { var i = form.querySelector('input[type=text]'); if (i) i.focus(); }
         else open.focus();
     }
+    // 고른 사유를 입력칸에 채운다 — 채운 뒤에도 고쳐 쓸 수 있다
+    var preset = document.getElementById('odv-cancel-preset');
+    var memo = form.querySelector('#cancel_memo') || form.querySelector('input[name=cancel_memo]');
+    if (preset && memo) {
+        preset.addEventListener('change', function () {
+            memo.value = preset.value;
+            memo.focus();
+            memo.setSelectionRange(memo.value.length, memo.value.length);
+        });
+        // 직접 고쳐 쓰기 시작하면 선택은 풀어 둔다 (고른 것과 내용이 다를 수 있으므로)
+        memo.addEventListener('input', function () {
+            if (memo.value !== preset.value) preset.value = '';
+        });
+    }
+
     open.addEventListener('click', function () { setOpen(true); });
     modal.addEventListener('click', function (e) { if (e.target.closest('[data-close]')) setOpen(false); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) setOpen(false); });
