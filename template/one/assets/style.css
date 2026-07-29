@@ -1678,10 +1678,15 @@ input[type=checkbox], input[type=radio] {
 /* 주문 취소 — 오른쪽 아래 텍스트 링크 + 모달 (순정 카드는 JS 가 걷어낸다) */
 /* 결제합계 카드 바깥 오른쪽 아래 (.sod_right 는 세로 flex 라 align-self 로 민다) */
 .odv .odv-cancel-open {
-    align-self: flex-end; width: fit-content; margin-top: calc(-1 * var(--s3)); padding: var(--s1) 0;
-    font-size: var(--t-sm); color: var(--muted); text-decoration: underline; text-underline-offset: 3px;
+    align-self: flex-end; width: fit-content;
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 42px; padding: 0 var(--s5); margin-top: calc(-1 * var(--s3));
+    border: 1px solid var(--btn-line); border-radius: var(--r-btn);
+    background: var(--card); color: var(--fg);
+    font-size: var(--t-md); font-weight: 700; text-decoration: none;
+    transition: border-color .15s, color .15s, background .15s;
 }
-.odv .odv-cancel-open:hover { color: var(--danger); }
+.odv .odv-cancel-open:hover { border-color: var(--danger); background: var(--danger); color: #fff; }
 
 .odv-modal { position: fixed; inset: 0; z-index: 200; }
 .odv-modal[hidden] { display: none; }
