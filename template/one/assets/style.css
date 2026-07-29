@@ -1512,10 +1512,46 @@ input[type=checkbox], input[type=radio] {
 }
 .btn_frmline:hover { border-color: var(--accent); color: var(--accent); }
 
-/* 배송지 선택 라디오 */
-.order_choice_place { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s2) var(--s3); padding: var(--s3) var(--s5) var(--s4); }
-.order_choice_place label { display: inline-flex; align-items: center; gap: var(--s1); margin-right: var(--s3); font-size: var(--t-md); cursor: pointer; }
-.order_choice_place #order_address { height: 34px; }
+/* 배송지 선택 라디오 — 순정은 input 과 label 이 형제라 flex 항목이 따로 논다.
+   폭이 모자라면 동그라미만 앞줄 끝에 남고 글자가 다음 줄로 넘어갔다.
+   네이티브 컨트롤은 감추고(포커스·스크린리더는 유지) label 하나를 통째로
+   알약 버튼 = 한 항목으로 만들어 짝이 갈라지지 않게 한다. */
+.order_choice_place { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s2); padding: var(--s3) var(--s5) var(--s4); }
+.order_choice_place input[type=radio],
+.order_choice_place input[type=checkbox],
+.tbl_frm01 #ad_default { position: absolute; width: 1px; height: 1px; margin: 0; opacity: 0; }
+
+.order_choice_place label,
+.tbl_frm01 #ad_default + label {
+    display: inline-flex; align-items: center; gap: var(--s2); margin: 0;
+    padding: var(--s2) var(--s3); border: 1px solid var(--btn-line); border-radius: var(--r-btn);
+    background: var(--card); color: var(--fg);
+    font-size: var(--t-sm); font-weight: 600; white-space: nowrap; cursor: pointer;
+    transition: border-color .15s, color .15s, background .15s;
+}
+/* 선택 표시 — 라디오는 원, 체크박스는 사각 */
+.order_choice_place label::before,
+.tbl_frm01 #ad_default + label::before {
+    content: ""; flex: none; width: 14px; height: 14px; border-radius: 50%;
+    border: 2px solid var(--btn-line); transition: inherit;
+}
+.order_choice_place input[type=checkbox] + label::before,
+.tbl_frm01 #ad_default + label::before { border-radius: 4px; }
+
+.order_choice_place label:hover,
+.tbl_frm01 #ad_default + label:hover { border-color: var(--accent); color: var(--accent); }
+.order_choice_place :checked + label,
+.tbl_frm01 #ad_default:checked + label {
+    border-color: var(--accent); background: var(--accent-soft); color: var(--accent-deep);
+}
+.order_choice_place :checked + label::before,
+.tbl_frm01 #ad_default:checked + label::before {
+    border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 3px var(--card);
+}
+.order_choice_place :focus-visible + label,
+.tbl_frm01 #ad_default:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.order_choice_place #order_address { height: auto; padding: var(--s2) var(--s3); font-size: var(--t-sm); }
 
 /* 합계 */
 #sod_bsk_tot { padding: var(--s4) var(--s5); }
@@ -1834,3 +1870,21 @@ input[type=checkbox], input[type=radio] {
 }
 .order-form .od_save_mb:hover { border-color: var(--accent); color: var(--accent); }
 .order-form .od_save_mb input { flex: none; margin: 0; accent-color: var(--accent); }
+
+/* 취소·반품 내역 (순정은 "내역이 있습니다" 한 줄뿐이라 우리가 목록으로 만든다) */
+.odv-cancelled { background: var(--card); border-radius: var(--r-xl); box-shadow: var(--sh-md); overflow: hidden; }
+.odv-cancelled > h2 { padding: var(--s4) var(--s5); font-size: var(--t-lg); font-weight: 700; border-bottom: 1px solid var(--line); }
+.odv-cancelled li { padding: var(--s3) var(--s5); border-top: 1px solid var(--line); }
+.odv-cancelled li:first-child { border-top: 0; }
+.odv-cancelled .s { display: flex; align-items: center; gap: var(--s2); }
+.odv-cancelled .t { flex: 1; min-width: 0; font-size: var(--t-md); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.odv-cancelled .odv-opt { margin: var(--s1) 0 0; font-size: var(--t-sm); color: var(--muted); }
+.odv-cancelled .odv-line { margin: var(--s2) 0 0; padding: 0; background: none; font-size: var(--t-sm); }
+.odv-cancelled .odv-line strong { font-size: var(--t-md); }
+.odv-cancelled-tot {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin: 0; padding: var(--s3) var(--s5) var(--s4);
+    border-top: 1px solid var(--line); font-size: var(--t-md);
+}
+.odv-cancelled-tot span { color: var(--muted); }
+.odv-cancelled-tot strong { font-size: var(--t-lg); font-weight: 800; color: var(--danger); font-variant-numeric: tabular-nums; }
