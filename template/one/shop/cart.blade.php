@@ -33,8 +33,10 @@
                 @foreach ($items as $it)
                 <tr>
                     <td class="col-chk">
+                        {{-- 처음엔 비워 둔다 — '비우기' 가 따로 있으므로 전체 선택이 기본일 이유가 없고,
+                             실수로 선택삭제/주문에 딸려 들어가는 것을 막는다 --}}
                         <label class="chk-cell" for="ct_chk_{{ $it['idx'] }}">
-                            <input type="checkbox" name="ct_chk[{{ $it['idx'] }}]" value="1" id="ct_chk_{{ $it['idx'] }}" checked>
+                            <input type="checkbox" name="ct_chk[{{ $it['idx'] }}]" value="1" id="ct_chk_{{ $it['idx'] }}">
                             <span class="sound_only">{{ $it['name'] }} 선택</span>
                         </label>
                     </td>
@@ -70,7 +72,7 @@
         @foreach ($items as $it)
         <li>
             <div class="s">
-                <input type="checkbox" name="ct_chk[{{ $it['idx'] }}]" value="1" checked aria-label="{{ $it['name'] }} 선택">
+                <input type="checkbox" name="ct_chk[{{ $it['idx'] }}]" value="1" aria-label="{{ $it['name'] }} 선택">
                 <span class="t"><a href="{{ $it['href'] }}">{{ $it['name'] }}</a></span>
             </div>
             <div class="m cart-m">
