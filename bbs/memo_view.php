@@ -1,5 +1,6 @@
 <?php
 include_once('./_common.php');
+define('G5_BLADE_PAGE', true); // g5blade 직통 화면
 
 if (!$is_member)
     alert('회원만 이용하실 수 있습니다.');
@@ -76,6 +77,6 @@ if(isset($page) && $page){
     $list_link .= '&amp;page='.(int) $page;
 }
 
-include_once($member_skin_path.'/memo_view.skin.php');
+g5_map_memo_view(); // g5blade
 
 include_once(G5_PATH.'/tail.sub.php');

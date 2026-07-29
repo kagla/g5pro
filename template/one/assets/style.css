@@ -164,3 +164,9 @@ input[type=text], input[type=password], select, textarea {
 .stip { display: flex; flex-direction: column; gap: 8px; }
 .stip h3 { margin: 0; font-size: 16px; }
 .stip textarea { width: 100%; font-size: 13px; color: var(--muted); }
+
+/* 쪽지·포인트 */
+.memo-box { max-width: 760px; margin: 0 auto; }
+.bbs-row.read .bbs-row-subject a { color: var(--muted); }
+.point-plus { color: var(--accent); font-weight: 700; }
+.point-minus { color: var(--danger); font-weight: 700; }

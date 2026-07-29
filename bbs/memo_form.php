@@ -1,5 +1,6 @@
 <?php
 include_once('./_common.php');
+define('G5_BLADE_PAGE', true); // g5blade 직통 화면
 include_once(G5_CAPTCHA_PATH.'/captcha.lib.php');
 
 if ($is_guest) {
@@ -43,6 +44,6 @@ $g5['title'] = '쪽지 보내기';
 include_once(G5_PATH.'/head.sub.php');
 
 $memo_action_url = G5_HTTPS_BBS_URL."/memo_form_update.php";
-include_once($member_skin_path.'/memo_form.skin.php');
+g5_map_memo_form(); // g5blade
 
 include_once(G5_PATH.'/tail.sub.php');

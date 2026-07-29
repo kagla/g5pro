@@ -325,3 +325,103 @@ function g5_map_register_result()
         'mb_nick' => isset($mb['mb_nick']) ? get_text($mb['mb_nick']) : '',
     ));
 }
+
+// ── 쪽지 목록 (bbs/memo.php) — kind: recv|send
+function g5_map_memo()
+{
+    global $kind, $kind_title, $list, $total_count, $page, $member, $config;
+
+    $total_page = ceil($total_count / $config['cf_page_rows']);
+    $items = array();
+    foreach ((array)$list as $row) {
+        $items[] = array(
+            'me_id'     => $row['me_id'],
+            'name'      => get_text($row['mb_nick'] ? $row['mb_nick'] : $row['mb_id']),
+            'preview'   => get_text(cut_str($row['me_memo'], 60)),
+            'datetime'  => $row['me_send_datetime'],
+            'is_read'   => (isset($row['me_read_datetime']) && $row['me_read_datetime'] !== '0000-00-00 00:00:00'),
+            'view_href' => $row['view_href'],   // &amp; 포함 → {!! !!}
+            'del_href'  => $row['del_href'],    // 세션 토큰 포함 → {!! !!}
+        );
+    }
+
+    g5_view('bbs.memo', array(
+        'kind'        => $kind,
+        'kind_title'  => $kind_title,
+        'items'       => $items,
+        'total_count' => (int)$total_count,
+        'page'        => (int)$page,
+        'total_page'  => (int)$total_page,
+        'page_href'   => G5_BBS_URL.'/memo.php?kind='.$kind.'&page=',
+        'recv_href'   => G5_BBS_URL.'/memo.php?kind=recv',
+        'send_href'   => G5_BBS_URL.'/memo.php?kind=send',
+        'form_href'   => G5_BBS_URL.'/memo_form.php',
+    ));
+}
+
+// ── 쪽지 보기 (bbs/memo_view.php)
+function g5_map_memo_view()
+{
+    global $kind, $memo, $del_link, $prev_link, $next_link, $unkind;
+
+    // 존재하지 않는 쪽지 (순정도 이 경우 빈 화면) — 목록으로 되돌린다
+    if (empty($memo['me_id'])) {
+        alert('쪽지가 존재하지 않습니다.', G5_BBS_URL.'/memo.php?kind='.$kind);
+    }
+
+    $counterpart = $memo['me_'.$unkind.'_mb_id'];
+
+    g5_view('bbs.memo_view', array(
+        'kind'       => $kind,
+        'name'       => get_text($counterpart),
+        'datetime'   => $memo['me_send_datetime'],
+        'content'    => get_text($memo['me_memo'], 1),   // 이스케이프+개행 처리 → {!! !!}
+        'reply_href' => ($kind === 'recv')
+                        ? G5_BBS_URL.'/memo_form.php?me_recv_mb_id='.urlencode($counterpart).'&me_id='.$memo['me_id'] : '',
+        'del_href'   => G5_BBS_URL.'/'.$del_link,        // &amp;·토큰 포함 → {!! !!}
+        'prev_href'  => $prev_link ? G5_BBS_URL.'/'.ltrim($prev_link, './') : '',
+        'next_href'  => $next_link ? G5_BBS_URL.'/'.ltrim($next_link, './') : '',
+        'list_href'  => G5_BBS_URL.'/memo.php?kind='.$kind,
+    ));
+}
+
+// ── 쪽지 쓰기 (bbs/memo_form.php)
+function g5_map_memo_form()
+{
+    global $me_recv_mb_id, $content, $memo_action_url;
+
+    g5_view('bbs.memo_form', array(
+        'action_url' => $memo_action_url,     // memo_form_update.php
+        'recv_mb_id' => get_text($me_recv_mb_id),
+        'content'    => get_text($content),   // 답장 인용문 (이스케이프 완료, textarea 값 → {!! !!})
+        'list_href'  => G5_BBS_URL.'/memo.php?kind=recv',
+        'captcha_html' => captcha_html(),     // memo_form_update.php 가 항상 chk_captcha()
+        'captcha_js'   => chk_captcha_js(),
+    ));
+}
+
+// ── 포인트 내역 (bbs/point.php)
+function g5_map_point()
+{
+    global $list, $total_count, $page, $config, $member;
+
+    $rows = $config['cf_page_rows'];
+    $total_page = ceil($total_count / $rows);
+    $items = array();
+    foreach ((array)$list as $row) {
+        $items[] = array(
+            'content'  => get_text($row['po_content']),
+            'point'    => (int)$row['po_point'],
+            'datetime' => $row['po_datetime'],
+        );
+    }
+
+    g5_view('bbs.point', array(
+        'items'       => $items,
+        'total_count' => (int)$total_count,
+        'sum_point'   => (int)$member['mb_point'],
+        'page'        => (int)$page,
+        'total_page'  => (int)$total_page,
+        'page_href'   => G5_BBS_URL.'/point.php?page=',
+    ));
+}

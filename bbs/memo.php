@@ -1,5 +1,6 @@
 <?php
 include_once('./_common.php');
+define('G5_BLADE_PAGE', true); // g5blade 직통 화면
 
 if ($is_guest)
     alert_close('회원만 이용하실 수 있습니다.');
@@ -82,6 +83,6 @@ for ($i=0; $row=sql_fetch_array($result); $i++)
 
 $write_pages = get_paging(G5_IS_MOBILE ? $config['cf_mobile_pages'] : $config['cf_write_pages'], $page, $total_page, "./memo.php?kind=$kind".$qstr."&amp;page=");
 
-include_once($member_skin_path.'/memo.skin.php');
+g5_map_memo(); // g5blade
 
 include_once(G5_PATH.'/tail.sub.php');
