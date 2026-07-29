@@ -1,5 +1,6 @@
 <?php
 include_once('./_common.php');
+define('G5_BLADE_PAGE', true); // g5blade 직통 화면 (win_scrap 팝업)
 
 include_once(G5_PATH.'/head.sub.php');
 
@@ -20,14 +21,7 @@ HEREDOC;
     exit;
 }
 
-echo <<<HEREDOC
-<script>
-    if (window.name != 'win_scrap') {
-        alert('올바른 방법으로 사용해 주십시오.');
-        window.close();
-    }
-</script>
-HEREDOC;
+// 창 이름 검사(win_scrap)는 blade 뷰가 <head> 에서 수행한다
 
 if ($write['wr_is_comment'])
     alert_close('코멘트는 스크랩 할 수 없습니다.');
@@ -57,6 +51,6 @@ HEREDOC;
     exit;
 }
 
-include_once($member_skin_path.'/scrap_popin.skin.php');
+g5_map_scrap_popin(); // g5blade — 스킨 대신 직통 매핑
 
 include_once(G5_PATH.'/tail.sub.php');
