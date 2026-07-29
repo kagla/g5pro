@@ -26,6 +26,8 @@ if (G5_IS_MOBILE) {
     return;
 }
 
+define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+
 if (! (isset($co['co_id']) && $co['co_id']))
     alert('등록된 내용이 없습니다.');
 
@@ -72,32 +74,7 @@ if(isset($default) && isset($default['de_admin_company_name'])){
 }
 $str = preg_replace($src, $dst, $str);
 
-// 스킨경로
-if(trim($co['co_skin']) == '')
-    $co['co_skin'] = 'basic';
-
-$content_skin_path = get_skin_path('content', $co['co_skin']);
-$content_skin_url  = get_skin_url('content', $co['co_skin']);
-$skin_file = $content_skin_path.'/content.skin.php';
-
-if ($is_admin)
-    echo run_replace('content_admin_button_html', '<div class="ctt_admin"><a href="'.G5_ADMIN_URL.'/contentform.php?w=u&amp;co_id='.$co_id.'" class="btn_admin btn"><span class="sound_only">내용 수정</span><i class="fa fa-cog fa-spin fa-fw"></i></a></div>', $co);
-?>
-
-<?php
-if(is_file($skin_file)) {
-    $himg = G5_DATA_PATH.'/content/'.$co_id.'_h';
-    if (file_exists($himg)) // 상단 이미지
-        echo run_replace('content_head_image_html', '<div id="ctt_himg" class="ctt_img"><img src="'.G5_DATA_URL.'/content/'.$co_id.'_h" alt=""></div>', $co);
-
-    include($skin_file);
-
-    $timg = G5_DATA_PATH.'/content/'.$co_id.'_t';
-    if (file_exists($timg)) // 하단 이미지
-        echo run_replace('content_tail_image_html', '<div id="ctt_timg" class="ctt_img"><img src="'.G5_DATA_URL.'/content/'.$co_id.'_t" alt=""></div>', $co);
-} else {
-    echo '<p>'.str_replace(G5_PATH.'/', '', $skin_file).'이 존재하지 않습니다.</p>';
-}
+g5_map_content($str); // g5blade — 스킨 include 대신 직통 매핑 (상·하단 이미지, 관리자 버튼 포함)
 
 if ($co['co_include_tail'] && is_include_path_check($co['co_include_tail']))
     @include_once($co['co_include_tail']);
