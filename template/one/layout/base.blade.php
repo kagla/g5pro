@@ -46,6 +46,12 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
                 @endif
             </div>
             @endforeach
+            @unless ($me)
+            {{-- 접힘 모드에서 헤더의 회원가입을 숨기는 대신 여기로 옮긴다 --}}
+            <div class="gnb-join">
+                <a class="btn btn-primary btn-block" href="{{ G5_BBS_URL }}/register.php">회원가입</a>
+            </div>
+            @endunless
         </nav>
         <div class="header-util">
             <button type="button" class="icon-btn" id="search-open" aria-label="검색" title="검색">
@@ -78,7 +84,7 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
             </div>
             @else
             <a class="login-link" href="{{ G5_BBS_URL }}/login.php?url={{ urlencode(G5_URL) }}">로그인</a>
-            <a class="btn btn-primary" href="{{ G5_BBS_URL }}/register.php">회원가입</a>
+            <a class="btn btn-primary join-link" href="{{ G5_BBS_URL }}/register.php">회원가입</a>
             @endif
         </div>
         <button type="button" class="nav-toggle" aria-controls="gnb" aria-expanded="false">

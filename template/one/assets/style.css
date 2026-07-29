@@ -335,6 +335,13 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 /* ── 접힘 모드: 메뉴를 햄버거 패널로 ── */
 .nav-collapsed .nav-toggle { display: flex; }
 .nav-collapsed .header-util { margin-left: auto; }   /* 접히면 gnb 가 흐름에서 빠지므로 직접 민다 */
+/* 좁은 화면에서는 헤더를 비우고 회원가입을 햄버거 패널로 내린다 */
+.nav-collapsed .join-link { display: none; }
+.gnb-join { display: none; }
+.nav-collapsed .gnb-join {
+    display: block; margin-top: var(--s2);
+    padding-top: var(--s3); border-top: 1px solid var(--line);
+}
 .nav-collapsed .gnb {
     display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 65;
     flex-direction: column; gap: 2px; overflow: visible;
