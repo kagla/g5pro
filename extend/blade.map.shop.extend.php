@@ -117,7 +117,7 @@ function g5_map_shop_list($items, $total_count, $page, $total_page, $qstr2)
 // ── 상품 상세 (shop/item.php)
 function g5_map_shop_item($form_html, $related)
 {
-    global $it, $ca, $g5, $default, $item_info, $is_orderable;
+    global $it, $ca, $g5, $default, $item_info, $is_orderable, $is_admin;
     global $item_use_count, $item_qa_count, $sns_share_links;
 
     $it_id = $it['it_id'];
@@ -157,6 +157,9 @@ function g5_map_shop_item($form_html, $related)
 
         'related'   => $related ? g5_shop_item_rows($related) : g5_shop_related_items($it_id),
         'cart_href' => G5_SHOP_URL.'/cart.php',
+        // 상품 수정 바로가기 — 순정 itemform.php 와 같은 조건(최고관리자)일 때만
+        'admin_href' => ($is_admin === 'super')
+                        ? G5_ADMIN_URL.'/shop_admin/itemform.php?w=u&amp;it_id='.$it_id.'&amp;ca_id='.$it['ca_id'] : '',
     ));
 }
 
