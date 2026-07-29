@@ -1,5 +1,6 @@
 <?php
 include_once('./_common.php');
+define('G5_BLADE_PAGE', true); // g5blade 직통 화면
 
 // add_javascript('js 구문', 출력순서); 숫자가 작을 수록 먼저 출력됨
 add_javascript(G5_POSTCODE_JS, 0);    //다음 주소 js
@@ -55,6 +56,12 @@ if($is_mobile_order) {
     require_once(G5_MSHOP_PATH.'/orderform.sub.php');
 } else {
     $order_action_url = G5_HTTPS_SHOP_URL.'/orderformupdate.php';
+    if (function_exists('g5_map_shop_orderform')) {   // g5blade
+        ob_start();
+        require_once(G5_SHOP_PATH.'/orderform.sub.php');
+        g5_map_shop_orderform(ob_get_clean());
+        return;
+    }
     require_once(G5_SHOP_PATH.'/orderform.sub.php');
 }
 
