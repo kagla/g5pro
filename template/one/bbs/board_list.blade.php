@@ -1,39 +1,63 @@
+{{-- 목록 변형 1 · 표 (기본, bo_skin='blade') --}}
 @extends('layout.bbs')
 @section('bbs_content')
-<header class="bbs-head">
-    <h2>{{ $board['bo_subject'] }}</h2>
-    <div class="bbs-meta">전체 {{ number_format($total_count) }}건 · {{ $page }} 페이지</div>
-</header>
-
-@if (count($categories))
-<nav class="bbs-cate">
-    <a href="{{ $board_url }}">전체</a>
-    @foreach ($categories as $c)
-    @php $cls = $c['active'] ? 'active' : ''; @endphp
-    <a href="{{ $c['href'] }}" class="{{ $cls }}">{{ $c['name'] }}</a>
-    @endforeach
-</nav>
-@endif
+@include('partials.bbs_head')
 
 @if ($is_checkbox)
 <form name="fboardlist" id="fboardlist" method="post" action="{{ $list_update_action }}"
       onsubmit="return fboardlist_check(this);">
 <input type="hidden" name="bo_table" value="{{ $board['bo_table'] }}">
 @endif
-<ul class="bbs-list">
+
+<div class="list-table-wrap">
+    <table class="list-table">
+        <thead>
+            <tr>
+                @if ($is_checkbox)<th class="col-chk"><span class="sound_only">선택</span></th>@endif
+                <th class="col-no">번호</th>
+                <th class="col-subject">제목</th>
+                <th>글쓴이</th>
+                <th>날짜</th>
+                <th>조회</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse ($items as $it)
+            @php $cls = $it['is_notice'] ? 'notice' : ''; @endphp
+            <tr class="{{ $cls }}">
+                @if ($is_checkbox)<td class="col-chk"><input type="checkbox" name="chk_wr_id[]" value="{{ $it['wr_id'] }}" aria-label="선택"></td>@endif
+                <td class="col-no">{{ $it['is_notice'] ? '공지' : $it['num'] }}</td>
+                <td class="col-subject">
+                    <a href="{{ $it['href'] }}">{!! $it['subject'] !!}</a>
+                    @if ($it['comment_cnt'])<span class="cmt-cnt">[{{ $it['comment_cnt'] }}]</span>@endif
+                    @if ($it['icon_new'])<span class="badge new">N</span>@endif
+                    @if ($it['icon_file'])<span class="badge">파일</span>@endif
+                </td>
+                <td>{!! $it['name'] !!}</td>
+                <td>{{ $it['datetime'] }}</td>
+                <td>{{ $it['hit'] }}</td>
+            </tr>
+            @empty
+            <tr><td class="bbs-empty" colspan="{{ $is_checkbox ? 6 : 5 }}">게시물이 없습니다.</td></tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
+
+{{-- 620px 이하에서 표 대신 표시 --}}
+<ul class="list-cards">
     @forelse ($items as $it)
-    @php $cls = $it['is_notice'] ? 'bbs-row notice' : 'bbs-row'; @endphp
+    @php $cls = $it['is_notice'] ? 'notice' : ''; @endphp
     <li class="{{ $cls }}">
-        <div class="bbs-row-subject">
+        <div class="s">
             @if ($is_checkbox)<input type="checkbox" name="chk_wr_id[]" value="{{ $it['wr_id'] }}" aria-label="선택">@endif
             @if ($it['is_notice'])<span class="badge">공지</span>@endif
-            <a href="{{ $it['href'] }}">{!! $it['subject'] !!}</a>
-            @if ($it['comment_cnt'])<span class="cmt-cnt">{{ $it['comment_cnt'] }}</span>@endif
+            <span class="t"><a href="{{ $it['href'] }}">{!! $it['subject'] !!}</a></span>
+            @if ($it['comment_cnt'])<span class="cmt-cnt">[{{ $it['comment_cnt'] }}]</span>@endif
             @if ($it['icon_new'])<span class="badge new">N</span>@endif
-            @if ($it['icon_file'])<span class="badge file">파일</span>@endif
         </div>
-        <div class="bbs-row-meta">
-            <span class="name">{!! $it['name'] !!}</span>
+        <div class="m">
+            <span>{!! $it['name'] !!}</span>
             <span>{{ $it['datetime'] }}</span>
             <span>조회 {{ $it['hit'] }}</span>
         </div>
@@ -42,6 +66,7 @@
     <li class="bbs-empty">게시물이 없습니다.</li>
     @endforelse
 </ul>
+
 @if ($is_checkbox)
 <div class="bbs-admin-acts">
     <button type="submit" name="btn_submit" value="선택삭제" class="btn"
@@ -57,24 +82,5 @@ function fboardlist_check(f) {
 </script>
 @endif
 
-@include('partials.paging', ['page' => $page, 'total_page' => $total_page, 'page_href' => $page_href])
-
-<div class="bbs-toolbar">
-    <form class="bbs-search" method="get" action="{{ G5_BBS_URL }}/board.php">
-        <input type="hidden" name="bo_table" value="{{ $board['bo_table'] }}">
-        <select name="sfl">
-            @php $flds = ['wr_subject' => '제목', 'wr_content' => '내용', 'wr_name,1' => '글쓴이']; @endphp
-            @foreach ($flds as $v => $label)
-            @php $sel = ($search['sfl'] === $v) ? 'selected' : ''; @endphp
-            <option value="{{ $v }}" {{ $sel }}>{{ $label }}</option>
-            @endforeach
-        </select>
-        <input type="text" name="stx" value="{{ $search['stx'] }}" required>
-        <button type="submit" class="btn">검색</button>
-    </form>
-    <div class="bbs-actions">
-        @if ($rss_href)<a class="btn" href="{{ $rss_href }}">RSS</a>@endif
-        @if ($write_href)<a class="btn btn-primary" href="{{ $write_href }}">글쓰기</a>@endif
-    </div>
-</div>
+@include('partials.bbs_toolbar')
 @endsection

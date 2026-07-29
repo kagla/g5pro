@@ -6,14 +6,28 @@
  */
 if (!defined('_GNUBOARD_')) exit;
 
-// ── 게시판 목록 (bbs/list.php) ─ 뷰 변형: bo_skin='blade_gallery' 면 갤러리 그리드
+// bo_skin → 목록 뷰 조회표 (게시판마다 목록 모양을 고른다 · 설계 §5)
+// 등록되지 않은 값이면 기본 표 목록으로 폴백한다.
+function g5_blade_list_views()
+{
+    return array(
+        'blade'         => array('view' => 'bbs.board_list',         'thumb' => false),
+        'blade_simple'  => array('view' => 'bbs.board_list_simple',  'thumb' => false),
+        'blade_card'    => array('view' => 'bbs.board_list_card',    'thumb' => true),
+        'blade_gallery' => array('view' => 'bbs.board_list_gallery', 'thumb' => true),
+    );
+}
+
+// ── 게시판 목록 (bbs/list.php)
 function g5_map_board_list()
 {
     global $list, $board, $bo_table, $is_category, $sca, $sfl, $stx;
     global $total_count, $page, $total_page, $write_href, $rss_href, $admin_href, $is_checkbox;
 
-    $is_gallery = (isset($board['bo_skin']) && $board['bo_skin'] === 'blade_gallery');
-    if ($is_gallery) include_once(G5_LIB_PATH.'/thumbnail.lib.php');
+    $views = g5_blade_list_views();
+    $skin  = isset($board['bo_skin']) ? $board['bo_skin'] : '';
+    $variant = isset($views[$skin]) ? $views[$skin] : $views['blade'];
+    if ($variant['thumb']) include_once(G5_LIB_PATH.'/thumbnail.lib.php');
 
     $items = array();
     foreach ($list as $row) {
@@ -30,7 +44,8 @@ function g5_map_board_list()
             'icon_new'    => !empty($row['icon_new']),
             'icon_file'   => !empty($row['icon_file']),
             'icon_secret' => !empty($row['icon_secret']),
-            'thumb'       => $is_gallery
+            // 썸네일 변형(카드·갤러리)에서만 조회
+            'thumb'       => $variant['thumb']
                 ? get_list_thumbnail($bo_table, $row['wr_id'],
                       ($board['bo_gallery_width'] ?: 300), ($board['bo_gallery_height'] ?: 225), false, true)
                 : null,   // ['src'=>URL, 'alt'] — src 비면 이미지 없음
@@ -48,7 +63,7 @@ function g5_map_board_list()
         }
     }
 
-    g5_view($is_gallery ? 'bbs.board_list_gallery' : 'bbs.board_list', array(
+    g5_view($variant['view'], array(
         'board' => array(
             'bo_table'   => $bo_table,
             'bo_subject' => $board['bo_subject'],
