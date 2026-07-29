@@ -623,11 +623,11 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 
 /* ═══════════ 글 읽기 ═══════════ */
 .post { background: var(--card); border-radius: var(--r-xl); box-shadow: var(--sh-md); overflow: hidden; }
-.post-head { padding: var(--s5); border-bottom: 1px solid var(--line); }
+.post-head { padding: var(--s5) var(--s5) 0; }
 .post-head h3 { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; font-size: var(--t-xl); font-weight: 700; margin-bottom: var(--s2); }
 /* baseline — 글자 크기가 다른 항목(post-ip)과 아이콘이 붙은 이름이 한 줄에 맞게 */
 .post-meta { display: flex; align-items: baseline; gap: var(--s3); flex-wrap: wrap; font-size: var(--t-sm); color: var(--muted); font-variant-numeric: tabular-nums; }
-.post-content { padding: var(--s6) var(--s5); font-size: var(--t-lg); line-height: 1.8; overflow-wrap: break-word; }
+.post-content { padding: var(--s5); font-size: var(--t-lg); line-height: 1.8; overflow-wrap: break-word; }
 .post-files, .post-links { padding: var(--s3) var(--s5); border-top: 1px solid var(--line); font-size: var(--t-sm); }
 
 /* 댓글 — 소셜 피드 느낌 */
