@@ -122,7 +122,13 @@ class g5_blade_assets extends html_process
             return ($a[0] < $b[0]) ? -1 : 1;    // order 가 작을수록 먼저
         });
         $html = '';
-        foreach ($out as $row) $html .= $row[1]."\n";
+        foreach ($out as $row) {
+            // 순정 스킨/테마의 스타일시트는 뺀다 — 우리 템플릿이 그 자리를 대신하므로
+            // 같이 실으면 배경·레이아웃이 서로 싸운다. (스크립트는 동작이라 모두 싣는다)
+            if (stripos($row[1], '<link') !== false
+                && preg_match('#/(skin|theme)/#i', $row[1])) continue;
+            $html .= $row[1]."\n";
+        }
         return $html;
     }
 }
