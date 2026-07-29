@@ -1,5 +1,6 @@
 <?php
 include_once('./_common.php');
+define('G5_BLADE_PAGE', true); // g5blade 직통 화면
 
 if(defined('G5_THEME_PATH')) {
     require_once(G5_THEME_SHOP_PATH.'/index.php');
@@ -14,6 +15,7 @@ if (G5_IS_MOBILE) {
 define("_INDEX_", TRUE);
 
 include_once(G5_SHOP_PATH.'/shop.head.php');
+if (function_exists('g5_map_shop_index')) { g5_map_shop_index(); return; } // g5blade
 ?>
 
 <!-- 메인이미지 시작 { -->

@@ -76,8 +76,24 @@ function g5_blade_common()
     );
 }
 
+// 쇼핑몰처럼 head 이후에도 순정 스킨이 직접 echo 하는 화면에서, 그 잔여 출력을 버린다.
+// shop.head.php 가드가 버퍼를 열고 g5_view() 가 렌더 직전에 버린다.
+function g5_blade_buffer_start()
+{
+    ob_start();
+    $GLOBALS['g5_blade_ob'] = true;
+}
+function g5_blade_buffer_drop()
+{
+    if (!empty($GLOBALS['g5_blade_ob'])) {
+        ob_end_clean();
+        $GLOBALS['g5_blade_ob'] = false;
+    }
+}
+
 function g5_view($view, $data = array())
 {
+    g5_blade_buffer_drop();
     g5_blade_connect();
     echo g5_blade()->run($view, array_merge(g5_blade_common(), $data));
 }
