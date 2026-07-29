@@ -52,6 +52,7 @@ function g5_map_shop_orderview($body_html)
 
     g5_view('shop.orderview', array(
         'body_html'  => $body_html,
+        'items'      => g5_shop_order_items(isset($od['od_id']) ? $od['od_id'] : ''),
         'od_id'      => isset($od['od_id']) ? $od['od_id'] : '',
         'od_time'    => isset($od['od_time']) ? $od['od_time'] : '',
         'status'     => isset($od['od_status']) ? $od['od_status'] : '',
@@ -60,6 +61,59 @@ function g5_map_shop_orderview($body_html)
         'admin_href' => ($is_admin === 'super' && !empty($od['od_id']))
                         ? G5_ADMIN_URL.'/shop_admin/orderform.php?od_id='.$od['od_id'] : '',
     ));
+}
+
+// 주문 상품 — 순정 orderinquiryview.php 와 같은 질의를 옵션 한 줄씩으로 편다.
+// (순정 표는 rowspan/colspan 2줄 머리라 반응형으로 다루기 어렵다)
+function g5_shop_order_items($od_id)
+{
+    global $g5;
+    if (!$od_id) return array();
+    $od_id = sql_real_escape_string($od_id);
+
+    $out = array();
+    $res = sql_query(" select it_id, it_name, ct_send_cost, it_sc_type
+                         from {$g5['g5_shop_cart_table']}
+                        where od_id = '$od_id' group by it_id order by ct_id ");
+    while ($row = sql_fetch_array($res)) {
+        $it_id = sql_real_escape_string($row['it_id']);
+
+        // 배송비 표기 (조건부무료면 실제 계산 결과로 덮는다 — 순정과 동일)
+        $send = array(1 => '착불', 2 => '무료');
+        $ct_send_cost = isset($send[$row['ct_send_cost']]) ? $send[$row['ct_send_cost']] : '선불';
+        if ($row['it_sc_type'] == 2) {
+            $sum = sql_fetch(" select SUM(IF(io_type = 1, (io_price * ct_qty), ((ct_price + io_price) * ct_qty))) as price,
+                                      SUM(ct_qty) as qty
+                                 from {$g5['g5_shop_cart_table']}
+                                where it_id = '$it_id' and od_id = '$od_id' ");
+            if (get_item_sendcost($row['it_id'], $sum['price'], $sum['qty'], $od_id) == 0) $ct_send_cost = '무료';
+        }
+
+        $opts = sql_query(" select ct_id, ct_option, ct_qty, ct_price, ct_point, ct_status, io_type, io_price
+                              from {$g5['g5_shop_cart_table']}
+                             where od_id = '$od_id' and it_id = '$it_id'
+                             order by io_type asc, ct_id asc ");
+        $first = true;
+        while ($o = sql_fetch_array($opts)) {
+            $price = $o['io_type'] ? (int)$o['io_price'] : ((int)$o['ct_price'] + (int)$o['io_price']);
+            $out[] = array(
+                'it_id'   => $row['it_id'],
+                'name'    => $row['it_name'],
+                'href'    => shop_item_url($row['it_id']),
+                'img'     => get_it_image($row['it_id'], 70, 70),   // 순정 <img> HTML → {!! !!}
+                'first'   => $first,          // 같은 상품의 첫 옵션 줄인가 (이미지·이름을 여기만 보인다)
+                'option'  => get_text($o['ct_option']),
+                'qty'     => (int)$o['ct_qty'],
+                'price'   => $price,
+                'sum'     => $price * (int)$o['ct_qty'],
+                'point'   => (int)$o['ct_point'] * (int)$o['ct_qty'],
+                'send'    => $ct_send_cost,
+                'status'  => $o['ct_status'],
+            );
+            $first = false;
+        }
+    }
+    return $out;
 }
 
 // ── 쇼핑몰 메인 (shop/index.php)
