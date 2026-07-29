@@ -1383,3 +1383,10 @@ a.chip.cate:hover { background: var(--teal); color: #fff; }
     --ico-share: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='18' cy='5' r='2.6'/%3E%3Ccircle cx='6' cy='12' r='2.6'/%3E%3Ccircle cx='18' cy='19' r='2.6'/%3E%3Cpath d='M8.6 13.5l6.8 4M15.4 6.5l-6.8 4'/%3E%3C/svg%3E");
 }
 .btn_sns_share::after { content: "공유"; }
+
+/* 장바구니 좁은 화면 — 수량·선후불·금액은 눈으로 확인하는 값이라 크게, 오른쪽에 모은다 */
+.list-cards .cart-m {
+    display: flex; align-items: baseline; justify-content: flex-end; flex-wrap: wrap;
+    margin-top: var(--s1); font-size: var(--t-md); color: var(--muted);
+}
+.list-cards .cart-m strong { font-size: var(--t-lg); font-weight: 800; color: var(--fg); }

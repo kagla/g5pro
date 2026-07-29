@@ -67,7 +67,7 @@
                 <input type="checkbox" name="ct_chk[{{ $it['idx'] }}]" value="1" checked aria-label="{{ $it['name'] }} 선택">
                 <span class="t"><a href="{{ $it['href'] }}">{{ $it['name'] }}</a></span>
             </div>
-            <div class="m">
+            <div class="m cart-m">
                 <span>{{ number_format($it['qty']) }}개</span>
                 <span>{{ $it['send_label'] }}</span>
                 <span><strong>{{ number_format($it['sell_price']) }}원</strong></span>
@@ -96,5 +96,15 @@
     <button type="button" class="btn btn-primary" onclick="return form_check('buy');">주문하기</button>
 </div>
 </form>
+
+<script>
+// 표(넓은 화면)와 카드(좁은 화면)가 같은 상품의 체크박스를 각각 그린다.
+// 안 보이는 쪽이 함께 전송되면 화면에서 푼 체크가 무시되므로 전송에서 뺀다.
+document.getElementById('sod_bsk_list').addEventListener('submit', function (e) {
+    e.currentTarget.querySelectorAll('input[name^="ct_chk"]').forEach(function (c) {
+        c.disabled = (c.offsetParent === null);
+    });
+});
+</script>
 @endif
 @endsection
