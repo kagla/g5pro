@@ -148,9 +148,10 @@ function form_check(act) {
         alert('주문하실 상품을 하나이상 선택해 주십시오.');
         return false;
     }
-    if (act === 'seldelete') {
-        if (!checked) { alert('삭제하실 상품을 하나이상 선택해 주십시오.'); return false; }
-        if (!confirm('선택한 ' + checked + '개 상품을 장바구니에서 빼시겠습니까?')) return false;
+    // 선택삭제는 고른 것만 빠지고 다시 담기 쉬우므로 묻지 않는다 (비우기는 전체라 확인)
+    if (act === 'seldelete' && !checked) {
+        alert('삭제하실 상품을 하나이상 선택해 주십시오.');
+        return false;
     }
     if (act === 'alldelete' && !confirm('장바구니를 비우시겠습니까?')) return false;
 
