@@ -1646,7 +1646,8 @@ input[type=checkbox], input[type=radio] {
 
 /* 상태 설명 */
 .odv #sod_sts_wrap { padding: var(--s3) var(--s5) var(--s4); }
-.odv #sod_sts_explan { margin-top: var(--s3); padding: var(--s4); border-radius: var(--r-lg); background: var(--bg); }
+/* 순정 CSS 의 기본값과 같이 접어 둔다 — '상태설명보기' 를 눌러야 열린다 (jQuery slideDown) */
+.odv #sod_sts_explan { display: none; margin-top: var(--s3); padding: var(--s4); border-radius: var(--r-lg); background: var(--bg); }
 .odv #sod_fin_legend { display: grid; grid-template-columns: auto 1fr; gap: var(--s2) var(--s4); margin: 0 0 var(--s3); font-size: var(--t-sm); }
 .odv #sod_fin_legend dt { font-weight: 700; }
 .odv #sod_fin_legend dd { margin: 0; color: var(--muted); }
