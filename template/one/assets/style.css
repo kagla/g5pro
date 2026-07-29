@@ -1676,12 +1676,12 @@ input[type=checkbox], input[type=radio] {
 .odv #sod_fin_tot li strong { color: var(--fg); font-weight: 700; }
 
 /* 주문 취소 — 오른쪽 아래 텍스트 링크 + 모달 (순정 카드는 JS 가 걷어낸다) */
-/* 결제합계 카드 오른쪽 아래 */
-.odv #sod_fin_tot .odv-cancel-open {
-    display: block; width: fit-content; margin: 0 var(--s5) var(--s4) auto; padding: var(--s1) 0;
+/* 결제합계 카드 바깥 오른쪽 아래 (.sod_right 는 세로 flex 라 align-self 로 민다) */
+.odv .odv-cancel-open {
+    align-self: flex-end; width: fit-content; margin-top: calc(-1 * var(--s3)); padding: var(--s1) 0;
     font-size: var(--t-sm); color: var(--muted); text-decoration: underline; text-underline-offset: 3px;
 }
-.odv #sod_fin_tot .odv-cancel-open:hover { color: var(--danger); }
+.odv .odv-cancel-open:hover { color: var(--danger); }
 
 .odv-modal { position: fixed; inset: 0; z-index: 200; }
 .odv-modal[hidden] { display: none; }
