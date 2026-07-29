@@ -177,3 +177,22 @@ function g5_latest_rows($bo_table, $rows = 6, $subject_len = 40)
         'items' => $items,
     );
 }
+
+// 메인 히어로용 사이트 통계 (가벼운 집계 3건)
+function g5_blade_stats()
+{
+    global $g5;
+    static $s = null;
+    if ($s !== null) return $s;
+
+    $mb = sql_fetch(" select count(*) as cnt from `{$g5['member_table']}` where mb_level > 1 ", false);
+    $lo = sql_fetch(" select count(*) as cnt from `{$g5['login_table']}` ", false);
+    $wr = sql_fetch(" select sum(bo_count_write) as cnt from `{$g5['board_table']}` ", false);
+
+    $s = array(
+        'members' => (int)(isset($mb['cnt']) ? $mb['cnt'] : 0),
+        'online'  => (int)(isset($lo['cnt']) ? $lo['cnt'] : 0),
+        'posts'   => (int)(isset($wr['cnt']) ? $wr['cnt'] : 0),
+    );
+    return $s;
+}

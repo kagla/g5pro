@@ -15,7 +15,7 @@
             @endforeach
         </select>
         <label for="bbs_stx" class="sound_only">검색어</label>
-        <input type="text" id="bbs_stx" name="stx" value="{{ $search['stx'] }}" required>
+        <input type="text" id="bbs_stx" name="stx" value="{{ $search['stx'] }}" placeholder="이 게시판에서 검색" required>
         <button type="submit" class="btn">검색</button>
     </form>
     <div class="bbs-actions">

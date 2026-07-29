@@ -7,7 +7,7 @@
 
 <article class="post">
     <header class="post-head">
-        <h3>@if ($post['ca_name'])<span class="badge">{{ $post['ca_name'] }}</span>@endif {!! $post['subject'] !!}</h3>
+        <h3>@if ($post['ca_name'])<span class="chip">{{ $post['ca_name'] }}</span>@endif {!! $post['subject'] !!}</h3>
         <div class="post-meta">
             <span class="name">{!! $post['name'] !!}</span>
             <span>{{ $post['datetime'] }}</span>

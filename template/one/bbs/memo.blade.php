@@ -27,7 +27,7 @@
                 @php $cls = $it['is_read'] ? 'read' : ''; @endphp
                 <tr class="{{ $cls }}">
                     <td class="col-subject">
-                        @unless ($it['is_read'])<span class="badge new">N</span>@endunless
+                        @unless ($it['is_read'])<span class="badge-new">N</span>@endunless
                         <a href="{!! $it['view_href'] !!}">{!! $it['preview'] !!}</a>
                     </td>
                     <td>{!! $it['name'] !!}</td>
@@ -46,7 +46,7 @@
         @php $cls = $it['is_read'] ? 'read' : ''; @endphp
         <li class="{{ $cls }}">
             <div class="s">
-                @unless ($it['is_read'])<span class="badge new">N</span>@endunless
+                @unless ($it['is_read'])<span class="badge-new">N</span>@endunless
                 <span class="t"><a href="{!! $it['view_href'] !!}">{!! $it['preview'] !!}</a></span>
             </div>
             <div class="m">

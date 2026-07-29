@@ -15,10 +15,10 @@
         </a>
         <div class="gallery-info">
             <div class="gallery-subject">
-                @if ($it['is_notice'])<span class="badge">공지</span>@endif
+                @if ($it['is_notice'])<span class="chip c3">공지</span>@endif
                 <a href="{{ $it['href'] }}">{!! $it['subject'] !!}</a>
-                @if ($it['comment_cnt'])<span class="cmt-cnt">{{ $it['comment_cnt'] }}</span>@endif
-                @if ($it['icon_new'])<span class="badge new">N</span>@endif
+                @if ($it['comment_cnt'])<span class="n">{{ $it['comment_cnt'] }}</span>@endif
+                @if ($it['icon_new'])<span class="badge-new">N</span>@endif
             </div>
             <div class="m">
                 <span>{!! $it['name'] !!}</span>

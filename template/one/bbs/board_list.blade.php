@@ -9,6 +9,7 @@
 <input type="hidden" name="bo_table" value="{{ $board['bo_table'] }}">
 @endif
 
+<div class="list-panel">
 <div class="list-table-wrap">
     <table class="list-table">
         <thead>
@@ -29,9 +30,9 @@
                 <td class="col-no">{{ $it['is_notice'] ? '공지' : $it['num'] }}</td>
                 <td class="col-subject">
                     <a href="{{ $it['href'] }}">{!! $it['subject'] !!}</a>
-                    @if ($it['comment_cnt'])<span class="cmt-cnt">[{{ $it['comment_cnt'] }}]</span>@endif
-                    @if ($it['icon_new'])<span class="badge new">N</span>@endif
-                    @if ($it['icon_file'])<span class="badge">파일</span>@endif
+                    @if ($it['comment_cnt'])<span class="n">[{{ $it['comment_cnt'] }}]</span>@endif
+                    @if ($it['icon_new'])<span class="badge-new">N</span>@endif
+                    @if ($it['icon_file'])<span class="chip c4">파일</span>@endif
                 </td>
                 <td>{!! $it['name'] !!}</td>
                 <td>{{ $it['datetime'] }}</td>
@@ -51,10 +52,10 @@
     <li class="{{ $cls }}">
         <div class="s">
             @if ($is_checkbox)<input type="checkbox" name="chk_wr_id[]" value="{{ $it['wr_id'] }}" aria-label="선택">@endif
-            @if ($it['is_notice'])<span class="badge">공지</span>@endif
+            @if ($it['is_notice'])<span class="chip c3">공지</span>@endif
             <span class="t"><a href="{{ $it['href'] }}">{!! $it['subject'] !!}</a></span>
-            @if ($it['comment_cnt'])<span class="cmt-cnt">[{{ $it['comment_cnt'] }}]</span>@endif
-            @if ($it['icon_new'])<span class="badge new">N</span>@endif
+            @if ($it['comment_cnt'])<span class="n">[{{ $it['comment_cnt'] }}]</span>@endif
+            @if ($it['icon_new'])<span class="badge-new">N</span>@endif
         </div>
         <div class="m">
             <span>{!! $it['name'] !!}</span>
@@ -66,6 +67,7 @@
     <li class="bbs-empty">게시물이 없습니다.</li>
     @endforelse
 </ul>
+</div>
 
 @if ($is_checkbox)
 <div class="bbs-admin-acts">

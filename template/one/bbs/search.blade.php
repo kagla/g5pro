@@ -16,7 +16,7 @@
         <li>
             <div class="s">
                 <span class="t"><a href="{{ $it['href'] }}">{!! $it['subject'] !!}</a></span>
-                @if ($it['comment_cnt'])<span class="cmt-cnt">{{ $it['comment_cnt'] }}</span>@endif
+                @if ($it['comment_cnt'])<span class="n">{{ $it['comment_cnt'] }}</span>@endif
             </div>
             @if ($it['content'])<div class="muted">{!! $it['content'] !!}</div>@endif
             <div class="m">
@@ -48,7 +48,7 @@
             @endforeach
         </select>
         <label for="sch_stx" class="sound_only">검색어</label>
-        <input type="text" id="sch_stx" name="stx" value="{{ $stx }}" required>
+        <input type="text" id="sch_stx" name="stx" value="{{ $stx }}" placeholder="검색어" required>
         <button type="submit" class="btn">검색</button>
     </form>
 </div>
