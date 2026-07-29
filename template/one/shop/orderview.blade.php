@@ -83,12 +83,11 @@
 
 <div class="bbs-toolbar">
     <a class="btn" href="{{ $list_href }}">주문 목록</a>
-    <div class="bbs-actions">
-        {{-- 순정이 취소 가능하다고 판단한 주문에서만 JS 가 보이게 한다 --}}
-        <button type="button" class="linklike odv-cancel-open" id="odv-cancel-open" hidden>주문 취소</button>
-        <a class="btn btn-primary" href="{{ $shop_href }}">쇼핑 계속하기</a>
-    </div>
+    <a class="btn btn-primary" href="{{ $shop_href }}">쇼핑 계속하기</a>
 </div>
+
+{{-- 순정이 취소 가능하다고 판단한 주문에서만 JS 가 결제합계 카드 안으로 옮겨 보여준다 --}}
+<button type="button" class="linklike odv-cancel-open" id="odv-cancel-open" hidden>주문 취소</button>
 
 {{-- 주문 취소 — 순정 폼(주문번호·토큰·검사 함수)을 그대로 이 안으로 옮겨 담는다 --}}
 <div class="odv-modal" id="odv-cancel-modal" role="dialog" aria-modal="true" aria-labelledby="odv-cancel-title" hidden>
@@ -113,6 +112,10 @@
     if (!form) return;
     document.getElementById('odv-cancel-slot').appendChild(form);
     sec.parentNode.removeChild(sec);
+
+    // 취소 링크는 결제합계 카드 오른쪽 아래에 붙인다
+    var tot = document.getElementById('sod_fin_tot');
+    (tot || document.querySelector('.odv')).appendChild(open);
     open.hidden = false;
 
     function setOpen(on) {
