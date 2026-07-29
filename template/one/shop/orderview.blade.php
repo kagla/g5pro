@@ -91,6 +91,18 @@
 @if (count($cancel_items))
 <section class="odv-cancelled" id="odv-cancelled">
     <h2>취소·반품 내역</h2>
+
+    @if (count($cancel_notes))
+    <ul class="odv-why">
+        @foreach ($cancel_notes as $n)
+        <li>
+            <p class="r">{{ $n['reason'] }}</p>
+            <p class="m"><span class="chip c4">{{ $n['who'] }}</span> {{ $n['time'] }}</p>
+        </li>
+        @endforeach
+    </ul>
+    @endif
+
     <ul>
         @foreach ($cancel_items as $it)
         <li>
