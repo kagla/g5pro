@@ -113,9 +113,10 @@
     document.getElementById('odv-cancel-slot').appendChild(form);
     sec.parentNode.removeChild(sec);
 
-    // 취소 링크는 결제합계 카드 오른쪽 아래에 붙인다
+    // 취소 링크는 결제합계 카드 '바깥' 오른쪽 아래에 둔다
     var tot = document.getElementById('sod_fin_tot');
-    (tot || document.querySelector('.odv')).appendChild(open);
+    if (tot) tot.insertAdjacentElement('afterend', open);
+    else document.querySelector('.odv').appendChild(open);
     open.hidden = false;
 
     function setOpen(on) {
