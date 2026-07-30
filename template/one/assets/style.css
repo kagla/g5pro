@@ -677,6 +677,8 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 }
 .member-box > h2 { font-size: var(--t-xl); font-weight: 700; text-align: center; }
 .auto-login { font-size: var(--t-sm); color: var(--muted); }
+/* 폼 맨 위의 설명 한 문단 (회원정보 찾기 등) */
+.form-lead { font-size: var(--t-sm); color: var(--muted); line-height: 1.7; margin: 0; }
 .login-links { display: flex; justify-content: center; gap: var(--s4); font-size: var(--t-sm); color: var(--muted); }
 
 .stip { display: flex; flex-direction: column; gap: var(--s2); }
@@ -1210,13 +1212,27 @@ a.chip.cate:hover { background: var(--teal); color: #fff; }
     background: var(--card); color: var(--muted); font: inherit; font-size: var(--t-sm); font-weight: 600; cursor: pointer;
 }
 #btn_wish:hover, #sit_btn_opt button:hover, #sit_btn_rec:hover { border-color: var(--accent); color: var(--accent); }
+/* SNS 공유 패널 — 순정 스크립트가 $(".sns_area").show() 로 인라인 display:block 을 넣는다.
+   인라인 스타일이 이기므로 flex 배치가 서지 않고, 좁은 기준상자(#sit_btn_opt) 때문에 줄바꿈까지 났다.
+   블록인 채로 한 줄에 세운다 — 폭은 내용만큼, 줄바꿈 금지. */
 .sns_area {
     position: absolute; right: 0; top: calc(100% + var(--s2)); z-index: 30;
-    display: none; align-items: center; gap: var(--s2);
+    display: none; width: max-content; white-space: nowrap; font-size: 0;
     padding: var(--s2); background: var(--card); border-radius: var(--r-lg); box-shadow: var(--sh-lg);
 }
-.sns_area a { display: inline-flex; align-items: center; }
-.sns_area img { width: 30px; height: 30px; border-radius: var(--r-md); }
+.sns_area > a { vertical-align: middle; }
+.sns_area > a + a { margin-left: var(--s2); }
+/* 순정 페이스북·트위터 아이콘은 흰 글리프에 배경이 투명이라 밝은 테마의 흰 패널에서 사라진다.
+   브랜드색 바탕을 깔아 두 테마 모두에서 보이게 한다. (카카오 아이콘은 제 색이 있어 그대로) */
+.sns_area .share-facebook, .sns_area .share-twitter, .sns_area .share-kakaotalk {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: var(--r-md);
+}
+.sns_area .share-facebook  { background: #1877f2; }
+.sns_area .share-twitter   { background: #1da1f2; }
+.sns_area .share-kakaotalk { background: #fee500; }
+.sns_area .share-facebook:hover, .sns_area .share-twitter:hover, .sns_area .share-kakaotalk:hover { filter: brightness(1.08); }
+.sns_area img { width: 22px; height: 22px; }
 
 /* 요약 표 (판매가·적립·배송비·구매수량 …) */
 #sit_ov table { width: 100%; border-collapse: collapse; margin-bottom: var(--s4); }
@@ -1576,21 +1592,24 @@ input[type=checkbox], input[type=radio] {
 #sod_frm_paysel { display: flex; flex-wrap: wrap; gap: var(--s2); padding: 0 var(--s5) var(--s4); border: 0; margin: 0; }
 #sod_frm_paysel legend { position: absolute; left: -9999px; }
 #sod_frm_paysel input[type=radio] { position: absolute; opacity: 0; width: 0; height: 0; }
-#sod_frm_paysel label {
+#sod_frm_paysel input[type=radio] + label {
     display: inline-flex; align-items: center; justify-content: center;
     min-width: 104px; padding: var(--s3) var(--s4);
     border: 1px solid var(--line); border-radius: var(--r-btn); background: var(--card);
     font-size: var(--t-md); font-weight: 600; cursor: pointer;
     transition: border-color .15s, color .15s, background .15s;
 }
-#sod_frm_paysel label:hover { border-color: var(--accent); color: var(--accent); }
+#sod_frm_paysel input[type=radio] + label:hover { border-color: var(--accent); color: var(--accent); }
 #sod_frm_paysel input[type=radio]:checked + label {
     border-color: var(--accent); background: var(--accent-soft); color: var(--accent-deep); font-weight: 700;
 }
 #sod_frm_paysel input[type=radio]:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* 무통장 계좌 안내는 결제수단 칩과 같은 flex 줄에 들어가므로 한 줄을 통째로 쓰게 한다 */
 #settle_bank { flex: 1 0 100%; margin-top: var(--s2); font-size: var(--t-md); line-height: 1.7; }
-#settle_bank input[type=text] { max-width: 240px; margin-top: var(--s2); }
+/* 입금자명 — 결제수단 칩(라디오+label)이 아니라 평범한 입력 라벨이다 */
+#settle_bank label { display: block; margin: var(--s3) 0 var(--s2); font-size: var(--t-sm); font-weight: 700; color: var(--muted); }
+/* 순정이 size="10" 을 주므로 폭을 직접 잡아 준다 (예금주 이름이 잘리지 않게) */
+#settle_bank input[type=text] { width: 100%; max-width: 360px; margin: 0; }
 
 /* 결제 버튼 */
 #display_pay_button { display: flex; gap: var(--s2); margin-top: var(--s2); }
@@ -1850,7 +1869,7 @@ input[type=checkbox], input[type=radio] {
 #sit_btn_opt button, #btn_wish, #sit_btn_rec,
 #sit_ov_btn button, #sit_ov_btn > a,
 #sit_sel_option li button,
-#sod_frm_paysel label,
+#sod_frm_paysel input[type=radio] + label,
 #display_pay_button .btn01,
 .odv .btn01, .odv .btn02, .odv .btn_cancel,
 .kebab-menu button.danger { border-color: var(--btn-line); }
@@ -1897,4 +1916,32 @@ input[type=checkbox], input[type=radio] {
 .odv-cancelled .odv-why .m {
     display: flex; align-items: center; gap: var(--s2);
     margin: var(--s2) 0 0; font-size: var(--t-xs); color: var(--muted); font-variant-numeric: tabular-nums;
+}
+
+/* ── 주문내역 (shop/orderinquiry.php) ── */
+.list-table .td-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.od-status {
+    display: inline-block; padding: 2px var(--s2); border-radius: var(--r-full);
+    font-size: var(--t-xs); font-weight: 800; white-space: nowrap;
+    background: var(--line); color: var(--muted);
+}
+.od-status.wait   { background: var(--accent-soft); color: var(--accent-deep); }
+.od-status.paid   { background: var(--teal-soft);   color: var(--teal-deep); }
+.od-status.ready,
+.od-status.ship   { background: var(--indigo-soft); color: var(--indigo); }
+.od-status.done   { background: var(--teal-soft);   color: var(--teal-deep); }
+.od-status.cancel { background: var(--line);        color: var(--muted); }
+.list-cards .od-misu { color: var(--danger); font-weight: 700; }
+
+/* ── 헤더 장바구니 — 아이콘 + 담긴 개수 배지 ── */
+.cart-btn { position: relative; color: var(--fg); }
+.cart-btn:hover { color: var(--accent); }
+.cart-count {
+    position: absolute; top: 1px; right: 0;
+    min-width: 16px; height: 16px; padding: 0 4px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: var(--r-full); border: 2px solid var(--card);
+    background: var(--danger); color: #fff;
+    font-size: 10px; font-weight: 800; line-height: 1;
+    font-variant-numeric: tabular-nums;
 }
