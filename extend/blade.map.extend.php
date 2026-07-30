@@ -421,6 +421,19 @@ function g5_map_login()
     ));
 }
 
+// ── 회원정보 찾기 (bbs/password_lost.php) — 가입 이메일로 아이디·임시비밀번호 안내메일 받기.
+// 본인인증으로 찾기(cf_cert_find)를 켠 사이트는 호출부가 직통을 포기하고 순정 스킨을 쓴다.
+function g5_map_password_lost()
+{
+    global $action_url;
+
+    g5_view('bbs.password_lost', array(
+        'action_url'   => $action_url,        // password_lost2.php
+        'captcha_html' => captcha_html(),     // password_lost2.php 가 항상 chk_captcha()
+        'captcha_js'   => chk_captcha_js(),
+    ));
+}
+
 // ── 비밀번호 확인 (bbs/member_confirm.php)
 function g5_map_member_confirm()
 {
