@@ -1,5 +1,6 @@
 <?php
 include_once('./_common.php');
+define('G5_BLADE_PAGE', true); // g5blade 직통 화면
 
 // 상품 리스트에서 다른 필드로 정렬을 하려면 아래의 배열 코드에서 해당 필드를 추가하세요.
 $sort = (isset($_REQUEST['sort']) && in_array($_REQUEST['sort'], array('it_name', 'it_sum_qty', 'it_price', 'it_use_avg', 'it_use_cnt', 'it_update_time'))) ? $_REQUEST['sort'] : '';
@@ -43,44 +44,39 @@ else
 define('G5_SHOP_CSS_URL', G5_SHOP_SKIN_URL);
 
 // 리스트 유형별로 출력
+// g5blade: 목록 HTML 은 스킨이 아니라 blade 뷰가 만든다. g5_shop_items() 가 스킨 자리에
+// 데이터 수집기를 끼우므로 위 $skin 파일 유무와 무관하게 상품유형 쿼리만 순정에서 가져온다.
 $list_file = G5_SHOP_SKIN_PATH.'/'.$skin;
-if (file_exists($list_file)) {
-    // 총몇개 = 한줄에 몇개 * 몇줄
-    $items = $list_mod * $list_row;
-    // 페이지가 없으면 첫 페이지 (1 페이지)
-    if ($page < 1) $page = 1;
-    // 시작 레코드 구함
-    $from_record = ($page - 1) * $items;
 
-    $list = new item_list();
-    $list->set_type($type);
-    $list->set_list_skin($list_file);
-    $list->set_list_mod($list_mod);
-    $list->set_list_row($list_row);
-    $list->set_img_size($img_width, $img_height);
-    $list->set_is_page(true);
-    $list->set_order_by($order_by);
-    $list->set_from_record($from_record);
-    $list->set_view('it_img', true);
-    $list->set_view('it_id', false);
-    $list->set_view('it_name', true);
-    $list->set_view('it_cust_price', false);
-    $list->set_view('it_price', true);
-    $list->set_view('it_icon', true);
-    $list->set_view('sns', true);
-    echo $list->run();
+// 총몇개 = 한줄에 몇개 * 몇줄
+$items = $list_mod * $list_row;
+// 페이지가 없으면 첫 페이지 (1 페이지)
+if ($page < 1) $page = 1;
+// 시작 레코드 구함
+$from_record = ($page - 1) * $items;
 
-    // where 된 전체 상품수
-    $total_count = $list->total_count;
-    // 전체 페이지 계산
-    $total_page  = ceil($total_count / $items);
-}
-else
-{
-    echo '<div align="center">'.get_text($skin).' 파일을 찾을 수 없습니다.<br>관리자에게 알려주시면 감사하겠습니다.</div>';
-}
+$list = new item_list();
+$list->set_type($type);
+$list->set_list_skin($list_file);
+$list->set_list_mod($list_mod);
+$list->set_list_row($list_row);
+$list->set_img_size($img_width, $img_height);
+$list->set_is_page(true);
+$list->set_order_by($order_by);
+$list->set_from_record($from_record);
+$list->set_view('it_img', true);
+$list->set_view('it_id', false);
+$list->set_view('it_name', true);
+$list->set_view('it_cust_price', false);
+$list->set_view('it_price', true);
+$list->set_view('it_icon', true);
+$list->set_view('sns', true);
+$g5_blade_items = g5_shop_items($list); // g5blade: 출력 대신 데이터 수집
 
-$qstr .= '&amp;type='.$type.'&amp;sort='.$sort;
-echo get_paging($config['cf_write_pages'], $page, $total_page, "{$_SERVER['SCRIPT_NAME']}?$qstr&amp;page=");
+// where 된 전체 상품수
+$total_count = $list->total_count;
+// 전체 페이지 계산
+$total_page  = ceil($total_count / $items);
 
-include_once('./_tail.php');
+g5_map_shop_listtype($g5_blade_items, $type, $total_count, $page, $total_page, $sort, $sortodr); // g5blade
+return;
