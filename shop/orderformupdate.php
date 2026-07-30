@@ -679,6 +679,22 @@ if(! $result || ! (isset($exists_order['od_id']) && $od_id && $exists_order['od_
     die('<p>고객님의 주문 정보를 처리하는 중 오류가 발생해서 주문이 완료되지 않았습니다.</p><p>'.strtoupper($od_pg).'를 이용한 전자결제(신용카드, 계좌이체, 가상계좌 등)은 자동 취소되었습니다.');
 }
 
+// g5blade: 주문서의 "회원정보에 저장" 체크 — 주문자 연락처·주소를 회원정보에 반영한다.
+// 이름·이메일은 중복확인이 필요해 정보수정에서만 다루므로 여기서는 건드리지 않는다.
+// 값은 위(582~591행)에서 순정이 이미 정제한 것을 그대로 쓴다.
+if ($is_member && !empty($_POST['od_save_member'])) {
+    sql_query(" update {$g5['member_table']}
+                   set mb_tel         = '$od_tel',
+                       mb_hp          = '$od_hp',
+                       mb_zip1        = '$od_zip1',
+                       mb_zip2        = '$od_zip2',
+                       mb_addr1       = '$od_addr1',
+                       mb_addr2       = '$od_addr2',
+                       mb_addr3       = '$od_addr3',
+                       mb_addr_jibeon = '$od_addr_jibeon'
+                 where mb_id = '{$member['mb_id']}' ", false);
+}
+
 // 장바구니 상태변경
 // 신용카드로 주문하면서 신용카드 포인트 사용하지 않는다면 포인트 부여하지 않음
 $cart_status = $od_status;
