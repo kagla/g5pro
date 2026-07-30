@@ -45,8 +45,8 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
             <a class="{{ $acls }}" href="{{ $a['href'] }}" title="{{ $a['name'] }}" aria-label="{{ $a['name'] }}"
                @if ($a['active']) aria-current="page" @endif>
                 @if ($a['icon'] === 'bag')
-                {{-- 쇼핑몰: 장바구니 카트 --}}
-                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9.5" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2.4l2.2 11.2h10.2L20 7H6.2"/></svg>
+                {{-- 쇼핑몰: 상점(차양+문). 카트는 헤더 장바구니 버튼이 쓰므로 겹치지 않게 한다 --}}
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 10.5V20h15v-9.5"/><path d="M3 4h18l1 4.2a2.8 2.8 0 0 1-5.5 0 2.8 2.8 0 0 1-5.5 0 2.8 2.8 0 0 1-5.5 0L3 4Z"/><path d="M10 20v-5h4v5"/></svg>
                 @else
                 {{-- 커뮤니티: 말풍선 --}}
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H9.5L4 20.5V6.5Z"/><path d="M8.5 9h7M8.5 12h4.5"/></svg>
@@ -87,6 +87,15 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
             <button type="button" class="icon-btn search-open" id="search-open" aria-label="검색" title="검색">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
             </button>
+            {{-- 장바구니 — 쇼핑몰 설치 시 상시 노출. 담긴 게 있으면 개수 배지를 단다
+                 (프로필 메뉴 안에만 있으면 열어 봐야 알 수 있어 밖으로 뺐다) --}}
+            @if ($cart)
+            @php $cart_label = $cart['count'] ? '장바구니 '.$cart['count'].'개' : '장바구니 (비어 있음)'; @endphp
+            <a class="icon-btn cart-btn" href="{{ $cart['href'] }}" title="{{ $cart_label }}" aria-label="{{ $cart_label }}">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9.5" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2.4l2.2 11.2h10.2L20 7H6.2"/></svg>
+                @if ($cart['count'])<b class="cart-count">{{ $cart['count'] > 99 ? '99+' : $cart['count'] }}</b>@endif
+            </a>
+            @endif
             <button type="button" class="icon-btn" id="theme-toggle" aria-label="테마 전환" title="테마 전환">
                 <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 13.3A8.2 8.2 0 0 1 10.7 3.5a8.5 8.5 0 1 0 9.8 9.8Z"/></svg>
                 <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M4.2 12H2M22 12h-2.2M6.5 6.5 5 5M19 19l-1.5-1.5M17.5 6.5 19 5M5 19l1.5-1.5"/></svg>
@@ -106,6 +115,11 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
                     <a href="{{ G5_BBS_URL }}/memo.php?kind=recv">쪽지
                         @if ($me['memo_cnt'])<b class="dot">{{ $me['memo_cnt'] }}</b>@endif
                     </a>
+                    {{-- 쇼핑몰이 설치된 경우에만 — 순정은 마이페이지에만 있어 진입점이 없었다.
+                         장바구니는 헤더 아이콘으로 상시 노출하므로 여기 두지 않는다 --}}
+                    @if ($cart)
+                    <a href="{{ G5_SHOP_URL }}/orderinquiry.php" class="sep">주문내역</a>
+                    @endif
                     @if ($me['mb_level'] >= 10)
                     <a href="{{ G5_ADMIN_URL }}/">관리자</a>
                     @endif
