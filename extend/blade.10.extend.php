@@ -2,6 +2,27 @@
 /**
  * g5blade 런타임 — BladeOne 로드, g5_view()/blade_takeover() 정의
  * 설계: docs/superpowers/specs/2026-07-29-g5blade-design.md
+ *
+ * ── extend/ 로드 순서 (common.php:836~853) ──
+ * 순정 common.php 는 extend/ 안의 *.php 를 natsort(파일명 자연순)로 정렬해
+ * 차례로 include_once 한다. 하위 폴더는 훑지 않는다.
+ * 파일명 앞의 숫자가 그 순서를 눈에 보이게 고정한 것이다:
+ *
+ *   blade.10.extend.php           ← 이 파일. 런타임. 반드시 첫째
+ *   blade.20.map.extend.php       기본 화면 매핑 (bbs·회원)
+ *   blade.30.map.shop.extend.php  쇼핑몰 화면 매핑
+ *   (그 뒤로 순정 확장들: debugbar·default.config·shop.extend·social_login …)
+ *
+ * 10번이 첫째여야 하는 이유는 이 파일에만 **최상위 실행 코드**가 있기 때문이다 —
+ * G5_TEMPLATE 결정과 cf_template 컬럼 자동 생성, BladeOne require.
+ * 20·30번은 함수 정의뿐이라 서로 순서 의존이 없다(호출 시점에만 실행된다).
+ * 번호는 10씩 띄웠으니 사이에 끼울 것이 생기면 15 처럼 넣으면 된다.
+ *
+ * 주의: 숫자 없는 파일은 자연순에서 숫자 뒤로 가므로(blade.map… 이 blade.10… 뒤),
+ * blade 계열에 최상위 실행 코드를 새로 넣을 때는 반드시 번호를 붙인다.
+ *
+ * extend/parts/ 는 로더가 건드리지 않는 자리다. 요청 시작 시점에 실행돼선 안 되고
+ * 다른 코드가 필요할 때 직접 include 하는 조각(예: blade.shop_items.php 데이터 수집기)을 둔다.
  */
 if (!defined('_GNUBOARD_')) exit;
 

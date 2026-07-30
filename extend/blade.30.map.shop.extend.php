@@ -1,17 +1,18 @@
 <?php
 /**
- * g5blade 화면 매핑 — 쇼핑몰(shop).
- * 서비스 단위로 매핑 파일을 나눈다: 기본(bbs·회원)은 blade.map.extend.php,
- * 쇼핑몰은 이 파일. 새 서비스가 생기면 blade.map.<서비스>.extend.php 로 추가한다.
+ * g5blade 화면 매핑 — 쇼핑몰(shop). 로드 순서 30번 (순서 설명은 blade.10.extend.php 머리말).
+ * 서비스 단위로 매핑 파일을 나눈다: 기본(bbs·회원)은 blade.20.map.extend.php,
+ * 쇼핑몰은 이 파일. 새 서비스가 생기면 blade.40.map.<서비스>.extend.php 로 추가한다.
  * 규칙은 동일 — 한 화면 = 한 함수, 전역변수를 뷰용 배열로 정리해 g5_view() 호출.
+ * 함수 정의뿐이므로 파일이 몇 번이든, 한 파일에 매핑이 몇 개든 동작은 달라지지 않는다.
  */
 if (!defined('_GNUBOARD_')) exit;
 
-// item_list 에서 상품 배열만 뽑는다 (출력 없음) — extend/blade.shop_items.php 참고
+// item_list 에서 상품 배열만 뽑는다 (출력 없음) — extend/parts/blade.shop_items.php 참고
 function g5_shop_items($il)
 {
     $GLOBALS['g5_blade_items'] = array();
-    $il->set_list_skin(G5_PATH.'/extend/blade.shop_items.php');
+    $il->set_list_skin(G5_PATH.'/extend/parts/blade.shop_items.php');
     $il->run();   // 반환 HTML 은 버린다
     return $GLOBALS['g5_blade_items'];
 }
