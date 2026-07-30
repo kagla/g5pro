@@ -7,6 +7,7 @@ if (G5_IS_MOBILE) {
 }
 
 define("_ORDERINQUIRY_", true);
+define('G5_BLADE_PAGE', true); // g5blade 직통 화면
 
 $order_info = array();
 $request_pwd = isset($_POST['od_pwd']) ? $_POST['od_pwd'] : '';
@@ -81,18 +82,7 @@ if (!$is_member)
 
 $g5['title'] = '주문내역조회';
 include_once('./_head.php');
-?>
 
-<!-- 주문 내역 시작 { -->
-<div id="sod_v">
-    <?php
-    $limit = " limit $from_record, $rows ";
-    include "./orderinquiry.sub.php";
-    ?>
+g5_map_shop_orderinquiry($from_record, $rows); // g5blade — 스킨 대신 직통 매핑
 
-    <?php echo get_paging($config['cf_write_pages'], $page, $total_page, "{$_SERVER['SCRIPT_NAME']}?$qstr&amp;page="); ?>
-</div>
-<!-- } 주문 내역 끝 -->
-
-<?php
 include_once('./_tail.php');
