@@ -67,6 +67,7 @@ function g5_blade_common()
         ) : null,
         'menu'   => g5_blade_menu(),
         'areas'  => g5_blade_areas(),
+        'cart'   => g5_blade_cart(),
         'title'  => (isset($g5['title']) && $g5['title']) ? $g5['title'] : (isset($config['cf_title']) ? $config['cf_title'] : ''),
         'popups' => g5_blade_popups(),
         // 순정 add_stylesheet()/add_javascript() 큐 — 레이아웃 <head> 에서 그대로 내보낸다
@@ -338,6 +339,23 @@ function g5_blade_profile_src($mb_id)
 // 커뮤니티 ↔ 쇼핑몰 전환 — 쇼핑몰이 설치된 경우에만.
 // 두 영역을 모두 돌려주고 현재 위치를 active 로 표시한다 (헤더 세그먼트 토글).
 // 하나만 보여주면 "갈 곳" 이름이 현재 위치처럼 읽히는 혼동이 있었다.
+// 헤더 장바구니 — 쇼핑몰이 설치된 경우에만. 비회원도 세션 장바구니를 쓰므로 로그인과 무관하다.
+// 개수는 cart.php 가 목록을 묶는 기준(상품 종류)과 같게 센다 — 옵션 줄 수가 아니다.
+function g5_blade_cart()
+{
+    global $g5;
+    if (!defined('G5_USE_SHOP') || !G5_USE_SHOP) return null;
+
+    $cart_id = function_exists('get_session') ? get_session('ss_cart_id') : '';
+    $cnt = 0;
+    if ($cart_id) {
+        $row = sql_fetch(" select count(distinct it_id) as cnt from `{$g5['g5_shop_cart_table']}`
+                            where od_id = '".sql_escape_string($cart_id)."' ", false);
+        $cnt = (int)(isset($row['cnt']) ? $row['cnt'] : 0);
+    }
+    return array('count' => $cnt, 'href' => G5_SHOP_URL.'/cart.php');
+}
+
 function g5_blade_areas()
 {
     if (!defined('G5_USE_SHOP') || !G5_USE_SHOP) return array();
