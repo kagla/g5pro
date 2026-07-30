@@ -272,6 +272,13 @@ if($is_kakaopay_use) {
         <section id="sod_frm_orderer">
             <h2>주문하시는 분</h2>
 
+            <?php if ($is_member) { // g5blade: 아래 연락처·주소를 회원정보에 반영 (기본 체크) ?>
+            <label class="od_save_mb">
+                <input type="checkbox" name="od_save_member" value="1" checked>
+                <span>여기 입력한 연락처·주소를 내 회원정보에 저장</span>
+            </label>
+            <?php } ?>
+
             <div class="tbl_frm01 tbl_wrap">
                 <table>
                 <tbody>
