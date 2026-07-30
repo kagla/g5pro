@@ -218,6 +218,49 @@ function g5_map_shop_list($items, $total_count, $page, $total_page, $qstr2)
     ));
 }
 
+// ── 상품유형 목록 (shop/listtype.php) — 히트·추천·최신·인기·할인상품 모아보기.
+// 메인의 각 블록 제목이 이 화면으로 온다 (shop_type_url).
+function g5_map_shop_listtype($items, $type, $total_count, $page, $total_page, $sort, $sortodr)
+{
+    global $default;
+
+    $titles = array(1 => '히트상품', 2 => '추천상품', 3 => '최신상품', 4 => '인기상품', 5 => '할인상품');
+
+    // 유형 전환 탭 — 설정에서 켠 유형만. 지금 보고 있는 유형은 꺼져 있어도 남긴다.
+    $tabs = array();
+    foreach ($titles as $t => $name) {
+        if (empty($default['de_type'.$t.'_list_use']) && $t !== $type) continue;
+        $tabs[] = array(
+            'name'   => $name,
+            'href'   => shop_type_url((string)$t),
+            'active' => ($t === $type),
+        );
+    }
+
+    // 정렬 — 순정 listtype.php 가 받아들이는 필드만 (it_name·it_price·it_update_time …)
+    $sort_link = function ($s, $odr) use ($type) {
+        return shop_type_url((string)$type, 'sort='.$s.'&sortodr='.$odr);
+    };
+    $sorts = array(
+        array('name' => '기본순',   'href' => shop_type_url((string)$type),              'active' => ($sort === '')),
+        array('name' => '최신순',   'href' => $sort_link('it_update_time', 'desc'),      'active' => ($sort === 'it_update_time')),
+        array('name' => '낮은가격', 'href' => $sort_link('it_price', 'asc'),             'active' => ($sort === 'it_price' && $sortodr === 'asc')),
+        array('name' => '높은가격', 'href' => $sort_link('it_price', 'desc'),            'active' => ($sort === 'it_price' && $sortodr === 'desc')),
+        array('name' => '이름순',   'href' => $sort_link('it_name', 'asc'),              'active' => ($sort === 'it_name')),
+    );
+
+    g5_view('shop.listtype', array(
+        'type_name'   => isset($titles[$type]) ? $titles[$type] : '상품',
+        'items'       => g5_shop_item_rows($items),
+        'total_count' => (int)$total_count,
+        'page'        => (int)$page,
+        'total_page'  => (int)$total_page,
+        'page_href'   => shop_type_url((string)$type, 'sort='.$sort.'&sortodr='.$sortodr.'&page='),
+        'tabs'        => $tabs,
+        'sorts'       => $sorts,
+    ));
+}
+
 // ── 상품 상세 (shop/item.php)
 function g5_map_shop_item($form_html, $related)
 {
@@ -392,6 +435,56 @@ function g5_map_shop_cart($s_cart_id, $cart_action_url)
 // ── 주문서 (shop/orderform.php)
 // orderform.sub.php 는 1895줄짜리 결제 폼(PG 연동 JS·쿠폰·주소검색 포함)이다.
 // 새로 만들면 결제가 깨질 위험이 커서, 순정 폼 출력을 그대로 받아 레이아웃만 씌운다.
+// ── 주문내역 (shop/orderinquiry.php) — 회원 본인 주문 목록
+// 순정 orderinquiry.sub.php 의 쿼리·상태 라벨을 그대로 옮긴다.
+function g5_map_shop_orderinquiry($from_record, $rows)
+{
+    global $g5, $member, $total_count, $page, $total_page;
+
+    // 순정과 같은 상태 표기 (od_status → 화면 문구)
+    $labels = array(
+        '주문' => array('입금확인중', 'wait'),
+        '입금' => array('입금완료',   'paid'),
+        '준비' => array('상품준비중', 'ready'),
+        '배송' => array('상품배송',   'ship'),
+        '완료' => array('배송완료',   'done'),
+    );
+
+    $items = array();
+    $result = sql_query(" select * from {$g5['g5_shop_order_table']}
+                           where mb_id = '{$member['mb_id']}'
+                           order by od_id desc
+                           limit ".(int)$from_record.", ".(int)$rows, false);
+    while ($result && ($row = sql_fetch_array($result))) {
+        $uid = function_exists('get_shop_uid')
+               ? get_shop_uid('order', $row['od_id'], $row['od_time'], $row['od_ip'])
+               : md5($row['od_id'].$row['od_time'].$row['od_ip']);
+        $st = isset($labels[$row['od_status']]) ? $labels[$row['od_status']] : array('주문취소', 'cancel');
+
+        $items[] = array(
+            'od_id'    => $row['od_id'],
+            'href'     => G5_SHOP_URL.'/orderinquiryview.php?od_id='.$row['od_id'].'&uid='.$uid,
+            'datetime' => substr($row['od_time'], 2, 14),
+            'yoil'     => get_yoil($row['od_time']),
+            'count'    => (int)$row['od_cart_count'],
+            'price'    => (int)$row['od_cart_price'] + (int)$row['od_send_cost'] + (int)$row['od_send_cost2'],
+            'receipt'  => (int)$row['od_receipt_price'],
+            'misu'     => (int)$row['od_misu'],
+            'status'   => $st[0],
+            'status_cls' => $st[1],
+        );
+    }
+
+    g5_view('shop.orderinquiry', array(
+        'items'       => $items,
+        'total_count' => (int)$total_count,
+        'page'        => (int)$page,
+        'total_page'  => (int)$total_page,
+        'page_href'   => G5_SHOP_URL.'/orderinquiry.php?page=',
+        'shop_href'   => G5_SHOP_URL.'/',
+    ));
+}
+
 function g5_map_shop_orderform($form_html)
 {
     g5_view('shop.orderform', array(
