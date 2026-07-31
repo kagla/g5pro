@@ -159,7 +159,7 @@ if ($g5_install || $is_install === false) {
     }
 
     $sql = " insert into `{$table_prefix}config`
-                set cf_title = '".G5_VERSION."',
+                set cf_title = '그누5 PRO',
                     cf_theme = 'basic',
                     cf_admin = '$admin_id',
                     cf_admin_email = '$admin_email',
@@ -274,17 +274,13 @@ if ($g5_install || $is_install === false) {
 
         $bo_skin = ($tmp_bo_table[$i] === 'gallery') ? 'gallery' : 'basic';
 
-        if (in_array($tmp_bo_table[$i], array('gallery', 'qa'))) {
-            $read_bo_point = -1;
-            $write_bo_point = 5;
-            $comment_bo_point = 1;
-            $download_bo_point = -20;
-        } else {
-            $read_bo_point = $read_point;
-            $write_bo_point = $write_point;
-            $comment_bo_point = $comment_point;
-            $download_bo_point = $download_point;
-        }
+        // g5pro: 순정은 갤러리·질문답변만 포인트를 따로 줬다 (읽기 -1, 쓰기 5, 댓글 1, 내려받기 -20).
+        //        갓 설치한 사이트에서 게시판마다 포인트가 달라 혼란스러웠고, 포인트를 안 쓰는
+        //        경우가 대부분이라 전부 기본 설정값(0)을 따르게 한다. 필요하면 관리자에서 올린다.
+        $read_bo_point = $read_point;
+        $write_bo_point = $write_point;
+        $comment_bo_point = $comment_point;
+        $download_bo_point = $download_point;
 
         $sql = " insert into `{$table_prefix}board`
                     set bo_table = '$tmp_bo_table[$i]',
