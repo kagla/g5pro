@@ -47,10 +47,16 @@
             </tr>
             </thead>
             <tbody>
-            @foreach ($items as $it)
+            @foreach ($items as $i => $it)
             <tr>
                 @if ($is_admin)
-                <td class="col-chk"><label class="chk-cell"><input type="checkbox" name="chk_bn_id[]" value="{{ $it['bn_id'] }}" aria-label="{{ $it['subject'] }} 선택"></label></td>
+                {{-- 순정 new_delete.php 계약: 체크박스 값은 행 번호이고, 그 번호로
+                     bo_table[n]·wr_id[n] 을 찾아 지운다. 세 값이 한 벌이어야 한다 --}}
+                <td class="col-chk">
+                    <label class="chk-cell"><input type="checkbox" name="chk_bn_id[]" value="{{ $i }}" aria-label="{{ $it['subject'] }} 선택"></label>
+                    <input type="hidden" name="bo_table[{{ $i }}]" value="{{ $it['bo_table'] }}">
+                    <input type="hidden" name="wr_id[{{ $i }}]" value="{{ $it['wr_id'] }}">
+                </td>
                 @endif
                 <td class="col-board">
                     <a class="chip c2" href="{{ str_replace('__GR__', $it['gr_id'], $group_href) }}">{{ $it['gr_subject'] }}</a>
@@ -72,10 +78,10 @@
 
     {{-- 좁은 화면 — CSS 가 위 표를 숨기고 이 목록을 보인다 (게시판 목록과 같은 구조) --}}
     <ul class="list-cards">
-        @foreach ($items as $it)
+        @foreach ($items as $i => $it)
         <li>
             <div class="s">
-                @if ($is_admin)<input type="checkbox" name="chk_bn_id[]" value="{{ $it['bn_id'] }}" aria-label="선택">@endif
+                @if ($is_admin)<input type="checkbox" name="chk_bn_id[]" value="{{ $i }}" aria-label="선택">@endif
                 @if ($it['is_comment'])<span class="chip c3">댓글</span>@endif
                 <span class="t"><a href="{{ $it['href'] }}">{{ $it['subject'] }}</a></span>
             </div>
@@ -102,17 +108,27 @@
 @if ($is_admin)
 <script>
 // 순정 new_delete.php 계약 — 하나 이상 골라야 하고, 지운 글은 되돌릴 수 없다
+function boxes() {
+    return [].slice.call(document.querySelectorAll('#fnewlist input[name="chk_bn_id[]"]'));
+}
+// 넓은 화면은 표, 좁은 화면은 카드가 같은 글을 각각 그린다. 지금 보이는 쪽만 다뤄야
+// 같은 행 번호가 두 번 전송되지 않는다 (게시판 목록과 같은 방식).
+function visible() {
+    return boxes().filter(function (c) { return c.offsetParent !== null; });
+}
+
 function new_submit(f) {
-    var n = 0;
-    f.querySelectorAll('input[name="chk_bn_id[]"]:checked').forEach(function () { n++; });
+    var n = visible().filter(function (c) { return c.checked; }).length;
     if (!n) { alert("삭제할 게시물을 하나 이상 고르세요."); return false; }
-    return confirm("선택한 게시물을 정말 삭제하시겠습니까?\n\n한번 삭제한 자료는 되돌릴 수 없습니다.");
+    if (!confirm("선택한 게시물을 정말 삭제하시겠습니까?\n\n한번 삭제한 자료는 되돌릴 수 없습니다.")) return false;
+    boxes().forEach(function (c) { c.disabled = (c.offsetParent === null); });   // 안 보이는 쪽은 전송에서 뺀다
+    return true;
 }
 (function () {
     var all = document.querySelector('#fnewlist .chk-all');
     if (!all) return;
     all.addEventListener('change', function () {
-        document.querySelectorAll('#fnewlist input[name="chk_bn_id[]"]').forEach(function (c) { c.checked = all.checked; });
+        visible().forEach(function (c) { c.checked = all.checked; });
     });
 })();
 </script>
