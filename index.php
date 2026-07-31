@@ -4,6 +4,17 @@ include_once('./_common.php');
 define('_INDEX_', true);
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
+// g5pro 직통 — 테마·모바일 분기보다 먼저 잡는다.
+// 갓 설치한 사이트는 cf_theme 에 'basic' 이 들어 있어, 이 인계가 테마 분기 뒤에 있으면
+// 첫 화면만 순정 테마로 새어 나간다. 다른 화면은 _common.php 바로 다음 줄에서
+// 선언하므로 영향이 없었고, 그래서 운영 중인 사이트(cf_theme 빈값)에서는 드러나지 않았다.
+if (function_exists('g5_view')) {
+    define('G5_PRO_PAGE', true);
+    include_once(G5_PATH.'/head.php');
+    g5_view('index');
+    return;
+}
+
 if(defined('G5_THEME_PATH')) {
     require_once(G5_THEME_PATH.'/index.php');
     return;
@@ -14,9 +25,7 @@ if (G5_IS_MOBILE) {
     return;
 }
 
-define('G5_PRO_PAGE', true); // g5pro
 include_once(G5_PATH.'/head.php');
-if (function_exists('g5_view')) { g5_view('index'); return; } // g5pro
 ?>
 
 <h2 class="sound_only">최신글</h2>
