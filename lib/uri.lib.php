@@ -349,13 +349,20 @@ function seo_title_update($db_table, $pk_id, $type='bbs'){
     }
 }
 
+// g5pro: 규칙 블록을 감싸는 마커. 순정은 여기에 G5_VERSION 을 썼는데, 그 상수는
+//        제품 이름이라 바뀔 수 있다 (그누보드5 → 그누보드5 프로). 아래 코드는 이 문자열을
+//        그대로 찾아 기존 블록을 교체할지 판단하므로, 이름이 바뀌면 옛 마커로 적힌
+//        .htaccess 를 못 알아보고 규칙을 두 벌 쌓는다 — 이미 설치된 사이트가 걸린다.
+//        마커는 브랜딩과 분리해 고정한다. 값 자체에 의미는 없고 변하지 않는 것이 전부다.
+define('G5_URI_RULE_MARK', '그누보드5');
+
 function get_nginx_conf_rules($return_string = false)
 {
     $get_path_url = parse_url(G5_URL);
     $base_path = isset($get_path_url['path']) ? $get_path_url['path'] . '/' : '/';
 
     $rules = array();
-    $rules[] = '#### ' . G5_VERSION . ' nginx rules BEGIN #####';
+    $rules[] = '#### ' . G5_URI_RULE_MARK . ' nginx rules BEGIN #####';
 
     if ($add_rules = run_replace('add_nginx_conf_pre_rules', '', $get_path_url, $base_path, $return_string)) {
         $rules[] = $add_rules;
@@ -375,7 +382,7 @@ function get_nginx_conf_rules($return_string = false)
     $rules[] = "rewrite ^{$base_path}([0-9a-zA-Z_]+)/([^/]+)/$ {$base_path}" . G5_BBS_DIR . "/board.php?bo_table=$1&wr_seo_title=$2&rewrite=1 break;";
     $rules[] = "rewrite ^{$base_path}([0-9a-zA-Z_]+)/([0-9]+)$ {$base_path}" . G5_BBS_DIR . "/board.php?bo_table=$1&wr_id=$2&rewrite=1 break;";
     $rules[] = '}';
-    $rules[] = '#### ' . G5_VERSION . ' nginx rules END #####';
+    $rules[] = '#### ' . G5_URI_RULE_MARK . ' nginx rules END #####';
 
     return $return_string ? implode("\n", $rules) : $rules;
 }
@@ -386,7 +393,7 @@ function get_mod_rewrite_rules($return_string = false)
     $base_path = isset($get_path_url['path']) ? $get_path_url['path'] . '/' : '/';
 
     $rules = array();
-    $rules[] = '#### ' . G5_VERSION . ' rewrite BEGIN #####';
+    $rules[] = '#### ' . G5_URI_RULE_MARK . ' rewrite BEGIN #####';
     $rules[] = '<IfModule mod_rewrite.c>';
     $rules[] = 'RewriteEngine On';
     $rules[] = 'RewriteBase ' . $base_path;
@@ -411,7 +418,7 @@ function get_mod_rewrite_rules($return_string = false)
     $rules[] = 'RewriteRule ^([0-9a-zA-Z_]+)/write$ ' . G5_BBS_DIR . '/write.php?bo_table=$1&rewrite=1 [QSA,L]';
     $rules[] = 'RewriteRule ^([0-9a-zA-Z_]+)/([0-9]+)$ ' . G5_BBS_DIR . '/board.php?bo_table=$1&wr_id=$2&rewrite=1 [QSA,L]';
     $rules[] = '</IfModule>';
-    $rules[] = '#### ' . G5_VERSION . ' rewrite END #####';
+    $rules[] = '#### ' . G5_URI_RULE_MARK . ' rewrite END #####';
 
     return $return_string ? implode("\n", $rules) : $rules;
 }
