@@ -30,14 +30,9 @@ function get_skin_select($skin_gubun, $id, $name, $selected = '', $event = '')
     $skins = array_merge($skins, get_skin_dir($skin_gubun));
 
     // g5pro: 게시판 목록은 스킨이 아니라 템플릿 뷰가 그린다. 순정은 skin/board/ 디렉터리만
-    //        훑으므로 그 변형들이 선택지에 나오지 않아, 관리자가 고를 방법이 없었다.
-    //        디렉터리가 없는 값이라 여기서 덧붙인다.
-    $pro_labels = array();
+    //        훑으므로 디렉터리가 없는 변형은 선택지에 나오지 않아, 관리자가 고를 방법이 없었다.
     if ($skin_gubun === 'board' && function_exists('g5_pro_list_skins')) {
-        foreach (g5_pro_list_skins() as $pro_key => $pro_label) {
-            $skins[] = $pro_key;
-            $pro_labels[$pro_key] = '(템플릿) ' . $pro_label;
-        }
+        $skins = array_merge($skins, g5_pro_list_skins());
     }
 
     $str = "<select id=\"$id\" name=\"$name\" $event>\n";
@@ -45,9 +40,7 @@ function get_skin_select($skin_gubun, $id, $name, $selected = '', $event = '')
         if ($i == 0) {
             $str .= "<option value=\"\">선택</option>";
         }
-        if (isset($pro_labels[$skins[$i]])) {
-            $text = $pro_labels[$skins[$i]];
-        } else if (preg_match('#^theme/(.+)$#', $skins[$i], $match)) {
+        if (preg_match('#^theme/(.+)$#', $skins[$i], $match)) {
             $text = '(테마) ' . $match[1];
         } else {
             $text = $skins[$i];
