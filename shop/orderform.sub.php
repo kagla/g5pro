@@ -1423,16 +1423,17 @@ function forderform_check(f)
         }
     }
 
-    // g5pro: 신용카드 최소금액(1000원) 검사 — 소액 결제가 실제로 되는지 보려고 임시로 꺼 둔다.
-    //        PG 쪽 승인 한도는 그대로이므로, 여기를 지나도 PG 창에서 막힐 수 있다. 확인 끝나면 되살릴 것.
-    // if (document.getElementById("od_settle_card")) {
-    //     if (document.getElementById("od_settle_card").checked) {
-    //         if (tot_price < 1000) {
-    //             alert("신용카드는 1000원 이상 결제가 가능합니다.");
-    //             return false;
-    //         }
-    //     }
-    // }
+    // g5pro: 순정은 1000원 미만을 막지만, settle_inicis.inc.php 의 acceptmethod 에 below1000 이
+    //        들어 있어 소액도 승인된다 (2026-07-31 실제 결제로 확인). 하한을 100원으로 낮춘다.
+    //        0 이하까지 열면 포인트·쿠폰이 전액을 덮은 주문이 PG 로 넘어가 엉뚱한 오류가 나므로 검사는 남긴다.
+    if (document.getElementById("od_settle_card")) {
+        if (document.getElementById("od_settle_card").checked) {
+            if (tot_price < 100) {
+                alert("신용카드는 100원 이상 결제가 가능합니다.");
+                return false;
+            }
+        }
+    }
 
     if (document.getElementById("od_settle_hp")) {
         if (document.getElementById("od_settle_hp").checked) {
