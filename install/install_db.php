@@ -51,7 +51,10 @@ if (!$admin_email || !filter_var($admin_email, FILTER_VALIDATE_EMAIL)) {
 }
 
 $g5_install = isset($_POST['g5_install']) ? (int) $_POST['g5_install'] : 0;
-$g5_shop_prefix = isset($_POST['g5_shop_prefix']) ? safe_install_string_check($_POST['g5_shop_prefix']) : 'yc5_';
+// g5pro: 순정 폴백은 'yc5_' 라, 스크립트 설치처럼 이 필드를 안 보내면 게시판이 g5_ 인데
+//        쇼핑몰만 yc5_ 가 되어 짝이 어긋난다 (폼 설치는 항상 값을 보내므로 영향 없음).
+//        고정값 대신 게시판 접두사를 따르게 해 abc_ → abc_shop_ 처럼 항상 짝이 맞게 한다.
+$g5_shop_prefix = isset($_POST['g5_shop_prefix']) ? safe_install_string_check($_POST['g5_shop_prefix']) : $table_prefix.'shop_';
 $g5_shop_install = isset($_POST['g5_shop_install']) ? (int) $_POST['g5_shop_install'] : 0;
 
 if (preg_match("/[^0-9a-z_]+/i", $g5_shop_prefix)) {
