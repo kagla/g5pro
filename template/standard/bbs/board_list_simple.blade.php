@@ -1,4 +1,4 @@
-{{-- 목록 변형 2 · 미니멀 (bo_skin='pro_simple') — 여백 넓은 행, 글 읽기 중심 게시판용 --}}
+{{-- 목록 변형 2 · 미니멀 (bo_skin='simple') — 여백 넓은 행, 글 읽기 중심 게시판용 --}}
 @extends('layout.bbs')
 @section('bbs_content')
 @include('partials.bbs_head')

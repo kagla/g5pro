@@ -1,4 +1,4 @@
-{{-- 목록 변형 3 · 소셜 피드 카드 (bo_skin='pro_card') — 모바일 비중 큰 게시판용 --}}
+{{-- 목록 변형 3 · 소셜 피드 카드 (bo_skin='card') — 모바일 비중 큰 게시판용 --}}
 @extends('layout.bbs')
 @section('bbs_content')
 @include('partials.bbs_head')

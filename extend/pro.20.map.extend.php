@@ -11,35 +11,29 @@ if (!defined('_GNUBOARD_')) exit;
 
 // bo_skin → 목록 뷰 조회표 (게시판마다 목록 모양을 고른다 · 설계 §5)
 // 등록되지 않은 값이면 기본 표 목록으로 폴백한다.
+//
+// 값은 순정 스킨명을 그대로 쓴다. 설치기가 bo_skin 에 basic/gallery 를 넣고, 순정 스킨으로
+// 쓰던 사이트가 이 배포판으로 옮겨와도 목록 모양이 그대로 유지된다. 예전에는 pro_ 접두사를
+// 붙이고 순정명을 별칭으로 이어 붙였는데, 같은 것을 두 이름으로 부르는 셈이라 걷어냈다.
 function g5_pro_list_views()
 {
-    $views = array(
-        'pro'         => array('view' => 'bbs.board_list',         'body' => 'partials.list_body_table',   'thumb' => false),
-        'pro_simple'  => array('view' => 'bbs.board_list_simple',  'body' => 'partials.list_body_simple',  'thumb' => false),
-        'pro_card'    => array('view' => 'bbs.board_list_card',    'body' => 'partials.list_body_card',    'thumb' => true),
-        'pro_gallery' => array('view' => 'bbs.board_list_gallery', 'body' => 'partials.list_body_gallery', 'thumb' => true),
+    return array(
+        'basic'   => array('view' => 'bbs.board_list',         'body' => 'partials.list_body_table',   'thumb' => false),
+        'simple'  => array('view' => 'bbs.board_list_simple',  'body' => 'partials.list_body_simple',  'thumb' => false),
+        'card'    => array('view' => 'bbs.board_list_card',    'body' => 'partials.list_body_card',    'thumb' => true),
+        'gallery' => array('view' => 'bbs.board_list_gallery', 'body' => 'partials.list_body_gallery', 'thumb' => true),
     );
-
-    // 순정 스킨명도 같은 자리에 잇는다. 설치기는 bo_skin 에 basic/gallery 를 넣고,
-    // 순정 스킨으로 쓰던 사이트가 이 배포판으로 옮겨와도 목록 모양이 유지되어야 한다.
-    // 설치기(순정 파일)를 고치는 대신 여기서 받는 편이 upstream 충돌을 늘리지 않는다.
-    $views['basic']   = $views['pro'];
-    $views['gallery'] = $views['pro_gallery'];
-
-    return $views;
 }
 
-// 관리자 스킨 선택에 띄울 목록 변형 — 값과 사람이 읽을 이름.
-// 순정은 skin/board/ 디렉터리를 훑어 선택지를 만드는데, 이 변형들은 디렉터리가 아니라
-// 템플릿 뷰라서 그 목록에 나오지 않는다. adm/admin.lib.php 가 이걸 받아 덧붙인다.
-// 별칭(basic·gallery)은 넣지 않는다 — 순정 스킨 항목과 중복으로 보이기 때문이다.
+// 관리자 스킨 선택에 덧붙일 항목 — 값과 사람이 읽을 이름.
+// 순정은 skin/board/ 디렉터리를 훑어 선택지를 만든다. basic·gallery 는 그 디렉터리가
+// 실제로 있으므로 이미 목록에 뜬다. 여기에는 디렉터리가 없는 것만 넣는다 — 안 그러면
+// 같은 값이 두 번 보인다.
 function g5_pro_list_skins()
 {
     return array(
-        'pro'         => '표 목록',
-        'pro_simple'  => '간단 목록',
-        'pro_card'    => '카드 목록',
-        'pro_gallery' => '갤러리',
+        'simple' => '간단 목록',
+        'card'   => '카드 목록',
     );
 }
 
@@ -52,7 +46,7 @@ function g5_map_board_list()
 
     $views = g5_pro_list_views();
     $skin  = isset($board['bo_skin']) ? $board['bo_skin'] : '';
-    $variant = isset($views[$skin]) ? $views[$skin] : $views['pro'];
+    $variant = isset($views[$skin]) ? $views[$skin] : $views['basic'];
     if ($variant['thumb']) include_once(G5_LIB_PATH.'/thumbnail.lib.php');
 
     $items = array();

@@ -1,4 +1,4 @@
-{{-- 목록 변형 1 · 표 (기본, bo_skin='pro' 또는 순정 'basic') --}}
+{{-- 목록 변형 1 · 표 (기본, bo_skin='basic') --}}
 @extends('layout.bbs')
 @section('bbs_content')
 @include('partials.bbs_head')
