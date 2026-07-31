@@ -6,21 +6,24 @@
  * ── extend/ 로드 순서 (common.php:836~853) ──
  * 순정 common.php 는 extend/ 안의 *.php 를 natsort(파일명 자연순)로 정렬해
  * 차례로 include_once 한다. 하위 폴더는 훑지 않는다.
- * 파일명 앞의 숫자가 그 순서를 눈에 보이게 고정한 것이다:
+ * 이름 안의 숫자가 pro 계열끼리의 순서를 눈에 보이게 고정한 것이다:
  *
- *   10.pro.extend.php           ← 이 파일. 런타임. 반드시 첫째
- *   20.pro.map.extend.php       기본 화면 매핑 (bbs·회원)
- *   30.pro.map.shop.extend.php  쇼핑몰 화면 매핑
- *   (그 뒤로 순정 확장들: debugbar·default.config·shop.extend·social_login …)
+ *   debugbar.extend.php · default.config.php · g5_54version_update.extend.php
+ *   pro.10.extend.php           ← 이 파일. 런타임. pro 계열 중 첫째
+ *   pro.20.map.extend.php       기본 화면 매핑 (bbs·회원)
+ *   pro.30.map.shop.extend.php  쇼핑몰 화면 매핑
+ *   (그 뒤로 shop.extend·smarteditor·sms5·social_login·version …)
  *
- * 10번이 첫째여야 하는 이유는 이 파일에만 **최상위 실행 코드**가 있기 때문이다 —
- * G5_TEMPLATE 결정과 cf_template 컬럼 자동 생성, BladeOne require.
+ * 10번이 pro 계열 중 첫째여야 하는 이유는 이 파일에만 **최상위 실행 코드**가
+ * 있기 때문이다 — G5_TEMPLATE 결정과 cf_template 컬럼 자동 생성, BladeOne require.
  * 20·30번은 함수 정의뿐이라 서로 순서 의존이 없다(호출 시점에만 실행된다).
  * 번호는 10씩 띄웠으니 사이에 끼울 것이 생기면 15 처럼 넣으면 된다.
  *
- * 숫자를 파일명 맨 앞에 둔 것은 자연순에서 숫자가 글자보다 먼저 오기 때문이다.
- * 순정 확장이 무슨 이름으로 들어오든 pro 계열이 항상 앞선다.
- * 새로 추가할 때도 반드시 앞자리 번호를 붙인다 — 번호 없는 파일은 글자 취급이라 뒤로 밀린다.
+ * 앞서 실행되는 순정 확장 셋은 add_event 등록과 무관한 상수 define 뿐이라
+ * 이 파일보다 먼저 돌아도 상관없다. 다만 그 셋 중 하나라도 G5_TEMPLATE 이나
+ * g5_pro_*() 를 로드 시점에 쓰게 되면 그때는 이 파일이 앞서야 한다 —
+ * 그런 날이 오면 이름을 00.pro.extend.php 처럼 숫자로 시작하게 바꾼다.
+ * 자연순에서 숫자는 글자보다 앞서므로 그것이 확실한 첫째 자리다.
  *
  * extend/parts/ 는 로더가 건드리지 않는 자리다. 요청 시작 시점에 실행돼선 안 되고
  * 다른 코드가 필요할 때 직접 include 하는 조각(예: pro.shop_items.php 데이터 수집기)을 둔다.
