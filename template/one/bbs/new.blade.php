@@ -39,7 +39,7 @@
         <table class="list-table new-table">
             <thead>
             <tr>
-                @if ($is_admin)<th scope="col" class="col-chk"><input type="checkbox" class="chk-all" aria-label="전체 선택"></th>@endif
+                @if ($is_admin)<th scope="col" class="col-chk"><label class="chk-cell"><input type="checkbox" class="chk-all" aria-label="전체 선택"></label></th>@endif
                 <th scope="col">게시판</th>
                 <th scope="col" class="col-subject">제목</th>
                 <th scope="col">글쓴이</th>
@@ -50,7 +50,7 @@
             @foreach ($items as $it)
             <tr>
                 @if ($is_admin)
-                <td class="col-chk"><input type="checkbox" name="chk_bn_id[]" value="{{ $it['bn_id'] }}" aria-label="{{ $it['subject'] }} 선택"></td>
+                <td class="col-chk"><label class="chk-cell"><input type="checkbox" name="chk_bn_id[]" value="{{ $it['bn_id'] }}" aria-label="{{ $it['subject'] }} 선택"></label></td>
                 @endif
                 <td class="col-board">
                     <a class="chip c2" href="{{ str_replace('__GR__', $it['gr_id'], $group_href) }}">{{ $it['gr_subject'] }}</a>
@@ -69,6 +69,24 @@
             </tbody>
         </table>
     </div>
+
+    {{-- 좁은 화면 — CSS 가 위 표를 숨기고 이 목록을 보인다 (게시판 목록과 같은 구조) --}}
+    <ul class="list-cards">
+        @foreach ($items as $it)
+        <li>
+            <div class="s">
+                @if ($is_admin)<input type="checkbox" name="chk_bn_id[]" value="{{ $it['bn_id'] }}" aria-label="선택">@endif
+                @if ($it['is_comment'])<span class="chip c3">댓글</span>@endif
+                <span class="t"><a href="{{ $it['href'] }}">{{ $it['subject'] }}</a></span>
+            </div>
+            <div class="m">
+                <span>{{ $it['bo_subject'] }}</span>
+                <span>{!! $it['name'] !!}</span>
+                <span>{{ $it['datetime'] }}</span>
+            </div>
+        </li>
+        @endforeach
+    </ul>
 </div>
 
 @if ($is_admin)

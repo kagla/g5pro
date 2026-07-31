@@ -2074,6 +2074,11 @@ input[type=checkbox], input[type=radio] {
 
 /* 새글 모아보기 필터 — .bbs-cate 를 그대로 쓰되 그룹 선택만 오른쪽으로 민다 */
 .new-filters select { margin-left: auto; height: 34px; }
+/* 목록이 카드로 바뀌는 분기점과 같게 — 좁아지면 오른쪽으로 밀지 않고 다음 줄로 내린다.
+   margin-left:auto 를 둔 채로는 줄바꿈이 되지 않아 선택칸이 화면 밖으로 잘렸다. */
+@media (max-width: 620px) {
+    .new-filters select { margin-left: 0; width: 100%; }
+}
 .new-table .col-board { white-space: nowrap; }
 .new-table .col-board .board-name { margin-left: var(--s2); color: var(--muted); font-size: var(--t-sm); }
 .new-table .col-board .board-name:hover { color: var(--accent); }
