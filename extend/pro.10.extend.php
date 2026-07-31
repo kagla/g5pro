@@ -364,12 +364,47 @@ function pro_empty_date($v)
     return $v === null || $v === '' || strncmp((string)$v, '0000-00-00', 10) === 0;
 }
 
-// 날짜를 SQL 리터럴로 — 빈 값이면 따옴표 없는 NULL 을 돌려준다.
-// 순정은 '$var' 처럼 따옴표째 박아 넣는데, strict 모드에서 빈 문자열을 date/datetime 에
-// 넣으면 1292 에러로 쿼리가 죽는다 (nullable 여부와 무관하다). 쓰는 쪽은 이걸 거친다.
-function pro_sql_date($v)
+// 날짜 컬럼이 NULL 을 받는지, date 인지 datetime 인지 — 한 번 보고 기억한다.
+// 마이그레이션 여부를 설정값으로 두지 않고 스키마에 직접 물어본다. 설정은 사람이
+// 안 바꾸면 틀리지만 스키마는 언제나 사실이고, 표가 섞여 있어도 표마다 맞게 답한다.
+function pro_date_meta($table, $column)
 {
-    return pro_empty_date($v) ? 'NULL' : "'".sql_escape_string((string)$v)."'";
+    static $cache = array();
+    $key = $table.'.'.$column;
+
+    if (!isset($cache[$key])) {
+        $row = sql_fetch(" select is_nullable, data_type
+                             from information_schema.columns
+                            where table_schema = database()
+                              and table_name = '".sql_escape_string($table)."'
+                              and column_name = '".sql_escape_string($column)."' ", false);
+        $cache[$key] = array(
+            // 컬럼을 못 찾으면(권한·오타) NULL 을 넣어 죽이지 않고 옛 표현으로 물러선다
+            'nullable' => isset($row['is_nullable']) && $row['is_nullable'] === 'YES',
+            'zero'     => (isset($row['data_type']) && $row['data_type'] === 'date')
+                          ? '0000-00-00' : '0000-00-00 00:00:00',
+        );
+    }
+
+    return $cache[$key];
+}
+
+// 날짜를 SQL 리터럴로 — 순정이 '$var' 로 박아 넣던 자리를 대신한다.
+//
+// 빈 값일 때 무엇을 넣을지는 컬럼이 정한다.
+//   NULL 을 받는 컬럼  → NULL      (마이그레이션된 DB)
+//   NOT NULL 인 컬럼   → 제로데이트 (아직 옮기지 않은 DB — NULL 을 넣으면 1048 로 죽는다)
+// 덕분에 이 코드는 옛 DB 위에서도 그대로 돌아간다. 표를 옮기면 그 표부터 NULL 로 바뀐다.
+//
+// 어느 쪽이든 빈 문자열은 절대 넣지 않는다. strict 모드에서 '' 를 date/datetime 에
+// 넣으면 nullable 여부와 무관하게 1292 로 죽는다 — 순정에 남아 있던 함정이다.
+function pro_sql_date($v, $table = '', $column = '')
+{
+    if (!pro_empty_date($v)) return "'".sql_escape_string((string)$v)."'";
+    if ($table === '') return 'NULL';
+
+    $meta = pro_date_meta($table, $column);
+    return $meta['nullable'] ? 'NULL' : "'".$meta['zero']."'";
 }
 
 // 화면에 쓰는 날짜 형식 — 순정 'YYYY-MM-DD HH:II:SS' 를 'YY-MM-DD HH:II' 로 줄인다.

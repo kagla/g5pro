@@ -67,7 +67,8 @@ echo "\n== 4. 소스코드 ==\n";
 // pro.10.extend.php 는 헬퍼가 사는 곳이라 옛 표현을 알아야 하므로 제외한다.
 $cmd = "grep -rn \"0000-00-00\" --include=*.php --include=*.sql ".escapeshellarg($root)
      . " | grep -v /docs/ | grep -v pro.10.extend.php | grep -v pro_empty_date"
-     . " | grep -v 'is not null and' | grep -v 'is null or'";
+     // NULL 과 제로데이트를 함께 받는 관용 형태는 의도된 것이라 뺀다 (대소문자 무시)
+     . " | grep -iv 'is not null and' | grep -iv 'is null or'";
 exec($cmd, $lines);
 ok('순정 코드에 제로데이트가 되살아나지 않았다', !$lines, count($lines).' 곳');
 foreach (array_slice($lines, 0, 10) as $l) echo "        $l\n";

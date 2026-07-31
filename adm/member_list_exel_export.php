@@ -197,16 +197,16 @@ function member_export_get_data($params)
 
     // SQL 변환 맵 (가공이 필요한 필드만 정의)
     $sqlTransformMap = array(
-        'mb_datetime' => "IF(mb_datetime is null, '', mb_datetime) AS mb_datetime",
+        'mb_datetime' => "IF(mb_datetime is null OR mb_datetime = '0000-00-00 00:00:00', '', mb_datetime) AS mb_datetime",
         'mb_intercept_date' => "IF(mb_intercept_date != '', '차단됨', '정상') AS mb_intercept_date",
         'mb_sms' => "IF(mb_sms = '1', '동의', '미동의') AS mb_sms",
-        'mb_sms_date' => "IF(mb_sms != '1' OR mb_sms_date is null, '', mb_sms_date) AS mb_sms_date",
+        'mb_sms_date' => "IF(mb_sms != '1' OR mb_sms_date is null OR mb_sms_date = '0000-00-00 00:00:00', '', mb_sms_date) AS mb_sms_date",
         'mb_mailling' => "IF(mb_mailling = '1', '동의', '미동의') AS mb_mailling",
-        'mb_mailling_date' => "IF(mb_mailling != '1' OR mb_mailling_date is null, '', mb_mailling_date) AS mb_mailling_date",
+        'mb_mailling_date' => "IF(mb_mailling != '1' OR mb_mailling_date is null OR mb_mailling_date = '0000-00-00 00:00:00', '', mb_mailling_date) AS mb_mailling_date",
         'mb_marketing_agree' => "IF(mb_marketing_agree = '1', '동의', '미동의') AS mb_marketing_agree",
-        'mb_marketing_date' => "IF(mb_marketing_agree != '1' OR mb_marketing_date is null, '', mb_marketing_date) AS mb_marketing_date",
+        'mb_marketing_date' => "IF(mb_marketing_agree != '1' OR mb_marketing_date is null OR mb_marketing_date = '0000-00-00 00:00:00', '', mb_marketing_date) AS mb_marketing_date",
         'mb_thirdparty_agree' => "IF(mb_thirdparty_agree = '1', '동의', '미동의') AS mb_thirdparty_agree",
-        'mb_thirdparty_date' => "IF(mb_thirdparty_agree != '1' OR mb_thirdparty_date is null, '', mb_thirdparty_date) AS mb_thirdparty_date",
+        'mb_thirdparty_date' => "IF(mb_thirdparty_agree != '1' OR mb_thirdparty_date is null OR mb_thirdparty_date = '0000-00-00 00:00:00', '', mb_thirdparty_date) AS mb_thirdparty_date",
     );
 
     // SQL 필드 생성

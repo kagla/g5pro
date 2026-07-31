@@ -236,7 +236,7 @@ switch ($action) {
 
                 $io_value = sql_real_escape_string(strip_tags($io_value));
 
-                $sql .= $comma."( '$tmp_cart_id', '{$member['mb_id']}', '{$it['it_id']}', '".addslashes($it['it_name'])."', '{$it['it_sc_type']}', '{$it['it_sc_method']}', '{$it['it_sc_price']}', '{$it['it_sc_minimum']}', '{$it['it_sc_qty']}', '쇼핑', '{$it['it_price']}', '$point', '0', '0', '$io_value', '$ct_qty', '{$it['it_notax']}', '$io_id', '$io_type', '$io_price', '".G5_TIME_YMDHIS."', '".$_SERVER['REMOTE_ADDR']."', '$ct_send_cost', '$sw_direct', '$ct_select', ".pro_sql_date($ct_select_time)." )";
+                $sql .= $comma."( '$tmp_cart_id', '{$member['mb_id']}', '{$it['it_id']}', '".addslashes($it['it_name'])."', '{$it['it_sc_type']}', '{$it['it_sc_method']}', '{$it['it_sc_price']}', '{$it['it_sc_minimum']}', '{$it['it_sc_qty']}', '쇼핑', '{$it['it_price']}', '$point', '0', '0', '$io_value', '$ct_qty', '{$it['it_notax']}', '$io_id', '$io_type', '$io_price', '".G5_TIME_YMDHIS."', '".$_SERVER['REMOTE_ADDR']."', '$ct_send_cost', '$sw_direct', '$ct_select', ".pro_sql_date($ct_select_time, $g5['g5_shop_cart_table'], 'ct_select_time')." )";
                 $comma = ' , ';
                 $ct_count++;
             }
