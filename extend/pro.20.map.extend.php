@@ -13,12 +13,20 @@ if (!defined('_GNUBOARD_')) exit;
 // 등록되지 않은 값이면 기본 표 목록으로 폴백한다.
 function g5_pro_list_views()
 {
-    return array(
+    $views = array(
         'pro'         => array('view' => 'bbs.board_list',         'body' => 'partials.list_body_table',   'thumb' => false),
         'pro_simple'  => array('view' => 'bbs.board_list_simple',  'body' => 'partials.list_body_simple',  'thumb' => false),
         'pro_card'    => array('view' => 'bbs.board_list_card',    'body' => 'partials.list_body_card',    'thumb' => true),
         'pro_gallery' => array('view' => 'bbs.board_list_gallery', 'body' => 'partials.list_body_gallery', 'thumb' => true),
     );
+
+    // 순정 스킨명도 같은 자리에 잇는다. 설치기는 bo_skin 에 basic/gallery 를 넣고,
+    // 순정 스킨으로 쓰던 사이트가 이 배포판으로 옮겨와도 목록 모양이 유지되어야 한다.
+    // 설치기(순정 파일)를 고치는 대신 여기서 받는 편이 upstream 충돌을 늘리지 않는다.
+    $views['basic']   = $views['pro'];
+    $views['gallery'] = $views['pro_gallery'];
+
+    return $views;
 }
 
 // ── 게시판 목록 (bbs/list.php)
