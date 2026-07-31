@@ -28,7 +28,7 @@
         </div>
 
         <div class="addr-acts">
-            <button type="button" class="btn btn-primary sel_address" data-addr="{{ $it['raw'] }}">이 주소로</button>
+            <button type="button" class="btn btn-primary sel_address" data-addr="{{ $it['raw'] }}">이 주소 선택</button>
             <label class="addr-default">
                 <input type="radio" name="ad_default" value="{{ $it['ad_id'] }}" @if ($it['is_default']) checked @endif>
                 기본배송지

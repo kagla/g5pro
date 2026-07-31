@@ -507,6 +507,27 @@ if ($config['cf_sms_use'] && $config['cf_icode_id'] && $config['cf_icode_pw']) {
                         <th scope="row"><label for="cf_title">홈페이지 제목<strong class="sound_only">필수</strong></label></th>
                         <td colspan="3"><input type="text" name="cf_title" value="<?php echo get_sanitize_input($config['cf_title']); ?>" id="cf_title" required class="required frm_input" size="40"></td>
                     </tr>
+                    <?php // g5pro — 화면을 그릴 템플릿. template/ 아래 폴더를 훑어 고르게 한다.
+                          // 순정 '테마설정' 은 pro 가 대신하므로 동작하지 않는다 (common.php 테마경로 블록).
+                          $pro_templates = array();
+                          foreach ((array) @glob(G5_PATH.'/template/*', GLOB_ONLYDIR) as $pro_dir)
+                              $pro_templates[] = basename($pro_dir);
+                          $pro_now = isset($config['cf_template']) ? trim($config['cf_template']) : 'one';
+                    ?>
+                    <tr>
+                        <th scope="row"><label for="cf_template">템플릿</label></th>
+                        <td colspan="3">
+                            <?php echo help('화면을 그리는 템플릿을 고릅니다. template/ 아래 폴더가 목록에 나옵니다.<br>순정 테마설정은 이 프로젝트에서 동작하지 않습니다 — 템플릿이 그 자리를 대신합니다.') ?>
+                            <select name="cf_template" id="cf_template">
+                                <?php foreach ($pro_templates as $pro_tpl) { ?>
+                                <option value="<?php echo get_sanitize_input($pro_tpl); ?>"<?php echo ($pro_tpl === $pro_now) ? ' selected' : ''; ?>><?php echo get_sanitize_input($pro_tpl); ?></option>
+                                <?php } ?>
+                            </select>
+                            <?php if (!in_array($pro_now, $pro_templates, true)) { ?>
+                            <span class="frm_info">설정된 <strong><?php echo get_sanitize_input($pro_now); ?></strong> 폴더가 없어 <strong>one</strong> 으로 그려집니다.</span>
+                            <?php } ?>
+                        </td>
+                    </tr>
                     <tr>
                         <th scope="row"><label for="cf_admin">최고관리자<strong class="sound_only">필수</strong></label></th>
                         <td colspan="3"><?php echo get_member_id_select('cf_admin', 10, $config['cf_admin'], 'required') ?></td>

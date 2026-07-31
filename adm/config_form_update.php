@@ -216,8 +216,18 @@ if ($check_captcha) {
     }
 }
 
+// g5pro — 템플릿은 폴더 이름이다. 실재하는 폴더만 받아 경로 조작·주입을 막는다.
+// 목록에 없는 값이 오면 조용히 one 으로 떨어뜨린다 (extend/pro.10.extend.php 의 폴백과 같은 규칙).
+$cf_template = 'one';
+if (isset($_POST['cf_template'])) {
+    $pro_req = basename(trim(stripslashes($_POST['cf_template'])));
+    if ($pro_req !== '' && preg_match('/^[A-Za-z0-9_-]+$/', $pro_req) && is_dir(G5_PATH.'/template/'.$pro_req))
+        $cf_template = $pro_req;
+}
+
 $sql = " update {$g5['config_table']}
             set cf_title = '{$cf_title}',
+                cf_template = '{$cf_template}',
                 cf_admin = '{$cf_admin}',
                 cf_admin_email = '{$_POST['cf_admin_email']}',
                 cf_admin_email_name = '{$_POST['cf_admin_email_name']}',

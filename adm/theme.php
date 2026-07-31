@@ -25,6 +25,18 @@ $g5['title'] = "테마설정";
 include_once('./admin.head.php');
 ?>
 
+<?php // g5pro — 테마 계층은 pro 가 대신하므로 여기서 무엇을 고르든 화면에 반영되지 않는다.
+      // 아무 말 없이 먹통이면 "저장이 안 된다"고 오해하게 되므로 이유를 적어 둔다.
+      if (is_file(G5_PATH.'/extend/pro.10.extend.php')) { ?>
+<div class="local_desc01 local_desc">
+    <p>
+        <strong>이 설정은 현재 화면에 반영되지 않습니다.</strong>
+        pro 런타임이 설치되어 있어 순정 테마 계층이 꺼져 있습니다.
+        화면 선택은 <a href="<?php echo G5_ADMIN_URL; ?>/config_form.php">환경설정 → 템플릿</a> 에서 합니다.
+    </p>
+</div>
+<?php } ?>
+
 <script src="<?php echo G5_ADMIN_URL; ?>/theme.js"></script>
 <div class="local_wr">
     <span class="btn_ov01"><span class="ov_txt">설치된 테마</span><span class="ov_num">  <?php echo number_format($total_count); ?></span></span>

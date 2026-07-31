@@ -54,6 +54,8 @@
     /* 모서리 — 넉넉하게 */
     --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px; --r-2xl: 24px; --r-full: 999px;
     --r-btn: 8px;   /* 버튼·페이징·필터 — 알약이 아니라 살짝 둥근 사각 */
+    --r-input: 8px; /* 입력칸·텍스트에리어 — 나란히 놓이는 버튼(--r-btn)과 모서리를 맞춘다.
+                       카드(--r-xl)처럼 둥글면 입력칸이 아니라 알약처럼 읽힌다 */
 }
 @media (prefers-color-scheme: dark) {
     :root {
@@ -199,13 +201,13 @@ ul { list-style: none; margin: 0; padding: 0; }
 
 input[type=text], input[type=password], input[type=email], input[type=file], select, textarea {
     background: var(--bg); color: var(--fg);
-    border: 1px solid var(--line); border-radius: var(--r-md);
+    border: 1px solid var(--line); border-radius: var(--r-input);
     padding: var(--s2) var(--s3);
     font: inherit; font-size: var(--t-base); max-width: 100%;
     transition: border-color .15s, background .15s;
 }
 input:focus, select:focus, textarea:focus { background: var(--card); border-color: var(--accent); outline: none; }
-textarea { line-height: 1.6; border-radius: var(--r-lg); }
+textarea { line-height: 1.6; border-radius: var(--r-input); }
 
 /* ── 헤더 (L1 pill nav + L2 검색) ── */
 .site-header { background: var(--card); box-shadow: var(--sh-sm); position: relative; z-index: 60; }
@@ -1589,6 +1591,10 @@ input[type=checkbox], input[type=radio] {
 .tbl_frm01 td > input + input,
 .tbl_frm01 td > input + a,
 .tbl_frm01 td > a + input { margin-top: var(--s2); }
+/* 한 칸 안에서 <br> 로 줄이 갈리는 입력들 (주소 = 우편번호·기본주소·상세주소).
+   순정 마크업이 input 사이에 label·br 을 끼워 두어 위의 input + input 이 걸리지 않는다.
+   줄 간격은 line-height 여백 4px 뿐이라 상자끼리 맞닿아 보였다 */
+.tbl_frm01 td .frm_address { margin-top: var(--s3); }
 .btn_frmline {
     display: inline-flex; align-items: center; height: 40px; padding: 0 var(--s4);
     border: 1px solid var(--line); border-radius: var(--r-btn); background: var(--card);
@@ -1636,6 +1642,8 @@ input[type=checkbox], input[type=radio] {
 .tbl_frm01 #ad_default:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .order_choice_place #order_address { height: auto; padding: var(--s2) var(--s3); font-size: var(--t-sm); }
+/* 배송지명 칸 — 알약(기본배송지로 설정)이 입력칸 바로 아래 줄에 온다. 위 규칙의 margin: 0 을 되돌린다 */
+.tbl_frm01 #ad_default + label { margin-top: var(--s3); }
 
 /* 합계 */
 #sod_bsk_tot { padding: var(--s4) var(--s5); }

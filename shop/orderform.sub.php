@@ -1423,14 +1423,16 @@ function forderform_check(f)
         }
     }
 
-    if (document.getElementById("od_settle_card")) {
-        if (document.getElementById("od_settle_card").checked) {
-            if (tot_price < 1000) {
-                alert("신용카드는 1000원 이상 결제가 가능합니다.");
-                return false;
-            }
-        }
-    }
+    // g5pro: 신용카드 최소금액(1000원) 검사 — 소액 결제가 실제로 되는지 보려고 임시로 꺼 둔다.
+    //        PG 쪽 승인 한도는 그대로이므로, 여기를 지나도 PG 창에서 막힐 수 있다. 확인 끝나면 되살릴 것.
+    // if (document.getElementById("od_settle_card")) {
+    //     if (document.getElementById("od_settle_card").checked) {
+    //         if (tot_price < 1000) {
+    //             alert("신용카드는 1000원 이상 결제가 가능합니다.");
+    //             return false;
+    //         }
+    //     }
+    // }
 
     if (document.getElementById("od_settle_hp")) {
         if (document.getElementById("od_settle_hp").checked) {

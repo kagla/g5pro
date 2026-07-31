@@ -699,7 +699,13 @@ if (isset($member['mb_id']) && $member['mb_id']) {
 if(defined('_THEME_PREVIEW_') && _THEME_PREVIEW_ === true)
     $config['cf_theme'] = isset($_GET['theme']) ? trim($_GET['theme']) : '';
 
-if(isset($config['cf_theme']) && trim($config['cf_theme'])) {
+// g5pro — pro 런타임이 깔려 있으면 순정 테마 계층은 켜지 않는다.
+// 이 프로젝트는 테마를 가로채는 것이 아니라 갈아끼운 구조라(스킨 include 를 g5_map_*() 로
+// 대체했다) 둘이 공존할 수 없다. 테마가 켜지면 shop/index·bbs/group·shop/list 처럼
+// 테마 분기가 우리 인계보다 앞에 있는 화면들이 순정으로 새어 나간다.
+// 순정 설치기가 cf_theme 에 'basic' 을 넣으므로, 갓 설치한 사이트가 바로 그 상태가 된다.
+// 화면 선택은 cf_theme 이 아니라 cf_template 이 맡는다 (extend/pro.10.extend.php).
+if(!is_file(G5_PATH.'/extend/pro.10.extend.php') && isset($config['cf_theme']) && trim($config['cf_theme'])) {
     $theme_path = G5_PATH.'/'.G5_THEME_DIR.'/'.$config['cf_theme'];
     if(is_dir($theme_path)) {
         define('G5_THEME_PATH',        $theme_path);
