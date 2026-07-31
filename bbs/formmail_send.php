@@ -1,6 +1,7 @@
 <?php
 include_once('./_common.php');
 include_once(G5_CAPTCHA_PATH.'/captcha.lib.php');
+define('G5_BLADE_PAGE', true); // g5blade — 결과는 alert_close 화면이 그린다
 include_once(G5_LIB_PATH.'/mailer.lib.php');
 
 if (!$config['cf_email_use'])

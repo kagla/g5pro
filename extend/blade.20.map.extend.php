@@ -424,6 +424,132 @@ function g5_map_login()
     ));
 }
 
+// ── 회원 프로필 (bbs/profile.php) — 글쓴이 이름의 사이드뷰에서 새 창으로 연다.
+// 이름은 순정 get_sideview() HTML 대신 순수 텍스트를 쓴다 — 팝업 안에서 또 사이드뷰를 열 일이 없고,
+// 그 HTML 은 아바타 <img> 를 품고 있어 프로필 사진과 겹친다.
+function g5_map_profile($mb, $reg_after, $homepage, $profile_html)
+{
+    global $member;
+
+    $can_see = ($member['mb_level'] >= $mb['mb_level']);   // 순정과 같은 판정
+
+    g5_view('bbs.profile', array(
+        'nick'      => get_text($mb['mb_nick']),
+        'photo'     => g5_blade_profile_src($mb['mb_id']),
+        'level'     => (int)$mb['mb_level'],
+        'point'     => (int)$mb['mb_point'],
+        'join_date' => $can_see ? g5_blade_dt($mb['mb_datetime'], false) : '',
+        'join_days' => $can_see ? (int)$reg_after : 0,
+        'last_login'=> $can_see ? g5_blade_dt($mb['mb_today_login']) : '',
+        'homepage'  => $homepage,
+        'profile'   => $profile_html,   // 순정 conv_content 완료 → {!! !!}
+    ));
+}
+
+// ── 메일 쓰기 (bbs/formmail.php) — 사이드뷰의 "메일보내기". formmail_send.php 계약 그대로:
+// to(암호화된 주소)·attach·fnick·fmail·subject·type·content·file1·file2 + 캡차.
+function g5_map_formmail($name, $email, $type)
+{
+    global $is_member, $member;
+
+    g5_view('bbs.formmail', array(
+        'name'      => $name,        // get_text 완료 → {!! !!}
+        'email'     => $email,       // str_encrypt 로 암호화된 값
+        'is_member' => (bool)$is_member,
+        'mb_nick'   => $is_member ? get_text($member['mb_nick']) : '',
+        'mb_email'  => $is_member ? $member['mb_email'] : '',
+        'type'      => (int)$type,
+        'action'    => G5_BBS_URL.'/formmail_send.php',
+        'captcha_html' => captcha_html(),
+        'captcha_js'   => chk_captcha_js(),
+    ));
+}
+
+// ── 비밀번호 확인 (bbs/password.php) — 비밀글 열람·수정·삭제 전에 한 번 묻는 화면.
+// $w 에 따라 action 과 문구가 갈리는 것은 순정이 이미 정해 놓은 값을 그대로 받는다.
+function g5_map_board_password($action, $w, $comment_id)
+{
+    global $g5, $bo_table, $wr_id, $sfl, $stx, $page;
+
+    // 제목·문구는 순정 스킨(password.skin.php)이 $w 로 갈라 세우던 것을 그대로 옮겼다
+    if ($w === 'u') {
+        $g5['title'] = '글 수정';
+        $lead = array('작성자만 글을 수정할 수 있습니다.', '글 쓸 때 적은 비밀번호를 넣으면 수정할 수 있습니다.');
+    } else if ($w === 'd' || $w === 'x') {
+        $g5['title'] = ($w === 'x' ? '댓글 삭제' : '글 삭제');
+        $lead = array('작성자만 글을 삭제할 수 있습니다.', '글 쓸 때 적은 비밀번호를 넣으면 삭제할 수 있습니다.');
+    } else {
+        $lead = array('비밀글로 보호된 글입니다.', '작성자와 관리자만 볼 수 있습니다. 본인이라면 비밀번호를 넣어 주세요.');
+    }
+
+    g5_view('bbs.password', array(
+        'action'  => $action,
+        'lead'    => $lead,
+        'hidden'  => array(
+            'w'          => $w,
+            'bo_table'   => $bo_table,
+            'wr_id'      => $wr_id,
+            'comment_id' => $comment_id,
+            'sfl'        => isset($sfl) ? $sfl : '',
+            'stx'        => isset($stx) ? $stx : '',
+            'page'       => isset($page) ? $page : '',
+        ),
+        'list_href' => G5_BBS_URL.'/board.php?bo_table='.$bo_table,
+    ));
+}
+
+// ── 이미지 크게보기 (bbs/view_image.php) — 끌어서 옮기고 더블클릭으로 닫는 순정 뷰어.
+// 이미지·드래그 스크립트는 순정 출력을 그대로 담고 사이트 골격만 팝업 문서로 바꾼다.
+function g5_map_view_image($body_html)
+{
+    g5_view('bbs.view_image', array('body_html' => $body_html));
+}
+
+// ── 알림 (bbs/alert.php) — 순정 alert() 이 부르는 흐름의 끝. 스크립트가 alert 를 띄우고
+// url 로 이동(없으면 history.back)한다. 그 스크립트는 순정이 만든 것을 그대로 받아 넘긴다.
+// 뷰가 그리는 것은 스크립트가 도는 동안 잠깐 보이는 화면 + JS 를 끈 브라우저용 대체 화면이다.
+function g5_map_alert($script, $message, $heading, $url, $post_fields)
+{
+    g5_view_message('bbs.alert', array(
+        'script'      => $script,        // 순정이 만든 <script> 알맹이 → {!! !!}
+        'message'     => $message,       // 개행을 <br> 로 바꾼 순정 $msg2 (strip_tags 완료) → {!! !!}
+        'heading'     => $heading,
+        'url'         => $url,
+        'post_fields' => $post_fields,   // $post 일 때 되돌아갈 폼에 실을 값
+    ));
+}
+
+// ── 알림 후 창닫기 (bbs/alert_close.php) — 팝업 안에서 뜬 알림. 확인하면 창이 닫힌다.
+function g5_map_alert_close($script, $message, $heading, $note)
+{
+    global $g5;
+
+    g5_view_message('bbs.alert_close', array(
+        // 순정이 $g5['title'] 을 세우지 않는 화면이라, 두면 사이트 이름이 제목처럼 읽힌다
+        'title'   => (isset($g5['title']) && $g5['title']) ? $g5['title'] : '알림',
+        'script'  => $script,
+        'message' => $message,
+        'heading' => $heading,
+        'note'    => $note,
+    ));
+}
+
+// ── 확인 (bbs/confirm.php) — 순정 confirm() . 예/아니오에 따라 url1/url2 로 갈린다.
+function g5_map_confirm($script, $message, $heading, $url1, $url2, $url3)
+{
+    global $g5;
+
+    g5_view_message('bbs.confirm', array(
+        'title'   => (isset($g5['title']) && $g5['title']) ? $g5['title'] : '확인',
+        'script'  => $script,
+        'message' => $message,
+        'heading' => $heading,
+        'url1'    => $url1,
+        'url2'    => $url2,
+        'url3'    => $url3,
+    ));
+}
+
 // ── 회원정보 찾기 (bbs/password_lost.php) — 가입 이메일로 아이디·임시비밀번호 안내메일 받기.
 // 본인인증으로 찾기(cf_cert_find)를 켠 사이트는 호출부가 직통을 포기하고 순정 스킨을 쓴다.
 function g5_map_password_lost()

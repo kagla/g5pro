@@ -1,6 +1,7 @@
 <?php
 include_once('./_common.php');
 include_once(G5_CAPTCHA_PATH.'/captcha.lib.php');
+define('G5_BLADE_PAGE', true); // g5blade 직통 화면 (win_email 팝업)
 
 if (!$config['cf_email_use'])
     alert_close('환경설정에서 "메일발송 사용"에 체크하셔야 메일을 발송할 수 있습니다.\\n\\n관리자에게 문의하시기 바랍니다.');
@@ -50,6 +51,6 @@ if (!isset($type))
 $type_checked[0] = $type_checked[1] = $type_checked[2] = "";
 $type_checked[$type] = 'checked';
 
-include_once($member_skin_path.'/formmail.skin.php');
+g5_map_formmail($name, $email, $type); // g5blade — 스킨 대신 직통 매핑
 
 include_once(G5_PATH.'/tail.sub.php');
