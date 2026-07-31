@@ -262,6 +262,186 @@ function g5_map_shop_listtype($items, $type, $total_count, $page, $total_page, $
     ));
 }
 
+// ── 사용후기 모아보기 (shop/itemuselist.php) — 상품 상세의 "사용후기 더보기"
+function g5_map_shop_itemuselist($rows, $total_count, $page, $total_page, $sfl, $stx)
+{
+    $items = array();
+    foreach ($rows as $row) {
+        $items[] = array(
+            'it_id'   => $row['it_id'],
+            'it_name' => get_text($row['it_name']),
+            'href'    => G5_SHOP_URL.'/item.php?it_id='.$row['it_id'],
+            'subject' => get_text($row['is_subject']),
+            'score'   => (int)$row['is_score'],
+            'name'    => $row['is_name'],          // 순정이 이미 정리한 표시용 이름
+            'datetime'=> g5_blade_dt($row['is_time'], false),
+        );
+    }
+
+    g5_view('shop.itemuselist', array(
+        'items'       => $items,
+        'total_count' => (int)$total_count,
+        'page'        => (int)$page,
+        'total_page'  => (int)$total_page,
+        'page_href'   => G5_SHOP_URL.'/itemuselist.php?sfl='.urlencode($sfl).'&stx='.urlencode($stx).'&page=',
+        'action_url'  => G5_SHOP_URL.'/itemuselist.php',
+        'search'      => array('sfl' => $sfl, 'stx' => get_text($stx)),
+        'sfl_options' => array('b.it_name' => '상품명', 'a.is_subject' => '후기제목', 'a.is_content' => '후기내용', 'a.is_name' => '작성자명'),
+    ));
+}
+
+// ── 상품문의 모아보기 (shop/itemqalist.php) — 상품 상세의 "상품문의 더보기".
+// 비밀글은 순정 판정(본인·관리자만 열람)을 호출부에서 받아 내용을 감춘다.
+function g5_map_shop_itemqalist($rows, $total_count, $page, $total_page, $sfl, $stx)
+{
+    $items = array();
+    foreach ($rows as $row) {
+        $items[] = array(
+            'it_id'    => $row['it_id'],
+            'it_name'  => get_text($row['it_name']),
+            'href'     => G5_SHOP_URL.'/item.php?it_id='.$row['it_id'],
+            'subject'  => get_text($row['iq_subject']),
+            'is_secret'=> !empty($row['iq_secret']),
+            'can_read' => !empty($row['blade_can_read']),
+            'answered' => !empty($row['iq_answer']),
+            'name'     => $row['iq_name'],
+            'datetime' => g5_blade_dt($row['iq_time'], false),
+        );
+    }
+
+    g5_view('shop.itemqalist', array(
+        'items'       => $items,
+        'total_count' => (int)$total_count,
+        'page'        => (int)$page,
+        'total_page'  => (int)$total_page,
+        'page_href'   => G5_SHOP_URL.'/itemqalist.php?sfl='.urlencode($sfl).'&stx='.urlencode($stx).'&page=',
+        'action_url'  => G5_SHOP_URL.'/itemqalist.php',
+        'search'      => array('sfl' => $sfl, 'stx' => get_text($stx)),
+        'sfl_options' => array('b.it_name' => '상품명', 'a.iq_subject' => '문의제목', 'a.iq_question' => '문의내용', 'a.iq_name' => '작성자명'),
+    ));
+}
+
+// ── 사용후기 쓰기 (shop/itemuseform.php) — 새 창. itemuseformupdate.php 계약:
+// w·it_id·is_id·is_subject·is_score + 에디터가 만드는 is_content.
+function g5_map_shop_itemuseform($it, $use, $w, $is_id, $editor_html, $editor_js)
+{
+    g5_view('shop.itemuseform', array(
+        'it_name'     => get_text($it['it_name']),
+        'w'           => $w,
+        'it_id'       => $it['it_id'],
+        'is_id'       => $is_id,
+        'subject'     => get_text($use['is_subject']),
+        'score'       => (int)(isset($use['is_score']) && $use['is_score'] ? $use['is_score'] : 5),
+        'editor_html' => $editor_html,   // 순정 에디터 HTML → {!! !!}
+        'editor_js'   => $editor_js,     // submit 검사 안에 들어갈 조각 → {!! !!}
+        'action'      => G5_SHOP_URL.'/itemuseformupdate.php',
+    ));
+}
+
+// ── 상품문의 쓰기 (shop/itemqaform.php) — 새 창. itemqaformupdate.php 계약:
+// w·it_id·iq_id·iq_secret·iq_email·iq_hp·iq_subject + 에디터가 만드는 iq_question.
+function g5_map_shop_itemqaform($it, $qa, $w, $iq_id, $editor_html, $editor_js)
+{
+    g5_view('shop.itemqaform', array(
+        'it_name'     => get_text($it['it_name']),
+        'w'           => $w,
+        'it_id'       => $it['it_id'],
+        'iq_id'       => $iq_id,
+        'subject'     => get_text(isset($qa['iq_subject']) ? $qa['iq_subject'] : ''),
+        'email'       => get_text(isset($qa['iq_email']) ? $qa['iq_email'] : ''),
+        'hp'          => get_text(isset($qa['iq_hp']) ? $qa['iq_hp'] : ''),
+        'is_secret'   => !empty($qa['iq_secret']),
+        'editor_html' => $editor_html,
+        'editor_js'   => $editor_js,
+        'action'      => G5_SHOP_URL.'/itemqaformupdate.php',
+    ));
+}
+
+// ── 배송지 목록 (shop/orderaddress.php) — 주문서에서 새 창으로 연다.
+// "선택" 은 부모 창(forderform)의 받는분 칸을 채우고 배송비를 다시 계산시키는 순정 계약이라
+// 주소 문자열을 순정과 같은 chr(30) 이음 형식 그대로 넘긴다.
+function g5_map_shop_orderaddress($rows, $action, $total_count, $page, $total_page)
+{
+    $sep = chr(30);
+    $items = array();
+    foreach ($rows as $i => $row) {
+        $items[] = array(
+            'i'          => $i,
+            'ad_id'      => $row['ad_id'],
+            'subject'    => get_text($row['ad_subject']),
+            'name'       => get_text($row['ad_name']),
+            'address'    => print_address($row['ad_addr1'], $row['ad_addr2'], $row['ad_addr3'], $row['ad_jibeon']),
+            'tel'        => $row['ad_tel'],
+            'hp'         => $row['ad_hp'],
+            'is_default' => !empty($row['ad_default']),
+            // 순정 스크립트가 chr(30) 으로 잘라 쓰는 값 (이름·전화·우편번호·주소·배송지명 순)
+            'raw'        => get_text($row['ad_name'].$sep.$row['ad_tel'].$sep.$row['ad_hp'].$sep
+                            .$row['ad_zip1'].$sep.$row['ad_zip2'].$sep.$row['ad_addr1'].$sep
+                            .$row['ad_addr2'].$sep.$row['ad_addr3'].$sep.$row['ad_jibeon'].$sep.$row['ad_subject']),
+        );
+    }
+
+    g5_view('shop.orderaddress', array(
+        'items'       => $items,
+        'action'      => $action,
+        'total_count' => (int)$total_count,
+        'page'        => (int)$page,
+        'total_page'  => (int)$total_page,
+        'page_href'   => G5_SHOP_URL.'/orderaddress.php?page=',
+        'del_href'    => G5_SHOP_URL.'/orderaddress.php?w=d&ad_id=',
+    ));
+}
+
+// ── 쿠폰 내역 (shop/coupon.php) — 주문서·마이페이지에서 새 창으로 연다
+function g5_map_shop_coupon($rows)
+{
+    $items = array();
+    foreach ($rows as $row) {
+        $items[] = array(
+            'subject' => get_text($row['cp_subject']),
+            'target'  => $row['cp_target_name'],           // 호출부가 정리해 넘긴다
+            'period'  => g5_blade_dt($row['cp_start'], false).' ~ '.g5_blade_dt($row['cp_end'], false),
+            'amount'  => ($row['cp_type'] == 1)
+                         ? number_format($row['cp_price']).'%'
+                         : number_format($row['cp_price']).'원',
+        );
+    }
+
+    g5_view('shop.coupon', array('items' => $items));
+}
+
+// ── 상품 추천 메일 (shop/itemrecommend.php) — 상품 상세의 공유 패널 ✉ 버튼.
+// itemrecommendmail.php 계약 그대로: token·it_id·to_email·subject·content.
+function g5_map_shop_itemrecommend($it_id, $it_name, $token)
+{
+    g5_view('shop.itemrecommend', array(
+        'it_id'   => $it_id,
+        'it_name' => get_text($it_name),
+        'token'   => $token,
+        'action'  => G5_SHOP_URL.'/itemrecommendmail.php',
+    ));
+}
+
+// ── 재입고 알림 (shop/itemstocksms.php) — 품절 상품에서 연다.
+// itemstocksmsupdate.php 계약 그대로: it_id·ss_hp(+동의 체크는 화면에서만 확인).
+function g5_map_shop_itemstocksms($it, $hp, $privacy)
+{
+    g5_view('shop.itemstocksms', array(
+        'it_id'   => $it['it_id'],
+        'it_name' => get_text($it['it_name']),
+        'hp'      => $hp,
+        'privacy' => $privacy,      // get_text 완료 → textarea 값
+        'action'  => G5_HTTPS_SHOP_URL.'/itemstocksmsupdate.php',
+    ));
+}
+
+// ── 상품 이미지 크게보기 (shop/largeimage.php) — 썸네일 전환·창 크기 맞춤이 모두
+// 순정 스킨 스크립트의 몫이라, 그 출력을 그대로 담고 사이트 골격만 팝업 문서로 바꾼다.
+function g5_map_shop_largeimage($body_html)
+{
+    g5_view('shop.largeimage', array('body_html' => $body_html));
+}
+
 // ── 상품 상세 (shop/item.php)
 function g5_map_shop_item($form_html, $related)
 {

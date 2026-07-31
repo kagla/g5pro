@@ -1,5 +1,6 @@
 <?php
 include_once('./_common.php');
+define('G5_BLADE_PAGE', true); // g5blade 직통 화면
 
 if( isset($sfl) && ! in_array($sfl, array('b.it_name', 'a.it_id', 'a.iq_subject', 'a.iq_question', 'a.iq_name', 'a.mb_id')) ){
     //다른값이 들어가있다면 초기화
@@ -65,12 +66,13 @@ $sql = " select a.*, b.it_name
           limit $from_record, $rows ";
 $result = sql_query($sql);
 
-$itemqalist_skin = G5_SHOP_SKIN_PATH.'/itemqalist.skin.php';
-
-if(!file_exists($itemqalist_skin)) {
-    echo str_replace(G5_PATH.'/', '', $itemqalist_skin).' 스킨 파일이 존재하지 않습니다.';
-} else {
-    include_once($itemqalist_skin);
+// g5blade — 화면은 뷰가 그린다. 비밀글은 본인·관리자만 제목을 볼 수 있다 (순정 스킨과 같은 판정)
+$blade_rows = array();
+while ($row = sql_fetch_array($result)) {
+    $row['blade_can_read'] = (!$row['iq_secret'] || $is_admin
+                              || (isset($member['mb_id']) && $member['mb_id'] && $member['mb_id'] === $row['mb_id']));
+    $blade_rows[] = $row;
 }
+g5_map_shop_itemqalist($blade_rows, $total_count, $page, $total_page, $sfl, $stx);
 
 include_once('./_tail.php');

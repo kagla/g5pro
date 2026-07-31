@@ -1,5 +1,6 @@
 <?php
 include_once('./_common.php');
+define('G5_BLADE_PAGE', true); // g5blade 직통 화면 (추천 팝업)
 
 $it_id = isset($_REQUEST['it_id']) ? safe_replace_regex($_REQUEST['it_id'], 'it_id') : '';
 
@@ -22,50 +23,7 @@ if (!$it['it_name'])
 
 $g5['title'] =  $it['it_name'].' - 추천하기';
 include_once(G5_PATH.'/head.sub.php');
-?>
 
-<!-- 상품 추천하기 시작 { -->
-<div id="sit_rec_new" class="new_win">
-    <h1 id="win_title"><?php echo $g5['title']; ?></h1>
+g5_map_shop_itemrecommend($it_id, $it['it_name'], $token); // g5blade — 순정 인라인 폼 대신 직통 매핑
 
-    <form name="fitemrecommend" method="post" action="./itemrecommendmail.php" autocomplete="off" onsubmit="return fitemrecommend_check(this);">
-    <input type="hidden" name="token" value="<?php echo $token; ?>">
-    <input type="hidden" name="it_id" value="<?php echo $it_id; ?>">
-
-    <div class="tbl_wrap">
-        <table>
-	        <tbody>
-	        <tr>
-	            <th><label for="to_email">추천받는 분<br>E-mail<strong class="sound_only"> 필수</strong></label></th>
-	            <td><input type="text" name="to_email" id="to_email" required class="frm_input full_input required" size="51"></td>
-	        </tr>
-	        <tr>
-	            <th><label for="subject">제목<strong class="sound_only"> 필수</strong></label></th>
-	            <td><input type="text" name="subject" id="subject" required class="frm_input full_input required" size="51"></td>
-	        </tr>
-	        <tr>
-	            <th><label for="content">내용<strong class="sound_only"> 필수</strong></label></th>
-	            <td><textarea name="content" id="content" required class="frm_input required"></textarea></td>
-	        </tr>
-	        </tbody>
-        </table>
-    </div>
-
-    <div class="win_btn">
-        <button type="submit" id="btn_submit" class="btn_submit">보내기</button>
-        <button onclick="javascript:window.close();" class="btn_close">닫기</button>
-    </div>
-    
-    </form>
-</div>
-
-<script>
-function fitemrecommend_check(f)
-{
-    return true;
-}
-</script>
-<!-- } 상품 추천하기 끝 -->
-
-<?php
 include_once(G5_PATH.'/tail.sub.php');

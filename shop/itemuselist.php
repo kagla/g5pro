@@ -1,5 +1,6 @@
 <?php
 include_once('./_common.php');
+define('G5_BLADE_PAGE', true); // g5blade 직통 화면
 
 if( isset($sfl) && ! in_array($sfl, array('b.it_name', 'a.it_id', 'a.is_subject', 'a.is_content', 'a.is_name', 'a.mb_id')) ){
     //다른값이 들어가있다면 초기화
@@ -65,12 +66,9 @@ $sql = " select *
           limit $from_record, $rows ";
 $result = sql_query($sql);
 
-$itemuselist_skin = G5_SHOP_SKIN_PATH.'/itemuselist.skin.php';
-
-if(!file_exists($itemuselist_skin)) {
-    echo str_replace(G5_PATH.'/', '', $itemuselist_skin).' 스킨 파일이 존재하지 않습니다.';
-} else {
-    include_once($itemuselist_skin);
-}
+// g5blade — 화면은 뷰가 그린다 (순정 검색·정렬·페이징 쿼리는 위 그대로)
+$blade_rows = array();
+while ($row = sql_fetch_array($result)) $blade_rows[] = $row;
+g5_map_shop_itemuselist($blade_rows, $total_count, $page, $total_page, $sfl, $stx);
 
 include_once('./_tail.php');

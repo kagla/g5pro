@@ -1,5 +1,6 @@
 <?php
 include_once('./_common.php');
+define('G5_BLADE_PAGE', true); // g5blade 직통 화면
 
 $w     = isset($_REQUEST['w']) ? preg_replace('/[^0-9a-z]/i', '', trim($_REQUEST['w'])) : '';
 $it_id = isset($_REQUEST['it_id']) ? get_search_string(trim($_REQUEST['it_id'])) : '';
@@ -58,12 +59,6 @@ $editor_js = '';
 $editor_js .= get_editor_js('iq_question', $is_dhtml_editor);
 $editor_js .= chk_editor_js('iq_question', $is_dhtml_editor);
 
-$itemqaform_skin = G5_SHOP_SKIN_PATH.'/itemqaform.skin.php';
-
-if(!file_exists($itemqaform_skin)) {
-    echo str_replace(G5_PATH.'/', '', $itemqaform_skin).' 스킨 파일이 존재하지 않습니다.';
-} else {
-    include_once($itemqaform_skin);
-}
+g5_map_shop_itemqaform($it, $qa, $w, $iq_id, $editor_html, $editor_js); // g5blade
 
 include_once(G5_PATH.'/tail.sub.php');
