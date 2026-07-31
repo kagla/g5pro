@@ -512,7 +512,7 @@ if ($config['cf_sms_use'] && $config['cf_icode_id'] && $config['cf_icode_pw']) {
                           $pro_templates = array();
                           foreach ((array) @glob(G5_PATH.'/template/*', GLOB_ONLYDIR) as $pro_dir)
                               $pro_templates[] = basename($pro_dir);
-                          $pro_now = isset($config['cf_template']) ? trim($config['cf_template']) : 'one';
+                          $pro_now = isset($config['cf_template']) ? trim($config['cf_template']) : 'standard';
                     ?>
                     <tr>
                         <th scope="row"><label for="cf_template">템플릿</label></th>

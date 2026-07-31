@@ -32,7 +32,7 @@ DB를 미리 만든 뒤 브라우저로 `/install`에 접속해 안내를 따릅
 
 | 경로 | 내용 |
 |---|---|
-| `template/one/` | 기본 템플릿. 레이아웃·게시판·쇼핑몰 뷰와 스타일시트 |
+| `template/standard/` | 기본 템플릿. 레이아웃·게시판·쇼핑몰 뷰와 스타일시트 |
 | `extend/pro.10.extend.php` | 런타임. BladeOne 로드, 템플릿 선택, 렌더 함수 |
 | `extend/pro.20.map.extend.php` | 게시판·회원 화면의 전역 변수를 뷰 데이터로 정리 |
 | `extend/pro.30.map.shop.extend.php` | 쇼핑몰 화면의 같은 역할 |
@@ -41,7 +41,7 @@ DB를 미리 만든 뒤 브라우저로 `/install`에 접속해 안내를 따릅
 
 ## 템플릿 만들기
 
-`template/` 아래에 디렉터리를 만들고 `template/one`의 뷰 구성을 따라 작성합니다. 관리자 환경설정에서 사용할 템플릿을 고릅니다.
+`template/` 아래에 디렉터리를 만들고 `template/standard`의 뷰 구성을 따라 작성합니다. 관리자 환경설정에서 사용할 템플릿을 고릅니다.
 
 개발 중에는 `config.php`에 아래를 넣어 설정값보다 우선 적용할 수 있습니다.
 

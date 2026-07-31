@@ -218,7 +218,7 @@ if ($check_captcha) {
 
 // g5pro — 템플릿은 폴더 이름이다. 실재하는 폴더만 받아 경로 조작·주입을 막는다.
 // 목록에 없는 값이 오면 조용히 one 으로 떨어뜨린다 (extend/pro.10.extend.php 의 폴백과 같은 규칙).
-$cf_template = 'one';
+$cf_template = 'standard';
 if (isset($_POST['cf_template'])) {
     $pro_req = basename(trim(stripslashes($_POST['cf_template'])));
     if ($pro_req !== '' && preg_match('/^[A-Za-z0-9_-]+$/', $pro_req) && is_dir(G5_PATH.'/template/'.$pro_req))

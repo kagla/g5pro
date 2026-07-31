@@ -30,16 +30,16 @@
  */
 if (!defined('_GNUBOARD_')) exit;
 
-// 활성 템플릿 선택 — g5_config.cf_template 컬럼 (기본 'one')
+// 활성 템플릿 선택 — g5_config.cf_template 컬럼 (기본 'standard')
 // 컬럼이 없으면 자동 생성하므로 순정 install SQL 수정이 필요 없다.
 // config.php 에 G5_TEMPLATE 을 define 하면 그것이 최우선 (개발용 강제 오버라이드).
 if (!defined('G5_TEMPLATE')) {
     if (!isset($config['cf_template'])) {
-        sql_query(" ALTER TABLE `{$g5['config_table']}` ADD COLUMN cf_template varchar(100) NOT NULL DEFAULT 'one' ", false);
-        $config['cf_template'] = 'one';
+        sql_query(" ALTER TABLE `{$g5['config_table']}` ADD COLUMN cf_template varchar(100) NOT NULL DEFAULT 'standard' ", false);
+        $config['cf_template'] = 'standard';
     }
     $g5_pro_tpl = trim($config['cf_template']);
-    if (!$g5_pro_tpl || !is_dir(G5_PATH.'/template/'.$g5_pro_tpl)) $g5_pro_tpl = 'one';
+    if (!$g5_pro_tpl || !is_dir(G5_PATH.'/template/'.$g5_pro_tpl)) $g5_pro_tpl = 'standard';
     define('G5_TEMPLATE', $g5_pro_tpl);
     unset($g5_pro_tpl);
 }
