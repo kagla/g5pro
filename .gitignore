@@ -30,3 +30,7 @@ SIRsoft000/
 config.php
 pma/
 /docs/shots/
+
+# 작업 계획·설계 문서 — 서버 정보와 자격증명이 적혀 있어 저장소에 올리지 않는다.
+# 로컬에는 그대로 두고 참고한다.
+docs/superpowers/
