@@ -30,19 +30,21 @@
  */
 if (!defined('_GNUBOARD_')) exit;
 
-// 활성 템플릿 선택 — g5_config.cf_template 컬럼 (기본 'standard')
+// 활성 템플릿 — g5_config.cf_template 컬럼 (기본 'standard').
 // 컬럼이 없으면 자동 생성하므로 순정 install SQL 수정이 필요 없다.
-// config.php 에 G5_TEMPLATE 을 define 하면 그것이 최우선 (개발용 강제 오버라이드).
-if (!defined('G5_TEMPLATE')) {
-    if (!isset($config['cf_template'])) {
-        sql_query(" ALTER TABLE `{$g5['config_table']}` ADD COLUMN cf_template varchar(100) NOT NULL DEFAULT 'standard' ", false);
-        $config['cf_template'] = 'standard';
-    }
-    $g5_pro_tpl = trim($config['cf_template']);
-    if (!$g5_pro_tpl || !is_dir(G5_PATH.'/template/'.$g5_pro_tpl)) $g5_pro_tpl = 'standard';
-    define('G5_TEMPLATE', $g5_pro_tpl);
-    unset($g5_pro_tpl);
+//
+// 고르는 곳은 관리자 환경설정 한 곳뿐이다. 예전에는 config.php 에서 G5_TEMPLATE 을
+// 미리 define 하면 DB 를 건너뛰게 해 두었는데, 그러면 관리자에서 템플릿을 바꿔도
+// 화면이 그대로인데 이유를 알 길이 없었다. 값이 두 곳에 있고 하나가 조용히 이기는 구조라
+// 걷어냈다. 아래 상수는 요청 동안 뷰 경로를 찾을 때 쓰는 것이지 설정 자리가 아니다.
+if (!isset($config['cf_template'])) {
+    sql_query(" ALTER TABLE `{$g5['config_table']}` ADD COLUMN cf_template varchar(100) NOT NULL DEFAULT 'standard' ", false);
+    $config['cf_template'] = 'standard';
 }
+$g5_pro_tpl = trim($config['cf_template']);
+if (!$g5_pro_tpl || !is_dir(G5_PATH.'/template/'.$g5_pro_tpl)) $g5_pro_tpl = 'standard';
+define('G5_TEMPLATE', $g5_pro_tpl);
+unset($g5_pro_tpl);
 
 require_once G5_PATH.'/lib/bladeone/BladeOne.php';
 
