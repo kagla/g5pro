@@ -17,8 +17,8 @@ if(!sql_query(" select ss_id from {$g5['g5_shop_item_stocksms_table']} limit 1",
                   `it_id` varchar(20) NOT NULL DEFAULT '',
                   `ss_hp` varchar(255) NOT NULL DEFAULT '',
                   `ss_send` tinyint(4) NOT NULL DEFAULT '0',
-                  `ss_send_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-                  `ss_datetime` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+                  `ss_send_time` datetime NULL DEFAULT NULL,
+                  `ss_datetime` datetime NULL DEFAULT NULL,
                   `ss_ip` varchar(25) NOT NULL DEFAULT '',
                   PRIMARY KEY (`ss_id`)
                 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 ", true);

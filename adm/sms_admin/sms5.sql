@@ -25,7 +25,7 @@ CREATE TABLE `{$g5['sms5_book_table']}` (
   `bk_name` varchar(255) NOT NULL default '',
   `bk_hp` varchar(255) NOT NULL default '',
   `bk_receipt` tinyint(4) NOT NULL default '0',
-  `bk_datetime` datetime NOT NULL default '0000-00-00 00:00:00',
+  `bk_datetime` datetime NULL DEFAULT NULL,
   `bk_memo` text NOT NULL,
   PRIMARY KEY  (`bk_no`),
   KEY `bk_name` (`bk_name`),
@@ -65,7 +65,7 @@ DROP TABLE IF EXISTS `{$g5['sms5_config_table']}`;
 
 CREATE TABLE `{$g5['sms5_config_table']}` (
   `cf_phone` varchar(255) NOT NULL default '',
-  `cf_datetime` datetime NOT NULL default '0000-00-00 00:00:00'  
+  `cf_datetime` datetime NULL DEFAULT NULL  
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
@@ -82,7 +82,7 @@ CREATE TABLE `{$g5['sms5_form_table']}` (
   `fg_member` char(1) NOT NULL default '0',
   `fo_name` varchar(255) NOT NULL default '',
   `fo_content` text NOT NULL,
-  `fo_datetime` datetime NOT NULL default '0000-00-00 00:00:00',
+  `fo_datetime` datetime NULL DEFAULT NULL,
   PRIMARY KEY  (`fo_no`),
   KEY `fg_no` (`fg_no`,`fo_no`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -122,7 +122,7 @@ CREATE TABLE `{$g5['sms5_history_table']}` (
   `bk_no` int(11) NOT NULL default '0',
   `hs_name` varchar(30) NOT NULL default '',
   `hs_hp` varchar(255) NOT NULL default '',
-  `hs_datetime` datetime NOT NULL default '0000-00-00 00:00:00',
+  `hs_datetime` datetime NULL DEFAULT NULL,
   `hs_flag` tinyint(4) NOT NULL default '0',
   `hs_code` varchar(255) NOT NULL default '',
   `hs_memo` varchar(255) NOT NULL default '',
@@ -150,12 +150,12 @@ CREATE TABLE `{$g5['sms5_write_table']}` (
   `wr_renum` int(11) NOT NULL default '0',
   `wr_reply` varchar(255) NOT NULL default '',
   `wr_message` text NOT NULL,
-  `wr_booking` datetime NOT NULL default '0000-00-00 00:00:00',
+  `wr_booking` datetime NULL DEFAULT NULL,
   `wr_total` int(11) NOT NULL default '0',
   `wr_re_total` int(11) NOT NULL default '0',
   `wr_success` int(11) NOT NULL default '0',
   `wr_failure` int(11) NOT NULL default '0',
-  `wr_datetime` datetime NOT NULL default '0000-00-00 00:00:00',
+  `wr_datetime` datetime NULL DEFAULT NULL,
   `wr_memo` text NOT NULL,
   KEY `wr_no` (`wr_no`,`wr_renum`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;

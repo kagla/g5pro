@@ -43,7 +43,7 @@ if(!sql_query(" select it_sc_type from {$g5['g5_shop_cart_table']} limit 1 ", fa
 // 장바구니 상품 주문폼 등록시간 기록 필드 추가
 if(!sql_query(" select ct_select_time from {$g5['g5_shop_cart_table']} limit 1 ", false)) {
     sql_query(" ALTER TABLE `{$g5['g5_shop_cart_table']}`
-                    ADD `ct_select_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `ct_select` ", true);
+                    ADD `ct_select_time` datetime NULL DEFAULT NULL AFTER `ct_select` ", true);
 }
 
 // 모바일 이니시스 계좌이체 결과 전달을 위한 테이블 추가
@@ -77,7 +77,7 @@ if(isset($g5['g5_shop_order_data_table']) && !sql_query(" DESCRIBE {$g5['g5_shop
                   `od_id` bigint(20) unsigned NOT NULL,
                   `dt_pg` varchar(255) NOT NULL DEFAULT '',
                   `dt_data` text NOT NULL,
-                  `dt_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+                  `dt_time` datetime NULL DEFAULT NULL,
                   KEY `od_id` (`od_id`)
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;", true);
 }
@@ -115,8 +115,8 @@ if(isset($g5['g5_shop_coupon_zone_table'])) {
                       `cz_id` int(11) NOT NULL AUTO_INCREMENT,
                       `cz_type` tinyint(4) NOT NULL DEFAULT '0',
                       `cz_subject` varchar(255) NOT NULL DEFAULT '',
-                      `cz_start` DATE NOT NULL DEFAULT '0000-00-00',
-                      `cz_end` DATE NOT NULL DEFAULT '0000-00-00',
+                      `cz_start` DATE NULL DEFAULT NULL,
+                      `cz_end` DATE NULL DEFAULT NULL,
                       `cz_file` varchar(255) NOT NULL DEFAULT '',
                       `cz_period` int(11) NOT NULL DEFAULT '0',
                       `cz_point` INT(11) NOT NULL DEFAULT '0',
@@ -128,7 +128,7 @@ if(isset($g5['g5_shop_coupon_zone_table'])) {
                       `cp_minimum` INT(11) NOT NULL DEFAULT '0',
                       `cp_maximum` INT(11) NOT NULL DEFAULT '0',
                       `cz_download` int(11) NOT NULL DEFAULT '0',
-                      `cz_datetime` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
+                      `cz_datetime` DATETIME NULL DEFAULT NULL,
                       PRIMARY KEY (`cz_id`)
                     ) ENGINE=MyISAM DEFAULT CHARSET=utf8 ", true);
     }

@@ -172,7 +172,7 @@ if(!sql_query(" DESC {$g5['g5_shop_post_log_table']} ", false)) {
                   `post_data` text NOT NULL,
                   `ol_code` varchar(255) NOT NULL DEFAULT '',
                   `ol_msg` text NOT NULL,
-                  `ol_datetime` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+                  `ol_datetime` datetime NULL DEFAULT NULL,
                   `ol_ip` varchar(25) NOT NULL DEFAULT '',
                   PRIMARY KEY (`log_id`)
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8; ", false);

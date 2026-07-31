@@ -633,7 +633,7 @@ function g5_map_memo()
             'name'      => get_text($row['mb_nick'] ? $row['mb_nick'] : $row['mb_id']),
             'preview'   => get_text(cut_str($row['me_memo'], 60)),
             'datetime'  => g5_pro_dt($row['me_send_datetime']),
-            'is_read'   => (isset($row['me_read_datetime']) && $row['me_read_datetime'] !== '0000-00-00 00:00:00'),
+            'is_read'   => !pro_empty_date(isset($row['me_read_datetime']) ? $row['me_read_datetime'] : null),
             'view_href' => $row['view_href'],   // &amp; 포함 → {!! !!}
             'del_href'  => $row['del_href'],    // 세션 토큰 포함 → {!! !!}
         );

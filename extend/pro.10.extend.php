@@ -353,6 +353,25 @@ function g5_pro_stats()
     return $s;
 }
 
+// 날짜가 "비었는가" — 세 가지 표현을 모두 같게 본다.
+//   NULL           마이그레이션 이후의 정식 표현
+//   ''             폼에서 넘어온 빈 값
+//   '0000-00-00…'  마이그레이션 이전의 옛 표현
+// 셋을 다 받는 이유: 순정 파일을 upstream 병합으로 되돌려 받아도 판정이 흔들리지 않고,
+// 마이그레이션이 덜 끝난 다른 DB 에 이 코드를 얹어도 그대로 동작한다.
+function pro_empty_date($v)
+{
+    return $v === null || $v === '' || strncmp((string)$v, '0000-00-00', 10) === 0;
+}
+
+// 날짜를 SQL 리터럴로 — 빈 값이면 따옴표 없는 NULL 을 돌려준다.
+// 순정은 '$var' 처럼 따옴표째 박아 넣는데, strict 모드에서 빈 문자열을 date/datetime 에
+// 넣으면 1292 에러로 쿼리가 죽는다 (nullable 여부와 무관하다). 쓰는 쪽은 이걸 거친다.
+function pro_sql_date($v)
+{
+    return pro_empty_date($v) ? 'NULL' : "'".sql_escape_string((string)$v)."'";
+}
+
 // 화면에 쓰는 날짜 형식 — 순정 'YYYY-MM-DD HH:II:SS' 를 'YY-MM-DD HH:II' 로 줄인다.
 // 목록의 순정 datetime2('YY-MM-DD')와 같은 눈금이라 화면 전체가 한 형식으로 읽힌다.
 // 값이 비었거나(0000-00-00) 형식이 다르면 그대로 돌려준다.

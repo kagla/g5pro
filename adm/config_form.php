@@ -156,7 +156,7 @@ if (!isset($config['cf_cert_use'])) {
                   `cr_company` varchar(255) NOT NULL DEFAULT '',
                   `cr_method` varchar(255) NOT NULL DEFAULT '',
                   `cr_ip` varchar(255) NOT NULL DEFAULT '',
-                  `cr_date` date NOT NULL DEFAULT '0000-00-00',
+                  `cr_date` date NULL DEFAULT NULL,
                   `cr_time` time NOT NULL DEFAULT '00:00:00',
                   PRIMARY KEY (`cr_id`),
                   KEY `mb_id` (`mb_id`)
@@ -247,7 +247,7 @@ if (!isset($config['cf_lg_mid'])) {
 if (!isset($config['cf_optimize_date'])) {
     sql_query(
         " ALTER TABLE `{$g5['config_table']}`
-                    ADD `cf_optimize_date` date NOT NULL default '0000-00-00' AFTER `cf_popular_del` ",
+                    ADD `cf_optimize_date` date NULL DEFAULT NULL AFTER `cf_popular_del` ",
         true
     );
 }
@@ -344,8 +344,8 @@ if (!sql_query(" DESC {$g5['social_profile_table']} ", false)) {
                   `photourl` varchar(255) NOT NULL DEFAULT '',
                   `displayname` varchar(150) NOT NULL DEFAULT '',
                   `description` varchar(255) NOT NULL DEFAULT '',
-                  `mp_register_day` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-                  `mp_latest_day` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+                  `mp_register_day` datetime NULL DEFAULT NULL,
+                  `mp_latest_day` datetime NULL DEFAULT NULL,
                   UNIQUE KEY `mp_no` (`mp_no`),
                   KEY `mb_id` (`mb_id`),
                   KEY `provider` (`provider`)
@@ -436,12 +436,12 @@ if (!isset($member['mb_marketing_agree'])) {
     sql_query(
         " ALTER TABLE `{$g5['member_table']}`
                 ADD `mb_marketing_agree` tinyint(1) NOT NULL DEFAULT '0' AFTER  `mb_scrap_cnt`,
-                ADD `mb_marketing_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `mb_marketing_agree`,
+                ADD `mb_marketing_date` datetime NULL DEFAULT NULL AFTER `mb_marketing_agree`,
                 ADD `mb_thirdparty_agree` tinyint(1) NOT NULL DEFAULT '0' AFTER  `mb_marketing_date`,
-                ADD `mb_thirdparty_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `mb_thirdparty_agree`,
+                ADD `mb_thirdparty_date` datetime NULL DEFAULT NULL AFTER `mb_thirdparty_agree`,
                 ADD `mb_agree_log` TEXT NOT NULL AFTER `mb_thirdparty_date`,
-                ADD `mb_mailling_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `mb_mailling`,
-                ADD `mb_sms_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `mb_sms` ",
+                ADD `mb_mailling_date` datetime NULL DEFAULT NULL AFTER `mb_mailling`,
+                ADD `mb_sms_date` datetime NULL DEFAULT NULL AFTER `mb_sms` ",
         true
     );
 }

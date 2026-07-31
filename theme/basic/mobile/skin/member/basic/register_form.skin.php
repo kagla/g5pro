@@ -275,7 +275,7 @@ if ($config['cf_cert_use'] && ($config['cf_cert_simple'] || $config['cf_cert_ipi
 				</div>
 				<input type="hidden" name="mb_marketing_agree_default" value="<?php echo $member['mb_marketing_agree'] ?>">
 				<div id="desc_marketing" class="sound_only">마케팅 목적의 개인정보 수집·이용에 대한 안내입니다. 자세히보기를 눌러 전문을 확인할 수 있습니다.</div>
-				<div class="consent-date"><?php if ($member['mb_marketing_agree'] == 1 && $member['mb_marketing_date'] != "0000-00-00 00:00:00") echo "(동의일자: ".$member['mb_marketing_date'].")"; ?></div>
+				<div class="consent-date"><?php if ($member['mb_marketing_agree'] == 1 && !pro_empty_date($member['mb_marketing_date'])) echo "(동의일자: ".$member['mb_marketing_date'].")"; ?></div>
 
 				<template id="tpl_marketing">
 					* 목적: 서비스 마케팅 및 프로모션<br>
@@ -303,7 +303,7 @@ if ($config['cf_cert_use'] && ($config['cf_cert_simple'] || $config['cf_cert_ipi
 						<label for="reg_mb_mailling"><span></span><b class="sound_only">광고성 이메일 수신 동의</b></label>
 						<span class="chk_li">광고성 이메일 수신 동의</span>
 						<input type="hidden" name="mb_mailling_default" value="<?php echo $member['mb_mailling']; ?>">
-						<div class="consent-date"><?php if ($w == 'u' && $member['mb_mailling'] == 1 && $member['mb_mailling_date'] != "0000-00-00 00:00:00") echo "(동의일자: ".$member['mb_mailling_date'].")"; ?></div>
+						<div class="consent-date"><?php if ($w == 'u' && $member['mb_mailling'] == 1 && !pro_empty_date($member['mb_mailling_date'])) echo "(동의일자: ".$member['mb_mailling_date'].")"; ?></div>
 					</li>
 
 					<!-- 휴대폰번호 입력 보이기 or 필수입력일 경우에만 -->
@@ -313,7 +313,7 @@ if ($config['cf_cert_use'] && ($config['cf_cert_simple'] || $config['cf_cert_ipi
 						<label for="reg_mb_sms"><span></span><b class="sound_only">광고성 SMS/카카오톡 수신 동의</b></label>
 						<span class="chk_li">광고성 SMS/카카오톡 수신 동의</span>
 						<input type="hidden" name="mb_sms_default" value="<?php echo $member['mb_sms']; ?>">
-						<div class="consent-date"><?php if ($w == 'u' && $member['mb_sms'] == 1 && $member['mb_sms_date'] != "0000-00-00 00:00:00") echo "(동의일자: ".$member['mb_sms_date'].")"; ?></div>
+						<div class="consent-date"><?php if ($w == 'u' && $member['mb_sms'] == 1 && !pro_empty_date($member['mb_sms_date'])) echo "(동의일자: ".$member['mb_sms_date'].")"; ?></div>
 					</li>
 					<?php } ?>
                 </ul>
@@ -347,7 +347,7 @@ if ($config['cf_cert_use'] && ($config['cf_cert_simple'] || $config['cf_cert_ipi
 				</div>
 				<input type="hidden" name="mb_thirdparty_agree_default" value="<?php echo $member['mb_thirdparty_agree'] ?>">
 				<div id="desc_thirdparty" class="sound_only">개인정보 제3자 제공 동의에 대한 안내입니다. 자세히보기를 눌러 전문을 확인할 수 있습니다.</div>
-				<div class="consent-date"><?php if ($member['mb_thirdparty_agree'] == 1 && $member['mb_thirdparty_date'] != "0000-00-00 00:00:00") echo "(동의일자: ".$member['mb_thirdparty_date'].")"; ?></div>
+				<div class="consent-date"><?php if ($member['mb_thirdparty_agree'] == 1 && !pro_empty_date($member['mb_thirdparty_date'])) echo "(동의일자: ".$member['mb_thirdparty_date'].")"; ?></div>
 
 				<template id="tpl_thirdparty">
 					* 목적: 상품/서비스, 사은/판촉행사, 이벤트 등의 마케팅 안내(카카오톡 등)<br>

@@ -1379,7 +1379,7 @@ function get_list_skin_options($pattern, $dirname='./', $sval='')
 // 일자 시간을 검사한다.
 function check_datetime($datetime)
 {
-    if ($datetime == "0000-00-00 00:00:00")
+    if (pro_empty_date($datetime))
         return true;
 
     $year   = substr($datetime, 0, 4);
@@ -2788,7 +2788,7 @@ function add_order_post_log($msg='', $code='error'){
                           `post_data` text NOT NULL,
                           `ol_code` varchar(255) NOT NULL DEFAULT '',
                           `ol_msg` text NOT NULL,
-                          `ol_datetime` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+                          `ol_datetime` datetime NULL DEFAULT NULL,
                           `ol_ip` varchar(25) NOT NULL DEFAULT '',
                           PRIMARY KEY (`log_id`)
                         ) ENGINE=MyISAM DEFAULT CHARSET=utf8; ", false);

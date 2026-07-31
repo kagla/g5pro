@@ -64,8 +64,8 @@ if( isset($g5['social_profile_table']) && !sql_query(" DESC {$g5['social_profile
                   `photourl` varchar(255) NOT NULL DEFAULT '',
                   `displayname` varchar(150) NOT NULL DEFAULT '',
                   `description` varchar(255) NOT NULL DEFAULT '',
-                  `mp_register_day` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-                  `mp_latest_day` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+                  `mp_register_day` datetime NULL DEFAULT NULL,
+                  `mp_latest_day` datetime NULL DEFAULT NULL,
                   UNIQUE KEY `mp_no` (`mp_no`),
                   KEY `mb_id` (`mb_id`),
                   KEY `provider` (`provider`)
@@ -187,7 +187,7 @@ if (defined('G5_USE_SHOP') && G5_USE_SHOP) {
                     `post_data` text NOT NULL,
                     `ol_code` varchar(255) NOT NULL DEFAULT '',
                     `ol_msg` text NOT NULL,
-                    `ol_datetime` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+                    `ol_datetime` datetime NULL DEFAULT NULL,
                     `ol_ip` varchar(25) NOT NULL DEFAULT '',
                     PRIMARY KEY (`log_id`)
                     ) ENGINE=MyISAM DEFAULT CHARSET=utf8; ", true);
@@ -305,12 +305,12 @@ if (!isset($member['mb_marketing_agree'])) {
     sql_query(
         " ALTER TABLE `{$g5['member_table']}`
                 ADD `mb_marketing_agree` tinyint(1) NOT NULL DEFAULT '0' AFTER  `mb_scrap_cnt`,
-                ADD `mb_marketing_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `mb_marketing_agree`,
+                ADD `mb_marketing_date` datetime NULL DEFAULT NULL AFTER `mb_marketing_agree`,
                 ADD `mb_thirdparty_agree` tinyint(1) NOT NULL DEFAULT '0' AFTER  `mb_marketing_date`,
-                ADD `mb_thirdparty_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `mb_thirdparty_agree`,
+                ADD `mb_thirdparty_date` datetime NULL DEFAULT NULL AFTER `mb_thirdparty_agree`,
                 ADD `mb_agree_log` TEXT NOT NULL AFTER `mb_thirdparty_date`,
-                ADD `mb_mailling_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `mb_mailling`,
-                ADD `mb_sms_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `mb_sms` ",
+                ADD `mb_mailling_date` datetime NULL DEFAULT NULL AFTER `mb_mailling`,
+                ADD `mb_sms_date` datetime NULL DEFAULT NULL AFTER `mb_sms` ",
         true
     );
 

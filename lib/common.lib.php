@@ -3536,7 +3536,7 @@ function insert_member_cert_history($mb_id, $name, $hp, $birth, $type)
                         `ch_hp` varchar(255) NOT NULL DEFAULT '',
                         `ch_birth` varchar(255) NOT NULL DEFAULT '',
                         `ch_type` varchar(20) NOT NULL DEFAULT '',
-                        `ch_datetime` datetime NOT NULL default '0000-00-00 00:00:00',
+                        `ch_datetime` datetime NULL DEFAULT NULL,
                         PRIMARY KEY (`ch_id`),
                         KEY `mb_id` (`mb_id`)
                     ) ", true);

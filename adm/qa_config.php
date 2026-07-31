@@ -75,7 +75,7 @@ if (!sql_query(" DESCRIBE `{$g5['qa_config_table']}` ", false)) {
                   `qa_file2` varchar(255) NOT NULL DEFAULT '',
                   `qa_source2` varchar(255) NOT NULL DEFAULT '',
                   `qa_ip` varchar(255) NOT NULL DEFAULT '',
-                  `qa_datetime` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+                  `qa_datetime` datetime NULL DEFAULT NULL,
                   `qa_1` varchar(255) NOT NULL DEFAULT '',
                   `qa_2` varchar(255) NOT NULL DEFAULT '',
                   `qa_3` varchar(255) NOT NULL DEFAULT '',

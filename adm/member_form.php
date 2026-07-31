@@ -199,7 +199,7 @@ if (isset($g5['member_cert_history_table']) && !sql_query(" DESC {$g5['member_ce
                     `ch_hp` varchar(255) NOT NULL DEFAULT '',
                     `ch_birth` varchar(255) NOT NULL DEFAULT '',
                     `ch_type` varchar(20) NOT NULL DEFAULT '',
-                    `ch_datetime` datetime NOT NULL default '0000-00-00 00:00:00',
+                    `ch_datetime` datetime NULL DEFAULT NULL,
                     PRIMARY KEY (`ch_id`),
                     KEY `mb_id` (`mb_id`)
                 ) ",
@@ -372,7 +372,7 @@ add_javascript(G5_POSTCODE_JS, 0);    //다음 주소 js
                         <input type="radio" name="mb_mailling" value="0" id="mb_mailling_no" <?php echo $mb_mailling_no; ?>>
                         <label for="mb_mailling_no">아니오</label>
                         
-                        <?php if($w == "u" && $mb['mb_mailling_date'] != "0000-00-00 00:00:00"){
+                        <?php if($w == "u" && !pro_empty_date($mb['mb_mailling_date'])){
                                 echo $mb['mb_mailling'] == 1 ? "<br>(동의 일자: ".$mb['mb_mailling_date'].")" : '';
                         } ?>
                     </td>
@@ -382,7 +382,7 @@ add_javascript(G5_POSTCODE_JS, 0);    //다음 주소 js
                         <label for="mb_sms_yes">예</label>
                         <input type="radio" name="mb_sms" value="0" id="mb_sms_no" <?php echo $mb_sms_no; ?>>
                         <label for="mb_sms_no">아니오</label>
-                        <?php if($w == "u" && $mb['mb_sms_date'] != "0000-00-00 00:00:00"){
+                        <?php if($w == "u" && !pro_empty_date($mb['mb_sms_date'])){
                                 echo $mb['mb_sms'] == 1 ? "<br>(동의 일자: ".$mb['mb_sms_date'].")" : '';
                         } ?>
                     </td>
@@ -395,7 +395,7 @@ add_javascript(G5_POSTCODE_JS, 0);    //다음 주소 js
                         <input type="radio" name="mb_marketing_agree" value="0" id="mb_marketing_agree_no" <?php echo $mb_marketing_agree_no; ?>>
                         <label for="mb_marketing_agree_no">아니오</label>
                         
-                        <?php if($w == "u" && $mb['mb_marketing_date'] != "0000-00-00 00:00:00"){
+                        <?php if($w == "u" && !pro_empty_date($mb['mb_marketing_date'])){
                                 echo $mb['mb_marketing_agree'] == 1 ? "<br>(동의 일자: ".$mb['mb_marketing_date'].")" : '';
                         } ?>
                     </td>
@@ -406,7 +406,7 @@ add_javascript(G5_POSTCODE_JS, 0);    //다음 주소 js
                         <input type="radio" name="mb_thirdparty_agree" value="0" id="mb_thirdparty_agree_no" <?php echo $mb_thirdparty_agree_no; ?>>
                         <label for="mb_thirdparty_agree_no">아니오</label>
                         
-                        <?php if($w == "u" && $mb['mb_thirdparty_date'] != "0000-00-00 00:00:00"){
+                        <?php if($w == "u" && !pro_empty_date($mb['mb_thirdparty_date'])){
                                 echo $mb['mb_thirdparty_agree'] == 1 ? "<br>(동의 일자: ".$mb['mb_thirdparty_date'].")" : '';
                         } ?>
                     </td>
@@ -430,7 +430,7 @@ add_javascript(G5_POSTCODE_JS, 0);    //다음 주소 js
                         <label for="mb_open_yes">예</label>
                         <input type="radio" name="mb_open" value="0" id="mb_open_no" <?php echo $mb_open_no; ?>>
                         <label for="mb_open_no">아니오</label>
-                        <?php if($w == "u" && $mb['mb_open_date'] != "0000-00-00 00:00:00"){
+                        <?php if($w == "u" && !pro_empty_date($mb['mb_open_date'])){
                                 echo $mb['mb_open'] == 1 ? "<br>(동의 일자: ".$mb['mb_open_date'].")" : '';
                         } ?>
                     </td>
@@ -497,7 +497,7 @@ add_javascript(G5_POSTCODE_JS, 0);    //다음 주소 js
                         <tr>
                             <th scope="row">인증일시</th>
                             <td colspan="3">
-                                <?php if ($mb['mb_email_certify'] == '0000-00-00 00:00:00') { ?>
+                                <?php if (pro_empty_date($mb['mb_email_certify'])) { ?>
                                     <?php echo help('회원님이 메일을 수신할 수 없는 경우 등에 직접 인증처리를 하실 수 있습니다.') ?>
                                     <input type="checkbox" name="passive_certify" id="passive_certify">
                                     <label for="passive_certify">수동인증</label>

@@ -161,7 +161,7 @@ $email_msg = $is_exists_email ? '등록할 이메일이 중복되었습니다.�
                 </div>
                 <input type="hidden" name="mb_marketing_agree_default" value="<?php echo $member['mb_marketing_agree'] ?>">
                 <div id="desc_marketing" class="sound_only">마케팅 목적의 개인정보 수집·이용에 대한 안내입니다. 자세히보기를 눌러 전문을 확인할 수 있습니다.</div>
-                <?php if ($member['mb_marketing_agree'] == 1 && $member['mb_marketing_date'] != "0000-00-00 00:00:00") echo "<br>(동의일자: ".$member['mb_marketing_date'].")"; ?>
+                <?php if ($member['mb_marketing_agree'] == 1 && !pro_empty_date($member['mb_marketing_date'])) echo "<br>(동의일자: ".$member['mb_marketing_date'].")"; ?>
 
                 <template id="tpl_marketing">
                     * 목적: 서비스 마케팅 및 프로모션<br>
@@ -189,7 +189,7 @@ $email_msg = $is_exists_email ? '등록할 이메일이 중복되었습니다.�
                         <label for="reg_mb_mailling"><span></span><b class="sound_only">광고성 이메일 수신 동의</b></label>
                         <span class="chk_li">광고성 이메일 수신 동의</span>
                         <input type="hidden" name="mb_mailling_default" value="<?php echo $member['mb_mailling']; ?>">
-                        <?php if ($w == 'u' && $member['mb_mailling'] == 1 && $member['mb_mailling_date'] != "0000-00-00 00:00:00") echo "<br>(동의일자: ".$member['mb_mailling_date'].")"; ?>
+                        <?php if ($w == 'u' && $member['mb_mailling'] == 1 && !pro_empty_date($member['mb_mailling_date'])) echo "<br>(동의일자: ".$member['mb_mailling_date'].")"; ?>
                     </li>
 
 					<!-- 휴대폰번호 입력 보이기 or 필수입력일 경우에만 -->
@@ -199,7 +199,7 @@ $email_msg = $is_exists_email ? '등록할 이메일이 중복되었습니다.�
                         <label for="reg_mb_sms"><span></span><b class="sound_only">광고성 SMS/카카오톡 수신 동의</b></label>
                         <span class="chk_li">광고성 SMS/카카오톡 수신 동의</span>
                         <input type="hidden" name="mb_sms_default" value="<?php echo $member['mb_sms']; ?>">
-                        <?php if ($w == 'u' && $member['mb_sms'] == 1 && $member['mb_sms_date'] != "0000-00-00 00:00:00") echo "<br>(동의일자: ".$member['mb_sms_date'].")"; ?>
+                        <?php if ($w == 'u' && $member['mb_sms'] == 1 && !pro_empty_date($member['mb_sms_date'])) echo "<br>(동의일자: ".$member['mb_sms_date'].")"; ?>
                     </li>
 					<?php } ?>
                 </ul>
@@ -233,7 +233,7 @@ $email_msg = $is_exists_email ? '등록할 이메일이 중복되었습니다.�
                 </div>
                 <input type="hidden" name="mb_thirdparty_agree_default" value="<?php echo $member['mb_thirdparty_agree'] ?>">
                 <div id="desc_thirdparty" class="sound_only">개인정보 제3자 제공 동의에 대한 안내입니다. 자세히보기를 눌러 전문을 확인할 수 있습니다.</div>
-                <?php if ($member['mb_thirdparty_agree'] == 1 && $member['mb_thirdparty_date'] != "0000-00-00 00:00:00") echo "<br>(동의일자: ".$member['mb_thirdparty_date'].")"; ?>
+                <?php if ($member['mb_thirdparty_agree'] == 1 && !pro_empty_date($member['mb_thirdparty_date'])) echo "<br>(동의일자: ".$member['mb_thirdparty_date'].")"; ?>
 
                 <template id="tpl_thirdparty">
                     * 목적: 상품/서비스, 사은/판촉행사, 이벤트 등의 마케팅 안내(카카오톡 등)<br>

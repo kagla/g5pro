@@ -383,11 +383,11 @@ else if ($od_settle_case == "가상계좌")
     switch($default['de_pg_service']) {
         case 'lg':
             include G5_SHOP_PATH.'/lg/xpay_result.php';
-            $od_receipt_time = '0000-00-00 00:00:00';
+            $od_receipt_time = null;
             break;
         case 'toss':
             include G5_SHOP_PATH.'/toss/toss_result.php';
-            $od_receipt_time = '0000-00-00 00:00:00';
+            $od_receipt_time = null;
             break;
         case 'inicis':
             if (!empty($_POST['inicis_pro']))
@@ -636,7 +636,7 @@ $sql = " insert {$g5['g5_shop_order_table']}
                 od_receipt_price  = '$od_receipt_price',
                 od_receipt_point  = '$od_receipt_point',
                 od_bank_account   = '$od_bank_account',
-                od_receipt_time   = '$od_receipt_time',
+                od_receipt_time   = ".pro_sql_date($od_receipt_time).",
                 od_misu           = '$od_misu',
                 od_pg             = '$od_pg',
                 od_tno            = '$od_tno',
@@ -648,7 +648,7 @@ $sql = " insert {$g5['g5_shop_order_table']}
                 od_free_mny       = '$od_free_mny',
                 od_status         = '$od_status',
                 od_shop_memo      = '',
-                od_hope_date      = '$od_hope_date',
+                od_hope_date      = ".pro_sql_date($od_hope_date).",
                 od_time           = '".G5_TIME_YMDHIS."',
                 od_ip             = '$REMOTE_ADDR',
                 od_settle_case    = '$od_settle_case',

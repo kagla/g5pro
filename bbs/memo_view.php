@@ -16,7 +16,7 @@ if ($kind == 'recv')
                 set me_read_datetime = '".G5_TIME_YMDHIS."'
                 where (me_id = '$me_id' or me_send_id = '$me_id' )
                 and me_recv_mb_id = '{$member['mb_id']}'
-                and me_read_datetime = '0000-00-00 00:00:00' ";
+                and (me_read_datetime is null or me_read_datetime = '0000-00-00 00:00:00') ";
     sql_query($sql);
 
     $sql = " update `{$g5['member_table']}` set mb_memo_cnt = '".get_memo_not_read($member['mb_id'])."' where mb_id = '{$member['mb_id']}' ";

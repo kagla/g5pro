@@ -144,7 +144,7 @@ if(!sql_query(" select mb_id from {$g5['g5_shop_order_delete_table']} limit 1 ",
     sql_query(" ALTER TABLE `{$g5['g5_shop_order_delete_table']}`
                     ADD `mb_id` varchar(20) NOT NULL DEFAULT '' AFTER `de_data`,
                     ADD `de_ip` varchar(255) NOT NULL DEFAULT '' AFTER `mb_id`,
-                    ADD `de_datetime` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `de_ip` ", true);
+                    ADD `de_datetime` datetime NULL DEFAULT NULL AFTER `de_ip` ", true);
 }
 
 if( function_exists('pg_setting_check') ){

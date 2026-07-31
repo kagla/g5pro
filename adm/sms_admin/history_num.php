@@ -94,7 +94,7 @@ include_once(G5_ADMIN_PATH.'/admin.head.php');
         <td class="td_mbid"><?php echo $mb_id; ?></td>
         <td class="td_numbig"><?php echo $res['hs_hp']; ?></td>
         <td class="td_datetime"><?php echo date('Y-m-d H:i', strtotime($write['wr_datetime']))?></td>
-        <td class="td_boolean"><?php echo $write['wr_booking']!='0000-00-00 00:00:00'?"<span title='{$write['wr_booking']}'>예약</span>":'';?></td>
+        <td class="td_boolean"><?php echo !pro_empty_date($write['wr_booking'])?"<span title='{$write['wr_booking']}'>예약</span>":'';?></td>
         <td class="td_boolean"><?php echo $res['hs_flag']?'성공':'실패'?></td>
         <td class="td_left"><span title="<?php echo $write['wr_message']?>"><?php echo $write['wr_message']?></span></td>
         <td class="td_mng td_mng_s">

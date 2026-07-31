@@ -260,8 +260,8 @@ function member_export_build_where($params)
                     $emailDateCond = "mb_mailling_date <= '{$date_end} 23:59:59'";
                     $smsDateCond   = "mb_sms_date <= '{$date_end} 23:59:59'";
                 } else {
-                    $emailDateCond = "mb_mailling_date <> '0000-00-00 00:00:00'";
-                    $smsDateCond   = "mb_sms_date <> '0000-00-00 00:00:00'";
+                    $emailDateCond = "mb_mailling_date is not null and mb_mailling_date <> '0000-00-00 00:00:00'";
+                    $smsDateCond   = "mb_sms_date is not null and mb_sms_date <> '0000-00-00 00:00:00'";
                 }
             }
             

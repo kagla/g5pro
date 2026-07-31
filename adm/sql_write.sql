@@ -23,7 +23,7 @@ CREATE TABLE `__TABLE_NAME__` (
   `wr_name` varchar(255) NOT NULL,
   `wr_email` varchar(255) NOT NULL,
   `wr_homepage` varchar(255) NOT NULL,
-  `wr_datetime` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `wr_datetime` datetime NULL DEFAULT NULL,
   `wr_file` tinyint(4) NOT NULL DEFAULT '0',
   `wr_last` varchar(19) NOT NULL,
   `wr_ip` varchar(255) NOT NULL,

@@ -50,7 +50,7 @@ $spage_start = $spage_size * ( $spage - 1 );
 $vnum = $total_count - (($spage-1) * $spage_size);
 
 $write = sql_fetch("select * from {$g5['sms5_write_table']} where wr_no='$wr_no' $sql_renum");
-if ($write['wr_booking'] == '0000-00-00 00:00:00')
+if (pro_empty_date($write['wr_booking']))
     $write['wr_booking'] = '즉시전송';
 
 include_once(G5_ADMIN_PATH.'/admin.head.php');
