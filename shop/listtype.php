@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 // 상품 리스트에서 다른 필드로 정렬을 하려면 아래의 배열 코드에서 해당 필드를 추가하세요.
 $sort = (isset($_REQUEST['sort']) && in_array($_REQUEST['sort'], array('it_name', 'it_sum_qty', 'it_price', 'it_use_avg', 'it_use_cnt', 'it_update_time'))) ? $_REQUEST['sort'] : '';
@@ -44,7 +44,7 @@ else
 define('G5_SHOP_CSS_URL', G5_SHOP_SKIN_URL);
 
 // 리스트 유형별로 출력
-// g5blade: 목록 HTML 은 스킨이 아니라 blade 뷰가 만든다. g5_shop_items() 가 스킨 자리에
+// g5pro: 목록 HTML 은 스킨이 아니라 blade 뷰가 만든다. g5_shop_items() 가 스킨 자리에
 // 데이터 수집기를 끼우므로 위 $skin 파일 유무와 무관하게 상품유형 쿼리만 순정에서 가져온다.
 $list_file = G5_SHOP_SKIN_PATH.'/'.$skin;
 
@@ -71,12 +71,12 @@ $list->set_view('it_cust_price', false);
 $list->set_view('it_price', true);
 $list->set_view('it_icon', true);
 $list->set_view('sns', true);
-$g5_blade_items = g5_shop_items($list); // g5blade: 출력 대신 데이터 수집
+$g5_pro_items = g5_shop_items($list); // g5pro: 출력 대신 데이터 수집
 
 // where 된 전체 상품수
 $total_count = $list->total_count;
 // 전체 페이지 계산
 $total_page  = ceil($total_count / $items);
 
-g5_map_shop_listtype($g5_blade_items, $type, $total_count, $page, $total_page, $sort, $sortodr); // g5blade
+g5_map_shop_listtype($g5_pro_items, $type, $total_count, $page, $total_page, $sort, $sortodr); // g5pro
 return;

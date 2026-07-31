@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 $g5['title'] = '전체검색 결과';
 include_once('./_head.php');
@@ -239,6 +239,6 @@ $group_select .= '</select>';
 if (!$sfl) $sfl = 'wr_subject';
 if (!$sop) $sop = 'or';
 
-g5_map_search(); // g5blade
+g5_map_search(); // g5pro
 
 include_once('./_tail.php');

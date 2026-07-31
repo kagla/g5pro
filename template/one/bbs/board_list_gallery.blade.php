@@ -1,4 +1,4 @@
-{{-- 목록 변형 4 · 갤러리 그리드 (bo_skin='blade_gallery') — 사진 게시판용 --}}
+{{-- 목록 변형 4 · 갤러리 그리드 (bo_skin='pro_gallery') — 사진 게시판용 --}}
 @extends('layout.bbs')
 @section('bbs_content')
 @include('partials.bbs_head')

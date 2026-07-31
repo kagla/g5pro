@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면 (재입고 알림 팝업)
+define('G5_PRO_PAGE', true); // g5pro 직통 화면 (재입고 알림 팝업)
 
 $it_id = isset($_REQUEST['it_id']) ? safe_replace_regex($_REQUEST['it_id'], 'it_id') : '';
 
@@ -16,6 +16,6 @@ if(! (isset($it['it_id']) && $it['it_id']))
 if(!$it['it_soldout'] || !$it['it_stock_sms'])
     alert_close('재입고SMS 알림을 신청할 수 없는 상품입니다.');
 
-g5_map_shop_itemstocksms($it, $member['mb_hp'], get_text($config['cf_privacy'])); // g5blade
+g5_map_shop_itemstocksms($it, $member['mb_hp'], get_text($config['cf_privacy'])); // g5pro
 
 include_once(G5_PATH.'/tail.sub.php');

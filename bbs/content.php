@@ -26,7 +26,7 @@ if (G5_IS_MOBILE) {
     return;
 }
 
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 if (! (isset($co['co_id']) && $co['co_id']))
     alert('등록된 내용이 없습니다.');
@@ -74,7 +74,7 @@ if(isset($default) && isset($default['de_admin_company_name'])){
 }
 $str = preg_replace($src, $dst, $str);
 
-g5_map_content($str); // g5blade — 스킨 include 대신 직통 매핑 (상·하단 이미지, 관리자 버튼 포함)
+g5_map_content($str); // g5pro — 스킨 include 대신 직통 매핑 (상·하단 이미지, 관리자 버튼 포함)
 
 if ($co['co_include_tail'] && is_include_path_check($co['co_include_tail']))
     @include_once($co['co_include_tail']);

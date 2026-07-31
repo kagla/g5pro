@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 if ($is_guest)
     alert('로그인 한 회원만 접근하실 수 있습니다.', G5_BBS_URL.'/login.php');
@@ -38,6 +38,6 @@ if($url){
 
 $url = get_text($url);
 
-g5_map_member_confirm(); // g5blade
+g5_map_member_confirm(); // g5pro
 
 include_once('./_tail.sub.php');

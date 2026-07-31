@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 $sw = isset($_REQUEST['sw']) ? clean_xss_tags($_REQUEST['sw'], 1, 1) : '';
 

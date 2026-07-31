@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 include_once(G5_EDITOR_LIB);
 include_once(G5_CAPTCHA_PATH.'/captcha.lib.php');
 
@@ -441,7 +441,7 @@ include_once('./board_head.php');
 $action_url = https_url(G5_BBS_DIR)."/write_update.php";
 
 echo '<!-- skin : '.(G5_IS_MOBILE ? $board['bo_mobile_skin'] : $board['bo_skin']).' -->';
-g5_map_board_write(); // g5blade
+g5_map_board_write(); // g5pro
 
 include_once('./board_tail.php');
 @include_once ($board_skin_path.'/write.tail.skin.php');

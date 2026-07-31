@@ -15,7 +15,7 @@ if (G5_IS_MOBILE) {
     return;
 }
 
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 if(!$is_admin && $group['gr_device'] == 'mobile')
     alert($group['gr_subject'].' 그룹은 모바일에서만 접근할 수 있습니다.');
@@ -38,6 +38,6 @@ while ($row = sql_fetch_array($result)) {
     $boards[] = $row;
 }
 
-g5_map_group($boards); // g5blade
+g5_map_group($boards); // g5pro
 
 include_once('./_tail.php');

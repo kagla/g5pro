@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면 (이미지 뷰어 팝업)
+define('G5_PRO_PAGE', true); // g5pro 직통 화면 (이미지 뷰어 팝업)
 
 $g5['title'] = '이미지 크게보기';
 include_once(G5_PATH.'/head.sub.php');
@@ -50,7 +50,7 @@ if($file_exists = run_replace('exists_view_image', $file_exists, $filepath, $edi
     alert_close('파일이 존재하지 않습니다.');
 }
 
-g5_blade_capture_start(); // g5blade — 아래 순정 출력을 잡는다
+g5_pro_capture_start(); // g5pro — 아래 순정 출력을 잡는다
 ?>
 
 <div class="bbs-view-image"><?php echo $img ?></div>
@@ -154,7 +154,7 @@ $.fn.imgLoad = function(callback) {
 </script>
 
 <?php
-g5_blade_capture_end('view_image');
-g5_map_view_image(g5_blade_captured('view_image')); // g5blade
+g5_pro_capture_end('view_image');
+g5_map_view_image(g5_pro_captured('view_image')); // g5pro
 
 include_once(G5_PATH.'/tail.sub.php');

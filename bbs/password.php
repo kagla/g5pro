@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 $g5['title'] = '비밀번호 입력';
 
@@ -60,7 +60,7 @@ if (isset($write['wr_num'])) {
     $g5['title'] = get_text((string)$row['wr_subject']);
 }
 
-g5_map_board_password($action, $w, $comment_id); // g5blade — 스킨 대신 직통 매핑
+g5_map_board_password($action, $w, $comment_id); // g5pro — 스킨 대신 직통 매핑
 
 //if ($board['bo_content_tail']) { echo html_purifier(stripslashes($board['bo_content_tail'])); }
 //if ($board['bo_include_tail'] && is_include_path_check($board['bo_content_tail'])) { @include ($board['bo_include_tail']); }

@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 // add_javascript('js 구문', 출력순서); 숫자가 작을 수록 먼저 출력됨
 add_javascript(G5_POSTCODE_JS, 0);    //다음 주소 js
@@ -51,14 +51,14 @@ if ($default['de_hope_date_use']) {
 }
 
 // 기기별 주문폼 include
-// g5blade: 템플릿이 한 벌의 반응형이라 기기별 주문서로 갈라지지 않는다.
+// g5pro: 템플릿이 한 벌의 반응형이라 기기별 주문서로 갈라지지 않는다.
 // (기기 판별값 $is_mobile_order 자체는 PG 쪽에서 쓰므로 그대로 둔다)
-if($is_mobile_order && !defined('G5_BLADE_PAGE')) {
+if($is_mobile_order && !defined('G5_PRO_PAGE')) {
     $order_action_url = G5_HTTPS_MSHOP_URL.'/orderformupdate.php';
     require_once(G5_MSHOP_PATH.'/orderform.sub.php');
 } else {
     $order_action_url = G5_HTTPS_SHOP_URL.'/orderformupdate.php';
-    if (function_exists('g5_map_shop_orderform')) {   // g5blade
+    if (function_exists('g5_map_shop_orderform')) {   // g5pro
         ob_start();
         require_once(G5_SHOP_PATH.'/orderform.sub.php');
         g5_map_shop_orderform(ob_get_clean());

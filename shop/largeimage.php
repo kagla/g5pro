@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면 (이미지 팝업)
+define('G5_PRO_PAGE', true); // g5pro 직통 화면 (이미지 팝업)
 
 $it_id = isset($_GET['it_id']) ? get_search_string(trim($_GET['it_id'])) : '';
 $no = (isset($_GET['no']) && $_GET['no']) ? (int) $_GET['no'] : 1;
@@ -24,13 +24,13 @@ include_once(G5_PATH.'/head.sub.php');
 
 $skin = G5_SHOP_SKIN_PATH.'/largeimage.skin.php';
 
-// g5blade — 순정 스킨 출력을 잡아 팝업 문서 안에 담는다 (썸네일·창크기 스크립트가 스킨에 있다)
-g5_blade_capture_start();
+// g5pro — 순정 스킨 출력을 잡아 팝업 문서 안에 담는다 (썸네일·창크기 스크립트가 스킨에 있다)
+g5_pro_capture_start();
 if(is_file($skin))
     include_once($skin);
 else
     echo '<p>'.str_replace(G5_PATH.'/', '', $skin).'파일이 존재하지 않습니다.</p>';
-g5_blade_capture_end('largeimage');
-g5_map_shop_largeimage(g5_blade_captured('largeimage'));
+g5_pro_capture_end('largeimage');
+g5_map_shop_largeimage(g5_pro_captured('largeimage'));
 
 include_once(G5_PATH.'/tail.sub.php');

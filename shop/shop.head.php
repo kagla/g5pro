@@ -1,6 +1,6 @@
 <?php
 if (!defined("_GNUBOARD_")) exit; // 개별 페이지 접근 불가
-if (function_exists('blade_takeover') && blade_takeover()) { g5_blade_buffer_start(); return; } // g5blade
+if (function_exists('pro_takeover') && pro_takeover()) { g5_pro_buffer_start(); return; } // g5pro
 
 $q = isset($_GET['q']) ? clean_xss_tags($_GET['q'], 1, 1) : '';
 

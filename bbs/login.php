@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 if( function_exists('social_check_login_before') ){
     $social_login_html = social_check_login_before();
@@ -30,7 +30,7 @@ $login_file = $member_skin_path.'/login.skin.php';
 if (!file_exists($login_file))
     $member_skin_path   = G5_SKIN_PATH.'/member/basic';
 
-g5_map_login(); // g5blade
+g5_map_login(); // g5pro
 
 run_event('member_login_tail', $login_url, $login_action_url, $member_skin_path, $url);
 

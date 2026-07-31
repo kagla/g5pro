@@ -1,9 +1,9 @@
 <?php
 include_once('./_common.php');
 
-// g5blade 직통 화면. 관리자 화면은 이 프로젝트 범위 밖이라 순정 그대로 둔다.
-if (!defined('G5_IS_ADMIN') && !defined('G5_BLADE_PAGE'))
-    define('G5_BLADE_PAGE', true);
+// g5pro 직통 화면. 관리자 화면은 이 프로젝트 범위 밖이라 순정 그대로 둔다.
+if (!defined('G5_IS_ADMIN') && !defined('G5_PRO_PAGE'))
+    define('G5_PRO_PAGE', true);
 
 include_once(G5_PATH.'/head.sub.php');
 
@@ -31,14 +31,14 @@ check_url_host($url1);
 check_url_host($url2);
 check_url_host($url3);
 
-// g5blade — confirm 스크립트는 순정과 같고, 감싸는 화면만 blade 로 그린다
-if (blade_takeover()) {
+// g5pro — confirm 스크립트는 순정과 같고, 감싸는 화면만 blade 로 그린다
+if (pro_takeover()) {
 
-    $blade_script = 'var conf = '.$js_confirm_msg.";\n"
+    $pro_script = 'var conf = '.$js_confirm_msg.";\n"
                   . "if (confirm(conf)) {\n    document.location.replace(".$js_url1.");\n"
                   . "} else {\n    document.location.replace(".$js_url2.");\n}";
 
-    g5_map_confirm($blade_script, nl2br(get_text(strip_tags($msg))), get_text(strip_tags($header)), $url1, $url2, $url3);
+    g5_map_confirm($pro_script, nl2br(get_text(strip_tags($msg))), get_text(strip_tags($header)), $url1, $url2, $url3);
 
 } else {
 ?>
@@ -71,6 +71,6 @@ if (confirm(conf)) {
 </noscript>
 
 <?php
-} // g5blade — 순정 출력 끝
+} // g5pro — 순정 출력 끝
 
 include_once(G5_PATH.'/tail.sub.php');

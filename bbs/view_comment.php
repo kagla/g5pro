@@ -124,7 +124,7 @@ else
 $comment_action_url = https_url(G5_BBS_DIR)."/write_comment_update.php";
 $comment_common_url = short_url_clean(G5_BBS_URL.'/board.php?'.clean_query_string($_SERVER['QUERY_STRING']));
 
-$g5_blade_comments = g5_map_view_comment($list); // g5blade
+$g5_pro_comments = g5_map_view_comment($list); // g5pro
 
 if (!$member['mb_id']) // 비회원일 경우에만
     echo '<script src="'.G5_JS_URL.'/md5.js"></script>'."\n";

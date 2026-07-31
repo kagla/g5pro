@@ -52,9 +52,9 @@ if(defined('G5_THEME_SHOP_PATH')) {
 }
 
 $g5['title'] = '주문상세내역';
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 include_once('./_head.php');
-if (function_exists('g5_map_shop_orderview')) ob_start(); // g5blade: 아래 출력을 뷰로 넘긴다
+if (function_exists('g5_map_shop_orderview')) ob_start(); // g5pro: 아래 출력을 뷰로 넘긴다
 
 // LG 현금영수증 JS
 if($od['od_pg'] == 'lg') {
@@ -780,7 +780,7 @@ function fcancel_check(f)
 </script>
 
 <?php
-// g5blade — 결제·취소 폼과 JS 가 얽혀 있어 순정 출력을 그대로 뷰에 담는다
+// g5pro — 결제·취소 폼과 JS 가 얽혀 있어 순정 출력을 그대로 뷰에 담는다
 if (function_exists('g5_map_shop_orderview')) { g5_map_shop_orderview(ob_get_clean()); return; }
 
 include_once('./_tail.php');

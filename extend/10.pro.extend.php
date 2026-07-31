@@ -1,16 +1,16 @@
 <?php
 /**
- * g5blade 런타임 — BladeOne 로드, g5_view()/blade_takeover() 정의
- * 설계: docs/superpowers/specs/2026-07-29-g5blade-design.md
+ * g5pro 런타임 — BladeOne 로드, g5_view()/pro_takeover() 정의
+ * 설계: docs/superpowers/specs/2026-07-29-g5pro-design.md
  *
  * ── extend/ 로드 순서 (common.php:836~853) ──
  * 순정 common.php 는 extend/ 안의 *.php 를 natsort(파일명 자연순)로 정렬해
  * 차례로 include_once 한다. 하위 폴더는 훑지 않는다.
  * 파일명 앞의 숫자가 그 순서를 눈에 보이게 고정한 것이다:
  *
- *   blade.10.extend.php           ← 이 파일. 런타임. 반드시 첫째
- *   blade.20.map.extend.php       기본 화면 매핑 (bbs·회원)
- *   blade.30.map.shop.extend.php  쇼핑몰 화면 매핑
+ *   10.pro.extend.php           ← 이 파일. 런타임. 반드시 첫째
+ *   20.pro.map.extend.php       기본 화면 매핑 (bbs·회원)
+ *   30.pro.map.shop.extend.php  쇼핑몰 화면 매핑
  *   (그 뒤로 순정 확장들: debugbar·default.config·shop.extend·social_login …)
  *
  * 10번이 첫째여야 하는 이유는 이 파일에만 **최상위 실행 코드**가 있기 때문이다 —
@@ -18,11 +18,12 @@
  * 20·30번은 함수 정의뿐이라 서로 순서 의존이 없다(호출 시점에만 실행된다).
  * 번호는 10씩 띄웠으니 사이에 끼울 것이 생기면 15 처럼 넣으면 된다.
  *
- * 주의: 숫자 없는 파일은 자연순에서 숫자 뒤로 가므로(blade.map… 이 blade.10… 뒤),
- * blade 계열에 최상위 실행 코드를 새로 넣을 때는 반드시 번호를 붙인다.
+ * 숫자를 파일명 맨 앞에 둔 것은 자연순에서 숫자가 글자보다 먼저 오기 때문이다.
+ * 순정 확장이 무슨 이름으로 들어오든 pro 계열이 항상 앞선다.
+ * 새로 추가할 때도 반드시 앞자리 번호를 붙인다 — 번호 없는 파일은 글자 취급이라 뒤로 밀린다.
  *
  * extend/parts/ 는 로더가 건드리지 않는 자리다. 요청 시작 시점에 실행돼선 안 되고
- * 다른 코드가 필요할 때 직접 include 하는 조각(예: blade.shop_items.php 데이터 수집기)을 둔다.
+ * 다른 코드가 필요할 때 직접 include 하는 조각(예: pro.shop_items.php 데이터 수집기)을 둔다.
  */
 if (!defined('_GNUBOARD_')) exit;
 
@@ -34,25 +35,25 @@ if (!defined('G5_TEMPLATE')) {
         sql_query(" ALTER TABLE `{$g5['config_table']}` ADD COLUMN cf_template varchar(100) NOT NULL DEFAULT 'one' ", false);
         $config['cf_template'] = 'one';
     }
-    $g5_blade_tpl = trim($config['cf_template']);
-    if (!$g5_blade_tpl || !is_dir(G5_PATH.'/template/'.$g5_blade_tpl)) $g5_blade_tpl = 'one';
-    define('G5_TEMPLATE', $g5_blade_tpl);
-    unset($g5_blade_tpl);
+    $g5_pro_tpl = trim($config['cf_template']);
+    if (!$g5_pro_tpl || !is_dir(G5_PATH.'/template/'.$g5_pro_tpl)) $g5_pro_tpl = 'one';
+    define('G5_TEMPLATE', $g5_pro_tpl);
+    unset($g5_pro_tpl);
 }
 
 require_once G5_PATH.'/lib/bladeone/BladeOne.php';
 
-function g5_blade()
+function g5_pro()
 {
     static $blade = null;
     if ($blade === null) {
         $views = G5_PATH.'/template/'.G5_TEMPLATE;
-        $cache = G5_DATA_PATH.'/cache/blade/'.G5_TEMPLATE;
+        $cache = G5_DATA_PATH.'/cache/pro/'.G5_TEMPLATE;
         if (!is_dir($cache)) {
             @mkdir($cache, G5_DIR_PERMISSION, true);
             @chmod($cache, G5_DIR_PERMISSION);
         }
-        $mode = (defined('G5_BLADE_DEBUG') && G5_BLADE_DEBUG)
+        $mode = (defined('G5_PRO_DEBUG') && G5_PRO_DEBUG)
             ? \eftec\bladeone\BladeOne::MODE_DEBUG
             : \eftec\bladeone\BladeOne::MODE_AUTO;
         $blade = new \eftec\bladeone\BladeOne($views, $cache, $mode);
@@ -61,14 +62,14 @@ function g5_blade()
 }
 
 // 현재 요청이 blade 로 렌더되는가 — head/tail 가드가 호출
-// 변환된 순정 화면이 상단에서 define('G5_BLADE_PAGE', true) 로 스스로 선언한다 (직통 방식)
-function blade_takeover()
+// 변환된 순정 화면이 상단에서 define('G5_PRO_PAGE', true) 로 스스로 선언한다 (직통 방식)
+function pro_takeover()
 {
-    return defined('G5_BLADE_PAGE') && G5_BLADE_PAGE;
+    return defined('G5_PRO_PAGE') && G5_PRO_PAGE;
 }
 
 // 모든 뷰 공통 데이터 (설계 §7)
-function g5_blade_common()
+function g5_pro_common()
 {
     global $config, $member, $g5;
 
@@ -84,15 +85,15 @@ function g5_blade_common()
             'mb_level' => $member['mb_level'],
             'mb_point' => (int)$member['mb_point'],
             'memo_cnt' => (int)(isset($member['mb_memo_cnt']) ? $member['mb_memo_cnt'] : 0),  // 안 읽은 쪽지
-            'photo'    => g5_blade_profile_src($member['mb_id']),
+            'photo'    => g5_pro_profile_src($member['mb_id']),
         ) : null,
-        'menu'   => g5_blade_menu(),
-        'areas'  => g5_blade_areas(),
-        'cart'   => g5_blade_cart(),
+        'menu'   => g5_pro_menu(),
+        'areas'  => g5_pro_areas(),
+        'cart'   => g5_pro_cart(),
         'title'  => (isset($g5['title']) && $g5['title']) ? $g5['title'] : (isset($config['cf_title']) ? $config['cf_title'] : ''),
-        'popups' => g5_blade_popups(),
+        'popups' => g5_pro_popups(),
         // 순정 add_stylesheet()/add_javascript() 큐 — 레이아웃 <head> 에서 그대로 내보낸다
-        'page_assets' => g5_blade_page_assets(),
+        'page_assets' => g5_pro_page_assets(),
         'template' => array(
             'name'   => G5_TEMPLATE,
             'url'    => G5_URL.'/template/'.G5_TEMPLATE,
@@ -103,38 +104,38 @@ function g5_blade_common()
 
 // 쇼핑몰처럼 head 이후에도 순정 스킨이 직접 echo 하는 화면에서, 그 잔여 출력을 버린다.
 // shop.head.php 가드가 버퍼를 열고 g5_view() 가 렌더 직전에 버린다.
-function g5_blade_buffer_start()
+function g5_pro_buffer_start()
 {
     ob_start();
-    $GLOBALS['g5_blade_ob'] = true;
+    $GLOBALS['g5_pro_ob'] = true;
 }
-function g5_blade_buffer_drop()
+function g5_pro_buffer_drop()
 {
-    if (!empty($GLOBALS['g5_blade_ob'])) {
+    if (!empty($GLOBALS['g5_pro_ob'])) {
         ob_end_clean();
-        $GLOBALS['g5_blade_ob'] = false;
+        $GLOBALS['g5_pro_ob'] = false;
     }
 }
 
 // 게시판 상단·하단 내용(bo_content_head/tail, 포함 파일)을 잡아 뷰로 넘긴다.
 // 순정은 스킨 앞뒤로 그대로 흘려보내지만 blade 는 <!DOCTYPE> 보다 먼저 나가면 안 된다.
-function g5_blade_capture_start()
+function g5_pro_capture_start()
 {
     ob_start();
 }
-function g5_blade_capture_end($key)
+function g5_pro_capture_end($key)
 {
-    $GLOBALS['g5_blade_cap_'.$key] = trim(ob_get_clean());
+    $GLOBALS['g5_pro_cap_'.$key] = trim(ob_get_clean());
 }
-function g5_blade_captured($key)
+function g5_pro_captured($key)
 {
-    return isset($GLOBALS['g5_blade_cap_'.$key]) ? $GLOBALS['g5_blade_cap_'.$key] : '';
+    return isset($GLOBALS['g5_pro_cap_'.$key]) ? $GLOBALS['g5_pro_cap_'.$key] : '';
 }
 
 // 순정은 add_stylesheet()/add_javascript() 로 모아 둔 것을 tail.sub.php 의 html_end() 가
 // <head> 에 끼워 넣는다. blade 화면은 tail.sub 를 타지 않으므로 여기서 직접 꺼내 쓴다.
 // (주문서의 카카오 우편번호 postcode.v2.js, 재고체크 shop.order.js 등이 이 큐에 있다)
-class g5_blade_assets extends html_process
+class g5_pro_assets extends html_process
 {
     public static function collect()
     {
@@ -155,9 +156,9 @@ class g5_blade_assets extends html_process
     }
 }
 
-function g5_blade_page_assets()
+function g5_pro_page_assets()
 {
-    return class_exists('html_process') ? g5_blade_assets::collect() : '';
+    return class_exists('html_process') ? g5_pro_assets::collect() : '';
 }
 
 function g5_view($view, $data = array())
@@ -168,9 +169,9 @@ function g5_view($view, $data = array())
     if ($rendered) return;
     $rendered = true;
 
-    g5_blade_buffer_drop();
-    g5_blade_connect();
-    echo g5_blade()->run($view, array_merge(g5_blade_common(), $data));
+    g5_pro_buffer_drop();
+    g5_pro_connect();
+    echo g5_pro()->run($view, array_merge(g5_pro_common(), $data));
 }
 
 // 알림·확인 화면(alert·alert_close·confirm) 전용 — "한 요청에 화면 하나" 규칙에서 뺀다.
@@ -179,13 +180,13 @@ function g5_view($view, $data = array())
 // 이미 렌더된 요청에서 통째로 삼켜져 알림도 이동도 없이 끝난다.
 function g5_view_message($view, $data = array())
 {
-    g5_blade_buffer_drop();
-    echo g5_blade()->run($view, array_merge(g5_blade_common(), $data));
+    g5_pro_buffer_drop();
+    echo g5_pro()->run($view, array_merge(g5_pro_common(), $data));
 }
 
 // 현재접속자 기록 — 순정은 tail.sub.php 의 html_end()(html_process::run)가 수행하지만
 // blade 화면은 tail.sub 를 타지 않으므로 해당 블록을 이식 (lib/common.lib.php:3300)
-function g5_blade_connect()
+function g5_pro_connect()
 {
     global $config, $g5, $member;
     static $done = false;
@@ -206,7 +207,7 @@ function g5_blade_connect()
 }
 
 // GNB 메뉴 트리 (me_code 2자리=1단, 4자리=2단)
-function g5_blade_menu()
+function g5_pro_menu()
 {
     global $g5;
     $menu = array();
@@ -237,11 +238,11 @@ function g5_blade_menu()
     foreach ($menu as $code => $m) {
         $section = false;
         foreach ($m['sub'] as $i => $sub) {
-            $sub_on = g5_blade_menu_is_current($sub['link']);
+            $sub_on = g5_pro_menu_is_current($sub['link']);
             $menu[$code]['sub'][$i]['on'] = $sub_on;
             if ($sub_on) $section = true;
         }
-        $menu[$code]['on'] = g5_blade_menu_is_current($m['link']);
+        $menu[$code]['on'] = g5_pro_menu_is_current($m['link']);
         $menu[$code]['section'] = $section && !$menu[$code]['on'];
     }
 
@@ -250,7 +251,7 @@ function g5_blade_menu()
 
 // 메뉴 링크가 지금 보고 있는 화면인가.
 // 게시판은 글읽기·글쓰기까지 같은 메뉴로 보고(bo_table 일치), 그 밖에는 경로+주요 파라미터로 판정한다.
-function g5_blade_menu_is_current($link)
+function g5_pro_menu_is_current($link)
 {
     if (!$link) return false;
 
@@ -283,7 +284,7 @@ function g5_blade_menu_is_current($link)
 }
 
 // 레이어팝업 (head 스킵으로 누락되는 newwin.inc.php 이식)
-function g5_blade_popups()
+function g5_pro_popups()
 {
     global $g5;
     if (defined('G5_IS_ADMIN')) return array();
@@ -331,7 +332,7 @@ function g5_latest_rows($bo_table, $rows = 6, $subject_len = 40)
 }
 
 // 메인 히어로용 사이트 통계 (가벼운 집계 3건)
-function g5_blade_stats()
+function g5_pro_stats()
 {
     global $g5;
     static $s = null;
@@ -352,7 +353,7 @@ function g5_blade_stats()
 // 화면에 쓰는 날짜 형식 — 순정 'YYYY-MM-DD HH:II:SS' 를 'YY-MM-DD HH:II' 로 줄인다.
 // 목록의 순정 datetime2('YY-MM-DD')와 같은 눈금이라 화면 전체가 한 형식으로 읽힌다.
 // 값이 비었거나(0000-00-00) 형식이 다르면 그대로 돌려준다.
-function g5_blade_dt($s, $with_time = true)
+function g5_pro_dt($s, $with_time = true)
 {
     $s = (string)$s;
     if (strlen($s) < 10 || $s[0] === '0') return $s;
@@ -360,7 +361,7 @@ function g5_blade_dt($s, $with_time = true)
 }
 
 // 회원 프로필 이미지 URL — 순정 get_member_profile_img() 는 <img> 태그를 돌려주므로 src 만 뽑는다
-function g5_blade_profile_src($mb_id)
+function g5_pro_profile_src($mb_id)
 {
     if (!function_exists('get_member_profile_img')) return '';
     $html = get_member_profile_img($mb_id);
@@ -372,7 +373,7 @@ function g5_blade_profile_src($mb_id)
 // 하나만 보여주면 "갈 곳" 이름이 현재 위치처럼 읽히는 혼동이 있었다.
 // 헤더 장바구니 — 쇼핑몰이 설치된 경우에만. 비회원도 세션 장바구니를 쓰므로 로그인과 무관하다.
 // 개수는 cart.php 가 목록을 묶는 기준(상품 종류)과 같게 센다 — 옵션 줄 수가 아니다.
-function g5_blade_cart()
+function g5_pro_cart()
 {
     global $g5;
     if (!defined('G5_USE_SHOP') || !G5_USE_SHOP) return null;
@@ -387,7 +388,7 @@ function g5_blade_cart()
     return array('count' => $cnt, 'href' => G5_SHOP_URL.'/cart.php');
 }
 
-function g5_blade_areas()
+function g5_pro_areas()
 {
     if (!defined('G5_USE_SHOP') || !G5_USE_SHOP) return array();
 

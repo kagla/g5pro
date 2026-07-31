@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 if( isset($sfl) && ! in_array($sfl, array('b.it_name', 'a.it_id', 'a.iq_subject', 'a.iq_question', 'a.iq_name', 'a.mb_id')) ){
     //다른값이 들어가있다면 초기화
@@ -66,13 +66,13 @@ $sql = " select a.*, b.it_name
           limit $from_record, $rows ";
 $result = sql_query($sql);
 
-// g5blade — 화면은 뷰가 그린다. 비밀글은 본인·관리자만 제목을 볼 수 있다 (순정 스킨과 같은 판정)
-$blade_rows = array();
+// g5pro — 화면은 뷰가 그린다. 비밀글은 본인·관리자만 제목을 볼 수 있다 (순정 스킨과 같은 판정)
+$pro_rows = array();
 while ($row = sql_fetch_array($result)) {
-    $row['blade_can_read'] = (!$row['iq_secret'] || $is_admin
+    $row['pro_can_read'] = (!$row['iq_secret'] || $is_admin
                               || (isset($member['mb_id']) && $member['mb_id'] && $member['mb_id'] === $row['mb_id']));
-    $blade_rows[] = $row;
+    $pro_rows[] = $row;
 }
-g5_map_shop_itemqalist($blade_rows, $total_count, $page, $total_page, $sfl, $stx);
+g5_map_shop_itemqalist($pro_rows, $total_count, $page, $total_page, $sfl, $stx);
 
 include_once('./_tail.php');

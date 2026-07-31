@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 // 로그인중인 경우 회원가입 할 수 없습니다.
 if ($is_member) {
@@ -14,6 +14,6 @@ $g5['title'] = '회원가입약관';
 include_once('./_head.php');
 
 $register_action_url = G5_BBS_URL.'/register_form.php';
-g5_map_register(); // g5blade
+g5_map_register(); // g5pro
 
 include_once('./_tail.php');

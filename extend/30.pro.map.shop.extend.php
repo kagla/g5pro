@@ -1,20 +1,20 @@
 <?php
 /**
- * g5blade 화면 매핑 — 쇼핑몰(shop). 로드 순서 30번 (순서 설명은 blade.10.extend.php 머리말).
- * 서비스 단위로 매핑 파일을 나눈다: 기본(bbs·회원)은 blade.20.map.extend.php,
- * 쇼핑몰은 이 파일. 새 서비스가 생기면 blade.40.map.<서비스>.extend.php 로 추가한다.
+ * g5pro 화면 매핑 — 쇼핑몰(shop). 로드 순서 30번 (순서 설명은 10.pro.extend.php 머리말).
+ * 서비스 단위로 매핑 파일을 나눈다: 기본(bbs·회원)은 20.pro.map.extend.php,
+ * 쇼핑몰은 이 파일. 새 서비스가 생기면 40.pro.map.<서비스>.extend.php 로 추가한다.
  * 규칙은 동일 — 한 화면 = 한 함수, 전역변수를 뷰용 배열로 정리해 g5_view() 호출.
  * 함수 정의뿐이므로 파일이 몇 번이든, 한 파일에 매핑이 몇 개든 동작은 달라지지 않는다.
  */
 if (!defined('_GNUBOARD_')) exit;
 
-// item_list 에서 상품 배열만 뽑는다 (출력 없음) — extend/parts/blade.shop_items.php 참고
+// item_list 에서 상품 배열만 뽑는다 (출력 없음) — extend/parts/pro.shop_items.php 참고
 function g5_shop_items($il)
 {
-    $GLOBALS['g5_blade_items'] = array();
-    $il->set_list_skin(G5_PATH.'/extend/parts/blade.shop_items.php');
+    $GLOBALS['g5_pro_items'] = array();
+    $il->set_list_skin(G5_PATH.'/extend/parts/pro.shop_items.php');
     $il->run();   // 반환 HTML 은 버린다
-    return $GLOBALS['g5_blade_items'];
+    return $GLOBALS['g5_pro_items'];
 }
 
 // 상품 한 건을 뷰용으로 정리
@@ -274,7 +274,7 @@ function g5_map_shop_itemuselist($rows, $total_count, $page, $total_page, $sfl, 
             'subject' => get_text($row['is_subject']),
             'score'   => (int)$row['is_score'],
             'name'    => $row['is_name'],          // 순정이 이미 정리한 표시용 이름
-            'datetime'=> g5_blade_dt($row['is_time'], false),
+            'datetime'=> g5_pro_dt($row['is_time'], false),
         );
     }
 
@@ -302,10 +302,10 @@ function g5_map_shop_itemqalist($rows, $total_count, $page, $total_page, $sfl, $
             'href'     => G5_SHOP_URL.'/item.php?it_id='.$row['it_id'],
             'subject'  => get_text($row['iq_subject']),
             'is_secret'=> !empty($row['iq_secret']),
-            'can_read' => !empty($row['blade_can_read']),
+            'can_read' => !empty($row['pro_can_read']),
             'answered' => !empty($row['iq_answer']),
             'name'     => $row['iq_name'],
-            'datetime' => g5_blade_dt($row['iq_time'], false),
+            'datetime' => g5_pro_dt($row['iq_time'], false),
         );
     }
 
@@ -400,7 +400,7 @@ function g5_map_shop_coupon($rows)
         $items[] = array(
             'subject' => get_text($row['cp_subject']),
             'target'  => $row['cp_target_name'],           // 호출부가 정리해 넘긴다
-            'period'  => g5_blade_dt($row['cp_start'], false).' ~ '.g5_blade_dt($row['cp_end'], false),
+            'period'  => g5_pro_dt($row['cp_start'], false).' ~ '.g5_pro_dt($row['cp_end'], false),
             'amount'  => ($row['cp_type'] == 1)
                          ? number_format($row['cp_price']).'%'
                          : number_format($row['cp_price']).'원',
@@ -476,8 +476,8 @@ function g5_map_shop_item($form_html, $related)
 
         // ── 탭 내용
         'info_notice'  => g5_shop_item_info_rows($it, $item_info),                  // 상품 정보 고시
-        'use_html'     => g5_blade_capture_include(G5_SHOP_PATH.'/itemuse.php'),    // 사용후기 (순정 스킨 HTML)
-        'qa_html'      => g5_blade_capture_include(G5_SHOP_PATH.'/itemqa.php'),     // 상품문의
+        'use_html'     => g5_pro_capture_include(G5_SHOP_PATH.'/itemuse.php'),    // 사용후기 (순정 스킨 HTML)
+        'qa_html'      => g5_pro_capture_include(G5_SHOP_PATH.'/itemqa.php'),     // 상품문의
         'use_count'    => (int)$item_use_count,
         'qa_count'     => (int)$item_qa_count,
         'delivery_html'=> isset($default['de_baesong_content']) ? conv_content($default['de_baesong_content'], 1) : '',
@@ -528,7 +528,7 @@ function g5_shop_item_info_rows($it, $item_info)
 // 순정 파일의 출력을 문자열로 받는다 (사용후기·상품문의처럼 echo 로 그리는 화면).
 // 순정은 이런 파일이 전역 스코프에서 도는 것을 전제로 짰다 — 함수 안에서 그냥 include 하면
 // $config·$g5·$it_id 가 안 보여 죽는다(cf_write_pages 가 없어 0 나눗셈). 전역을 끌어와 스코프를 맞춘다.
-function g5_blade_capture_include($file)
+function g5_pro_capture_include($file)
 {
     if (!is_file($file)) return '';
     foreach (array_keys($GLOBALS) as $g5b_key) {

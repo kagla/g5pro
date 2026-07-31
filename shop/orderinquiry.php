@@ -7,7 +7,7 @@ if (G5_IS_MOBILE) {
 }
 
 define("_ORDERINQUIRY_", true);
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 $order_info = array();
 $request_pwd = isset($_POST['od_pwd']) ? $_POST['od_pwd'] : '';
@@ -83,6 +83,6 @@ if (!$is_member)
 $g5['title'] = '주문내역조회';
 include_once('./_head.php');
 
-g5_map_shop_orderinquiry($from_record, $rows); // g5blade — 스킨 대신 직통 매핑
+g5_map_shop_orderinquiry($from_record, $rows); // g5pro — 스킨 대신 직통 매핑
 
 include_once('./_tail.php');

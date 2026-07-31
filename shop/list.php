@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 $ca_id = isset($_REQUEST['ca_id']) ? safe_replace_regex($_REQUEST['ca_id'], 'ca_id') : '';
 $skin = isset($_REQUEST['skin']) ? safe_replace_regex($_REQUEST['skin'], 'skin') : '';
@@ -151,13 +151,13 @@ var itemlist_ca_id = "<?php echo $ca_id; ?>";
         $list->set_view('it_price', true);
         $list->set_view('it_icon', true);
         $list->set_view('sns', true);
-        $g5_blade_items = g5_shop_items($list); // g5blade: 출력 대신 데이터 수집
+        $g5_pro_items = g5_shop_items($list); // g5pro: 출력 대신 데이터 수집
 
         // where 된 전체 상품수
         $total_count = $list->total_count;
         // 전체 페이지 계산
         $total_page  = ceil($total_count / $items);
-        g5_map_shop_list($g5_blade_items, $total_count, $page, $total_page, ''); // g5blade
+        g5_map_shop_list($g5_pro_items, $total_count, $page, $total_page, ''); // g5pro
         return;
     }
     else

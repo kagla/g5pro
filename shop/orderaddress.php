@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면 (배송지 팝업)
+define('G5_PRO_PAGE', true); // g5pro 직통 화면 (배송지 팝업)
 
 if(!$is_member)
     alert_close('회원이시라면 회원로그인 후 이용해 주십시오.');
@@ -54,9 +54,9 @@ if(defined('G5_THEME_SHOP_PATH')) {
 $g5['title'] = '배송지 목록';
 include_once(G5_PATH.'/head.sub.php');
 
-// g5blade — 순정 쿼리 결과를 배열로 모아 뷰에 넘긴다
-$blade_rows = array();
-while ($row = sql_fetch_array($result)) $blade_rows[] = $row;
-g5_map_shop_orderaddress($blade_rows, $order_action_url, $total_count, $page, $total_page);
+// g5pro — 순정 쿼리 결과를 배열로 모아 뷰에 넘긴다
+$pro_rows = array();
+while ($row = sql_fetch_array($result)) $pro_rows[] = $row;
+g5_map_shop_orderaddress($pro_rows, $order_action_url, $total_count, $page, $total_page);
 
 include_once(G5_PATH.'/tail.sub.php');

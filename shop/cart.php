@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 $naverpay_button_js = '';
 include_once(G5_SHOP_PATH.'/settle_naverpay.inc.php');
 
@@ -40,7 +40,7 @@ if(defined('G5_THEME_SHOP_PATH')) {
 
 $g5['title'] = '장바구니';
 include_once('./_head.php');
-if (function_exists('g5_map_shop_cart')) { g5_map_shop_cart($s_cart_id, $cart_action_url); return; } // g5blade
+if (function_exists('g5_map_shop_cart')) { g5_map_shop_cart($s_cart_id, $cart_action_url); return; } // g5pro
 ?>
 
 <!-- 장바구니 시작 { -->

@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 if (G5_IS_MOBILE) {
     include_once(G5_MSHOP_PATH.'/item.php');
@@ -261,12 +261,12 @@ include_once(G5_SHOP_PATH.'/settle_naverpay.inc.php');
 <div id="sit">
 
     <?php
-    // 상품 구입폼 — g5blade: 순정 폼 HTML 을 버퍼로 받아 blade 뷰에 넘긴다
+    // 상품 구입폼 — g5pro: 순정 폼 HTML 을 버퍼로 받아 blade 뷰에 넘긴다
     if (function_exists('g5_map_shop_item')) {
         ob_start();
         include_once($skin_dir.'/item.form.skin.php');
-        $g5_blade_form = ob_get_clean();
-        g5_map_shop_item($g5_blade_form, array());
+        $g5_pro_form = ob_get_clean();
+        g5_map_shop_item($g5_pro_form, array());
         return;
     }
     include_once($skin_dir.'/item.form.skin.php');

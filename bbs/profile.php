@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면 (win_profile 팝업)
+define('G5_PRO_PAGE', true); // g5pro 직통 화면 (win_profile 팝업)
 
 if (!$member['mb_id'])
     alert_close('회원만 이용하실 수 있습니다.');
@@ -31,6 +31,6 @@ $mb_reg_after = $row['days'];
 $mb_homepage = set_http(get_text(clean_xss_tags($mb['mb_homepage'])));
 $mb_profile = $mb['mb_profile'] ? conv_content($mb['mb_profile'],0) : '소개 내용이 없습니다.';
 
-g5_map_profile($mb, $mb_reg_after, $mb_homepage, $mb_profile); // g5blade — 스킨 대신 직통 매핑
+g5_map_profile($mb, $mb_reg_after, $mb_homepage, $mb_profile); // g5pro — 스킨 대신 직통 매핑
 
 include_once(G5_PATH.'/tail.sub.php');

@@ -1,6 +1,6 @@
 @extends('layout.default')
 @section('content')
-@php $stats = g5_blade_stats(); @endphp
+@php $stats = g5_pro_stats(); @endphp
 <section class="hero">
     <h2>오늘도 새 글이 기다리고 있어요 💧</h2>
     <p>회원 {{ number_format($stats['members']) }}명이 함께하는 커뮤니티 · 지금 접속 {{ number_format($stats['online']) }}명 · 전체 글 {{ number_format($stats['posts']) }}개</p>

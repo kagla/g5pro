@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면 (추천 팝업)
+define('G5_PRO_PAGE', true); // g5pro 직통 화면 (추천 팝업)
 
 $it_id = isset($_REQUEST['it_id']) ? safe_replace_regex($_REQUEST['it_id'], 'it_id') : '';
 
@@ -24,6 +24,6 @@ if (!$it['it_name'])
 $g5['title'] =  $it['it_name'].' - 추천하기';
 include_once(G5_PATH.'/head.sub.php');
 
-g5_map_shop_itemrecommend($it_id, $it['it_name'], $token); // g5blade — 순정 인라인 폼 대신 직통 매핑
+g5_map_shop_itemrecommend($it_id, $it['it_name'], $token); // g5pro — 순정 인라인 폼 대신 직통 매핑
 
 include_once(G5_PATH.'/tail.sub.php');

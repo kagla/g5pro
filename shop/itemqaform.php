@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 $w     = isset($_REQUEST['w']) ? preg_replace('/[^0-9a-z]/i', '', trim($_REQUEST['w'])) : '';
 $it_id = isset($_REQUEST['it_id']) ? get_search_string(trim($_REQUEST['it_id'])) : '';
@@ -59,6 +59,6 @@ $editor_js = '';
 $editor_js .= get_editor_js('iq_question', $is_dhtml_editor);
 $editor_js .= chk_editor_js('iq_question', $is_dhtml_editor);
 
-g5_map_shop_itemqaform($it, $qa, $w, $iq_id, $editor_html, $editor_js); // g5blade
+g5_map_shop_itemqaform($it, $qa, $w, $iq_id, $editor_html, $editor_js); // g5pro
 
 include_once(G5_PATH.'/tail.sub.php');

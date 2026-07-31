@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면 (win_scrap 팝업)
+define('G5_PRO_PAGE', true); // g5pro 직통 화면 (win_scrap 팝업)
 
 include_once(G5_PATH.'/head.sub.php');
 
@@ -51,6 +51,6 @@ HEREDOC;
     exit;
 }
 
-g5_map_scrap_popin(); // g5blade — 스킨 대신 직통 매핑
+g5_map_scrap_popin(); // g5pro — 스킨 대신 직통 매핑
 
 include_once(G5_PATH.'/tail.sub.php');

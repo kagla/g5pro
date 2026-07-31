@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면 (쿠폰 팝업)
+define('G5_PRO_PAGE', true); // g5pro 직통 화면 (쿠폰 팝업)
 
 if (G5_IS_MOBILE) {
     include_once(G5_MSHOP_PATH.'/coupon.php');
@@ -30,8 +30,8 @@ $sql = " select cp_id, cp_subject, cp_method, cp_target, cp_start, cp_end, cp_ty
               and cp_end >= '".G5_TIME_YMD."'
             order by cp_no ";
 $result = sql_query($sql);
-// g5blade — 화면은 뷰가 그린다. 사용여부·할인대상 판정은 순정 로직 그대로.
-$blade_rows = array();
+// g5pro — 화면은 뷰가 그린다. 사용여부·할인대상 판정은 순정 로직 그대로.
+$pro_rows = array();
 while ($row = sql_fetch_array($result)) {
     if (is_used_coupon($member['mb_id'], $row['cp_id'])) continue;
 
@@ -46,8 +46,8 @@ while ($row = sql_fetch_array($result)) {
         $it = get_shop_item($row['cp_target'], true);
         $row['cp_target_name'] = $it['it_name'].' 상품할인';
     }
-    $blade_rows[] = $row;
+    $pro_rows[] = $row;
 }
-g5_map_shop_coupon($blade_rows);
+g5_map_shop_coupon($pro_rows);
 
 include_once(G5_PATH.'/tail.sub.php');

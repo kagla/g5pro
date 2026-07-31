@@ -1,9 +1,9 @@
 <?php
 /**
- * g5blade 화면 매핑 모음 — 기본 서비스(bbs·회원).
+ * g5pro 화면 매핑 모음 — 기본 서비스(bbs·회원).
  * 변환된 순정 화면이 스킨 include 자리에서 g5_map_*() 를 호출한다.
  * 한 화면 = 한 함수. 순정 전역변수를 뷰용 배열로 정리해 g5_view() 를 호출하는 것이 전부다.
- * (런타임·공통 데이터는 blade.10.extend.php — extend/ 로드 순서 설명도 그 머리말에 있다)
+ * (런타임·공통 데이터는 10.pro.extend.php — extend/ 로드 순서 설명도 그 머리말에 있다)
  *
  * 로드 순서 20번. 함수 정의뿐이라 순서 의존은 없고, 번호는 읽는 사람을 위한 것이다.
  */
@@ -11,13 +11,13 @@ if (!defined('_GNUBOARD_')) exit;
 
 // bo_skin → 목록 뷰 조회표 (게시판마다 목록 모양을 고른다 · 설계 §5)
 // 등록되지 않은 값이면 기본 표 목록으로 폴백한다.
-function g5_blade_list_views()
+function g5_pro_list_views()
 {
     return array(
-        'blade'         => array('view' => 'bbs.board_list',         'body' => 'partials.list_body_table',   'thumb' => false),
-        'blade_simple'  => array('view' => 'bbs.board_list_simple',  'body' => 'partials.list_body_simple',  'thumb' => false),
-        'blade_card'    => array('view' => 'bbs.board_list_card',    'body' => 'partials.list_body_card',    'thumb' => true),
-        'blade_gallery' => array('view' => 'bbs.board_list_gallery', 'body' => 'partials.list_body_gallery', 'thumb' => true),
+        'pro'         => array('view' => 'bbs.board_list',         'body' => 'partials.list_body_table',   'thumb' => false),
+        'pro_simple'  => array('view' => 'bbs.board_list_simple',  'body' => 'partials.list_body_simple',  'thumb' => false),
+        'pro_card'    => array('view' => 'bbs.board_list_card',    'body' => 'partials.list_body_card',    'thumb' => true),
+        'pro_gallery' => array('view' => 'bbs.board_list_gallery', 'body' => 'partials.list_body_gallery', 'thumb' => true),
     );
 }
 
@@ -28,9 +28,9 @@ function g5_map_board_list()
     global $total_count, $page, $total_page, $write_href, $rss_href, $admin_href, $is_checkbox;
     global $is_good, $is_nogood;
 
-    $views = g5_blade_list_views();
+    $views = g5_pro_list_views();
     $skin  = isset($board['bo_skin']) ? $board['bo_skin'] : '';
-    $variant = isset($views[$skin]) ? $views[$skin] : $views['blade'];
+    $variant = isset($views[$skin]) ? $views[$skin] : $views['pro'];
     if ($variant['thumb']) include_once(G5_LIB_PATH.'/thumbnail.lib.php');
 
     $items = array();
@@ -63,7 +63,7 @@ function g5_map_board_list()
                              ? cut_str(trim(preg_replace('/\s+/u', ' ', strip_tags(str_replace('<', ' <', $row['content'])))), 160, '…')
                              : '',
             // bo_use_list_file — 목록에 첨부 파일
-            'files'       => g5_blade_list_files($row),
+            'files'       => g5_pro_list_files($row),
             // 썸네일 변형(카드·갤러리)에서만 조회
             'thumb'       => $variant['thumb']
                 ? get_list_thumbnail($bo_table, $row['wr_id'],
@@ -111,22 +111,22 @@ function g5_map_board_list()
         'use_file'    => (bool)$board['bo_use_list_file'],
         'gallery_cols'=> max(1, (int)$board['bo_gallery_cols']),
         'sfl_options' => get_board_sfl_select_options($sfl),   // 순정 옵션 HTML → {!! !!}
-        'sort'        => g5_blade_sort_links($bo_table, $sop, $is_good, $is_nogood),
+        'sort'        => g5_pro_sort_links($bo_table, $sop, $is_good, $is_nogood),
         'sort_now'    => array('sst' => $sst, 'sod' => $sod),
-        'content_head'=> g5_blade_captured('content_head'),    // 관리자가 넣은 HTML → {!! !!}
-        'content_tail'=> g5_blade_captured('content_tail'),
+        'content_head'=> g5_pro_captured('content_head'),    // 관리자가 넣은 HTML → {!! !!}
+        'content_tail'=> g5_pro_captured('content_tail'),
     );
 
     // 전체목록보이기(bo_use_list_view) — 읽기 화면이 먼저 목록을 수집한 뒤 자기 아래에 붙인다
-    if (!empty($GLOBALS['g5_blade_collect_list'])) {
-        $GLOBALS['g5_blade_list_below'] = array('body' => $variant['body'], 'data' => $data);
+    if (!empty($GLOBALS['g5_pro_collect_list'])) {
+        $GLOBALS['g5_pro_list_below'] = array('body' => $variant['body'], 'data' => $data);
         return;
     }
     g5_view($variant['view'], $data);
 }
 
 // 목록의 첨부 파일 (bo_use_list_file 을 켜야 get_list 가 채운다)
-function g5_blade_list_files($row)
+function g5_pro_list_files($row)
 {
     $out = array();
     if (empty($row['file']) || !is_array($row['file'])) return $out;
@@ -142,7 +142,7 @@ function g5_blade_list_files($row)
 }
 
 // 정렬 링크 — 순정 subject_sort_link() 가 여는 <a> 태그만 돌려주므로 href 만 뽑아 쓴다
-function g5_blade_sort_links($bo_table, $sop, $is_good, $is_nogood)
+function g5_pro_sort_links($bo_table, $sop, $is_good, $is_nogood)
 {
     $qstr2 = 'bo_table='.$bo_table.'&amp;sop='.$sop;
     $cols = array('wr_hit' => '조회', 'wr_datetime' => '날짜');
@@ -200,7 +200,7 @@ function g5_map_view_comment($list)
             'id'        => $list[$i]['wr_id'],
             'name'      => $list[$i]['name'],          // 사이드뷰 HTML → {!! !!}
             'content'   => $list[$i]['content'],       // 순정 가공 HTML → {!! !!}
-            'datetime'  => g5_blade_dt($list[$i]['wr_datetime']),
+            'datetime'  => g5_pro_dt($list[$i]['wr_datetime']),
             'depth'     => strlen((string)$list[$i]['wr_comment_reply']),
             'is_secret' => strpos((string)$list[$i]['wr_option'], 'secret') !== false,
             'del_link'  => isset($list[$i]['del_link']) ? $list[$i]['del_link'] : '',  // &amp; 포함 → {!! !!}
@@ -258,7 +258,7 @@ function g5_map_board_view($comments)
             'wr_id'    => $view['wr_id'],
             'subject'  => get_text($view['wr_subject']),   // 이스케이프 완료 → {!! !!}
             'name'     => $view['name'],                   // 사이드뷰 HTML → {!! !!}
-            'datetime' => g5_blade_dt($view['wr_datetime']),
+            'datetime' => g5_pro_dt($view['wr_datetime']),
             'hit'      => $view['wr_hit'],
             'ca_name'  => isset($view['ca_name']) ? $view['ca_name'] : '',
             'ca_href'  => isset($view['ca_name']) && $view['ca_name']
@@ -282,8 +282,8 @@ function g5_map_board_view($comments)
         'next_href'   => $next_href,
         'scrap_href'  => $scrap_href,   // 회원일 때만 값 있음 — win_scrap 팝업으로 연다
         // 이전·다음글 — 제목과 날짜까지 (순정 view.php 가 함께 만들어 둔다)
-        'prev' => $prev_href ? array('href' => $prev_href, 'subject' => $prev_wr_subject, 'date' => g5_blade_dt($prev_wr_date, false)) : null,
-        'next' => $next_href ? array('href' => $next_href, 'subject' => $next_wr_subject, 'date' => g5_blade_dt($next_wr_date, false)) : null,
+        'prev' => $prev_href ? array('href' => $prev_href, 'subject' => $prev_wr_subject, 'date' => g5_pro_dt($prev_wr_date, false)) : null,
+        'next' => $next_href ? array('href' => $next_href, 'subject' => $next_wr_subject, 'date' => g5_pro_dt($next_wr_date, false)) : null,
         // 추천·비추천 — href 는 회원이고 게시판이 켠 경우에만 값이 있다
         'good' => array(
             'use'    => (bool)$board['bo_use_good'],
@@ -301,10 +301,10 @@ function g5_map_board_view($comments)
         'search_href' => $search_href,   // 검색 결과에서 들어왔을 때만 값 있음
         'use_sns'     => (bool)($board['bo_use_sns'] && (!empty($GLOBALS['config']['cf_facebook_appid']) || !empty($GLOBALS['config']['cf_twitter_key']))),
         'share_url'   => G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$view['wr_id'],
-        'content_head'=> g5_blade_captured('content_head'),
-        'content_tail'=> g5_blade_captured('content_tail'),
+        'content_head'=> g5_pro_captured('content_head'),
+        'content_tail'=> g5_pro_captured('content_tail'),
         // 전체목록보이기를 켠 게시판에서만 값이 있다
-        'list_below'  => isset($GLOBALS['g5_blade_list_below']) ? $GLOBALS['g5_blade_list_below'] : null,
+        'list_below'  => isset($GLOBALS['g5_pro_list_below']) ? $GLOBALS['g5_pro_list_below'] : null,
         'comment_action' => $comment_action_url,
         'comment_hidden' => array(
             'w'          => 'c',
@@ -435,12 +435,12 @@ function g5_map_profile($mb, $reg_after, $homepage, $profile_html)
 
     g5_view('bbs.profile', array(
         'nick'      => get_text($mb['mb_nick']),
-        'photo'     => g5_blade_profile_src($mb['mb_id']),
+        'photo'     => g5_pro_profile_src($mb['mb_id']),
         'level'     => (int)$mb['mb_level'],
         'point'     => (int)$mb['mb_point'],
-        'join_date' => $can_see ? g5_blade_dt($mb['mb_datetime'], false) : '',
+        'join_date' => $can_see ? g5_pro_dt($mb['mb_datetime'], false) : '',
         'join_days' => $can_see ? (int)$reg_after : 0,
-        'last_login'=> $can_see ? g5_blade_dt($mb['mb_today_login']) : '',
+        'last_login'=> $can_see ? g5_pro_dt($mb['mb_today_login']) : '',
         'homepage'  => $homepage,
         'profile'   => $profile_html,   // 순정 conv_content 완료 → {!! !!}
     ));
@@ -632,7 +632,7 @@ function g5_map_memo()
             'me_id'     => $row['me_id'],
             'name'      => get_text($row['mb_nick'] ? $row['mb_nick'] : $row['mb_id']),
             'preview'   => get_text(cut_str($row['me_memo'], 60)),
-            'datetime'  => g5_blade_dt($row['me_send_datetime']),
+            'datetime'  => g5_pro_dt($row['me_send_datetime']),
             'is_read'   => (isset($row['me_read_datetime']) && $row['me_read_datetime'] !== '0000-00-00 00:00:00'),
             'view_href' => $row['view_href'],   // &amp; 포함 → {!! !!}
             'del_href'  => $row['del_href'],    // 세션 토큰 포함 → {!! !!}
@@ -668,7 +668,7 @@ function g5_map_memo_view()
     g5_view('bbs.memo_view', array(
         'kind'       => $kind,
         'name'       => get_text($counterpart),
-        'datetime'   => g5_blade_dt($memo['me_send_datetime']),
+        'datetime'   => g5_pro_dt($memo['me_send_datetime']),
         'content'    => get_text($memo['me_memo'], 1),   // 이스케이프+개행 처리 → {!! !!}
         'reply_href' => ($kind === 'recv')
                         ? G5_BBS_URL.'/memo_form.php?me_recv_mb_id='.urlencode($counterpart).'&me_id='.$memo['me_id'] : '',
@@ -706,7 +706,7 @@ function g5_map_point()
         $items[] = array(
             'content'  => get_text($row['po_content']),
             'point'    => (int)$row['po_point'],
-            'datetime' => g5_blade_dt($row['po_datetime']),
+            'datetime' => g5_pro_dt($row['po_datetime']),
         );
     }
 
@@ -736,7 +736,7 @@ function g5_map_search()
                 'subject'  => $row['subject'],   // search_font 처리(검색어 강조 HTML) → {!! !!}
                 'content'  => $row['content'],   // 동일
                 'name'     => $row['name'],      // 사이드뷰 HTML → {!! !!}
-                'datetime' => g5_blade_dt($row['wr_datetime'], false),
+                'datetime' => g5_pro_dt($row['wr_datetime'], false),
                 'hit'      => $row['wr_hit'],
                 'comment_cnt' => (int)$row['wr_comment'],
             );
@@ -776,7 +776,7 @@ function g5_map_scrap()
             'subject'    => $row['subject'],      // get_text 완료 → {!! !!}
             'href'       => $row['opener_href_wr_id'],
             'board_href' => $row['opener_href'],
-            'datetime'   => g5_blade_dt($row['ms_datetime'], false),
+            'datetime'   => g5_pro_dt($row['ms_datetime'], false),
             'del_href'   => G5_BBS_URL.'/'.ltrim($row['del_href'], './'),  // &amp; 포함 → {!! !!}
         );
     }

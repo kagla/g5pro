@@ -1,6 +1,6 @@
 <?php
 include_once('./_common.php');
-define('G5_BLADE_PAGE', true); // g5blade 직통 화면
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 if ($is_guest)
     alert_close('회원만 조회하실 수 있습니다.');
@@ -33,6 +33,6 @@ for ($i=0; $row=sql_fetch_array($result); $i++) {
     $list[] = $row;
 }
 
-g5_map_point(); // g5blade
+g5_map_point(); // g5pro
 
 include_once(G5_PATH.'/tail.sub.php');
