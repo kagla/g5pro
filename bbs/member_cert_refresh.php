@@ -1,6 +1,7 @@
 <?php
 define('G5_CERT_IN_PROG', true);
 include_once('./_common.php');
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 if(!$is_member) { alert("잘못된 접근입니다.", G5_URL); }
 
@@ -14,6 +15,6 @@ $g5['title'] = '본인인증을 다시 해주세요.';
 include_once(G5_PATH.'/_head.php');
 
 $action_url = G5_HTTPS_BBS_URL."/member_cert_refresh_update.php";
-include_once($member_skin_path.'/member_cert_refresh.skin.php');
+g5_map_cert_refresh(); // g5pro
 
 include_once(G5_PATH.'/_tail.php');

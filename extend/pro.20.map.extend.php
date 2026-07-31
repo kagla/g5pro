@@ -1119,3 +1119,71 @@ function g5_map_qa_write()
         'tail'       => g5_pro_captured('qa_tail'),
     ));
 }
+
+// ── 기존 회원 본인인증 (bbs/member_cert_refresh.php)
+// 인증 수단마다 여는 창의 주소·종류가 다르다. 순정 스킨은 그 분기를 뷰 안에서 PHP switch 로
+// 풀었는데, 여기서는 값으로 정리해 넘긴다 — 뷰가 인증사 이름을 몰라도 되게 한다.
+function g5_map_cert_refresh()
+{
+    global $config, $member, $action_url, $w;
+
+    $ways = array();
+
+    // 간편인증 (이니시스) — 버튼이 여럿일 수 있어 data-type 으로 기관을 가른다
+    if (!empty($config['cf_cert_simple'])) {
+        $ways[] = array(
+            'key'   => 'simple',
+            'label' => '간편인증',
+            'url'   => G5_INICERT_URL.'/ini_request.php',
+            'open'  => 'sa',        // call_sa() 로 연다
+            'type'  => '',
+        );
+    }
+
+    if (!empty($config['cf_cert_hp'])) {
+        $hp = array(
+            'kcb'    => array(G5_OKNAME_URL.'/hpcert1.php',        'kcb-hp'),
+            'kcp'    => array(G5_KCPCERT_URL.'/kcpcert_form.php',  'kcp-hp'),
+            'kcp_v2' => array(G5_KCPCERT_V2_URL.'/kcpcert_form.php','kcp_v2-hp'),
+            'lg'     => array(G5_LGXPAY_URL.'/AuthOnlyReq.php',    'lg-hp'),
+        );
+        // 설정값이 위 넷 중 하나가 아니면 버튼을 내지 않는다.
+        // 순정은 눌러야 "설정을 해주십시오" 를 띄웠는데, 애초에 못 누르게 하는 편이 낫다.
+        if (isset($hp[$config['cf_cert_hp']])) {
+            $ways[] = array(
+                'key'   => 'hp',
+                'label' => '휴대폰 본인확인',
+                'url'   => $hp[$config['cf_cert_hp']][0],
+                'open'  => 'win',   // certify_win_open() 으로 연다
+                'type'  => $hp[$config['cf_cert_hp']][1],
+            );
+        }
+    }
+
+    if (!empty($config['cf_cert_ipin'])) {
+        $ways[] = array(
+            'key'   => 'ipin',
+            'label' => '아이핀 본인확인',
+            'url'   => G5_OKNAME_URL.'/ipin1.php',
+            'open'  => 'win',
+            'type'  => 'kcb-ipin',
+        );
+    }
+
+    // 순정 스킨이 certify.js 를 여기서 싣는다 — 인증 창 여는 함수(call_sa·certify_win_open)가 그 안에 있다
+    if ($ways) add_javascript('<script src="'.G5_JS_URL.'/certify.js?v='.G5_JS_VER.'"></script>', 0);
+
+    g5_view('bbs.member_cert_refresh', array(
+        'action'   => $action_url,
+        'w'        => $w,
+        'url'      => isset($GLOBALS['urlencode']) ? $GLOBALS['urlencode'] : '',
+        'member'   => array(
+            'mb_id'     => $member['mb_id'],
+            'mb_name'   => $member['mb_name'],
+            'mb_hp'     => $member['mb_hp'],
+            'mb_certify'=> $member['mb_certify'],
+            'has_dupinfo' => !empty($member['mb_dupinfo']),
+        ),
+        'ways'     => $ways,
+    ));
+}

@@ -2136,3 +2136,11 @@ input[type=checkbox], input[type=radio] {
     margin-top: var(--s2); font-size: var(--t-sm); color: var(--muted); cursor: pointer;
 }
 .inline-chk input { flex: none; margin: 0; accent-color: var(--accent); }
+
+/* ═══════════ 본인인증 (bbs/member_cert_refresh.php) ═══════════ */
+/* .member-box 는 로그인처럼 좁은 폼용이다. 이 화면은 안내 표가 들어가므로 조금 넓힌다 */
+.cert-box { max-width: 640px; }
+.cert-box h3 { font-size: var(--t-md); font-weight: 700; margin: var(--s5) 0 var(--s2); text-align: left; }
+.cert-box .list-table th, .cert-box .list-table td { font-size: var(--t-sm); white-space: normal; }
+.cert-agree { margin-top: var(--s3); font-size: var(--t-md); color: var(--fg); }
+.cert-btns { display: flex; flex-wrap: wrap; gap: var(--s2); }
