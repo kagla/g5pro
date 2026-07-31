@@ -56,6 +56,11 @@
     --r-btn: 8px;   /* 버튼·페이징·필터 — 알약이 아니라 살짝 둥근 사각 */
     --r-input: 8px; /* 입력칸·텍스트에리어 — 나란히 놓이는 버튼(--r-btn)과 모서리를 맞춘다.
                        카드(--r-xl)처럼 둥글면 입력칸이 아니라 알약처럼 읽힌다 */
+
+    /* 떠 있는 메뉴의 표면 — 카드 위에 겹칠 때 구분되어야 한다.
+       밝은 모드는 흰 배경에 그림자가 잘 보이므로 카드색 그대로 두고 얇은 테두리만 더한다. */
+    --pop: var(--card);
+    --pop-line: var(--line);
 }
 @media (prefers-color-scheme: dark) {
     :root {
@@ -85,9 +90,16 @@
         --sh-md: 0 8px 22px rgba(0,0,0,.36);
         --sh-lg: 0 12px 32px rgba(0,0,0,.44);
         --sh-btn: 0 6px 16px rgba(74,144,255,.30);
+
+        /* 어두운 배경에서는 그림자가 거의 안 보인다. 밝기를 한 단계 올려 떠 보이게 한다 */
+        --pop: #1E2A3A;
+        --pop-line: #35485E;
     }
 }
 :root[data-theme="dark"] {
+    /* 어두운 배경에서는 그림자가 거의 안 보인다. 밝기를 한 단계 올려 떠 보이게 한다 */
+    --pop: #1E2A3A;
+    --pop-line: #35485E;
     --bg: #0F1621;
     --card: #16202E;
     --fg: #E6EDF5;
@@ -116,6 +128,8 @@
     --sh-btn: 0 6px 16px rgba(74,144,255,.30);
 }
 :root[data-theme="light"] {
+    --pop: var(--card);
+    --pop-line: var(--line);
     --bg: #F0F7FF;
     --card: #FFFFFF;
     --fg: #23303F;
@@ -273,7 +287,7 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .gnb-item.section > a { color: var(--accent); }   /* 하위가 현재 화면 — 문맥만 표시 */
 .gnb-sub {
     position: absolute; top: 100%; left: 0; min-width: 160px; z-index: 70;
-    background: var(--card); border-radius: var(--r-lg); padding: var(--s2);
+    background: var(--pop); border: 1px solid var(--pop-line); border-radius: var(--r-lg); padding: var(--s2);
     box-shadow: var(--sh-md); margin-top: var(--s1);
     /* display 대신 visibility 로 숨긴다 — 사라질 때 유예(0.16s)를 줘서
        메뉴와 드롭다운 사이를 오갈 때 깜빡 닫히지 않는다 */
@@ -325,7 +339,7 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .profile-menu {
     position: absolute; top: calc(100% + var(--s2)); right: 0; z-index: 70;
     min-width: 210px; padding: var(--s2);
-    background: var(--card); border-radius: var(--r-lg); box-shadow: var(--sh-lg);
+    background: var(--pop); border: 1px solid var(--pop-line); border-radius: var(--r-lg); box-shadow: var(--sh-lg);
     visibility: hidden; opacity: 0; transform: translateY(-6px);
     transition: opacity .14s ease, transform .14s ease, visibility 0s .14s;
 }
@@ -535,7 +549,7 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .kebab-menu {
     position: absolute; top: calc(100% + var(--s2)); right: 0; z-index: 70;
     min-width: 178px; padding: var(--s2);
-    background: var(--card); border-radius: var(--r-lg); box-shadow: var(--sh-lg);
+    background: var(--pop); border: 1px solid var(--pop-line); border-radius: var(--r-lg); box-shadow: var(--sh-lg);
     visibility: hidden; opacity: 0; transform: translateY(-6px);
     transition: opacity .14s ease, transform .14s ease, visibility 0s .14s;
 }
@@ -794,7 +808,8 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .sv {
     display: none; position: absolute; top: 100%; left: 0; z-index: 100;
     min-width: 130px; margin-top: var(--s1);
-    background: var(--card); border-radius: var(--r-md); padding: var(--s2); box-shadow: var(--sh-md);
+    background: var(--pop); border: 1px solid var(--pop-line);
+    border-radius: var(--r-md); padding: var(--s2); box-shadow: var(--sh-md);
 }
 .sv a { display: block; padding: var(--s1) var(--s2); border-radius: var(--r-sm); font-size: var(--t-sm); font-weight: 400; color: var(--muted); white-space: nowrap; }
 .sv a:hover { background: var(--bg); color: var(--fg); }
