@@ -1,5 +1,6 @@
 <?php
 include_once('./_common.php');
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 //dbconfig파일에 $g5['faq_table'] , $g5['faq_master_table'] 배열변수가 있는지 체크
 if( !isset($g5['faq_table']) || !isset($g5['faq_master_table']) ){
@@ -92,9 +93,7 @@ if(is_file($skin_file)) {
             $faq_list[$i]['fa_content'] = search_font($stx, conv_content($faq_list[$i]['fa_content'], 1));
         }
     }
-    include_once($skin_file);
-} else {
-    echo '<p>'.str_replace(G5_PATH.'/', '', $skin_file).'이 존재하지 않습니다.</p>';
+    g5_map_faq(); // g5pro
 }
 
 include_once('./_tail.php');

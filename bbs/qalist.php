@@ -1,5 +1,6 @@
 <?php
 include_once('./_common.php');
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 if($is_guest)
     alert('회원이시라면 로그인 후 이용해 보십시오.', './login.php?url='.urlencode(G5_BBS_URL.'/qalist.php'));
@@ -13,7 +14,7 @@ if( $is_admin ){
 }
 
 $g5['title'] = $qaconfig['qa_title'];
-include_once('./qahead.php');
+g5_pro_capture_start(); include_once('./qahead.php'); g5_pro_capture_end('qa_head'); // g5pro
 
 $skin_file = $qa_skin_path.'/list.skin.php';
 $is_auth = $is_admin ? true : false;
@@ -142,9 +143,9 @@ if(is_file($skin_file)) {
     $list_pages = preg_replace('/(\.php)(&amp;|&)/i', '$1?', get_paging(G5_IS_MOBILE ? $config['cf_mobile_pages'] : $config['cf_write_pages'], $page, $total_page, './qalist.php'.$qstr.'&amp;page='));
 
     $stx = get_text(stripslashes($stx));
-    include_once($skin_file);
+    g5_map_qa_list(); // g5pro
 } else {
     echo '<div>'.str_replace(G5_PATH.'/', '', $skin_file).'이 존재하지 않습니다.</div>';
 }
 
-include_once('./qatail.php');
+g5_pro_capture_start(); include_once('./qatail.php'); g5_pro_capture_end('qa_tail'); // g5pro

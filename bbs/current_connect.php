@@ -1,5 +1,6 @@
 <?php
 include_once('./_common.php');
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 $g5['title'] = '현재접속자';
 include_once('./_head.php');
@@ -27,6 +28,6 @@ for ($i=0; $row=sql_fetch_array($result); $i++) {
     $list[$i]['num'] = sprintf('%03d',$i+1);
 }
 
-include_once($connect_skin_path.'/current_connect.skin.php');
+g5_map_connect(); // g5pro
 
 include_once('./_tail.php');

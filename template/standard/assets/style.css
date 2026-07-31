@@ -2083,3 +2083,56 @@ input[type=checkbox], input[type=radio] {
 .new-table .col-board .board-name { margin-left: var(--s2); color: var(--muted); font-size: var(--t-sm); }
 .new-table .col-board .board-name:hover { color: var(--accent); }
 .new-tools { display: flex; justify-content: flex-end; margin-top: var(--s3); }
+
+/* ═══════════ 자주하시는 질문 (bbs/faq.php) ═══════════ */
+/* 펼침은 <details> — 자바스크립트 없이 동작하고, 검색 결과는 열린 채로 나온다 */
+.faq-search { margin-bottom: var(--s4); }
+.faq-img { margin: 0 0 var(--s4); }
+.faq-img img { max-width: 100%; border-radius: var(--r-lg); display: block; }
+.faq-html { margin: 0 0 var(--s4); font-size: var(--t-md); line-height: 1.8; color: var(--muted); }
+
+.faq-list { background: var(--card); border-radius: var(--r-xl); box-shadow: var(--sh-md); overflow: hidden; }
+.faq-item { border-top: 1px solid var(--line); }
+.faq-item:first-child { border-top: 0; }
+.faq-item > summary {
+    display: flex; align-items: center; gap: var(--s3); cursor: pointer;
+    padding: var(--s4) var(--s5); font-size: var(--t-md); font-weight: 600; color: var(--fg);
+    list-style: none;   /* 기본 삼각형을 지우고 아래 화살표로 바꾼다 */
+}
+.faq-item > summary::-webkit-details-marker { display: none; }
+.faq-item > summary::before {
+    content: "Q"; flex: none;
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--accent-soft); color: var(--accent-deep);
+    font-size: var(--t-sm); font-weight: 800;
+}
+.faq-item > summary::after {
+    content: ""; margin-left: auto; flex: none;
+    width: 8px; height: 8px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted);
+    transform: rotate(45deg) translate(-2px, -2px); transition: transform .15s;
+}
+.faq-item[open] > summary::after { transform: rotate(-135deg) translate(-2px, -2px); }
+.faq-item > summary:hover { background: var(--row-hover); }
+.faq-answer {
+    padding: 0 var(--s5) var(--s4) calc(var(--s5) + 24px + var(--s3));
+    font-size: var(--t-md); line-height: 1.8; color: var(--muted);
+}
+.faq-answer img { max-width: 100%; height: auto; }
+
+/* ═══════════ 1:1 문의 (bbs/qalist·qaview·qawrite) ═══════════ */
+/* 목록·읽기는 게시판 부품(.list-panel·.post)을 그대로 쓰고, 여기서는 차이만 정의한다 */
+.qa-table .col-subject .chip { margin-right: var(--s2); }
+.qa-post .post-meta .chip { margin-left: var(--s2); }
+.qa-answer { margin-top: var(--s4); border-left: 3px solid var(--accent); }
+.qa-answer .post-head h2 { font-size: var(--t-md); }
+.qa-images { padding: 0 var(--s5) var(--s4); display: flex; flex-wrap: wrap; gap: var(--s3); }
+.qa-images img { max-width: 100%; height: auto; border-radius: var(--r-md); }
+.qa-nav, .qa-acts { display: flex; gap: var(--s2); }
+.qa-acts { margin-left: auto; }
+/* 알림 수신 같은 곁다리 선택 — 입력칸 아래 한 줄로 붙인다 */
+.inline-chk {
+    display: inline-flex; align-items: center; gap: var(--s2);
+    margin-top: var(--s2); font-size: var(--t-sm); color: var(--muted); cursor: pointer;
+}
+.inline-chk input { flex: none; margin: 0; accent-color: var(--accent); }

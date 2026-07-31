@@ -1,5 +1,6 @@
 <?php
 include_once('./_common.php');
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 include_once(G5_EDITOR_LIB);
 
 if($w != '' && $w != 'u' && $w != 'r') {
@@ -17,7 +18,7 @@ $token = _token();
 set_session('ss_qa_write_token', $token);
 
 $g5['title'] = $qaconfig['qa_title'];
-include_once('./qahead.php');
+g5_pro_capture_start(); include_once('./qahead.php'); g5_pro_capture_end('qa_head'); // g5pro
 
 $skin_file = $qa_skin_path.'/write.skin.php';
 
@@ -140,9 +141,9 @@ if(is_file($skin_file)) {
 
     $action_url = https_url(G5_BBS_DIR).'/qawrite_update.php';
 
-    include_once($skin_file);
+    g5_map_qa_write(); // g5pro
 } else {
     echo '<div>'.str_replace(G5_PATH.'/', '', $skin_file).'이 존재하지 않습니다.</div>';
 }
 
-include_once('./qatail.php');
+g5_pro_capture_start(); include_once('./qatail.php'); g5_pro_capture_end('qa_tail'); // g5pro

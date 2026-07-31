@@ -904,3 +904,218 @@ function g5_map_new()
         'group_href' => $qs(array('gr_id' => '__GR__')),
     ));
 }
+
+// ── 자주하시는 질문 (bbs/faq.php)
+// 순정은 마스터(분류)마다 목록을 따로 그린다. 분류 전환은 링크, 검색은 분류 안에서만 걸린다.
+function g5_map_faq()
+{
+    global $faq_master_list, $fm, $fm_id, $faq_list, $stx, $himg_src, $timg_src, $is_admin, $admin_href;
+    global $total_count, $page, $total_page;
+
+    $cates = array();
+    foreach ((array)$faq_master_list as $row) {
+        $cates[] = array(
+            'id'     => $row['fm_id'],
+            'name'   => $row['fm_subject'],
+            'href'   => G5_BBS_URL.'/faq.php?fm_id='.$row['fm_id'],
+            'active' => ((int)$row['fm_id'] === (int)$fm_id),
+        );
+    }
+
+    $items = array();
+    foreach ((array)$faq_list as $row) {
+        $items[] = array(
+            'id'      => $row['fa_id'],
+            // 검색어가 있으면 순정이 search_font 로 강조 HTML 을 넣는다 → {!! !!}
+            'subject' => $row['fa_subject'],
+            'content' => $row['fa_content'],
+        );
+    }
+
+    g5_view('bbs.faq', array(
+        'title'      => $fm['fm_subject'],
+        'cates'      => $cates,
+        'items'      => $items,
+        'fm_id'      => $fm_id,
+        'stx'        => $stx,
+        // 관리자가 FAQ관리에서 올린 머리말·꼬리말 이미지 (없으면 빈 값)
+        'head_img'   => isset($himg_src) ? $himg_src : '',
+        'tail_img'   => isset($timg_src) ? $timg_src : '',
+        // 순정과 같게 conv_content 를 거친다 (줄바꿈·이미지 태그 변환) → {!! !!}
+        'head_html'  => isset($fm['fm_head_html']) ? conv_content($fm['fm_head_html'], 1) : '',
+        'tail_html'  => isset($fm['fm_tail_html']) ? conv_content($fm['fm_tail_html'], 1) : '',
+        'is_admin'   => (bool)$is_admin,
+        'admin_href' => isset($admin_href) ? $admin_href : '',
+        'total'      => (int)$total_count,
+        'page'       => (int)$page,
+        'total_page' => (int)$total_page,
+        'page_href'  => G5_BBS_URL.'/faq.php?fm_id='.$fm_id.'&amp;stx='.urlencode($stx).'&amp;page=',
+        'action'     => G5_BBS_URL.'/faq.php',
+    ));
+}
+
+// ── 현재접속자 (bbs/current_connect.php)
+// 순정이 이미 회원/비회원을 갈라 name 을 만들어 둔다 (비회원은 IP, 관리자에게만 온전히 보인다).
+function g5_map_connect()
+{
+    global $list, $config;
+
+    $items = array();
+    foreach ((array)$list as $row) {
+        $items[] = array(
+            'num'      => $row['num'],
+            'name'     => $row['name'],        // 회원이면 사이드뷰 HTML → {!! !!}
+            'is_member'=> !empty($row['mb_id']),
+            'location' => $row['lo_location'], // 순정이 넣는 링크 HTML → {!! !!}
+            'url'      => $row['lo_url'],
+        );
+    }
+
+    g5_view('bbs.connect', array(
+        'items' => $items,
+        'total' => count($items),
+    ));
+}
+
+// ── 비밀번호 재설정 (bbs/password_reset.php)
+// 본인인증으로 아이디/비밀번호를 찾은 뒤 새 비밀번호를 정하는 화면.
+// 여기 오기 전에 순정이 세션(ss_cert_mb_id)으로 본인 확인을 끝냈다.
+function g5_map_password_reset()
+{
+    global $action_url;
+
+    g5_view('bbs.password_reset', array(
+        'action' => $action_url,
+        'mb_id'  => isset($_POST['mb_id']) ? get_text($_POST['mb_id']) : '',
+    ));
+}
+
+// ── 1:1 문의 목록 (bbs/qalist.php)
+// 순정 qa 는 게시판과 별개 테이블·별개 설정(qa_config)을 쓴다. 답변 여부가 핵심 상태다.
+function g5_map_qa_list()
+{
+    global $list, $total_count, $page, $total_page, $qstr, $stx, $sca, $sfl;
+    global $write_href, $list_href, $qaconfig, $category_option, $is_admin;
+
+    $items = array();
+    foreach ((array)$list as $row) {
+        $items[] = array(
+            'num'       => $row['num'],
+            'category'  => $row['category'],
+            'subject'   => $row['subject'],      // 검색어 강조 HTML 가능 → {!! !!}
+            'href'      => $row['view_href'],
+            'name'      => $row['name'],
+            'date'      => $row['date'],
+            'has_file'  => !empty($row['icon_file']),
+            'answered'  => !empty($row['qa_status']),
+        );
+    }
+
+    g5_view('bbs.qa_list', array(
+        'items'      => $items,
+        'total'      => (int)$total_count,
+        'page'       => (int)$page,
+        'total_page' => (int)$total_page,
+        'page_href'  => G5_BBS_URL.'/qalist.php'.$qstr.'&amp;page=',
+        'write_href' => $write_href,
+        'list_href'  => $list_href,
+        'search'     => array('sfl' => $sfl, 'stx' => $stx, 'sca' => $sca),
+        'categories' => g5_pro_qa_categories($qaconfig, $sca),
+        'head'       => g5_pro_captured('qa_head'),   // 관리자가 넣은 상단 HTML → {!! !!}
+        'tail'       => g5_pro_captured('qa_tail'),
+        'is_admin'   => (bool)$is_admin,
+    ));
+}
+
+// 1:1문의 분류 — 설정에 줄바꿈으로 적어 둔 것을 링크로 만든다
+function g5_pro_qa_categories($qaconfig, $sca)
+{
+    $out = array();
+    $raw = isset($qaconfig['qa_category']) ? trim($qaconfig['qa_category']) : '';
+    if (!$raw) return $out;
+    foreach (array_filter(array_map('trim', explode('|', $raw))) as $c) {
+        $out[] = array(
+            'name'   => $c,
+            'href'   => G5_BBS_URL.'/qalist.php?sca='.urlencode($c),
+            'active' => ($sca === $c),
+        );
+    }
+    return $out;
+}
+
+// ── 1:1 문의 읽기 (bbs/qaview.php)
+function g5_map_qa_view()
+{
+    global $view, $answer, $qstr, $list_href, $write_href, $update_href, $delete_href;
+    global $answer_update_href, $answer_delete_href, $prev_href, $next_href, $is_admin;
+
+    $files = array();
+    for ($i = 0; $i < (int)(isset($view['download_count']) ? $view['download_count'] : 0); $i++) {
+        if (empty($view['download_href'][$i])) continue;
+        $files[] = array(
+            'href'   => $view['download_href'][$i],
+            'source' => $view['download_source'][$i],
+        );
+    }
+
+    g5_view('bbs.qa_view', array(
+        'item' => array(
+            'category' => $view['category'],
+            'subject'  => $view['subject'],
+            'content'  => $view['content'],       // conv_content 완료 → {!! !!}
+            'name'     => $view['name'],
+            'datetime' => $view['datetime'],
+            'answered' => !empty($view['qa_status']),
+            'is_answer'=> !empty($view['qa_type']),
+        ),
+        'images'  => isset($view['img_file']) ? (array)$view['img_file'] : array(),
+        'files'   => $files,
+        'answer'  => (isset($answer['qa_id']) && $answer['qa_id'])
+                     ? array('content' => conv_content($answer['qa_content'], $answer['qa_html']),
+                             'datetime'=> $answer['qa_datetime'])
+                     : null,
+        'links' => array(
+            'list'   => $list_href,
+            'write'  => $write_href,
+            'update' => isset($update_href) ? $update_href : '',
+            'delete' => isset($delete_href) ? $delete_href : '',
+            'prev'   => isset($prev_href) ? $prev_href : '',
+            'next'   => isset($next_href) ? $next_href : '',
+            'answer_update' => $answer_update_href,
+            'answer_delete' => $answer_delete_href,
+        ),
+        'head'     => g5_pro_captured('qa_head'),
+        'tail'     => g5_pro_captured('qa_tail'),
+        'is_admin' => (bool)$is_admin,
+    ));
+}
+
+// ── 1:1 문의 쓰기 (bbs/qawrite.php) — w 값으로 신규·수정·답변·추가질문이 갈린다
+function g5_map_qa_write()
+{
+    global $w, $write, $qa_id, $action_url, $category_option, $qaconfig, $token, $qstr, $page, $sca, $stx, $sfl;
+
+    g5_view('bbs.qa_write', array(
+        'w'        => $w,
+        'title'    => ($w === 'u' ? '문의 수정' : ($w === 'a' ? '답변 등록' : ($w === 'r' ? '추가 질문' : '문의하기'))),
+        'action'   => $action_url,
+        'token'    => $token,
+        'qa_id'    => $qa_id,
+        'write'    => array(
+            'subject'    => isset($write['qa_subject']) ? $write['qa_subject'] : '',
+            'content'    => isset($write['qa_content']) ? $write['qa_content'] : '',
+            'category'   => isset($write['qa_category']) ? $write['qa_category'] : '',
+            'email'      => isset($write['qa_email']) ? $write['qa_email'] : '',
+            'hp'         => isset($write['qa_hp']) ? $write['qa_hp'] : '',
+            'email_recv' => !empty($write['qa_email_recv']),
+            'sms_recv'   => !empty($write['qa_sms_recv']),
+            'html'       => !empty($write['qa_html']),
+        ),
+        'category_option' => $category_option,   // 순정 option HTML → {!! !!}
+        'use_file'   => !empty($qaconfig['qa_use_upload']),
+        'list_href'  => G5_BBS_URL.'/qalist.php'.$qstr,
+        'params'     => array('page' => $page, 'sca' => $sca, 'stx' => $stx, 'sfl' => $sfl),
+        'head'       => g5_pro_captured('qa_head'),
+        'tail'       => g5_pro_captured('qa_tail'),
+    ));
+}
