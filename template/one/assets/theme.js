@@ -323,9 +323,19 @@
         sv.style.top = Math.round(top) + 'px';
     }
 
-    // 순정 핸들러(common.js)가 .sv 를 .sv_wrap 안에서 찾기 전에 제자리로 돌려놓는다
-    document.addEventListener('click', restore, true);
-    document.addEventListener('focusin', restore, true);
+    // 순정 핸들러(common.js)가 .sv 를 .sv_wrap 안에서 찾기 전에 제자리로 돌려놓는다.
+    //
+    // 다만 메뉴 안을 누른 것이라면 건드리지 않는다. 클릭이 전달되는 도중에 그 대상을
+    // DOM 에서 옮기면 브라우저가 링크 이동을 취소해 버려, 눌러도 아무 일이 없는 것처럼 보인다.
+    // 메뉴 안 클릭은 어차피 페이지를 떠나거나(이동) 새 창을 열므로 되돌릴 필요도 없고,
+    // 남아 있어도 다음 트리거 클릭 때 이 핸들러가 정리한다.
+    function restoreUnlessInside(e) {
+        if (e.target && e.target.closest && e.target.closest('.sv')) return;
+        restore();
+    }
+
+    document.addEventListener('click', restoreUnlessInside, true);
+    document.addEventListener('focusin', restoreUnlessInside, true);
 
     // 순정이 .sv_on 을 붙인 뒤에 자리를 잡는다
     function later() { setTimeout(place, 0); }
