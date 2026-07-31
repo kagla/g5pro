@@ -4,6 +4,10 @@ global $lo_url;
 
 include_once('./_common.php');
 
+// g5blade 직통 화면. 관리자 화면은 이 프로젝트 범위 밖이라 순정 그대로 둔다.
+if (!defined('G5_IS_ADMIN') && !defined('G5_BLADE_PAGE'))
+    define('G5_BLADE_PAGE', true);
+
 if($error) {
     $g5['title'] = "오류안내 페이지";
 } else {
@@ -50,6 +54,28 @@ if($error) {
 } else {
     $header2 = "다음 내용을 확인해 주세요.";
 }
+
+// g5blade — 알림 스크립트는 순정이 만든 것과 같은 것을 쓰고, 감싸는 화면만 blade 로 그린다
+if (blade_takeover()) {
+
+    $blade_script = 'alert('.$js_alert_msg.');'."\n"
+                  . ($url ? 'document.location.replace('.$js_alert_url.');' : 'history.back();');
+
+    // 적어 넣던 값을 들고 돌아가는 폼 (순정 noscript 블록과 같은 규칙)
+    $blade_post = array();
+    if ($post) {
+        foreach ($_POST as $key => $value) {
+            $key = clean_xss_tags($key);
+            $value = clean_xss_tags($value);
+            if (strlen($value) < 1) continue;
+            if (preg_match("/pass|pwd|capt|url/", $key)) continue;
+            $blade_post[$key] = $value;
+        }
+    }
+
+    g5_map_alert($blade_script, $msg2, $header2, $url, $blade_post);
+
+} else {
 ?>
 
 <script>
@@ -118,4 +144,6 @@ history.back();
 </noscript>
 
 <?php
+} // g5blade — 순정 출력 끝
+
 include_once(G5_PATH.'/tail.sub.php');

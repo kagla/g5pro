@@ -1,5 +1,10 @@
 <?php
 include_once('./_common.php');
+
+// g5blade 직통 화면. 관리자 화면은 이 프로젝트 범위 밖이라 순정 그대로 둔다.
+if (!defined('G5_IS_ADMIN') && !defined('G5_BLADE_PAGE'))
+    define('G5_BLADE_PAGE', true);
+
 include_once(G5_PATH.'/head.sub.php');
 
 $msg = isset($msg) ? strip_tags($msg) : '';
@@ -16,6 +21,17 @@ if($error) {
     $header2 = "다음 내용을 확인해 주세요.";
     $msg3 = "새창을 닫으신 후 서비스를 이용해 주세요.";
 }
+
+// g5blade — 알림·창닫기 스크립트는 순정과 같고, 감싸는 화면만 blade 로 그린다
+if (blade_takeover()) {
+
+    $blade_script = 'alert('.$js_alert_msg.');'."\n"
+                  . "try {\n    window.close();\n} catch(error) {\n    history.back();\n}\n\n"
+                  . "setTimeout(function() {\n    if (window.history.length) {\n        window.history.back();\n    }\n}, 500);";
+
+    g5_map_alert_close($blade_script, $msg2, $header2, $msg3);
+
+} else {
 ?>
 
 <script>
@@ -72,4 +88,6 @@ setTimeout(function() {
 </noscript>
 
 <?php
+} // g5blade — 순정 출력 끝
+
 include_once(G5_PATH.'/tail.sub.php');

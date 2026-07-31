@@ -173,6 +173,16 @@ function g5_view($view, $data = array())
     echo g5_blade()->run($view, array_merge(g5_blade_common(), $data));
 }
 
+// 알림·확인 화면(alert·alert_close·confirm) 전용 — "한 요청에 화면 하나" 규칙에서 뺀다.
+// 이 화면들은 순정 alert()/confirm() 안에서 include 되고 곧바로 exit 하는 흐름의 끝이라,
+// 앞에서 무엇이 그려졌든 알림 스크립트는 반드시 나가야 한다. g5_view() 를 쓰면 앞 화면이
+// 이미 렌더된 요청에서 통째로 삼켜져 알림도 이동도 없이 끝난다.
+function g5_view_message($view, $data = array())
+{
+    g5_blade_buffer_drop();
+    echo g5_blade()->run($view, array_merge(g5_blade_common(), $data));
+}
+
 // 현재접속자 기록 — 순정은 tail.sub.php 의 html_end()(html_process::run)가 수행하지만
 // blade 화면은 tail.sub 를 타지 않으므로 해당 블록을 이식 (lib/common.lib.php:3300)
 function g5_blade_connect()
