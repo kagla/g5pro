@@ -262,36 +262,57 @@
 
 // 글쓴이 사이드뷰 — 목록 카드·표 안에 갇히는 것을 푼다.
 //
-// 순정은 .sv 를 position:absolute 로 띄운다. 그런데 목록 컨테이너가 모서리를 둥글게
-// 자르려고 overflow:hidden 을 쓰고(.list-panel · .list-simple · .gallery-card),
-// 표 목록은 좁은 화면에서 가로 스크롤을 하려고 .list-table-wrap 에 overflow-x:auto 가
-// 필요하다. 어느 쪽이든 조상이 자르므로 CSS 로는 풀 수 없다. 카드 목록만 멀쩡했던 것은
-// 그 컨테이너에 overflow 가 없기 때문이다.
+// 두 가지가 겹쳐 있다.
+//  1) 목록 컨테이너가 모서리를 둥글게 자르려고 overflow:hidden 을 쓴다
+//     (.list-panel · .list-simple · .gallery-card). 표 목록은 좁은 화면 가로 스크롤 때문에
+//     .list-table-wrap 에 overflow-x:auto 가 필요해 더 확실히 잘린다.
+//  2) 카드에 hover transform 이 있다 (.list-card>li:hover · .gallery-card:hover).
+//     transform 이 걸린 요소는 position:fixed 의 기준점이 되므로, 좌표만 화면 기준으로
+//     바꿔서는 마우스를 올린 동안 엉뚱한 자리에 뜨거나 그대로 잘린다.
 //
-// 그래서 열리는 순간 뷰포트 기준 fixed 로 바꿔 조상의 자르기에서 벗어나게 한다.
-// 순정 JS(common.js)가 .sv_on 을 붙인 다음에 이 코드가 돈다 — theme.js 가 뒤에 실려서다.
+// 그래서 좌표를 고치는 대신 요소를 body 로 꺼낸다. 조상이 무엇을 자르든, 어떤 transform 을
+// 걸든 영향을 받지 않는다. 순정이 .sv 를 .sv_wrap 안에서 찾으므로(closest→find),
+// 다음 클릭 전에 반드시 제자리로 돌려놓아야 한다 — 그래서 캡처 단계에서 먼저 되돌린다.
 (function () {
     var GAP = 4;
+    var moved = null;   // body 로 꺼내둔 .sv
+    var home = null;    // { parent, next } 원래 자리
+
+    function restore() {
+        if (!moved) return;
+        if (home.next && home.next.parentNode === home.parent) home.parent.insertBefore(moved, home.next);
+        else home.parent.appendChild(moved);
+        moved.removeAttribute('style');
+        moved = null;
+        home = null;
+    }
 
     function place() {
         var sv = document.querySelector('.sv.sv_on');
-        if (!sv) return;
+        if (!sv) { restore(); return; }
 
         var wrap = sv.closest('.sv_wrap');
         if (!wrap) return;
 
-        // 먼저 fixed 로 바꿔야 실제 크기를 잴 수 있다 (조상이 자르고 있으면 폭이 줄어든다)
+        var at = wrap.getBoundingClientRect();   // 트리거는 움직이지 않으므로 먼저 잰다
+
+        if (sv !== moved) {
+            restore();
+            home = { parent: sv.parentNode, next: sv.nextSibling };
+            document.body.appendChild(sv);
+            moved = sv;
+        }
+
         sv.style.position = 'fixed';
         sv.style.margin = '0';
         sv.style.left = '0';
         sv.style.top = '0';
 
-        var at = wrap.getBoundingClientRect();
         var box = sv.getBoundingClientRect();
         var left = at.left;
         var top = at.bottom + GAP;
 
-        // 화면 밖으로 나가면 안쪽으로 당긴다. 아래가 좁으면 트리거 위쪽에 띄운다.
+        // 화면 밖으로 나가면 안쪽으로 당기고, 아래가 좁으면 트리거 위쪽에 띄운다
         if (left + box.width > window.innerWidth - GAP) left = window.innerWidth - box.width - GAP;
         if (left < GAP) left = GAP;
         if (top + box.height > window.innerHeight - GAP && at.top - box.height - GAP > 0) {
@@ -302,13 +323,15 @@
         sv.style.top = Math.round(top) + 'px';
     }
 
-    // 순정 핸들러가 먼저 끝나도록 한 박자 늦춘다
-    function later() { setTimeout(place, 0); }
+    // 순정 핸들러(common.js)가 .sv 를 .sv_wrap 안에서 찾기 전에 제자리로 돌려놓는다
+    document.addEventListener('click', restore, true);
+    document.addEventListener('focusin', restore, true);
 
+    // 순정이 .sv_on 을 붙인 뒤에 자리를 잡는다
+    function later() { setTimeout(place, 0); }
     document.addEventListener('click', later, false);
     document.addEventListener('focusin', later, false);
 
-    // 스크롤·크기변경 중에는 위치가 어긋나므로 따라 움직인다
     window.addEventListener('scroll', place, true);
     window.addEventListener('resize', place);
 })();

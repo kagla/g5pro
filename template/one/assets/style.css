@@ -786,15 +786,17 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 
 /* ═══════════ 사이드뷰 (순정 get_sideview) ═══════════ */
 .sv_wrap { position: relative; display: inline-block; font-weight: inherit; }
-.sv_wrap .sv {
+/* 아래 규칙은 .sv_wrap 안이라는 전제를 두지 않는다 — theme.js 가 열릴 때 .sv 를 body 로
+   꺼내기 때문이다 (카드의 overflow·transform 에 갇히지 않게). 조상에 기대면 스타일이 빠진다. */
+.sv {
     display: none; position: absolute; top: 100%; left: 0; z-index: 100;
     min-width: 130px; margin-top: var(--s1);
     background: var(--card); border-radius: var(--r-md); padding: var(--s2); box-shadow: var(--sh-md);
 }
-.sv_wrap .sv a { display: block; padding: var(--s1) var(--s2); border-radius: var(--r-sm); font-size: var(--t-sm); font-weight: 400; color: var(--muted); white-space: nowrap; }
-.sv_wrap .sv a:hover { background: var(--bg); color: var(--fg); }
-.sv_wrap .sv_on { display: block; }
-.sv_wrap .sv img { display: none; }
+.sv a { display: block; padding: var(--s1) var(--s2); border-radius: var(--r-sm); font-size: var(--t-sm); font-weight: 400; color: var(--muted); white-space: nowrap; }
+.sv a:hover { background: var(--bg); color: var(--fg); }
+.sv_on { display: block; }
+.sv img { display: none; }
 .sv_member, .sv_guest { color: inherit; }
 /* 회원 아이콘(순정 cf_use_member_icon) — 크기가 설정값 그대로면 글자 줄을 밀어낸다.
    작은 원형으로 고정하고 글자 가운데에 맞춰 띄운다. */
