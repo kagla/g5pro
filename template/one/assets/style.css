@@ -560,7 +560,10 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 
 /* ═══════════ 목록 변형 1 · 표 (기본) — 흰 카드 안의 행 ═══════════ */
 .list-panel { background: var(--card); border-radius: var(--r-xl); box-shadow: var(--sh-md); overflow: hidden; }
-.list-table-wrap { overflow-x: auto; }
+/* 가로로만 스크롤한다. overflow-x 만 지정하면 CSS 규칙상 overflow-y 의 visible 이
+   auto 로 계산되어, 안에서 뭔가 세로로 넘칠 때 세로 스크롤바가 잠깐 생겼다 사라진다
+   (사이드뷰가 열리는 순간이 그랬다 — 15px 이 나타났다 사라지며 화면이 깜빡였다). */
+.list-table-wrap { overflow-x: auto; overflow-y: hidden; }
 .list-table { width: 100%; border-collapse: collapse; }
 .list-table th {
     font-size: var(--t-sm); font-weight: 700; color: var(--muted); letter-spacing: .03em;

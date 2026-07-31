@@ -339,10 +339,12 @@
     document.addEventListener('click', restoreUnlessInside, true);
     document.addEventListener('focusin', restoreUnlessInside, true);
 
-    // 순정이 .sv_on 을 붙인 뒤에 자리를 잡는다
-    function later() { setTimeout(place, 0); }
-    document.addEventListener('click', later, false);
-    document.addEventListener('focusin', later, false);
+    // 순정이 .sv_on 을 붙인 뒤에 자리를 잡는다.
+    // setTimeout 으로 미루면 그 사이에 한 프레임이 그려질 수 있고, 그동안 메뉴는 아직
+    // 목록 안에 있으므로 컨테이너에 스크롤바가 번쩍인다. 순정 핸들러는 트리거 자신에게,
+    // 이 핸들러는 document 에 달려 있어 같은 이벤트 안에서 반드시 뒤에 돈다 — 바로 옮겨도 된다.
+    document.addEventListener('click', place, false);
+    document.addEventListener('focusin', place, false);
 
     // 스크롤·크기변경 때 따라 움직이게 했더니 이벤트마다 강제 레이아웃이 일어나 화면이 끊겼다.
     // 캡처라 표의 가로 스크롤에도 걸렸다. 따라다니는 대신 닫는다 — 계산이 아예 없고,
