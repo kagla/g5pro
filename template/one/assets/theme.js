@@ -296,17 +296,19 @@
 
         var at = wrap.getBoundingClientRect();   // 트리거는 움직이지 않으므로 먼저 잰다
 
+        // 스타일을 먼저 주고 옮긴다. 순서를 바꾸면 body 흐름에 잠깐 얹힌 상태로 배치될 수 있고,
+        // 그 한 번의 레이아웃이 문서 크기를 흔들어 스크롤바가 생겼다 사라진다.
+        sv.style.position = 'fixed';
+        sv.style.margin = '0';
+        sv.style.top = '0';
+        sv.style.left = '-9999px';   // 화면 밖에서 크기만 잰다 (왼쪽 넘침은 스크롤을 만들지 않는다)
+
         if (sv !== moved) {
             restore();
             home = { parent: sv.parentNode, next: sv.nextSibling };
             document.body.appendChild(sv);
             moved = sv;
         }
-
-        sv.style.position = 'fixed';
-        sv.style.margin = '0';
-        sv.style.left = '0';
-        sv.style.top = '0';
 
         var box = sv.getBoundingClientRect();
         var left = at.left;
@@ -342,6 +344,15 @@
     document.addEventListener('click', later, false);
     document.addEventListener('focusin', later, false);
 
-    window.addEventListener('scroll', place, true);
-    window.addEventListener('resize', place);
+    // 스크롤·크기변경 때 따라 움직이게 했더니 이벤트마다 강제 레이아웃이 일어나 화면이 끊겼다.
+    // 캡처라 표의 가로 스크롤에도 걸렸다. 따라다니는 대신 닫는다 — 계산이 아예 없고,
+    // 드롭다운이 스크롤 중에 닫히는 것은 흔한 동작이라 어색하지 않다.
+    function close() {
+        var sv = document.querySelector('.sv.sv_on');
+        if (sv) sv.classList.remove('sv_on');
+        restore();
+    }
+
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
 })();
