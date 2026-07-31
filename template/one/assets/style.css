@@ -679,6 +679,56 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .auto-login { font-size: var(--t-sm); color: var(--muted); }
 /* 폼 맨 위의 설명 한 문단 (회원정보 찾기 등) */
 .form-lead { font-size: var(--t-sm); color: var(--muted); line-height: 1.7; margin: 0; }
+
+/* 알림·확인 화면 (alert·alert_close·confirm) — 스크립트가 도는 동안 잠깐 보이고,
+   JS 를 끈 브라우저에서는 이것이 화면 전부가 된다 */
+.msg-head { font-size: var(--t-sm); font-weight: 700; color: var(--muted); margin: 0 0 var(--s2); }
+.msg-body { font-size: var(--t-lg); font-weight: 600; line-height: 1.7; margin: 0; overflow-wrap: break-word; }
+.msg-note { font-size: var(--t-sm); color: var(--muted); margin: var(--s3) 0 0; }
+.msg-btns { display: flex; flex-direction: column; gap: var(--s2); margin-top: var(--s5); }
+.msg-btns.row { flex-direction: row; }
+.msg-btns.row .btn { flex: 1; justify-content: center; }
+.msg-card { margin-top: 8vh; text-align: center; }
+.msg-card .popup-title { font-size: var(--t-lg); color: var(--muted); font-weight: 700; }
+
+/* 이미지 뷰어 — 순정 스크립트가 창을 이미지 크기에 맞추므로 여백·제목을 두지 않는다 */
+.popup--bare { max-width: none; padding: 0; background: none; box-shadow: none; }
+.popup--bare .popup-title { display: none; }
+
+/* 회원 프로필 팝업 (bbs/profile.php) */
+.pf-head { display: flex; align-items: center; gap: var(--s3); margin-bottom: var(--s4); }
+.pf-photo { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; flex: none; background: var(--bg); }
+.pf-nick { font-size: var(--t-lg); font-weight: 800; }
+.pf-sub { font-size: var(--t-sm); color: var(--muted); }
+.pf-list { display: grid; grid-template-columns: auto 1fr; gap: var(--s2) var(--s4); font-size: var(--t-sm); }
+.pf-list dt { color: var(--muted); font-weight: 600; white-space: nowrap; }
+.pf-list dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.pf-intro { margin-top: var(--s4); padding-top: var(--s4); border-top: 1px solid var(--line); }
+.pf-intro h2 { font-size: var(--t-sm); font-weight: 700; color: var(--muted); margin-bottom: var(--s2); }
+.pf-intro-body { font-size: var(--t-md); line-height: 1.7; overflow-wrap: break-word; }
+
+/* 폼 안의 라벨 없는 항목 제목 (메일 형식 고르기 등) */
+.field-label { font-size: var(--t-sm); font-weight: 700; }
+
+/* 배송지 목록 팝업 (shop/orderaddress.php) */
+.addr-list { display: flex; flex-direction: column; gap: var(--s2); }
+.addr-list li { background: var(--card); border-radius: var(--r-lg); box-shadow: var(--sh-sm); padding: var(--s3) var(--s4); }
+.addr-top { display: flex; align-items: center; gap: var(--s2); margin-bottom: var(--s2); }
+.addr-subject { flex: 1; min-width: 0; }
+.addr-body { font-size: var(--t-sm); line-height: 1.6; }
+.addr-body b { margin-right: var(--s2); }
+.addr-acts { display: flex; align-items: center; gap: var(--s3); margin-top: var(--s3); }
+.addr-acts .btn { flex: none; }
+.addr-default { display: inline-flex; align-items: center; gap: var(--s1); font-size: var(--t-sm); color: var(--muted); }
+.addr-acts .linklike { margin-left: auto; }
+
+/* 쿠폰 팝업 (shop/coupon.php) */
+.cou-list { display: flex; flex-direction: column; gap: var(--s2); }
+.cou-list li { background: var(--card); border-radius: var(--r-lg); box-shadow: var(--sh-sm); padding: var(--s3) var(--s4); }
+.cou-top { display: flex; align-items: baseline; gap: var(--s2); }
+.cou-tit { font-weight: 700; }
+.cou-pri { margin-left: auto; font-size: var(--t-lg); font-weight: 800; color: var(--accent); }
+.cou-meta { display: flex; gap: var(--s3); margin-top: var(--s1); font-size: var(--t-xs); color: var(--muted); }
 .login-links { display: flex; justify-content: center; gap: var(--s4); font-size: var(--t-sm); color: var(--muted); }
 
 .stip { display: flex; flex-direction: column; gap: var(--s2); }

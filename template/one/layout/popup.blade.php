@@ -21,7 +21,8 @@
 </head>
 {{-- 새 창(window.open)으로 열리는 작은 화면 — 헤더·메뉴·푸터 없이 내용만 --}}
 <body class="popup-body">
-<div class="popup">
+{{-- 화면별 변형 클래스 — 쓰지 않는 화면은 빈 문자열이라 지금까지와 같다 --}}
+<div class="popup @yield('popup_class')">
     <h1 class="popup-title">{{ $title }}</h1>
     @yield('content')
 </div>
