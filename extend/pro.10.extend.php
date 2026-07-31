@@ -1,7 +1,6 @@
 <?php
 /**
  * g5pro 런타임 — BladeOne 로드, g5_view()/pro_takeover() 정의
- * 설계: docs/superpowers/specs/2026-07-29-g5pro-design.md
  *
  * ── extend/ 로드 순서 (common.php:836~853) ──
  * 순정 common.php 는 extend/ 안의 *.php 를 natsort(파일명 자연순)로 정렬해
