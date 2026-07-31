@@ -25,6 +25,9 @@
     --teal: #14B8A6;
     --teal-soft: #CCF5EE;
     --teal-deep: #0B8577;
+    /* 헤더 영역 전환에서 쇼핑몰이 선택됐을 때의 알약 색 — 커뮤니티(--accent 파랑)와 구분한다.
+       --teal 을 그대로 쓰면 얹히는 흰 아이콘이 2.49:1 이라 그래픽 최소 대비 3:1 에 못 미친다 */
+    --shop-on: #0B8577;          /* 흰 아이콘과 4.53:1 */
     --indigo: #4F46E5;
     --indigo-soft: #E0E7FF;
     --danger: #EF4444;
@@ -67,6 +70,7 @@
         --teal: #2DD4BF;
         --teal-soft: #0E3B36;
         --teal-deep: #5EEAD4;
+        --shop-on: #0D9488;          /* 흰 아이콘과 3.74:1 */
         --indigo: #A5A0FF;
         --indigo-soft: #262850;
         --danger: #F87171;
@@ -94,6 +98,7 @@
     --teal: #2DD4BF;
     --teal-soft: #0E3B36;
     --teal-deep: #5EEAD4;
+    --shop-on: #0D9488;          /* 흰 아이콘과 3.74:1 */
     --indigo: #A5A0FF;
     --indigo-soft: #262850;
     --danger: #F87171;
@@ -120,6 +125,7 @@
     --teal: #14B8A6;
     --teal-soft: #CCF5EE;
     --teal-deep: #0B8577;
+    --shop-on: #0B8577;
     --indigo: #4F46E5;
     --indigo-soft: #E0E7FF;
     --danger: #EF4444;
@@ -220,6 +226,10 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .area-link:hover { color: var(--accent); }
 .area-link.on { background: var(--accent); color: var(--accent-fg); box-shadow: var(--sh-sm); }
 .area-link.on:hover { color: var(--accent-fg); }
+/* 쇼핑몰 쪽은 다른 색으로 — 두 칸이 같은 파랑이면 어느 쪽이 켜졌는지 색으로 못 읽는다 */
+.area-link.area-bag.on { background: var(--shop-on); }
+.area-link.area-bag:hover { color: var(--shop-on); }
+.area-link.area-bag.on:hover { color: var(--accent-fg); }
 .area-link svg {
     width: 21px; height: 21px; fill: none;
     stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;

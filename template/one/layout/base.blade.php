@@ -41,12 +41,13 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
         @if (count($areas))
         <nav class="area-switch" aria-label="커뮤니티/쇼핑몰 전환">
             @foreach ($areas as $a)
-            @php $acls = 'area-link'.($a['active'] ? ' on' : ''); @endphp
+            @php $acls = 'area-link area-'.$a['icon'].($a['active'] ? ' on' : ''); @endphp
             <a class="{{ $acls }}" href="{{ $a['href'] }}" title="{{ $a['name'] }}" aria-label="{{ $a['name'] }}"
                @if ($a['active']) aria-current="page" @endif>
                 @if ($a['icon'] === 'bag')
-                {{-- 쇼핑몰: 상점(차양+문). 카트는 헤더 장바구니 버튼이 쓰므로 겹치지 않게 한다 --}}
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 10.5V20h15v-9.5"/><path d="M3 4h18l1 4.2a2.8 2.8 0 0 1-5.5 0 2.8 2.8 0 0 1-5.5 0 2.8 2.8 0 0 1-5.5 0L3 4Z"/><path d="M10 20v-5h4v5"/></svg>
+                {{-- 쇼핑몰: 쇼핑백. 차양 상점은 은행·건물로도 읽혀 알아보기 어려웠다.
+                     카트는 헤더 장바구니 버튼이 쓰므로 형태가 겹치지 않는 백으로 간다 --}}
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.4 8h13.2l.85 11.3a1.7 1.7 0 0 1-1.7 1.8H6.25a1.7 1.7 0 0 1-1.7-1.8L5.4 8Z"/><path d="M9 10.2V7a3 3 0 0 1 6 0v3.2"/></svg>
                 @else
                 {{-- 커뮤니티: 말풍선 --}}
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H9.5L4 20.5V6.5Z"/><path d="M8.5 9h7M8.5 12h4.5"/></svg>
