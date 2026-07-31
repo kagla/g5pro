@@ -25,9 +25,12 @@
     --teal: #14B8A6;
     --teal-soft: #CCF5EE;
     --teal-deep: #0B8577;
-    /* 헤더 영역 전환에서 쇼핑몰이 선택됐을 때의 알약 색 — 커뮤니티(--accent 파랑)와 구분한다.
-       --teal 을 그대로 쓰면 얹히는 흰 아이콘이 2.49:1 이라 그래픽 최소 대비 3:1 에 못 미친다 */
-    --shop-on: #0B8577;          /* 흰 아이콘과 4.53:1 */
+    /* 헤더 영역 전환의 쇼핑몰 칸 — 켜졌을 때 알약 색(on), 꺼졌을 때 선 아이콘 색(off).
+       커뮤니티(--accent 파랑)와 갈라 보이는 것이 목적이라 색상환 반대쪽 주황으로 간다.
+       청록(--teal 계열)은 파랑과 색상차가 43° 뿐이라 나란히 두면 구분이 안 됐다. 주황은 161°.
+       흰 아이콘이 얹히므로 그래픽 최소 대비 3:1 을 넘는 진한 쪽을 골랐다 */
+    --shop-on: #C2410C;          /* 흰 아이콘과 5.18:1 */
+    --shop-off: #C2410C;         /* 트랙 배경과 4.80:1 */
     --indigo: #4F46E5;
     --indigo-soft: #E0E7FF;
     --danger: #EF4444;
@@ -70,7 +73,8 @@
         --teal: #2DD4BF;
         --teal-soft: #0E3B36;
         --teal-deep: #5EEAD4;
-        --shop-on: #0D9488;          /* 흰 아이콘과 3.74:1 */
+        --shop-on: #EA6A0C;          /* 흰 아이콘과 3.20:1 */
+        --shop-off: #F97316;         /* 트랙 배경과 6.48:1 */
         --indigo: #A5A0FF;
         --indigo-soft: #262850;
         --danger: #F87171;
@@ -98,7 +102,8 @@
     --teal: #2DD4BF;
     --teal-soft: #0E3B36;
     --teal-deep: #5EEAD4;
-    --shop-on: #0D9488;          /* 흰 아이콘과 3.74:1 */
+    --shop-on: #EA6A0C;          /* 흰 아이콘과 3.20:1 */
+    --shop-off: #F97316;         /* 트랙 배경과 6.48:1 */
     --indigo: #A5A0FF;
     --indigo-soft: #262850;
     --danger: #F87171;
@@ -125,7 +130,8 @@
     --teal: #14B8A6;
     --teal-soft: #CCF5EE;
     --teal-deep: #0B8577;
-    --shop-on: #0B8577;
+    --shop-on: #C2410C;          /* 흰 아이콘과 5.18:1 */
+    --shop-off: #C2410C;         /* 트랙 배경과 4.80:1 */
     --indigo: #4F46E5;
     --indigo-soft: #E0E7FF;
     --danger: #EF4444;
@@ -226,8 +232,10 @@ textarea { line-height: 1.6; border-radius: var(--r-lg); }
 .area-link:hover { color: var(--accent); }
 .area-link.on { background: var(--accent); color: var(--accent-fg); box-shadow: var(--sh-sm); }
 .area-link.on:hover { color: var(--accent-fg); }
-/* 쇼핑몰 쪽은 다른 색으로 — 두 칸이 같은 파랑이면 어느 쪽이 켜졌는지 색으로 못 읽는다 */
-.area-link.area-bag.on { background: var(--shop-on); }
+/* 쇼핑몰 쪽은 다른 색으로 — 두 칸이 같은 파랑이면 어느 쪽이 켜졌는지 색으로 못 읽는다.
+   꺼졌을 때도 회색이 아니라 제 색을 옅게 지녀, 가기 전에 어느 칸이 쇼핑몰인지 알 수 있다 */
+.area-link.area-bag { color: var(--shop-off); }
+.area-link.area-bag.on { background: var(--shop-on); color: var(--accent-fg); }
 .area-link.area-bag:hover { color: var(--shop-on); }
 .area-link.area-bag.on:hover { color: var(--accent-fg); }
 .area-link svg {
