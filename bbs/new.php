@@ -1,5 +1,6 @@
 <?php
 include_once('./_common.php');
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 $g5['title'] = '새글';
 include_once('./_head.php');
@@ -110,6 +111,6 @@ for ($i=0; $row=sql_fetch_array($result); $i++) {
 
 $write_pages = get_paging(G5_IS_MOBILE ? $config['cf_mobile_pages'] : $config['cf_write_pages'], $page, $total_page, "?gr_id=$gr_id&amp;view=$view&amp;mb_id=$mb_id&amp;page=");
 
-include_once($new_skin_path.'/new.skin.php');
+g5_map_new(); // g5pro
 
 include_once('./_tail.php');

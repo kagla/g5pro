@@ -2071,3 +2071,10 @@ input[type=checkbox], input[type=radio] {
 .sv a[href*="new.php"]::before { -webkit-mask-image: var(--ico-sv-posts); mask-image: var(--ico-sv-posts); }
 .sv a[href*="member_form.php"]::before { -webkit-mask-image: var(--ico-sv-edit); mask-image: var(--ico-sv-edit); }
 .sv a[href*="point_list.php"]::before, .sv a[href*="/point.php"]::before { -webkit-mask-image: var(--ico-sv-point); mask-image: var(--ico-sv-point); }
+
+/* 새글 모아보기 필터 — .bbs-cate 를 그대로 쓰되 그룹 선택만 오른쪽으로 민다 */
+.new-filters select { margin-left: auto; height: 34px; }
+.new-table .col-board { white-space: nowrap; }
+.new-table .col-board .board-name { margin-left: var(--s2); color: var(--muted); font-size: var(--t-sm); }
+.new-table .col-board .board-name:hover { color: var(--accent); }
+.new-tools { display: flex; justify-content: flex-end; margin-top: var(--s3); }

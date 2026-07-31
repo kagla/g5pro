@@ -29,6 +29,20 @@ function g5_pro_list_views()
     return $views;
 }
 
+// 관리자 스킨 선택에 띄울 목록 변형 — 값과 사람이 읽을 이름.
+// 순정은 skin/board/ 디렉터리를 훑어 선택지를 만드는데, 이 변형들은 디렉터리가 아니라
+// 템플릿 뷰라서 그 목록에 나오지 않는다. adm/admin.lib.php 가 이걸 받아 덧붙인다.
+// 별칭(basic·gallery)은 넣지 않는다 — 순정 스킨 항목과 중복으로 보이기 때문이다.
+function g5_pro_list_skins()
+{
+    return array(
+        'pro'         => '표 목록',
+        'pro_simple'  => '간단 목록',
+        'pro_card'    => '카드 목록',
+        'pro_gallery' => '갤러리',
+    );
+}
+
 // ── 게시판 목록 (bbs/list.php)
 function g5_map_board_list()
 {
@@ -837,5 +851,64 @@ function g5_map_content($html)
         'head_img'   => file_exists(G5_DATA_PATH.'/content/'.$co_id.'_h') ? G5_DATA_URL.'/content/'.$co_id.'_h' : '',
         'tail_img'   => file_exists(G5_DATA_PATH.'/content/'.$co_id.'_t') ? G5_DATA_URL.'/content/'.$co_id.'_t' : '',
         'admin_href' => $is_admin ? G5_ADMIN_URL.'/contentform.php?w=u&co_id='.$co_id : '',
+    ));
+}
+
+// ── 새글 모아보기 (bbs/new.php)
+// 순정은 그룹 select 를 HTML 문자열($group_select)로 만들지만, 우리 폼은 우리가 그리므로
+// 같은 질의를 다시 돌려 배열로 넘긴다 (게시판 그룹 표라 행이 몇 개뿐이다).
+function g5_map_new()
+{
+    global $g5, $list, $total_count, $page, $total_page, $gr_id, $view, $mb_id, $is_admin, $rows;
+
+    $groups = array();
+    $res = sql_query(" select gr_id, gr_subject from {$g5['group_table']} order by gr_id ");
+    while ($row = sql_fetch_array($res)) {
+        $groups[] = array('id' => $row['gr_id'], 'subject' => $row['gr_subject']);
+    }
+
+    $items = array();
+    foreach ((array)$list as $row) {
+        $items[] = array(
+            'gr_id'      => $row['gr_id'],
+            'gr_subject' => $row['gr_subject'],
+            'bo_table'   => $row['bo_table'],
+            'bo_subject' => $row['bo_subject'],
+            'wr_id'      => $row['wr_id'],
+            'bn_id'      => isset($row['bn_id']) ? $row['bn_id'] : '',
+            'subject'    => get_text($row['wr_subject']),
+            'href'       => $row['href'],
+            'name'       => $row['name'],                  // 사이드뷰 HTML → {!! !!}
+            // 순정이 이미 목록용으로 줄여 둔 값 — 오늘이면 시:분, 아니면 월-일.
+            // 게시판 목록도 같은 값을 쓰므로 두 화면의 눈금이 맞는다.
+            'datetime'   => $row['datetime2'],
+            'is_comment' => !empty($row['comment']),
+        );
+    }
+
+    // 현재 조건을 유지한 채 한 가지만 바꾼 주소 (필터 링크용)
+    $qs = function ($over = array()) use ($gr_id, $view, $mb_id) {
+        $q = array_merge(array('gr_id' => $gr_id, 'view' => $view, 'mb_id' => $mb_id), $over);
+        $q = array_filter($q, function ($v) { return $v !== '' && $v !== null; });
+        return './new.php'.($q ? '?'.http_build_query($q) : '');
+    };
+
+    g5_view('bbs.new', array(
+        'items'      => $items,
+        'groups'     => $groups,
+        'gr_id'      => $gr_id,
+        'view'       => $view,
+        'mb_id'      => $mb_id,
+        'is_admin'   => (bool)$is_admin,
+        'total'      => (int)$total_count,
+        'page'       => (int)$page,
+        'total_page' => (int)$total_page,
+        'page_href'  => $qs(array('page' => '')).(strpos($qs(), '?') === false ? '?page=' : '&page='),
+        'views'      => array(
+            array('key' => '',  'label' => '전체',   'href' => $qs(array('view' => ''))),
+            array('key' => 'w', 'label' => '원글',   'href' => $qs(array('view' => 'w'))),
+            array('key' => 'c', 'label' => '댓글',   'href' => $qs(array('view' => 'c'))),
+        ),
+        'group_href' => $qs(array('gr_id' => '__GR__')),
     ));
 }
