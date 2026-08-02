@@ -237,3 +237,18 @@ a > img {
 	max-height: 1080px;
 	margin:0 auto;
 }
+
+/*
+ * 이모지 패널의 나브 아이콘 기준색.
+ *
+ * 단색 선화 아이콘(똥고집신·표정부자 나부장)은 iconsall.svg 에서 fill="currentColor" 로
+ * 그려진다. 그래야 다크모드에서 config.js 가 넣는 밝은 color 를 받아 묻히지 않는다.
+ * 다만 그 아이콘은 <a href="#"> 안에 들어가므로, 색을 정해 주지 않으면 브라우저 기본
+ * 링크색(파랑)을 물려받는다. 원래 색이던 회색을 여기서 기준으로 잡는다.
+ *
+ * contents.css 는 본문 편집영역과 패널 양쪽에 실린다. 아래 선택자는 패널에서만 걸린다.
+ */
+.cke_emoji-inner_panel nav a
+{
+	color: #454545;
+}

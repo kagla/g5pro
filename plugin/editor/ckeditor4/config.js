@@ -155,7 +155,9 @@ window.G5_CKEDITOR4_PANEL_DARK_CSS = [
     /* 이모지 패널 */
     '.cke_emoji-inner_panel > h2 { color: #E6EDF5 !important; }',
     '.cke_emoji-inner_panel > nav { border-bottom-color: #23303F !important; }',
-    '.cke_emoji-inner_panel > nav li a { color: #8B9BB0 !important; }',
+    // 나브 아이콘 중 단색 선화(똥고집신·나부장)는 iconsall.svg 에서 fill="currentColor" 로
+    // 그려지므로 이 color 를 그대로 받는다. 흐리게 두면 어두운 바탕에서 묻힌다
+    '.cke_emoji-inner_panel > nav li a { color: #E6EDF5 !important; }',
     '.cke_emoji-panel_block a:hover, .cke_emoji-panel_block a:focus {',
     '  background-color: #1B2837 !important; }',
     '.cke_emoji-search { border-color: #23303F !important; }',
