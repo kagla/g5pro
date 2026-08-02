@@ -109,8 +109,13 @@
 // 같은 자리에서 열고 Esc·배경·닫기 버튼 어느 것으로도 닫히게 한다.
 // 순정이 붙여 둔 클래스만 가로채므로 마크업은 건드리지 않는다 —
 // 첨부 이미지(view_file_link)와 본문 안 이미지(get_view_thumbnail) 모두 걸린다.
+// 확대·축소가 필요한 이유: 게시판 '이미지 폭' 설정보다 작은 그림은 순정이 줄이지
+// 않아 이미 원본 크기로 보인다. 그런 그림은 띄우기만 해서는 하나도 커지지 않는다.
 (function () {
-    var box = null, imgEl = null, opener = null;
+    var box = null, imgEl = null, pctEl = null, opener = null;
+    var scale = 1, tx = 0, ty = 0;          // scale 1 = 화면에 맞춘 상태
+    var drag = null;
+    var MIN = 0.1, MAX = 8;                 // 원본 대비 배율 한계
 
     function build() {
         box = document.createElement('div');
@@ -122,19 +127,102 @@
         box.innerHTML =
             '<div class="lightbox-backdrop" data-close></div>' +
             '<figure class="lightbox-body"><img alt=""></figure>' +
+            '<div class="lightbox-tools">' +
+              '<button type="button" data-zoom="out" aria-label="작게 보기">' +
+                '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2M8.5 11h5"/></svg>' +
+              '</button>' +
+              '<span class="lightbox-pct" aria-live="polite">100%</span>' +
+              '<button type="button" data-zoom="in" aria-label="크게 보기">' +
+                '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2M8.5 11h5M11 8.5v5"/></svg>' +
+              '</button>' +
+              '<button type="button" data-zoom="fit" aria-label="화면에 맞추기">' +
+                '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/></svg>' +
+              '</button>' +
+            '</div>' +
             '<button type="button" class="lightbox-close" data-close aria-label="닫기">&times;</button>';
         document.body.appendChild(box);
         imgEl = box.querySelector('img');
+        pctEl = box.querySelector('.lightbox-pct');
+
+        imgEl.addEventListener('load', reset);
 
         box.addEventListener('click', function (e) {
-            // 그림 자체를 누른 것이 아니면 닫는다 (배경 어디를 눌러도 닫힌다)
-            if (e.target === imgEl) return;
-            close();
+            if (e.target.closest('[data-close]')) { close(); return; }
+            if (e.target.closest('.lightbox-tools')) return;
+            // 그림 위가 아니면 배경으로 보고 닫는다
+            if (e.target !== imgEl) close();
         });
+
+        box.addEventListener('click', function (e) {
+            var b = e.target.closest('[data-zoom]');
+            if (!b) return;
+            var how = b.getAttribute('data-zoom');
+            if (how === 'in') zoom(1.4);
+            else if (how === 'out') zoom(1 / 1.4);
+            else reset();
+        });
+
+        // 그림을 두 번 누르면 화면맞춤 ↔ 2배를 오간다
+        imgEl.addEventListener('dblclick', function () {
+            if (scale === 1) zoom(2); else reset();
+        });
+
+        // 휠로도 조절한다 (뒤 문서가 스크롤되지 않게 막는다)
+        box.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            zoom(e.deltaY < 0 ? 1.15 : 1 / 1.15);
+        }, { passive: false });
+
+        // 화면보다 커졌을 때 끌어서 옮긴다
+        imgEl.addEventListener('pointerdown', function (e) {
+            if (scale <= 1) return;
+            drag = { x: e.clientX - tx, y: e.clientY - ty };
+            imgEl.setPointerCapture(e.pointerId);
+            e.preventDefault();
+        });
+        imgEl.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            tx = e.clientX - drag.x;
+            ty = e.clientY - drag.y;
+            apply();
+        });
+        imgEl.addEventListener('pointerup', function () { drag = null; });
+        imgEl.addEventListener('pointercancel', function () { drag = null; });
+
+        window.addEventListener('resize', function () { if (box && !box.hidden) apply(); });
+    }
+
+    // 표시하는 값은 '원본 대비' 배율이다. scale 은 화면맞춤 상태를 1 로 본 값이므로
+    // 화면맞춤 자체가 이미 줄어든 상태(큰 그림)면 100% 보다 작게 나온다.
+    function pct() {
+        var fitted = imgEl.clientWidth || 0;
+        var natural = imgEl.naturalWidth || 0;
+        if (!fitted || !natural) return Math.round(scale * 100);
+        return Math.round((fitted / natural) * scale * 100);
+    }
+
+    function apply() {
+        imgEl.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')';
+        imgEl.classList.toggle('is-zoomed', scale > 1);
+        if (pctEl) pctEl.textContent = pct() + '%';
+    }
+
+    function reset() { scale = 1; tx = 0; ty = 0; apply(); }
+
+    function zoom(by) {
+        var fitted = imgEl.clientWidth || 1, natural = imgEl.naturalWidth || 1;
+        var base = fitted / natural;            // 화면맞춤 상태의 원본 대비 배율
+        var next = scale * by;
+        if (base * next > MAX) next = MAX / base;
+        if (base * next < MIN) next = MIN / base;
+        scale = next;
+        if (scale <= 1) { tx = 0; ty = 0; }     // 화면 안에 들어오면 위치를 되돌린다
+        apply();
     }
 
     function open(src, alt) {
         if (!box) build();
+        reset();
         imgEl.src = src;
         imgEl.alt = alt || '';
         box.hidden = false;
@@ -158,12 +246,16 @@
         e.preventDefault();
         opener = a;
         // href 는 view_image.php 라는 '페이지'다. 원본 그림은 안쪽 img 의 src 이고,
-        // width/height 속성으로 작게 보일 뿐 파일 자체는 원본이다.
+        // width/height 로 작게 보일 뿐 파일 자체는 원본이다.
         open(img.getAttribute('src'), img.getAttribute('alt'));
     });
 
     document.addEventListener('keydown', function (e) {
+        if (!box || box.hidden) return;
         if (e.key === 'Escape') close();
+        else if (e.key === '+' || e.key === '=') zoom(1.4);
+        else if (e.key === '-') zoom(1 / 1.4);
+        else if (e.key === '0') reset();
     });
 })();
 

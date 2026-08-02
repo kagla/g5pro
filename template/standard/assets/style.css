@@ -721,7 +721,9 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .lightbox-backdrop { position: absolute; inset: 0; background: rgba(10, 18, 30, .82); }
 .lightbox-body { position: relative; margin: 0; padding: var(--s4); max-width: 100%; max-height: 100%; }
 .lightbox-body img {
-    display: block; max-width: min(92vw, 1400px); max-height: 90vh;
+    /* 아래쪽은 도구 막대, 위쪽은 닫기 버튼 자리를 비운다 — 화면맞춤 상태에서
+       그림이 가려지지 않게 한다 (확대하면 넘치는 것이 당연하므로 그대로 둔다) */
+    display: block; max-width: min(92vw, 1400px); max-height: calc(100vh - 132px);
     width: auto; height: auto; object-fit: contain;
     border-radius: var(--r-md); box-shadow: 0 12px 40px rgba(0, 0, 0, .45);
 }
@@ -733,6 +735,47 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 }
 .lightbox-close:hover { background: rgba(255, 255, 255, .3); }
 .lightbox-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* 확대·축소 도구 — 게시판 '이미지 폭'보다 작은 그림은 순정이 줄이지 않아
+   이미 원본 크기로 보인다. 띄우기만 해서는 하나도 커지지 않으므로 배율을 준다 */
+.lightbox-body img { transform-origin: center center; transition: transform .12s ease-out; }
+.lightbox-body img.is-zoomed { cursor: grab; transition: none; }
+.lightbox-body img.is-zoomed:active { cursor: grabbing; }
+.lightbox-tools {
+    position: absolute; left: 50%; bottom: var(--s4); transform: translateX(-50%); z-index: 1;
+    display: flex; align-items: center; gap: var(--s1);
+    padding: var(--s1); border-radius: var(--r-xl);
+    background: rgba(255, 255, 255, .14); backdrop-filter: blur(6px);
+}
+.lightbox-tools button {
+    display: grid; place-items: center; width: 38px; height: 38px;
+    border: 0; border-radius: 50%; background: none; color: #fff; cursor: pointer;
+}
+.lightbox-tools button:hover { background: rgba(255, 255, 255, .22); }
+.lightbox-tools button:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
+.lightbox-tools svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.lightbox-pct {
+    min-width: 4.2em; text-align: center; color: #fff;
+    font-size: var(--t-sm); font-variant-numeric: tabular-nums;
+}
+
+/* 눌러서 크게 볼 수 있다는 표시 — 없으면 클릭 가능한 줄 알 길이 없다 */
+a.view_image { position: relative; display: inline-block; cursor: zoom-in; }
+a.view_image::after {
+    content: ''; position: absolute; right: var(--s2); bottom: var(--s2);
+    width: 34px; height: 34px; border-radius: 50%;
+    /* 어두운 그림 위에서 원이 묻히지 않게 옅은 테두리를 두른다 */
+    background-color: rgba(10, 18, 30, .72);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, .45), 0 2px 8px rgba(0, 0, 0, .35);
+    background-repeat: no-repeat; background-position: center; background-size: 20px 20px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='6.5'/%3E%3Cpath d='m20 20-4.2-4.2M8.5 11h5M11 8.5v5'/%3E%3C/svg%3E");
+    opacity: 0; transition: opacity .15s; pointer-events: none;
+}
+a.view_image:hover::after, a.view_image:focus-visible::after { opacity: 1; }
+/* 손가락으로 쓰는 화면에는 hover 가 없으니 항상 옅게 띄워 둔다 */
+@media (hover: none) {
+    a.view_image::after { opacity: .85; }
+}
 
 /* 접속자 카드 — 첫 화면에만 둔다 (헤더에서 따라다니지 않는다) */
 .connect-card .connect-now { display: flex; align-items: baseline; gap: var(--s2); margin: var(--s2) 0 var(--s3); }
