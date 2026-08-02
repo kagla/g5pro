@@ -114,7 +114,7 @@
 (function () {
     var box = null, imgEl = null, pctEl = null, opener = null;
     var scale = 1, tx = 0, ty = 0;          // scale 1 = 화면에 맞춘 상태
-    var drag = null;
+    var drag = null, swallowClick = false;
     var MIN = 0.1, MAX = 8;                 // 원본 대비 배율 한계
 
     function build() {
@@ -146,20 +146,29 @@
 
         imgEl.addEventListener('load', reset);
 
+        // 브라우저 기본 이미지 드래그앤드롭을 끈다. 켜져 있으면 누르고 끄는 순간
+        // "그림을 다른 곳으로 끌어다 놓기"가 시작되면서 포인터를 가로채, 그림이
+        // 따라오지 않는다. draggable 과 dragstart 를 둘 다 막아야 확실하다.
+        imgEl.draggable = false;
+        imgEl.addEventListener('dragstart', function (e) { e.preventDefault(); });
+
         box.addEventListener('click', function (e) {
+            // 방금 끌었으면 그때 뒤따르는 click 은 삼킨다 — 안 그러면 끌다 놓는
+            // 순간 닫힌다 (누른 곳과 뗀 곳이 다르면 click 은 공통 조상에서 난다)
+            if (swallowClick) { swallowClick = false; return; }
+
+            var z = e.target.closest('[data-zoom]');
+            if (z) {
+                var how = z.getAttribute('data-zoom');
+                if (how === 'in') zoom(1.4);
+                else if (how === 'out') zoom(1 / 1.4);
+                else reset();
+                return;
+            }
             if (e.target.closest('[data-close]')) { close(); return; }
             if (e.target.closest('.lightbox-tools')) return;
             // 그림 위가 아니면 배경으로 보고 닫는다
             if (e.target !== imgEl) close();
-        });
-
-        box.addEventListener('click', function (e) {
-            var b = e.target.closest('[data-zoom]');
-            if (!b) return;
-            var how = b.getAttribute('data-zoom');
-            if (how === 'in') zoom(1.4);
-            else if (how === 'out') zoom(1 / 1.4);
-            else reset();
         });
 
         // 그림을 두 번 누르면 화면맞춤 ↔ 2배를 오간다
@@ -173,21 +182,30 @@
             zoom(e.deltaY < 0 ? 1.15 : 1 / 1.15);
         }, { passive: false });
 
-        // 화면보다 커졌을 때 끌어서 옮긴다
-        imgEl.addEventListener('pointerdown', function (e) {
+        // 화면보다 커졌을 때 끌어서 옮긴다.
+        // 그림이 아니라 상자에서 받는다 — 확대하면 그림이 화면 밖으로 나가서,
+        // 손이 그림 밖으로 벗어나도 계속 끌 수 있어야 한다.
+        box.addEventListener('pointerdown', function (e) {
             if (scale <= 1) return;
-            drag = { x: e.clientX - tx, y: e.clientY - ty };
-            imgEl.setPointerCapture(e.pointerId);
+            if (e.target.closest('.lightbox-tools, .lightbox-close')) return;
+            drag = { x: e.clientX - tx, y: e.clientY - ty, ox: e.clientX, oy: e.clientY };
+            box.setPointerCapture(e.pointerId);
             e.preventDefault();
         });
-        imgEl.addEventListener('pointermove', function (e) {
+        box.addEventListener('pointermove', function (e) {
             if (!drag) return;
             tx = e.clientX - drag.x;
             ty = e.clientY - drag.y;
+            // 손떨림은 클릭으로 남겨 둔다 — 4px 넘게 움직였을 때만 끌기로 본다
+            if (Math.abs(e.clientX - drag.ox) + Math.abs(e.clientY - drag.oy) > 4) swallowClick = true;
             apply();
         });
-        imgEl.addEventListener('pointerup', function () { drag = null; });
-        imgEl.addEventListener('pointercancel', function () { drag = null; });
+        function endDrag(e) {
+            drag = null;
+            if (box.hasPointerCapture && box.hasPointerCapture(e.pointerId)) box.releasePointerCapture(e.pointerId);
+        }
+        box.addEventListener('pointerup', endDrag);
+        box.addEventListener('pointercancel', endDrag);
 
         window.addEventListener('resize', function () { if (box && !box.hidden) apply(); });
     }
@@ -204,6 +222,8 @@
     function apply() {
         imgEl.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')';
         imgEl.classList.toggle('is-zoomed', scale > 1);
+        // 끌 수 있는 자리가 그림 밖까지이므로 손 모양도 상자 전체에 준다
+        box.classList.toggle('is-zoomed', scale > 1);
         if (pctEl) pctEl.textContent = pct() + '%';
     }
 
