@@ -17,6 +17,7 @@
     @foreach ($params as $k => $v)
     <input type="hidden" name="{{ $k }}" value="{{ $v }}">
     @endforeach
+    {!! $option_hidden !!}
 
     <div class="write-form">
         @if ($category_option)
@@ -32,9 +33,19 @@
         </div>
 
         <div class="field">
-            <label for="qa_content">내용</label>
-            <textarea name="qa_content" id="qa_content" required rows="12">{{ $write['content'] }}</textarea>
+            <label>내용</label>
+            {{-- 순정 editor_html() 결과 — 에디터를 쓰면 textarea 대신 에디터가 들어온다 --}}
+            {!! $editor_html !!}
         </div>
+
+        @if (count($options))
+        <div class="field-inline">
+            @foreach ($options as $o)
+            @php $chk = $o['checked'] ? 'checked' : ''; @endphp
+            <label><input type="checkbox" name="{{ $o['name'] }}" value="{{ $o['value'] }}" {{ $chk }}> {{ $o['label'] }}</label>
+            @endforeach
+        </div>
+        @endif
 
         <div class="field">
             <label for="qa_email">이메일</label>
@@ -64,9 +75,12 @@
 </form>
 
 <script>
+// $editor_js 는 완성된 스크립트가 아니라 submit 검사 안에 들어가야 할 조각이다
+// (순정 qa write.skin.php 와 같은 자리). 내용이 비었는지 보고 에디터 값을 폼필드로 옮기는
+// 일까지 여기서 한다 — 그래서 따로 qa_content 를 검사하면 에디터 값이 옮겨지기 전에 걸린다.
 function qa_write_submit(f) {
     if (!f.qa_subject.value.trim()) { alert("제목을 입력하세요."); f.qa_subject.focus(); return false; }
-    if (!f.qa_content.value.trim()) { alert("내용을 입력하세요."); f.qa_content.focus(); return false; }
+    {!! $editor_js !!}
     return true;
 }
 </script>

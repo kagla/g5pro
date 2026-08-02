@@ -1146,6 +1146,21 @@ function g5_map_qa_view()
 {
     global $view, $answer, $qstr, $list_href, $write_href, $update_href, $delete_href;
     global $answer_update_href, $answer_delete_href, $prev_href, $next_href, $is_admin;
+    global $editor_html, $editor_js, $is_dhtml_editor, $html_value, $html_checked;
+    global $token, $qaconfig, $sca, $stx, $page;
+
+    // 답변 등록 폼 — 순정은 이 자리에서만 답변을 받는다. qawrite.php 는 w=a 를 거부하므로
+    // (bbs/qawrite.php:6) 이 폼이 없으면 관리자가 답변할 길이 아예 없어진다.
+    // 조건은 순정 view.skin.php 와 같다 — 질문글이고, 아직 답변이 안 달렸을 때.
+    $show_answer_form = empty($view['qa_type']) && !(!empty($view['qa_status']) && !empty($answer['qa_id']));
+
+    $option_hidden = '';
+    $options = array();
+    if ($is_dhtml_editor) {
+        $option_hidden = '<input type="hidden" name="qa_html" value="1">';
+    } else {
+        $options[] = array('name' => 'qa_html', 'value' => $html_value, 'label' => 'html', 'checked' => (bool)$html_checked);
+    }
 
     $files = array();
     for ($i = 0; $i < (int)(isset($view['download_count']) ? $view['download_count'] : 0); $i++) {
@@ -1182,6 +1197,18 @@ function g5_map_qa_view()
             'answer_update' => $answer_update_href,
             'answer_delete' => $answer_delete_href,
         ),
+        'answer_form' => array(
+            'show'        => $show_answer_form,
+            'action'      => G5_BBS_URL.'/qawrite_update.php',
+            'token'       => $token,
+            'qa_id'       => $view['qa_id'],
+            'editor_html' => $editor_html,      // 순정 에디터/textarea HTML → {!! !!}
+            'editor_js'   => $editor_js,        // submit 검사 안에 들어갈 조각
+            'option_hidden' => $option_hidden,  // 에디터를 쓸 때의 qa_html 숨은 값 → {!! !!}
+            'options'     => $options,          // 에디터를 안 쓸 때의 html 체크박스
+            'use_file'    => !empty($qaconfig['qa_use_upload']),
+            'params'      => array('sca' => $sca, 'stx' => $stx, 'page' => $page),
+        ),
         'head'     => g5_pro_captured('qa_head'),
         'tail'     => g5_pro_captured('qa_tail'),
         'is_admin' => (bool)$is_admin,
@@ -1192,6 +1219,17 @@ function g5_map_qa_view()
 function g5_map_qa_write()
 {
     global $w, $write, $qa_id, $action_url, $category_option, $qaconfig, $token, $qstr, $page, $sca, $stx, $sfl;
+    global $editor_html, $editor_js, $is_dhtml_editor, $html_value, $html_checked;
+
+    // 순정 qa 스킨과 같은 규칙 — 에디터를 쓰면 qa_html 을 숨은 값으로 못박고,
+    // 아니면 체크박스로 고르게 한다. 이 값이 빠지면 본문이 통째로 이스케이프돼 보인다.
+    $option_hidden = '';
+    $options = array();
+    if ($is_dhtml_editor) {
+        $option_hidden = '<input type="hidden" name="qa_html" value="1">';
+    } else {
+        $options[] = array('name' => 'qa_html', 'value' => $html_value, 'label' => 'html', 'checked' => (bool)$html_checked);
+    }
 
     g5_view('bbs.qa_write', array(
         'w'        => $w,
@@ -1210,6 +1248,10 @@ function g5_map_qa_write()
             'html'       => !empty($write['qa_html']),
         ),
         'category_option' => $category_option,   // 순정 option HTML → {!! !!}
+        'editor_html'  => $editor_html,          // 순정 에디터/textarea HTML → {!! !!}
+        'editor_js'    => $editor_js,            // 완성된 스크립트가 아니라 submit 검사에 들어갈 조각
+        'option_hidden'=> $option_hidden,        // 에디터를 쓸 때의 qa_html 숨은 값 → {!! !!}
+        'options'      => $options,              // 에디터를 안 쓸 때의 html 체크박스
         'use_file'   => !empty($qaconfig['qa_use_upload']),
         'list_href'  => G5_BBS_URL.'/qalist.php'.$qstr,
         'params'     => array('page' => $page, 'sca' => $sca, 'stx' => $stx, 'sfl' => $sfl),

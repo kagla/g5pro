@@ -54,6 +54,73 @@
 </article>
 @endif
 
+{{-- 답변 등록 — 순정은 qawrite.php 가 w=a 를 거부해서 답변을 여기서만 받는다 --}}
+@if ($answer_form['show'])
+@if ($is_admin)
+<article class="post qa-answer-form">
+    <header class="post-head">
+        <h2><span class="chip c3">답변등록</span></h2>
+    </header>
+
+    <form name="fanswer" method="post" action="{{ $answer_form['action'] }}"
+          onsubmit="return qa_answer_submit(this);" enctype="multipart/form-data" autocomplete="off">
+        <input type="hidden" name="w" value="a">
+        <input type="hidden" name="qa_id" value="{{ $answer_form['qa_id'] }}">
+        <input type="hidden" name="token" value="{{ $answer_form['token'] }}">
+        @foreach ($answer_form['params'] as $k => $v)
+        <input type="hidden" name="{{ $k }}" value="{{ $v }}">
+        @endforeach
+        {!! $answer_form['option_hidden'] !!}
+
+        <div class="write-form">
+            <div class="field">
+                <label for="qa_subject">제목</label>
+                <input type="text" name="qa_subject" id="qa_subject" required maxlength="255" value="">
+            </div>
+
+            <div class="field">
+                <label>내용</label>
+                {!! $answer_form['editor_html'] !!}
+            </div>
+
+            @if (count($answer_form['options']))
+            <div class="field-inline">
+                @foreach ($answer_form['options'] as $o)
+                @php $chk = $o['checked'] ? 'checked' : ''; @endphp
+                <label><input type="checkbox" name="{{ $o['name'] }}" value="{{ $o['value'] }}" {{ $chk }}> {{ $o['label'] }}</label>
+                @endforeach
+            </div>
+            @endif
+
+            @if ($answer_form['use_file'])
+            <div class="field">
+                <label for="bf_answer1">첨부파일</label>
+                <input type="file" name="bf_file[1]" id="bf_answer1">
+                <input type="file" name="bf_file[2]" id="bf_answer2">
+            </div>
+            @endif
+        </div>
+
+        <div class="bbs-toolbar active">
+            <button type="submit" class="btn btn-primary">답변등록</button>
+        </div>
+    </form>
+
+    <script>
+    // editor_js 는 완성된 스크립트가 아니라 submit 검사 안에 들어가야 할 조각이다.
+    // 내용 검사와 에디터 값을 폼필드로 옮기는 일을 함께 한다.
+    function qa_answer_submit(f) {
+        if (!f.qa_subject.value.trim()) { alert("제목을 입력하세요."); f.qa_subject.focus(); return false; }
+        {!! $answer_form['editor_js'] !!}
+        return true;
+    }
+    </script>
+</article>
+@else
+<p class="qa-answer-wait">고객님의 문의에 대한 답변을 준비 중입니다.</p>
+@endif
+@endif
+
 <div class="bbs-toolbar active">
     <div class="qa-nav">
         @if ($links['prev'])<a class="btn" href="{!! $links['prev'] !!}">이전</a>@endif
