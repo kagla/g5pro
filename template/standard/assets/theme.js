@@ -103,6 +103,70 @@
     });
 })();
 
+// 이미지 크게보기 — 순정은 a.view_image 를 target="_blank" 로 새 탭에 띄우는데,
+// 그 탭에 실리는 view_image.php 는 팝업 창을 전제로 짜여 있다. 창 크기 조절도
+// 더블클릭으로 닫기도 브라우저가 막아서 사용자가 새 탭에 갇힌다.
+// 같은 자리에서 열고 Esc·배경·닫기 버튼 어느 것으로도 닫히게 한다.
+// 순정이 붙여 둔 클래스만 가로채므로 마크업은 건드리지 않는다 —
+// 첨부 이미지(view_file_link)와 본문 안 이미지(get_view_thumbnail) 모두 걸린다.
+(function () {
+    var box = null, imgEl = null, opener = null;
+
+    function build() {
+        box = document.createElement('div');
+        box.className = 'lightbox';
+        box.hidden = true;
+        box.setAttribute('role', 'dialog');
+        box.setAttribute('aria-modal', 'true');
+        box.setAttribute('aria-label', '이미지 크게보기');
+        box.innerHTML =
+            '<div class="lightbox-backdrop" data-close></div>' +
+            '<figure class="lightbox-body"><img alt=""></figure>' +
+            '<button type="button" class="lightbox-close" data-close aria-label="닫기">&times;</button>';
+        document.body.appendChild(box);
+        imgEl = box.querySelector('img');
+
+        box.addEventListener('click', function (e) {
+            // 그림 자체를 누른 것이 아니면 닫는다 (배경 어디를 눌러도 닫힌다)
+            if (e.target === imgEl) return;
+            close();
+        });
+    }
+
+    function open(src, alt) {
+        if (!box) build();
+        imgEl.src = src;
+        imgEl.alt = alt || '';
+        box.hidden = false;
+        document.body.style.overflow = 'hidden';
+        box.querySelector('.lightbox-close').focus();
+    }
+
+    function close() {
+        if (!box || box.hidden) return;
+        box.hidden = true;
+        imgEl.removeAttribute('src');   // 큰 그림을 물고 있지 않게 한다
+        document.body.style.overflow = '';
+        if (opener) { opener.focus(); opener = null; }
+    }
+
+    document.addEventListener('click', function (e) {
+        var a = e.target.closest ? e.target.closest('a.view_image') : null;
+        if (!a) return;
+        var img = a.querySelector('img');
+        if (!img) return;   // 그림이 없으면 순정 동작(새 탭)에 맡긴다
+        e.preventDefault();
+        opener = a;
+        // href 는 view_image.php 라는 '페이지'다. 원본 그림은 안쪽 img 의 src 이고,
+        // width/height 속성으로 작게 보일 뿐 파일 자체는 원본이다.
+        open(img.getAttribute('src'), img.getAttribute('alt'));
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') close();
+    });
+})();
+
 // 프로필 드롭다운
 (function () {
     var wrap = document.getElementById('profile');
