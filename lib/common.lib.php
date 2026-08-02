@@ -4665,6 +4665,17 @@ Order allow,deny
 Deny from all
 </FilesMatch>
 RedirectMatch 403 /session/.*
+
+# 올라온 그림은 오래 캐시한다. 두 번째 열람부터는 서버를 타지 않는다.
+# 안전한 이유: 그누보드는 올릴 때마다 파일 이름에 임의값을 섞어 새 이름을 만들고,
+# 썸네일은 이름에 크기(_835x1253)까지 박는다. 내용이 달라지면 이름도 달라지므로
+# 낡은 그림이 붙잡힌 채 남지 않는다.
+# 다만 FTP 등으로 같은 이름의 파일을 덮어쓰면 그동안은 옛 그림이 보인다.
+<IfModule mod_headers.c>
+    <FilesMatch "(?i)\.(jpe?g|png|gif|webp|bmp|ico|avif)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+</IfModule>
 EOD;
 
     $result = @file_put_contents($htaccess_file, $content);
