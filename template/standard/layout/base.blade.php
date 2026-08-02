@@ -19,6 +19,12 @@
 @if ($seo['og']['image'])
 <meta property="og:image" content="{{ $seo['og']['image'] }}">
 @endif
+{{-- 구조화 데이터. 여러 타입을 @graph 한 덩이로 묶어 태그 하나로 내보낸다.
+     JSON_UNESCAPED_* 로 한글과 주소를 사람이 읽을 수 있게 두고,
+     HEX_TAG 로 </script> 가 값 안에 섞여도 문서가 깨지지 않게 한다 --}}
+<script type="application/ld+json">
+{!! json_encode($jsonld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}
+</script>
 {!! $site['add_meta'] !!}
 <script>
 (function () {

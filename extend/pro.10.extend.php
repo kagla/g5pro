@@ -106,7 +106,140 @@ function g5_pro_common()
         ),
         'footer' => g5_pro_footer(),
         'seo'    => g5_pro_seo(),
+        'jsonld' => g5_pro_jsonld(),
     );
+}
+
+// 구조화 데이터. HTML 은 어떻게 보일지를 적고, 이쪽은 이게 무엇인지를 적는다.
+//
+// 여러 타입을 @graph 한 덩이로 묶는다 — 타입마다 <script> 를 내면 태그만 늘어난다.
+// 값은 g5_pro_seo() 가 이미 뽑아 둔 것을 재활용한다.
+//
+// 화면에 없는 값은 넣지 않는다. 구조화 데이터가 화면과 어긋나면 스팸으로 판정된다.
+//
+// FAQPage 는 넣지 않는다 — 구글이 2026년 5월 폐기 표시를 붙였고 리치 결과가 나오지 않는다.
+function g5_pro_jsonld()
+{
+    global $config, $view, $board, $bo_table, $it, $ca, $default;
+
+    $seo   = g5_pro_seo();
+    $graph = array();
+    $orgId = G5_URL.'/#organization';
+
+    // ── Organization — 전 화면.
+    //    쇼핑몰을 쓰면 푸터와 같은 값(de_admin_*)을 얹는다. 한 사실을 두 곳이 다르게
+    //    말하지 않도록 조건도 푸터와 같은 G5_USE_SHOP 을 쓴다.
+    $org = array(
+        '@type' => 'Organization',
+        '@id'   => $orgId,
+        'url'   => G5_URL,
+        'name'  => $config['cf_title'],
+    );
+    if (defined('G5_USE_SHOP') && G5_USE_SHOP && !empty($default['de_admin_company_name'])) {
+        $org['name'] = $default['de_admin_company_name'];
+        if (!empty($default['de_admin_company_tel'])) $org['telephone'] = $default['de_admin_company_tel'];
+        if (!empty($default['de_admin_company_addr'])) {
+            $org['address'] = array(
+                '@type'          => 'PostalAddress',
+                'streetAddress'  => $default['de_admin_company_addr'],
+                'addressCountry' => 'KR',
+            );
+        }
+    }
+    $graph[] = $org;
+
+    // ── BreadcrumbList — 홈 › 게시판(또는 분류) › 현재 글/상품
+    $crumbs = array(array('name' => '홈', 'url' => G5_URL));
+    if (!empty($board['bo_table'])) {
+        $crumbs[] = array(
+            'name' => $board['bo_subject'],
+            'url'  => G5_BBS_URL.'/board.php?bo_table='.$board['bo_table'],
+        );
+        if (!empty($view['wr_id'])) {
+            // subject 가 아니라 wr_subject 를 쓴다 — 검색으로 들어오면 subject 에
+            // search_font() 의 강조 마크업이 섞여 있다
+            $crumbs[] = array('name' => g5_pro_plain($view['wr_subject']), 'url' => $seo['canonical']);
+        }
+    } else if (!empty($it['it_id'])) {
+        // shop/item.php 의 $ca 에는 스킨·인증 관련 칸만 담겨 ca_name 이 없다. 따로 읽는다
+        if (!empty($it['ca_id'])) {
+            $row = sql_fetch(" select ca_id, ca_name from `{$GLOBALS['g5']['g5_shop_category_table']}`
+                                where ca_id = '".sql_real_escape_string($it['ca_id'])."' ", false);
+            if (!empty($row['ca_name'])) {
+                $crumbs[] = array(
+                    'name' => $row['ca_name'],
+                    'url'  => G5_SHOP_URL.'/list.php?ca_id='.$row['ca_id'],
+                );
+            }
+        }
+        $crumbs[] = array('name' => g5_pro_plain($it['it_name']), 'url' => $seo['canonical']);
+    }
+    if (count($crumbs) > 1) {
+        $items = array();
+        foreach ($crumbs as $i => $c) {
+            $items[] = array(
+                '@type'    => 'ListItem',
+                'position' => $i + 1,
+                'name'     => $c['name'],
+                'item'     => $c['url'],
+            );
+        }
+        $graph[] = array('@type' => 'BreadcrumbList', 'itemListElement' => $items);
+    }
+
+    // ── BlogPosting — 게시글. 비밀글은 검색에 실을 글이 아니다
+    if (!empty($view['wr_id']) && strpos((string)(isset($view['wr_option']) ? $view['wr_option'] : ''), 'secret') === false) {
+        $post = array(
+            '@type'            => 'BlogPosting',
+            'mainEntityOfPage' => $seo['canonical'],
+            'headline'         => g5_pro_plain($view['wr_subject']),
+            'datePublished'    => g5_pro_iso8601($view['wr_datetime']),
+            // name 이 아니라 wr_name 이다 — name 은 쪽지·자기소개가 붙은 사이드뷰 HTML 이다
+            'author'           => array('@type' => 'Person', 'name' => g5_pro_plain($view['wr_name'])),
+            'publisher'        => array('@id' => $orgId),
+        );
+        if (!empty($view['wr_last'])) $post['dateModified'] = g5_pro_iso8601($view['wr_last']);
+        if ($seo['description']) $post['description'] = $seo['description'];
+        if ($seo['og']['image'])  $post['image'] = $seo['og']['image'];
+        $graph[] = $post;
+    }
+
+    // ── Product — 상품. 가격·재고는 화면에 보이는 값 그대로
+    if (!empty($it['it_id'])) {
+        $product = array(
+            '@type' => 'Product',
+            'name'  => $it['it_name'],
+            'offers' => array(
+                '@type'         => 'Offer',
+                'url'           => $seo['canonical'],
+                'price'         => (string)(int)$it['it_price'],
+                'priceCurrency' => 'KRW',
+                'availability'  => empty($it['it_soldout'])
+                                   ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            ),
+        );
+        if (function_exists('get_it_imageurl')) {
+            $img = get_it_imageurl($it['it_id']);
+            if ($img) $product['image'] = $img;
+        }
+        $graph[] = $product;
+    }
+
+    return array('@context' => 'https://schema.org', '@graph' => $graph);
+}
+
+// 구조화 데이터에는 마크업이 섞이면 안 된다. 태그를 걷고 엔티티를 실제 글자로 되돌린다
+function g5_pro_plain($s)
+{
+    $s = html_entity_decode(strip_tags((string)$s), ENT_QUOTES, 'UTF-8');
+    return trim(preg_replace('/\s+/u', ' ', $s));
+}
+
+// 그누보드의 'YYYY-MM-DD HH:MM:SS' 를 ISO 8601 로. 구조화 데이터는 시간대를 요구한다
+function g5_pro_iso8601($datetime)
+{
+    $ts = strtotime((string)$datetime);
+    return $ts ? date('c', $ts) : '';
 }
 
 // 검색·공유용 메타. description·canonical·og 를 한 곳에서 만든다.
