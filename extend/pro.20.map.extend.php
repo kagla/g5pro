@@ -264,6 +264,17 @@ function g5_map_board_view($comments)
         }
     }
 
+    // 내가 이미 누른 것 — 버튼을 켜 두어야 다시 눌러 취소할 수 있음이 보인다
+    $my_react = '';
+    if (!empty($member['mb_id'])) {
+        $g = sql_fetch(" select bg_flag from `{$GLOBALS['g5']['board_good_table']}`
+                          where bo_table = '".sql_escape_string($bo_table)."'
+                            and wr_id = '".(int)$view['wr_id']."'
+                            and mb_id = '".sql_escape_string($member['mb_id'])."'
+                            and bg_flag in ('good','nogood') ", false);
+        $my_react = isset($g['bg_flag']) ? $g['bg_flag'] : '';
+    }
+
     $links = array();
     for ($i = 1; $i <= 2; $i++) {
         if (empty($view['link'][$i])) continue;
@@ -315,11 +326,13 @@ function g5_map_board_view($comments)
             'use'    => (bool)$board['bo_use_good'],
             'href'   => $good_href ? $good_href.'&amp;'.$qstr : '',
             'count'  => (int)$view['wr_good'],
+            'mine'   => ($my_react === 'good'),
         ),
         'nogood' => array(
             'use'    => (bool)$board['bo_use_nogood'],
             'href'   => $nogood_href ? $nogood_href.'&amp;'.$qstr : '',
             'count'  => (int)$view['wr_nogood'],
+            'mine'   => ($my_react === 'nogood'),
         ),
         'signature'   => $is_signature ? $signature : '',   // bo_use_signature, 순정 가공 HTML
         'copy_href'   => $copy_href,     // 게시판 관리자 이상

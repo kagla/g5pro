@@ -563,3 +563,82 @@ function g5_pro_areas()
         array('name' => '쇼핑몰',   'href' => G5_SHOP_URL.'/', 'icon' => 'bag',  'active' => $in_shop),
     );
 }
+
+// ── 추천·비추천 취소와 갈아타기
+// 순정 bbs/good.php 는 한 번 누르면 되돌릴 수 없다 — 이미 눌렀으면 막고 끝난다.
+// good.php 첫 줄의 run_event('bbs_good_before') 를 잡아, 이미 누른 기록이 있을 때만
+// 우리가 처리하고 끝낸다. 처음 누르는 경우는 손대지 않고 순정에게 넘긴다.
+// 순정 파일은 한 줄도 고치지 않는다.
+add_event('bbs_good_before', 'g5_pro_good_toggle', 10, 3);
+
+function g5_pro_good_toggle($bo_table, $wr_id, $good)
+{
+    global $g5, $member, $is_member, $board;
+
+    // 화면이 쓰는 길(js=on)만 맡는다. 그 밖은 순정 그대로 둔다.
+    if (!isset($_POST['js']) || $_POST['js'] !== 'on') return;
+    if ($good !== 'good' && $good !== 'nogood') return;
+    if (!$is_member || empty($bo_table) || empty($wr_id)) return;
+
+    // 순정과 같은 자리 확인 — 그 글을 실제로 열어 본 사람만
+    if (!get_session('ss_view_'.$bo_table.'_'.$wr_id)) return;
+
+    $bt  = sql_escape_string($bo_table);
+    $wid = (int)$wr_id;
+    $mb  = sql_escape_string($member['mb_id']);
+
+    $row = sql_fetch(" select bg_flag from `{$g5['board_good_table']}`
+                        where bo_table = '{$bt}' and wr_id = '{$wid}' and mb_id = '{$mb}'
+                          and bg_flag in ('good','nogood') ", false);
+    $had = isset($row['bg_flag']) ? $row['bg_flag'] : '';
+    if ($had === '') return;   // 처음 누르는 경우 — 순정이 맡는다
+
+    // 게시판에서 꺼 둔 기능으로는 갈아탈 수 없다
+    if ($good === 'good'   && empty($board['bo_use_good']))   g5_pro_good_json('이 게시판은 추천 기능을 사용하지 않습니다.');
+    if ($good === 'nogood' && empty($board['bo_use_nogood'])) g5_pro_good_json('이 게시판은 비추천 기능을 사용하지 않습니다.');
+
+    $write_table = $g5['write_prefix'].$bt;
+
+    if ($had === $good) {
+        // 같은 것을 다시 눌렀다 — 취소.
+        // 조건을 건 DELETE 로 지운 뒤 그 결과를 보고서야 셈을 줄인다.
+        // 동시에 두 번 눌러도 한 번만 줄어든다.
+        sql_query(" delete from `{$g5['board_good_table']}`
+                     where bo_table = '{$bt}' and wr_id = '{$wid}' and mb_id = '{$mb}'
+                       and bg_flag = '{$had}' ");
+        if (get_sql_affected_rows() > 0)
+            sql_query(" update `{$write_table}` set wr_{$had} = greatest(cast(wr_{$had} as signed) - 1, 0) where wr_id = '{$wid}' ");
+        $mine = '';
+    } else {
+        // 다른 것을 눌렀다 — 갈아타기. 기존 것을 내리고 새 것을 올린다.
+        sql_query(" update `{$g5['board_good_table']}`
+                       set bg_flag = '{$good}', bg_datetime = '".G5_TIME_YMDHIS."'
+                     where bo_table = '{$bt}' and wr_id = '{$wid}' and mb_id = '{$mb}'
+                       and bg_flag = '{$had}' ");
+        if (get_sql_affected_rows() > 0) {
+            sql_query(" update `{$write_table}`
+                           set wr_{$had}  = greatest(cast(wr_{$had} as signed) - 1, 0),
+                               wr_{$good} = wr_{$good} + 1
+                         where wr_id = '{$wid}' ");
+        }
+        $mine = $good;
+    }
+
+    $now = sql_fetch(" select wr_good, wr_nogood from `{$write_table}` where wr_id = '{$wid}' ", false);
+    g5_pro_good_json('', array(
+        'count'  => (int)(isset($now['wr_'.$good]) ? $now['wr_'.$good] : 0),
+        'good'   => (int)(isset($now['wr_good']) ? $now['wr_good'] : 0),
+        'nogood' => (int)(isset($now['wr_nogood']) ? $now['wr_nogood'] : 0),
+        'mine'   => $mine,
+    ));
+}
+
+// 순정 good.php 가 쓰는 응답 모양({error, count})을 지키고 필요한 것만 덧붙인다.
+// 옛 키를 그대로 두므로 이 규약을 읽는 다른 코드가 있어도 깨지지 않는다.
+function g5_pro_good_json($error, $extra = array())
+{
+    $out = array_merge(array('error' => $error, 'count' => ''), $extra);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($out, JSON_UNESCAPED_UNICODE);
+    exit;
+}

@@ -34,6 +34,8 @@
     --indigo: #4F46E5;
     --indigo-soft: #E0E7FF;
     --danger: #EF4444;
+    --danger-soft: #FEE2E2;
+    --danger-deep: #B91C1C;
 
     --grad: linear-gradient(115deg, #38BDF8, #3B82F6 55%, #14B8A6);
 
@@ -85,6 +87,8 @@
         --indigo: #A5A0FF;
         --indigo-soft: #262850;
         --danger: #F87171;
+        --danger-soft: #4A1E1E;
+        --danger-deep: #FCA5A5;
 
         --sh-sm: 0 4px 12px rgba(0,0,0,.30);
         --sh-md: 0 8px 22px rgba(0,0,0,.36);
@@ -121,6 +125,8 @@
     --indigo: #A5A0FF;
     --indigo-soft: #262850;
     --danger: #F87171;
+    --danger-soft: #4A1E1E;
+    --danger-deep: #FCA5A5;
 
     --sh-sm: 0 4px 12px rgba(0,0,0,.30);
     --sh-md: 0 8px 22px rgba(0,0,0,.36);
@@ -151,6 +157,8 @@
     --indigo: #4F46E5;
     --indigo-soft: #E0E7FF;
     --danger: #EF4444;
+    --danger-soft: #FEE2E2;
+    --danger-deep: #B91C1C;
 
     --sh-sm: 0 4px 12px rgba(50,100,180,.08);
     --sh-md: 0 8px 22px rgba(50,100,180,.10);
@@ -1326,6 +1334,16 @@ a.chip.cate:hover { background: var(--teal); color: #fff; }
 }
 .react:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .react:disabled { opacity: .55; cursor: default; }
+
+/* 추천은 파랑, 비추천은 빨강 — 같은 회색 버튼 둘이 나란히 있으면 어느 쪽을
+   누르는지 색으로 갈리지 않았다. 위의 일반 규칙과 같은 특정도라 순서로 이긴다 */
+.react-good:hover:not(:disabled)   { border-color: var(--accent); color: var(--accent); }
+.react-nogood:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); }
+/* 내가 누른 것은 채워 둔다 — 눌린 상태가 보여야 다시 눌러 취소할 생각을 한다 */
+.react.is-on { transition: background-color .15s, border-color .15s, color .15s; }
+.react-good.is-on   { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-deep); }
+.react-nogood.is-on { background: var(--danger-soft); border-color: var(--danger); color: var(--danger-deep); }
+.react.is-on svg { fill: currentColor; fill-opacity: .2; }
 .react svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linejoin: round; }
 .react b { font-variant-numeric: tabular-nums; }
 .react-msg { font-size: var(--t-sm); font-weight: 700; color: var(--accent); }

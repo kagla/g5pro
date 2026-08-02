@@ -53,14 +53,23 @@
 
     @if ($good['use'] || $nogood['use'] || $use_sns)
     <div class="post-react">
+        {{-- 켜진 버튼은 내가 누른 것 — 다시 누르면 취소, 반대쪽을 누르면 갈아탄다 --}}
         @if ($good['use'])
-        <button type="button" class="react" data-href="{!! $good['href'] !!}" data-kind="good" @if (!$good['href']) disabled @endif>
+        <button type="button" class="react react-good{{ $good['mine'] ? ' is-on' : '' }}"
+                data-href="{!! $good['href'] !!}" data-kind="good"
+                aria-pressed="{{ $good['mine'] ? 'true' : 'false' }}"
+                title="{{ $good['mine'] ? '추천 취소' : '추천' }}"
+                @if (!$good['href']) disabled @endif>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 21V10l4.5-7A2 2 0 0 1 14 4.6L13 9h5.5a2 2 0 0 1 2 2.4l-1.5 7A2 2 0 0 1 17 20H7Z"/></svg>
             추천 <b>{{ number_format($good['count']) }}</b>
         </button>
         @endif
         @if ($nogood['use'])
-        <button type="button" class="react" data-href="{!! $nogood['href'] !!}" data-kind="nogood" @if (!$nogood['href']) disabled @endif>
+        <button type="button" class="react react-nogood{{ $nogood['mine'] ? ' is-on' : '' }}"
+                data-href="{!! $nogood['href'] !!}" data-kind="nogood"
+                aria-pressed="{{ $nogood['mine'] ? 'true' : 'false' }}"
+                title="{{ $nogood['mine'] ? '비추천 취소' : '비추천' }}"
+                @if (!$nogood['href']) disabled @endif>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 3v11l-4.5 7A2 2 0 0 1 10 19.4L11 15H5.5a2 2 0 0 1-2-2.4l1.5-7A2 2 0 0 1 7 4h10Z"/></svg>
             비추천 <b>{{ number_format($nogood['count']) }}</b>
         </button>
@@ -227,24 +236,63 @@
 @if ($content_tail)<div class="board-extra">{!! $content_tail !!}</div>@endif
 
 <script>
-// 추천·비추천 — 순정 good.php 의 js=on 규약 (JSON {error, count})
-document.querySelectorAll('.post-react .react[data-href]').forEach(function (b) {
-    b.addEventListener('click', function () {
-        var msg = document.getElementById('react-msg');
-        var body = new URLSearchParams({ js: 'on' });
-        fetch(b.dataset.href.replace(/&amp;/g, '&'), {
-            method: 'POST', credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: body.toString()
-        }).then(function (r) { return r.json(); }).then(function (d) {
-            if (d.error) { alert(d.error); return; }
-            if (d.count) {
-                b.querySelector('b').textContent = Number(d.count).toLocaleString();
-                msg.textContent = (b.dataset.kind === 'good' ? '추천' : '비추천') + '했습니다.';
-                setTimeout(function () { msg.textContent = ''; }, 2500);
-            }
-        }).catch(function () { alert('처리하지 못했습니다.'); });
+// 추천·비추천 — 순정 good.php 의 js=on 규약(JSON {error, count})을 지키되,
+// 취소·갈아타기일 때는 extend 가 good/nogood/mine 을 함께 돌려준다.
+// 갈아타면 반대쪽 수도 바뀌므로 둘 다 다시 그린다.
+(function () {
+    var msg = document.getElementById('react-msg');
+    var btns = {};
+    document.querySelectorAll('.post-react .react[data-kind]').forEach(function (b) {
+        btns[b.dataset.kind] = b;
     });
-});
+
+    function paint(kind, on) {
+        var b = btns[kind];
+        if (!b) return;
+        b.classList.toggle('is-on', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        var label = kind === 'good' ? '추천' : '비추천';
+        b.title = on ? label + ' 취소' : label;
+    }
+    function setCount(kind, n) {
+        if (btns[kind] && n !== undefined && n !== null && n !== '')
+            btns[kind].querySelector('b').textContent = Number(n).toLocaleString();
+    }
+    function say(t) {
+        if (!msg) return;
+        msg.textContent = t;
+        setTimeout(function () { if (msg.textContent === t) msg.textContent = ''; }, 2500);
+    }
+
+    Object.keys(btns).forEach(function (kind) {
+        var b = btns[kind];
+        if (!b.dataset.href) return;   // 비회원이거나 자기 글 — 순정이 href 를 안 준다
+        b.addEventListener('click', function () {
+            b.disabled = true;
+            fetch(b.dataset.href.replace(/&amp;/g, '&'), {
+                method: 'POST', credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ js: 'on' }).toString()
+            }).then(function (r) { return r.json(); }).then(function (d) {
+                if (d.error) { alert(d.error); return; }
+                var label = kind === 'good' ? '추천' : '비추천';
+                if (d.mine === undefined) {
+                    // 처음 누른 경우 — 순정이 그대로 처리했다
+                    setCount(kind, d.count);
+                    paint(kind, true);
+                    say(label + '했습니다.');
+                } else {
+                    setCount('good', d.good);
+                    setCount('nogood', d.nogood);
+                    paint('good', d.mine === 'good');
+                    paint('nogood', d.mine === 'nogood');
+                    say(d.mine === '' ? label + '을 취소했습니다.' : label + '으로 바꿨습니다.');
+                }
+            }).catch(function () {
+                alert('처리하지 못했습니다.');
+            }).then(function () { b.disabled = false; });
+        });
+    });
+})();
 </script>
 @endsection
