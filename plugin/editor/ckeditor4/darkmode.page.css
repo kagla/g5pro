@@ -1,0 +1,198 @@
+/*
+ * CKEditor 4 다크모드 — 페이지 문서 쪽.
+ *
+ * 드롭다운 패널의 바깥 틀과 다이얼로그는 iframe 이 아니라 페이지 DOM 에 그려진다.
+ * 그래서 여기서 잡는다. 패널 iframe 안쪽(이모지 목록·글꼴 목록)과 본문 편집영역은
+ * 페이지 CSS 가 닿지 못하므로 config.js 가 스타일을 주입한다.
+ *
+ * 왜 :root[data-theme="dark"] 인가 — moono-dark 스킨은 툴바만 어둡게 하고
+ * .cke_panel{background:#fff} 과 밝은 다이얼로그를 그대로 물려받았다. 게다가 스킨은
+ * 로드 시점에 한 번 정해져 테마 토글을 따라오지 못한다. 이 파일은 항상 실려 있고
+ * 선택자로만 갈리므로 토글에 즉시 반응한다.
+ *
+ * 색은 사이트 팔레트(template/standard/assets/style.css)의 토큰을 쓰되,
+ * 토큰이 없는 화면(관리자 등)을 위해 대체값을 함께 적는다. 그런 화면에는 data-theme
+ * 자체가 없어 이 규칙이 아예 걸리지 않지만, 값이 비는 것보다 낫다.
+ */
+
+/* ── 에디터 바깥 틀 ─────────────────────────────────────── */
+/* 툴바(.cke_top)는 moono-dark 가 이미 어둡게 한다. 스킨이 놓친 나머지만 잡는다.
+   .cke_inner 와 iframe 요소 자체는 본문 문서 뒤에 깔려 있어 로딩 중과 가장자리에서 흰 면이 비친다 */
+:root[data-theme="dark"] .cke_inner,
+:root[data-theme="dark"] .cke_wysiwyg_frame,
+:root[data-theme="dark"] .cke_wysiwyg_div {
+    background-color: var(--bg, #0F1621);
+}
+
+:root[data-theme="dark"] .cke_bottom {
+    background: var(--pop, #1E2A3A);
+    background-image: none;
+    filter: none;
+    border-top-color: var(--line, #23303F);
+    box-shadow: none;
+}
+
+:root[data-theme="dark"] .cke_path_item,
+:root[data-theme="dark"] .cke_path_empty {
+    color: var(--muted, #8B9BB0);
+    text-shadow: none;
+}
+
+:root[data-theme="dark"] .cke_bottom .cke_resizer {
+    border-color: transparent var(--muted, #8B9BB0) var(--muted, #8B9BB0) transparent;
+}
+
+/* ── 드롭다운 패널 바깥 틀 ───────────────────────────────── */
+:root[data-theme="dark"] .cke_panel,
+:root[data-theme="dark"] .cke_combopanel {
+    background-color: var(--card, #16202E);
+    border-color: var(--line, #23303F);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, .45);
+}
+
+/* ── 다이얼로그 ─────────────────────────────────────────── */
+:root[data-theme="dark"] .cke_dialog_body {
+    /* 스크롤바와 select 화살표 같은 브라우저 기본 UI 까지 어둡게 한다 */
+    color-scheme: dark;
+    background: var(--card, #16202E);
+    border-color: var(--line, #23303F);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .5);
+}
+
+/* 제목줄은 스킨이 이미 어둡다. 아래로 그어지는 흰 선만 지운다 */
+:root[data-theme="dark"] .cke_dialog_title {
+    box-shadow: none;
+    border-color: var(--line, #23303F);
+}
+
+:root[data-theme="dark"] .cke_dialog_contents,
+:root[data-theme="dark"] .cke_dialog_contents_body,
+:root[data-theme="dark"] .cke_dialog_page_contents {
+    background-color: var(--card, #16202E);
+    border-top-color: var(--line, #23303F);
+    color: var(--fg, #E6EDF5);
+}
+
+:root[data-theme="dark"] .cke_dialog_footer {
+    background: var(--pop, #1E2A3A);
+    background-image: none;
+    outline-color: var(--line, #23303F);
+    border-top-color: var(--line, #23303F);
+    box-shadow: none;
+}
+
+/* ── 다이얼로그 탭 ──────────────────────────────────────── */
+:root[data-theme="dark"] .cke_dialog_tab {
+    background: var(--pop, #1E2A3A);
+    background-image: none;
+    filter: none;
+    border-color: var(--line, #23303F);
+    color: var(--muted, #8B9BB0);
+}
+
+:root[data-theme="dark"] .cke_dialog_tab:hover,
+:root[data-theme="dark"] .cke_dialog_tab:focus {
+    background: var(--row-hover, #1B2837);
+    background-image: none;
+    filter: none;
+    color: var(--fg, #E6EDF5);
+}
+
+:root[data-theme="dark"] .cke_dialog_tab_selected,
+:root[data-theme="dark"] .cke_dialog_tab_selected:hover {
+    background: var(--card, #16202E);
+    background-image: none;
+    filter: none;
+    border-bottom-color: var(--card, #16202E);
+    color: var(--fg, #E6EDF5);
+}
+
+/* ── 라벨과 안내 글자 ───────────────────────────────────── */
+:root[data-theme="dark"] .cke_dialog_ui_labeled_label,
+:root[data-theme="dark"] .cke_dialog_ui_text,
+:root[data-theme="dark"] .cke_dialog_ui_html,
+:root[data-theme="dark"] .cke_dialog .cke_label,
+:root[data-theme="dark"] .cke_dialog_ui_checkbox_input + label,
+:root[data-theme="dark"] .cke_dialog_ui_radio_input + label {
+    color: var(--fg, #E6EDF5);
+}
+
+/* .cke_required 는 순정이 굵게만 한다. 색을 더하지 않고 위 규칙의 --fg 를 그대로 받는다 */
+
+/* ── 입력 요소 ─────────────────────────────────────────── */
+:root[data-theme="dark"] .cke_dialog input.cke_dialog_ui_input_text,
+:root[data-theme="dark"] .cke_dialog input.cke_dialog_ui_input_password,
+:root[data-theme="dark"] .cke_dialog input.cke_dialog_ui_input_file,
+:root[data-theme="dark"] .cke_dialog textarea.cke_dialog_ui_input_textarea,
+:root[data-theme="dark"] .cke_dialog select.cke_dialog_ui_input_select {
+    background-color: var(--bg, #0F1621);
+    border-color: var(--line, #23303F);
+    color: var(--fg, #E6EDF5);
+}
+
+:root[data-theme="dark"] .cke_dialog input.cke_dialog_ui_input_text:focus,
+:root[data-theme="dark"] .cke_dialog input.cke_dialog_ui_input_password:focus,
+:root[data-theme="dark"] .cke_dialog textarea.cke_dialog_ui_input_textarea:focus,
+:root[data-theme="dark"] .cke_dialog select.cke_dialog_ui_input_select:focus {
+    border-color: var(--accent, #4A90FF);
+    outline: none;
+}
+
+/* 이미지 다이얼로그의 미리보기 칸. 흰 종이로 두면 다크에서 유일한 흰 사각형이 되고,
+   무엇보다 다크에서 실제로 보일 모습과 어긋난 미리보기가 된다 */
+:root[data-theme="dark"] .cke_dialog .ImagePreviewBox {
+    background-color: var(--bg, #0F1621);
+    border-color: var(--line, #23303F);
+}
+
+/* 미리보기 글은 table 안에 들어가는데 그 table 이 color 를 검정으로 되돌린다.
+   상자에만 색을 주면 어두운 바탕에 검은 글자가 되어 읽을 수 없다 */
+:root[data-theme="dark"] .cke_dialog .ImagePreviewBox,
+:root[data-theme="dark"] .cke_dialog .ImagePreviewBox * {
+    color: var(--fg, #E6EDF5);
+}
+
+/* 파일 업로드 칸은 iframe 안에 그려진다. 배경만 맞춰 흰 사각형이 남지 않게 한다 */
+:root[data-theme="dark"] .cke_dialog_ui_file,
+:root[data-theme="dark"] .cke_dialog_ui_file iframe {
+    background-color: var(--bg, #0F1621);
+}
+
+/* ── 버튼 ──────────────────────────────────────────────── */
+:root[data-theme="dark"] .cke_dialog a.cke_dialog_ui_button {
+    background: var(--pop, #1E2A3A);
+    background-image: none;
+    filter: none;
+    border-color: var(--btn-line, #57718E);
+    color: var(--fg, #E6EDF5);
+    text-shadow: none;
+    box-shadow: none;
+}
+
+:root[data-theme="dark"] .cke_dialog a.cke_dialog_ui_button:hover,
+:root[data-theme="dark"] .cke_dialog a.cke_dialog_ui_button:focus {
+    background: var(--row-hover, #1B2837);
+    background-image: none;
+    filter: none;
+}
+
+:root[data-theme="dark"] .cke_dialog a.cke_dialog_ui_button_ok {
+    background: var(--accent, #4A90FF);
+    background-image: none;
+    filter: none;
+    border-color: var(--accent, #4A90FF);
+    color: var(--accent-fg, #FFFFFF);
+}
+
+:root[data-theme="dark"] .cke_dialog a.cke_dialog_ui_button_ok:hover,
+:root[data-theme="dark"] .cke_dialog a.cke_dialog_ui_button_ok:focus {
+    background: var(--accent-deep, #8FBCFF);
+    background-image: none;
+    filter: none;
+    color: var(--bg, #0F1621);
+}
+
+/* ── 크기 조절 손잡이 ───────────────────────────────────── */
+:root[data-theme="dark"] .cke_dialog .cke_resizer {
+    border-color: transparent var(--muted, #8B9BB0) var(--muted, #8B9BB0) transparent;
+}

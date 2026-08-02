@@ -90,10 +90,86 @@ CKEDITOR.on('instanceReady', function (evt) {
         try { window.applyCKEditorDarkMode(evt.editor); } catch (e) {}
     }
 
+    // 드롭다운 패널이 열릴 때마다 그 안쪽에 다크 스타일을 넣는다.
+    evt.editor.on('panelShow', function () {
+        try { window.applyCKEditorPanelDarkMode(); } catch (e) {}
+    });
+
     // (notifications_area 를 .cke 안으로 옮기는 로직은 panel 위치 계산을 깨서
     //  emoji / font 팝업이 페이지 하단에 뜨는 문제를 만들었음 — 제거.
     //  알림 toast 위치는 CKEditor 기본 그대로 두고 admin.css 의 카드 스타일만 적용.)
 });
+
+/**
+ * 드롭다운 패널(이모지·글꼴·크기·색상) 안쪽 다크모드.
+ *
+ * 패널 내용은 iframe.cke_panel_frame 안에 그려져 페이지 CSS 도 darkmode.page.css 도
+ * 닿지 않는다. contentsCss 로 들어가는 darkmode.css 는 글꼴 패널까지는 실리지만
+ * 이모지 패널은 plugins/emoji/plugin.js 가 config.contentsCss 대신 기본 contents.css 를
+ * 직접 붙이는 탓에 아예 실리지 않는다. 그래서 열릴 때마다 직접 넣는다.
+ *
+ * 매번 현재 테마를 다시 읽으므로 토글에도 따라온다. 같은 iframe 에 두 번 넣지 않는다.
+ */
+window.applyCKEditorPanelDarkMode = function () {
+    var isDark = window.G5_CKEDITOR4_IS_DARK && window.G5_CKEDITOR4_IS_DARK();
+    var frames = document.querySelectorAll('iframe.cke_panel_frame');
+
+    for (var i = 0; i < frames.length; i++) {
+        var doc;
+        try {
+            doc = frames[i].contentDocument || frames[i].contentWindow.document;
+        } catch (e) {
+            continue;   // 다른 출처면 건드릴 수 없다
+        }
+        if (!doc || !doc.head) continue;
+
+        var old = doc.getElementById('ckeditor-dark-panel');
+        if (old) old.parentNode.removeChild(old);
+        if (!isDark) continue;
+
+        var style = doc.createElement('style');
+        style.id = 'ckeditor-dark-panel';
+        style.textContent = window.G5_CKEDITOR4_PANEL_DARK_CSS;
+        doc.head.appendChild(style);
+    }
+};
+
+// 색은 사이트 팔레트(style.css 의 :root[data-theme="dark"])와 같은 값을 쓴다.
+// iframe 안이라 CSS 변수가 상속되지 않아 값을 그대로 적는다.
+window.G5_CKEDITOR4_PANEL_DARK_CSS = [
+    // iframe 은 부모 문서의 color-scheme 을 물려받지 않는다. 이걸 빼면 스크롤바가 흰 채로 남는다
+    'html { color-scheme: dark; }',
+    'html, body { background: #16202E !important; color: #E6EDF5 !important; }',
+
+    /* 글꼴·크기·서식 등 목록형 패널 */
+    '.cke_panel_list, .cke_panel_listItem a { color: #E6EDF5 !important; }',
+    '.cke_panel_listItem a { background-color: transparent !important; }',
+    '.cke_panel_listItem a:hover, .cke_panel_listItem a:focus, .cke_panel_listItem a:active,',
+    '.cke_panel_listItem.cke_selected a {',
+    '  background-color: #1B2837 !important; border-color: #23303F !important; color: #E6EDF5 !important; }',
+    '.cke_panel_grouptitle {',
+    '  background: #1E2A3A !important; background-image: none !important;',
+    '  color: #E6EDF5 !important; border-color: #23303F !important;',
+    '  box-shadow: none !important; text-shadow: none !important; }',
+
+    /* 이모지 패널 */
+    '.cke_emoji-inner_panel > h2 { color: #E6EDF5 !important; }',
+    '.cke_emoji-inner_panel > nav { border-bottom-color: #23303F !important; }',
+    '.cke_emoji-inner_panel > nav li a { color: #8B9BB0 !important; }',
+    '.cke_emoji-panel_block a:hover, .cke_emoji-panel_block a:focus {',
+    '  background-color: #1B2837 !important; }',
+    '.cke_emoji-search { border-color: #23303F !important; }',
+    '.cke_emoji-search input { background: #0F1621 !important; color: #E6EDF5 !important; }',
+    '.cke_emoji-status_bar { border-top-color: #23303F !important; }',
+    'p.cke_emoji-status_full_name { color: #8B9BB0 !important; }',
+    '.cke_emoji-inner_panel a:focus, .cke_emoji-inner_panel input:focus {',
+    '  outline-color: #4A90FF !important; }',
+
+    /* 색상 고르기 패널 — 칸 색은 그대로 두고 틀만 맞춘다 */
+    '.cke_colorbox { border-color: #23303F !important; }',
+    '.cke_colorauto, .cke_colormore {',
+    '  background-color: #1E2A3A !important; color: #E6EDF5 !important; border-color: #23303F !important; }'
+].join('\n');
 
 /**
  * CKEditor 초기화 헬퍼 함수
@@ -236,6 +312,8 @@ window.applyCKEditorDarkMode = function(editorInstance) {
             var darkStyle = iframeDoc.createElement('style');
             darkStyle.id = 'ckeditor-dark-style';
             darkStyle.textContent = `
+                /* 없으면 편집영역 스크롤바가 흰 채로 남는다 — iframe 은 부모의 color-scheme 을 안 받는다 */
+                html { color-scheme: dark; }
                 body {
                     background-color: #111827 !important;
                     color: #f3f4f6 !important;

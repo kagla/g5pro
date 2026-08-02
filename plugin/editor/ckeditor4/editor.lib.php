@@ -37,6 +37,9 @@ function editor_html($id, $content, $is_dhtml_editor=true)
         // /js/ckeditor4 와 /plugin/.../ckeditor4 분리였으나 단일 경로로 통합).
         $js_editor_url = $editor_url;
         $html .= "\n".'<script>var g5_editor_url = "'.$editor_url.'";</script>';
+        // 다크모드용 페이지 CSS. 선택자가 :root[data-theme="dark"] 로 갈리므로 항상 실어도
+        // 라이트 화면에는 아무 영향이 없고, 테마 토글에 곧바로 반응한다.
+        $html .= "\n".'<link rel="stylesheet" href="'.$js_editor_url.'/darkmode.page.css?v='.$version_date.'">';
         $html .= "\n".'<script src="'.$js_editor_url.'/ckeditor.js?v='.$version_date.'"></script>';
         $html .= "\n".'<script src="'.$js_editor_url.'/config.js?v='.$version_date.'"></script>';
         $html .= "\n<script>";
