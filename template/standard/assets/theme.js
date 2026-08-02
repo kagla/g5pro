@@ -578,3 +578,20 @@
     window.addEventListener('scroll', close, true);
     window.addEventListener('resize', close);
 })();
+
+// 푸터 사업자정보 — 좁은 화면에서만 접는다.
+// 마크업은 open 인 채로 나온다. 스크립트가 죽어도 정보는 펼쳐진 채 남아야 하기 때문이다
+// (의무 노출이라 안 보이는 쪽으로 실패하면 안 된다). 접는 일은 여기서만 한다.
+(function () {
+    var fold = document.querySelector('.ft-fold');
+    if (!fold || !window.matchMedia) return;
+
+    var mq = window.matchMedia('(max-width: 620px)');
+
+    // 폭이 기준을 넘나들 때만 손댄다. 그 사이에 이용자가 직접 여닫은 것은 그대로 둔다
+    function sync(e) { fold.open = !e.matches; }
+
+    sync(mq);
+    if (mq.addEventListener) mq.addEventListener('change', sync);
+    else if (mq.addListener) mq.addListener(sync);   // 사파리 13 이하
+})();

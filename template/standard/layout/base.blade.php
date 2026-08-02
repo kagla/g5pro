@@ -156,15 +156,22 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
 
         @if (count($footer['company']))
         {{-- 통신판매업자 정보 — 라벨과 값의 짝이라 dl 로 짠다.
-             값이 빈 항목은 g5_pro_footer() 가 미리 걸러 여기까지 오지 않는다 --}}
-        <dl class="ft-company">
-            @foreach ($footer['company'] as $c)
-            <div class="ft-company-row">
-                <dt>{{ $c['label'] }}</dt>
-                <dd>{{ $c['value'] }}</dd>
-            </div>
-            @endforeach
-        </dl>
+             값이 빈 항목은 g5_pro_footer() 가 미리 걸러 여기까지 오지 않는다.
+
+             details 로 감싸고 열린 채로 내보낸다. 데스크톱은 summary 를 숨겨 지금 모습
+             그대로이고, 좁은 화면에서는 theme.js 가 접는다. 스크립트가 죽어도 정보는
+             펼쳐진 채 남는다 — 의무 노출이라 안 보이는 쪽으로 실패하면 안 된다 --}}
+        <details class="ft-fold" open>
+            <summary>사업자정보</summary>
+            <dl class="ft-company">
+                @foreach ($footer['company'] as $c)
+                <div class="ft-company-row">
+                    <dt>{{ $c['label'] }}</dt>
+                    <dd>{{ $c['value'] }}</dd>
+                </div>
+                @endforeach
+            </dl>
+        </details>
         @endif
 
         {{-- 연도는 해마다 손대지 않도록 서버 시각에서 뽑는다 --}}
