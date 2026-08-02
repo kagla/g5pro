@@ -1,0 +1,25 @@
+/*
+Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+*/
+CKEDITOR.plugins.setLang( 'emoji', 'en', {
+	searchPlaceholder: 'Search emoji…',
+	searchLabel: 'Input field responsible for searching and filtering emoji inside panel.',
+	navigationLabel: 'Groups navigation for emoji sections.',
+	title: 'Emoji List',
+	groups: {
+		people: 'People',
+		nature: 'Nature and animals',
+		food: 'Food and drinks',
+		travel: 'Travel and places',
+		activities: 'Activities',
+		objects: 'Objects',
+		symbols: 'Symbols',
+		flags: 'Flags',
+        dow: "도우",
+        happydow: "즐거운!도우",
+        popo: "포포",
+        ddong: "똥고집신",
+        naboojang: "표정부자 나부장"
+	}
+} );

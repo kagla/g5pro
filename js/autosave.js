@@ -10,8 +10,6 @@ function autosave() {
         if(g5_editor != "") {
             if (g5_editor.indexOf("ckeditor4") != -1 && typeof(CKEDITOR.instances.wr_content)!="undefined") {
                 this.wr_content.value = CKEDITOR.instances.wr_content.getData();
-            } else if (g5_editor.indexOf("cheditor5") != -1 && typeof(ed_wr_content)!="undefined") {
-                this.wr_content.value = ed_wr_content.outputBodyHTML();
             } else {
                 if(typeof get_editor_wr_content == "function") {
                     this.wr_content.value = get_editor_wr_content();
@@ -86,8 +84,6 @@ $(function(){
             if(g5_editor != "") {
                 if (g5_editor.indexOf("ckeditor4") != -1 && typeof(CKEDITOR.instances.wr_content)!="undefined") {
                     CKEDITOR.instances.wr_content.setData(content);
-                } else if (g5_editor.indexOf("cheditor5") != -1 && typeof(ed_wr_content)!="undefined") {
-                    ed_wr_content.putContents(content);
                 } else {
                     if(typeof put_editor_wr_content == "function") {
                         put_editor_wr_content(content);

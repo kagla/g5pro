@@ -676,7 +676,8 @@ if ($gr_id && !is_array($gr_id)) {
     $group = get_group($gr_id, true);
 }
 
-if ($config['cf_editor']) {
+// 고른 에디터의 폴더가 사라졌다면 순정 textarea 로 떨어진다 — 없는 파일을 require 해 흰 화면이 되는 대신
+if ($config['cf_editor'] && is_file(G5_EDITOR_PATH."/{$config['cf_editor']}/editor.lib.php")) {
     define('G5_EDITOR_LIB', G5_EDITOR_PATH."/{$config['cf_editor']}/editor.lib.php");
 } else {
     define('G5_EDITOR_LIB', G5_LIB_PATH."/editor.lib.php");
