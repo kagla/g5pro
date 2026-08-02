@@ -168,17 +168,24 @@
 
 <div class="bbs-toolbar">
     <div class="bbs-actions">
-        <a class="btn" href="{{ $list_href }}">목록</a>
+        <a class="btn btn-ico" href="{{ $list_href }}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>목록</a>
         {{-- 검색으로 들어왔을 때만 — 검색 결과로 되돌아간다 --}}
-        @if ($search_href)<a class="btn" href="{!! $search_href !!}">검색결과</a>@endif
-        @if ($reply_href)<a class="btn" href="{!! $reply_href !!}">답변</a>@endif
-        @if ($scrap_href)<a class="btn" href="{!! $scrap_href !!}" target="_blank" onclick="win_scrap(this.href); return false;">스크랩</a>@endif
+        @if ($search_href)<a class="btn btn-ico" href="{!! $search_href !!}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.6-4.6"/></svg>검색결과</a>@endif
+        @if ($reply_href)<a class="btn btn-ico" href="{!! $reply_href !!}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h9a7 7 0 0 1 7 7v4"/></svg>답변</a>@endif
+        @if ($scrap_href)<a class="btn btn-ico" href="{!! $scrap_href !!}" target="_blank" onclick="win_scrap(this.href); return false;">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v16l-6-4.2L6 20V4Z"/></svg>스크랩</a>@endif
         {{-- 비회원에게도 자리를 보여 주고 누르면 로그인으로 안내한다. 순정은 아예 감췄다 --}}
-        @if (!$scrap_href && $login_href)<a class="btn react-login" href="{{ $login_href }}" data-label="스크랩">스크랩</a>@endif
+        @if (!$scrap_href && $login_href)<a class="btn btn-ico react-login" href="{{ $login_href }}" data-label="스크랩">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v16l-6-4.2L6 20V4Z"/></svg>스크랩</a>@endif
     </div>
     <div class="bbs-actions">
-        @if ($update_href)<a class="btn" href="{!! $update_href !!}">수정</a>@endif
-        @if ($write_href)<a class="btn btn-primary" href="{{ $write_href }}">글쓰기</a>@endif
+        @if ($update_href)<a class="btn btn-ico" href="{!! $update_href !!}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L18 10l-4-4L4 16v4Z"/><path d="M14 6l4 4"/></svg>수정</a>@endif
+        @if ($write_href)<a class="btn btn-primary btn-ico" href="{{ $write_href }}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>글쓰기</a>@endif
         {{-- 가끔 쓰는 복사(관리자)·이동(관리자)·삭제는 점 세 개 메뉴로 접어 줄 폭을 아낀다 --}}
         @if ($copy_href || $move_href || $delete_href)
         <div class="kebab">

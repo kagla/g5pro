@@ -209,6 +209,14 @@ ul { list-style: none; margin: 0; padding: 0; }
     transition: border-color .15s, color .15s, box-shadow .15s;
 }
 .btn:hover { border-color: var(--accent); color: var(--accent); }
+/* 아이콘을 단 버튼. .btn 은 inline-block 이라 아이콘과 글자의 밑선이 어긋난다.
+   전역 .btn 을 flex 로 바꾸면 이 클래스를 쓰는 다른 화면이 함께 밀리므로 수식 클래스로만 바꾼다.
+   선 두께·굵기는 케밥 메뉴, 추천 바의 아이콘과 같은 값이다 */
+.btn-ico { display: inline-flex; align-items: center; gap: 6px; }
+.btn-ico svg {
+    width: 16px; height: 16px; flex: none; fill: none;
+    stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+}
 .btn-primary {
     background: var(--accent); border-color: var(--accent); color: var(--accent-fg);
     box-shadow: var(--sh-btn);
@@ -575,7 +583,9 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
     display: flex; align-items: center; justify-content: space-between;
     gap: var(--s3); flex-wrap: wrap; margin-top: var(--s4);
 }
-.bbs-actions { display: flex; gap: var(--s2); }
+/* 버튼은 white-space:nowrap 이라 칸을 넘으면 그대로 삐져나온다. 줄을 바꾸게 둔다 —
+   아이콘이 붙어 버튼당 22px 씩 넓어지면서 390px 에서 4px 넘치는 것이 드러났다 */
+.bbs-actions { display: flex; flex-wrap: wrap; gap: var(--s2); }
 .bbs-search {
     display: flex; align-items: center; gap: var(--s2); flex: 1; min-width: 0; max-width: 420px;
     background: var(--card); border-radius: var(--r-btn); padding: var(--s1) var(--s1) var(--s1) var(--s3);
