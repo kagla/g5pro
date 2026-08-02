@@ -114,7 +114,7 @@
 (function () {
     var box = null, imgEl = null, pctEl = null, opener = null;
     var scale = 1, tx = 0, ty = 0;          // scale 1 = 화면에 맞춘 상태
-    var drag = null, swallowClick = false;
+    var drag = null, swallowClick = false, firstLoad = true;
     var MIN = 0.1, MAX = 8;                 // 원본 대비 배율 한계
 
     function build() {
@@ -144,7 +144,11 @@
         imgEl = box.querySelector('img');
         pctEl = box.querySelector('.lightbox-pct');
 
-        imgEl.addEventListener('load', reset);
+        // 처음 실릴 때만 배율을 되돌린다. 원본으로 바뀔 때 되돌리면 보던 자리를 잃는다
+        imgEl.addEventListener('load', function () {
+            if (firstLoad) { firstLoad = false; reset(); }
+            else apply();   // 원본이 실렸다 — 원본 대비 배율 표시를 다시 계산한다
+        });
 
         // 브라우저 기본 이미지 드래그앤드롭을 끈다. 켜져 있으면 누르고 끄는 순간
         // "그림을 다른 곳으로 끌어다 놓기"가 시작되면서 포인터를 가로채, 그림이
@@ -249,29 +253,47 @@
         apply();
     }
 
-    // 무엇을 띄울지 — 두 경로가 다르다.
-    //  첨부 이미지(view_file_link)  : img 의 src 가 이미 원본이고 fn 은 파일명뿐이다
-    //  본문 이미지(get_view_thumbnail): img 의 src 는 만들어 둔 썸네일이고,
-    //                                   원본은 링크의 fn 에 사이트 기준 경로로 들어 있다
-    // 뒤엣것을 img 의 src 로 띄우면 축소본을 늘리는 셈이라 뭉갠다.
+    // 화면의 img 는 원본이 아닐 수 있다. get_view_thumbnail() 이 게시판 '이미지 폭'
+    // 보다 큰 그림을 썸네일로 바꿔치기하기 때문이다 (4666px 짜리가 835px 로 줄기도 한다).
+    // 원본 경로는 링크에만 남으므로 거기서 되찾는다 — bbs/view_image.php 와 같은 규칙이다.
+    //   fn 이 / 로 시작   → 사이트 기준 경로 (편집기·1:1문의 본문 이미지)
+    //   bo_table 이 있으면 → data/file/<게시판>/<파일명>  (게시판 첨부)
     function originalSrc(a, img) {
         var href = a.getAttribute('href') || '';
-        var m = href.match(/[?&]fn=([^&]*)/);
-        if (m) {
-            var fn = decodeURIComponent(m[1].replace(/\+/g, ' '));
+        var fnm = href.match(/[?&]fn=([^&]*)/);
+        if (fnm) {
+            var fn = decodeURIComponent(fnm[1].replace(/\+/g, ' '));
             if (fn.charAt(0) === '/') return (window.g5_url || '') + fn;
+            var bt = href.match(/[?&]bo_table=([^&]*)/);
+            if (bt && window.g5_data_url) {
+                return window.g5_data_url + '/file/' + decodeURIComponent(bt[1]) + '/' + fn;
+            }
         }
         return img.getAttribute('src');
     }
 
-    function open(src, alt) {
+    // 원본은 수 MB 일 수 있다. 이미 받아 둔 화면의 그림을 먼저 띄워 즉시 보이게 하고,
+    // 원본이 다 오면 조용히 바꿔치기한다. 원본을 못 받으면 있던 그림이 그대로 남는다.
+    function open(shownSrc, origSrc, alt) {
         if (!box) build();
+        firstLoad = true;
         reset();
-        imgEl.src = src;
         imgEl.alt = alt || '';
+        imgEl.src = shownSrc;
         box.hidden = false;
         document.body.style.overflow = 'hidden';
         box.querySelector('.lightbox-close').focus();
+
+        if (!origSrc || origSrc === shownSrc) return;
+        box.classList.add('is-loading');
+        var pre = new Image();
+        pre.onload = function () {
+            box.classList.remove('is-loading');
+            if (box.hidden) return;          // 그새 닫혔으면 버린다
+            imgEl.src = origSrc;
+        };
+        pre.onerror = function () { box.classList.remove('is-loading'); };
+        pre.src = origSrc;
     }
 
     function close() {
@@ -289,7 +311,7 @@
         if (!img) return;   // 그림이 없으면 순정 동작(새 탭)에 맡긴다
         e.preventDefault();
         opener = a;
-        open(originalSrc(a, img), img.getAttribute('alt'));
+        open(img.getAttribute("src"), originalSrc(a, img), img.getAttribute("alt"));
     });
 
     document.addEventListener('keydown', function (e) {

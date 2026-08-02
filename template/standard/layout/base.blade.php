@@ -21,6 +21,7 @@
 <link rel="stylesheet" href="{{ g5_pro_asset('style.css') }}">
 <script>
 var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{ G5_ADMIN_URL }}",
+    g5_data_url = "{{ G5_DATA_URL }}",
     g5_is_member = {{ $me ? 1 : 0 }}, g5_is_mobile = false, g5_bo_table = "", g5_sca = "",
     g5_editor = "", g5_cookie_domain = "";
 </script>
