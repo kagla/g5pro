@@ -35,4 +35,7 @@ Disallow: /shop/orderaddress.php
 Disallow: /shop/wishlist.php
 
 # /data/ 는 막지 않는다 — 올린 이미지가 이미지 검색에 잡히는 편이 이득이다.
-# Sitemap 줄도 넣지 않는다 — 아직 sitemap.xml 이 없어서, 가리키면 수집기 로그에 오류만 쌓인다.
+
+# 별칭 /sitemap.xml 이 아니라 sitemap.php 를 가리킨다. 별칭은 서버의 .htaccess 가
+# 얹는 것이라 저장소에 담기지 않는다 — 사라져도 수집기가 길을 잃지 않도록.
+Sitemap: https://g5pro.gnuboard.net/sitemap.php
