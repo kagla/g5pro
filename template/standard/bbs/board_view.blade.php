@@ -121,7 +121,11 @@
             <button type="button" class="linklike c-cancel">취소</button>
         </div>
         <textarea name="wr_content" rows="3" required placeholder="댓글을 남겨주세요"></textarea>
-        <button type="submit" class="btn btn-primary">댓글 등록</button>
+        {{-- 이 버튼은 답글·수정 모드로도 쓰인다. 아이콘과 글자를 따로 갈아 끼우려고 나눠 둔다 --}}
+        <button type="submit" class="btn btn-primary btn-ico">
+            <svg viewBox="0 0 24 24" aria-hidden="true" class="c-ico"><path d="M20 12a7 7 0 0 1-7 7H9l-4 3v-4.3A7 7 0 0 1 9 5h4a7 7 0 0 1 7 7Z"/></svg>
+            <span class="c-txt">댓글 등록</span>
+        </button>
     </form>
     <script>
     function fviewcomment_submit(f) {
@@ -137,26 +141,40 @@
         var state = f.querySelector('.comment-form-state');
         var label = state.querySelector('.s');
         var submit = f.querySelector('button[type="submit"]');
+        var submitIco = submit.querySelector('.c-ico');
+        var submitTxt = submit.querySelector('.c-txt');
+
+        // 버튼은 세 모드로 쓰인다. 아이콘 하나를 고정하면 두 모드에서 뜻이 어긋나므로 함께 갈아 낀다.
+        // 모양은 툴바의 답변·수정 아이콘과 같은 것을 쓴다 — 같은 뜻은 같은 그림이어야 한다
+        var ICONS = {
+            comment: '<path d="M20 12a7 7 0 0 1-7 7H9l-4 3v-4.3A7 7 0 0 1 9 5h4a7 7 0 0 1 7 7Z"/>',
+            reply:   '<path d="M9 14 4 9l5-5"/><path d="M4 9h9a7 7 0 0 1 7 7v4"/>',
+            done:    '<path d="M5 13l4 4L19 7"/>'
+        };
+        function setSubmit(iconKey, text) {
+            submitIco.innerHTML = ICONS[iconKey];
+            submitTxt.textContent = text;
+        }
 
         function reset() {
             f.w.value = 'c'; f.comment_id.value = ''; f.wr_content.value = '';
-            state.hidden = true; submit.textContent = '댓글 등록';
+            state.hidden = true; setSubmit('comment', '댓글 등록');
             f.classList.remove('inline'); f.style.marginLeft = '';
             home.insertAdjacentElement('afterend', f);
         }
-        function attach(btn, w, content, text, btnText) {
+        function attach(btn, w, content, text, btnIcon, btnText) {
             var c = btn.closest('.comment');
             c.insertAdjacentElement('afterend', f);
             f.classList.add('inline'); f.style.marginLeft = c.style.marginLeft;
             f.w.value = w; f.comment_id.value = btn.dataset.id; f.wr_content.value = content;
-            label.textContent = text; state.hidden = false; submit.textContent = btnText;
+            label.textContent = text; state.hidden = false; setSubmit(btnIcon, btnText);
             f.wr_content.focus();
         }
         document.querySelectorAll('.c-reply').forEach(function (b) {
-            b.addEventListener('click', function () { attach(b, 'c', '', '이 댓글에 답글 쓰는 중', '답글 등록'); });
+            b.addEventListener('click', function () { attach(b, 'c', '', '이 댓글에 답글 쓰는 중', 'reply', '답글 등록'); });
         });
         document.querySelectorAll('.c-edit').forEach(function (b) {
-            b.addEventListener('click', function () { attach(b, 'cu', b.dataset.raw, '댓글 수정 중', '수정 완료'); });
+            b.addEventListener('click', function () { attach(b, 'cu', b.dataset.raw, '댓글 수정 중', 'done', '수정 완료'); });
         });
         state.querySelector('.c-cancel').addEventListener('click', reset);
     })();
