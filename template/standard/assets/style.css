@@ -691,6 +691,11 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 /* 결과 — 막대 길이(width)는 순정이 계산해 인라인으로 준다 */
 .poll-result + .card, .poll-etc + .card { margin-top: var(--s4); }
 .poll-bars { display: flex; flex-direction: column; gap: var(--s3); margin-top: var(--s3); }
+/* .card li 는 목록 한 줄을 가로로 늘어놓는다. 아래 둘은 한 줄 안에서 위아래로 쌓이는 구조라
+   그 규칙을 되돌린다. 안 되돌리면 내용이 없는 .poll-bar 가 flex 항목으로 쪼그라들어 폭이 0이
+   되고(막대가 통째로 사라진다), 기타의견은 이름 줄과 본문이 옆으로 붙는다 */
+.poll-bars > li { display: block; padding: 0; }
+.poll-etc-list > li { display: block; }
 .poll-bar-head { display: flex; align-items: baseline; gap: var(--s3); justify-content: space-between; font-size: var(--t-sm); }
 .poll-bar-label { font-weight: 600; overflow-wrap: anywhere; }
 .poll-bar { height: 10px; border-radius: var(--r-md); background: var(--line); overflow: hidden; }
