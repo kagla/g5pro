@@ -40,8 +40,12 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
     g5_is_member = {{ $me ? 1 : 0 }}, g5_is_mobile = false, g5_bo_table = "", g5_sca = "",
     g5_editor = "", g5_cookie_domain = "";
 </script>
-<script src="{{ G5_JS_URL }}/jquery-1.12.4.min.js"></script>
-<script src="{{ G5_JS_URL }}/jquery-migrate-1.4.1.min.js"></script>
+{{-- 3.7.1 이 이 저장소의 코드를 네이티브로 지원하는 마지막 버전이다. 4.0 은 $.trim ·
+     $.isArray · $.isFunction · $.parseJSON 을 제거했는데 관리자 화면과 smarteditor2 가
+     아직 그것들을 쓴다. Migrate 는 4.x 로 갈 때 걸릴 것을 콘솔에 미리 일러 준다.
+     관리자와 순정 화면(head.sub.php)은 아직 1.12.4 다 --}}
+<script src="{{ G5_JS_URL }}/jquery-3.7.1.min.js"></script>
+<script src="{{ G5_JS_URL }}/jquery-migrate-3.6.0.min.js"></script>
 <script src="{{ G5_JS_URL }}/common.js"></script>
 {{-- 순정이 add_javascript()/add_stylesheet() 로 요청한 것들 (주소검색 postcode.v2.js 등) --}}
 {!! $page_assets !!}
