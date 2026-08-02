@@ -848,6 +848,13 @@ a.view_image:hover::after, a.view_image:focus-visible::after { opacity: 1; }
 .field label .muted { font-weight: 400; }
 .field input[type=text], .field input[type=password], .field input[type=email], .field select { width: 100%; }
 .field textarea { width: 100%; min-height: 220px; }
+/* 이미 붙어 있는 파일 — 이름과 '삭제' 를 한 줄에 둔다 */
+.file-now { display: flex; align-items: center; gap: var(--s3); flex-wrap: wrap; font-size: var(--t-sm); }
+.file-now .file-size { font-variant-numeric: tabular-nums; }
+.file-del { display: inline-flex; align-items: center; gap: var(--s1); font-weight: 400; cursor: pointer; }
+/* 삭제를 켜면 그 줄이 지워질 것임을 색으로 알린다 */
+.file-now:has(.file-del input:checked) .muted { text-decoration: line-through; }
+.file-now:has(.file-del input:checked) .file-del { color: var(--danger); font-weight: 700; }
 .field-inline { display: flex; gap: var(--s4); flex-wrap: wrap; font-size: var(--t-sm); }
 
 .member-box { max-width: 420px; margin: var(--s5) auto; display: flex; flex-direction: column; gap: var(--s4); }

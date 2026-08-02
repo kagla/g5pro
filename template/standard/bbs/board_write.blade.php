@@ -57,11 +57,28 @@
 @endif
 
 @for ($i = 0; $i < $file_count; $i++)
+@php $ex = isset($files_exist[$i]) ? $files_exist[$i] : null; @endphp
 <div class="field">
-    <label for="bf_file_{{ $i }}">파일 #{{ $i + 1 }}
-        @if (!empty($files_exist[$i]))<span class="muted">(현재: {{ $files_exist[$i] }})</span>@endif
-    </label>
+    <label for="bf_file_{{ $i }}">파일 #{{ $i + 1 }}</label>
     <input type="file" id="bf_file_{{ $i }}" name="bf_file[]">
+
+    {{-- 파일 설명 — 게시판에서 켠 경우에만. 값을 안 보내면 순정 write_update 가
+         기존 설명을 빈 값으로 덮어쓰므로, 켜져 있으면 반드시 함께 보낸다 --}}
+    @if ($is_file_content)
+    <input type="text" name="bf_content[]" class="frm_input" maxlength="255"
+           value="{{ $ex ? $ex['content'] : '' }}" placeholder="파일 설명 (선택)">
+    @endif
+
+    {{-- 이미 붙어 있는 파일 — 새로 고르면 갈아치우고, 지우려면 여기를 켠다.
+         이름은 순정 write_update.php 가 읽는 그대로여야 한다 --}}
+    @if ($ex && $ex['has'])
+    <div class="file-now">
+        <span class="muted">현재 {{ $ex['source'] }} <span class="file-size">({{ $ex['size'] }})</span></span>
+        <label class="file-del">
+            <input type="checkbox" name="bf_file_del[{{ $i }}]" value="1"> 이 파일 삭제
+        </label>
+    </div>
+    @endif
 </div>
 @endfor
 

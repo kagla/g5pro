@@ -367,6 +367,7 @@ function g5_map_board_write()
     global $w, $write, $board, $bo_table, $wr_id, $sca, $sfl, $stx, $spt, $sst, $sod, $page;
     global $action_url, $subject, $is_member, $name, $is_name, $is_password;
     global $editor_html, $editor_js, $is_use_captcha, $captcha_js, $file_count, $file;
+    global $is_file_content;
     global $is_category, $is_notice, $is_html, $is_dhtml_editor, $html_value, $html_checked;
     global $is_secret, $secret_checked, $is_mail, $recv_email_checked, $is_admin, $notice_checked;
 
@@ -417,10 +418,18 @@ function g5_map_board_write()
         $options[] = array('name' => 'mail', 'value' => 'mail', 'label' => '답변메일받기', 'checked' => (bool)$recv_email_checked);
     }
 
+    // 이미 붙어 있는 파일 — 이름만으로는 지울 수도, 설명을 고칠 수도 없다.
+    // 순정 write.skin.php 가 주는 것과 같은 값을 넘긴다.
     $files_exist = array();
     if ($w === 'u' && isset($file) && is_array($file)) {
         for ($i = 0; $i < $file_count; $i++) {
-            $files_exist[$i] = isset($file[$i]['source']) ? $file[$i]['source'] : '';
+            $files_exist[$i] = array(
+                'source'  => isset($file[$i]['source']) ? $file[$i]['source'] : '',
+                'size'    => isset($file[$i]['size']) ? $file[$i]['size'] : '',
+                // 파일이 실제로 있을 때만 삭제 칸을 낸다 (순정과 같은 조건)
+                'has'     => !empty($file[$i]['file']),
+                'content' => isset($file[$i]['bf_content']) ? $file[$i]['bf_content'] : '',
+            );
         }
     }
 
@@ -448,6 +457,7 @@ function g5_map_board_write()
         'captcha_js'     => $captcha_js,
         'file_count'     => (int)$file_count,
         'files_exist'    => $files_exist,
+        'is_file_content'=> !empty($is_file_content),   // 게시판 설정 bo_use_file_content
         'list_href'      => short_url_clean(G5_BBS_URL.'/board.php?bo_table='.$bo_table),
     ));
 }
