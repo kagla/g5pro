@@ -966,6 +966,66 @@ function g5_map_faq()
     ));
 }
 
+// ── 설문조사 결과 (bbs/poll_result.php)
+// 순정이 백분율·막대 길이·기타의견·지난설문까지 이미 계산해 둔다. 여기서는 옮기기만 한다.
+function g5_map_poll_result()
+{
+    global $po, $po_id, $list, $list2, $list3, $total_po_cnt, $is_etc, $po_etc, $name;
+    global $is_admin, $is_guest, $member;
+
+    $options = array();
+    foreach ((array)$list as $row) {
+        $options[] = array(
+            'num'     => $row['num'],
+            'content' => $row['content'],
+            'cnt'     => (int)$row['cnt'],
+            'rate'    => (float)$row['rate'],   // 백분율
+            'bar'     => (int)$row['bar'],      // 최다 항목 대비 막대 길이
+        );
+    }
+
+    $etc = array();
+    foreach ((array)$list2 as $row) {
+        $etc[] = array(
+            'name'     => $row['name'],      // 사이드뷰 HTML → {!! !!}
+            'idea'     => $row['idea'],
+            'datetime' => $row['datetime'],
+            'del'      => $row['del'],       // 순정이 만든 <a> 여는 태그 → {!! !!}
+        );
+    }
+
+    $others = array();
+    foreach ((array)$list3 as $row) {
+        if ((int)$row['po_id'] === (int)$po_id) continue;   // 지금 보고 있는 설문은 뺀다
+        $others[] = array(
+            'href'    => G5_BBS_URL.'/poll_result.php?po_id='.(int)$row['po_id'],
+            'subject' => $row['subject'],
+            'date'    => $row['date'],
+        );
+    }
+
+    g5_view('bbs.poll_result', array(
+        'po_id'      => (int)$po_id,
+        'subject'    => $po['po_subject'],
+        'options'    => $options,
+        'total'      => (int)$total_po_cnt,
+        'others'     => $others,
+        // 기타의견 — po_etc 가 비어 있으면 순정도 그리지 않는다
+        'is_etc'     => (bool)$is_etc,
+        'etc_label'  => $is_etc ? $po_etc : '',
+        'etc_name'   => $is_etc ? $name : '',    // 회원이면 닉네임+hidden, 아니면 입력칸 → {!! !!}
+        'etc_items'  => $etc,
+        'etc_action' => G5_BBS_URL.'/poll_etc_update.php',
+        // 의견 남기기는 권한이 될 때만 (순정 스킨도 같은 조건으로 폼을 감춘다)
+        'etc_can'    => (int)$member['mb_level'] >= (int)$po['po_level'],
+        // 비회원 캡차 — 순정과 같게 붙인다. 다만 bbs/poll_etc_update.php 는
+        // 이 값을 검사하지 않는다 (순정도 클라이언트 JS 로만 막는다)
+        'captcha_html' => ($is_etc && $is_guest && function_exists('captcha_html')) ? captcha_html() : '',
+        'captcha_js'   => ($is_etc && $is_guest && function_exists('chk_captcha_js')) ? chk_captcha_js() : '',
+        'admin_href' => ($is_admin === 'super') ? G5_ADMIN_URL.'/poll_form.php?w=u&po_id='.(int)$po_id : '',
+    ));
+}
+
 // ── 현재접속자 (bbs/current_connect.php)
 // 순정이 이미 회원/비회원을 갈라 name 을 만들어 둔다 (비회원은 IP, 관리자에게만 온전히 보인다).
 function g5_map_connect()

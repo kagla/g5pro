@@ -1,5 +1,6 @@
 <?php
 include_once('./_common.php');
+define('G5_PRO_PAGE', true); // g5pro 직통 화면
 include_once(G5_CAPTCHA_PATH.'/captcha.lib.php');
 
 $po_id   = isset($_REQUEST['po_id']) ? (int) $_REQUEST['po_id'] : '';
@@ -115,7 +116,6 @@ if(preg_match('#^theme/(.+)$#', $skin_dir, $match)) {
 
 include_once(G5_PATH.'/head.sub.php');
 
-if (!file_exists($poll_skin_path.'/poll_result.skin.php')) die('skin error');
-include_once ($poll_skin_path.'/poll_result.skin.php');
+g5_map_poll_result(); // g5pro — 스킨 대신 직통 매핑
 
 include_once(G5_PATH.'/tail.sub.php');

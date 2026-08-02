@@ -671,6 +671,54 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .post-meta { display: flex; align-items: baseline; gap: var(--s3); flex-wrap: wrap; font-size: var(--t-sm); color: var(--muted); font-variant-numeric: tabular-nums; }
 .post-content { padding: var(--s5); font-size: var(--t-lg); line-height: 1.8; overflow-wrap: break-word; }
 .post-files, .post-links { padding: var(--s3) var(--s5); border-top: 1px solid var(--line); font-size: var(--t-sm); }
+/* ═══════════ 설문조사 ═══════════ */
+/* 첫 화면 카드 — 순정 tail.php 의 poll() 자리 */
+.poll-card .poll-subject { font-weight: 600; margin: var(--s2) 0 var(--s3); }
+.poll-card .poll-admin { margin-left: auto; font-size: var(--t-sm); color: var(--muted); }
+.poll-items { display: flex; flex-direction: column; gap: var(--s2); margin-bottom: var(--s3); }
+.poll-items li { display: flex; align-items: center; gap: var(--s2); }
+.poll-items label { cursor: pointer; }
+.poll-acts { display: flex; gap: var(--s2); flex-wrap: wrap; }
+
+/* 결과 — 막대 길이(width)는 순정이 계산해 인라인으로 준다 */
+.poll-result + .card, .poll-etc + .card { margin-top: var(--s4); }
+.poll-bars { display: flex; flex-direction: column; gap: var(--s3); margin-top: var(--s3); }
+.poll-bar-head { display: flex; align-items: baseline; gap: var(--s3); justify-content: space-between; font-size: var(--t-sm); }
+.poll-bar-label { font-weight: 600; overflow-wrap: anywhere; }
+.poll-bar { height: 10px; border-radius: var(--r-md); background: var(--line); overflow: hidden; }
+.poll-bar > span { display: block; height: 100%; border-radius: inherit; background: var(--teal); }
+.poll-etc-form { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; margin: var(--s3) 0; }
+.poll-etc-form .frm_input { flex: 1 1 12rem; }
+.poll-etc-captcha { margin-bottom: var(--s3); }
+.poll-etc-name { white-space: nowrap; }
+
+/* 인기검색어 — 검색 모달 안, 검색어를 아직 안 쳤을 때만 보이는 자리.
+   ol 은 위 176행의 목록 초기화가 ul 만 다루므로 여기서 따로 지운다 */
+.search-popular { margin-top: var(--s4); }
+.search-popular h3 { font-size: var(--t-sm); color: var(--muted); margin-bottom: var(--s2); }
+.search-popular ol {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-wrap: wrap; gap: var(--s2); counter-reset: pop;
+}
+.search-popular li { counter-increment: pop; display: flex; }
+.search-popular a {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: var(--s1) var(--s3); border-radius: var(--r-lg);
+    background: var(--line); font-size: var(--t-sm); line-height: 1.7;
+}
+.search-popular a::before {
+    content: counter(pop);
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+.search-popular a:hover { background: var(--teal-soft); color: var(--teal-deep); }
+.search-popular a:hover::before { color: var(--teal-deep); }
+
+/* 접속자 카드 — 첫 화면에만 둔다 (헤더에서 따라다니지 않는다) */
+.connect-card .connect-now { display: flex; align-items: baseline; gap: var(--s2); margin: var(--s2) 0 var(--s3); }
+.connect-card .connect-num { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+.connect-card .connect-split { display: flex; gap: var(--s2); flex-wrap: wrap; }
+
 /* 이미지 첨부 — 순정처럼 본문 위에 온다. 제목단(.post-head)이 아래 여백을 0 으로
    두고 본문이 제 위쪽 여백을 가지므로, 여기서는 위쪽만 띄운다 */
 .post-images { padding: var(--s4) var(--s5) 0; display: flex; flex-wrap: wrap; gap: var(--s3); }

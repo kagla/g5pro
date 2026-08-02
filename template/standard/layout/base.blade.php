@@ -88,6 +88,8 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
             <button type="button" class="icon-btn search-open" id="search-open" aria-label="검색" title="검색">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
             </button>
+            {{-- 접속자는 헤더에 두지 않는다 — 모든 화면을 따라다닐 이유가 없어
+                 첫 화면 카드(partials/connect_card)로 옮겼다 --}}
             {{-- 장바구니 — 쇼핑몰 설치 시 상시 노출. 담긴 게 있으면 개수 배지를 단다
                  (프로필 메뉴 안에만 있으면 열어 봐야 알 수 있어 밖으로 뺐다) --}}
             @if ($cart)
@@ -162,6 +164,19 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
             <button type="submit" class="btn btn-primary">검색</button>
         </form>
         <p class="search-hint">두 글자 이상 입력하세요</p>
+        {{-- 인기검색어 — 순정 head.php 의 popular() 자리. 검색어를 아직 안 쳤을 때만
+             보이는 자리라 빈 모달을 채워 준다. 쌓기는 bbs/search.php 가 이미 하고 있다 --}}
+        @php $pop = g5_popular_words(); @endphp
+        @if (count($pop))
+        <div class="search-popular">
+            <h3>인기검색어</h3>
+            <ol>
+                @foreach ($pop as $p)
+                <li><a href="{{ $p['href'] }}">{{ $p['word'] }}</a></li>
+                @endforeach
+            </ol>
+        </div>
+        @endif
     </div>
 </div>
 <script>

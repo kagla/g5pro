@@ -355,6 +355,92 @@ function g5_pro_stats()
     return $s;
 }
 
+// ── 접속자 요약 — 첫 화면 카드용.
+// bbs/current_connect.php 와 같은 조건(최고관리자 제외)으로 세야 카드 숫자와
+// 그 페이지의 목록 수가 어긋나지 않는다.
+function g5_connect_summary()
+{
+    global $g5, $config;
+    static $s = null;
+    if ($s !== null) return $s;
+
+    $admin = sql_escape_string($config['cf_admin']);
+    $row = sql_fetch(
+        " select count(*) as total, sum(case when mb_id <> '' then 1 else 0 end) as members
+            from `{$g5['login_table']}` where mb_id <> '{$admin}' ", false);
+
+    $total   = (int)(isset($row['total']) ? $row['total'] : 0);
+    $members = (int)(isset($row['members']) ? $row['members'] : 0);
+
+    $s = array(
+        'total'   => $total,
+        'members' => $members,
+        'guests'  => max(0, $total - $members),
+        'href'    => G5_BBS_URL.'/current_connect.php',
+    );
+    return $s;
+}
+
+// ── 투표 위젯 값 — 순정 poll() 은 스킨 파일을 직접 그려버려 Blade 로 넘길 수 없다.
+// 값만 뽑아 첫 화면 카드가 쓴다. lib/poll.lib.php 는 건드리지 않는다.
+// 설문이 없으면 null 을 돌려주고, 카드는 아무것도 그리지 않는다 (순정 poll() 도 그냥 return).
+function g5_poll_widget()
+{
+    global $g5, $member, $is_member, $is_admin;
+
+    $po = sql_fetch(" select * from `{$g5['poll_table']}` where po_use = 1 order by po_id desc limit 1 ", false);
+    if (empty($po['po_id'])) return null;
+
+    // 항목은 po_poll1~9 를 차례로 읽다가 빈 칸에서 끊는다 (순정 규칙)
+    $items = array();
+    for ($i = 1; $i <= 9; $i++) {
+        if (empty($po['po_poll'.$i])) break;
+        $items[] = array('no' => $i, 'text' => $po['po_poll'.$i]);
+    }
+    if (!$items) return null;
+
+    // 이미 투표했나 — 회원은 mb_ids, 비회원은 po_ips.
+    // 두 갈래인 이유는 bbs/poll_update.php 가 그렇게 나눠 적기 때문이다.
+    // 한쪽만 보면 로그인한 사람이 이미 투표했는데도 항목이 다시 보인다.
+    $marks = $is_member
+        ? explode(',', (string)$po['mb_ids'])
+        : explode(',', (string)$po['po_ips']);
+    $mine = $is_member ? $member['mb_id'] : (isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '');
+
+    return array(
+        'po_id'       => (int)$po['po_id'],
+        'subject'     => $po['po_subject'],
+        'items'       => $items,
+        'voted'       => ($mine !== '' && in_array($mine, $marks, true)),
+        'can_vote'    => (int)$member['mb_level'] >= (int)$po['po_level'],
+        'level'       => (int)$po['po_level'],
+        'result_href' => G5_BBS_URL.'/poll_result.php?po_id='.(int)$po['po_id'],
+        'admin_href'  => ($is_admin === 'super') ? G5_ADMIN_URL.'/poll_form.php?w=u&po_id='.(int)$po['po_id'] : '',
+    );
+}
+
+// ── 인기검색어 — 순정 popular() 도 스킨을 직접 그린다. 여기서는 값만 뽑는다.
+// 기본값(최근 3일·7개)과 날짜 계산은 lib/popular.lib.php 와 같게 맞춘다.
+function g5_popular_words($pop_cnt = 7, $date_cnt = 3)
+{
+    global $g5;
+
+    $from = date('Y-m-d', G5_SERVER_TIME - ((int)$date_cnt * 86400));
+    $sql = " select pp_word, count(*) as cnt from `{$g5['popular_table']}`
+              where pp_date between '{$from}' and '".G5_TIME_YMD."'
+              group by pp_word order by cnt desc, pp_word limit 0, ".(int)$pop_cnt;
+
+    $words = array();
+    $result = sql_query($sql, false);
+    while ($row = sql_fetch_array($result)) {
+        $words[] = array(
+            'word' => $row['pp_word'],   // 사용자가 넣은 값 — 뷰에서 {{ }} 로 이스케이프
+            'href' => G5_BBS_URL.'/search.php?sfl=wr_subject%7C%7Cwr_content&sop=and&stx='.urlencode($row['pp_word']),
+        );
+    }
+    return $words;
+}
+
 // 날짜가 "비었는가" — 세 가지 표현을 모두 같게 본다.
 //   NULL           마이그레이션 이후의 정식 표현
 //   ''             폼에서 넘어온 빈 값
