@@ -9,16 +9,16 @@
     <input type="hidden" name="url" value="{{ $url }}">
     <input type="hidden" name="agree" value="{{ $agree }}">
     <input type="hidden" name="agree2" value="{{ $agree2 }}">
-    <input type="hidden" name="mb_nick_default" value="{!! $me['mb_nick'] !!}">
+    <input type="hidden" name="mb_nick_default" value="{!! $form['mb_nick'] !!}">
     @if ($w === 'u')
-    <input type="hidden" name="old_email" value="{{ $me['mb_email'] }}">
+    <input type="hidden" name="old_email" value="{{ $form['mb_email'] }}">
     @endif
 
     <div class="field">
         <label for="reg_mb_id">아이디</label>
         @if ($w === 'u')
-        <input type="text" id="reg_mb_id" value="{{ $me['mb_id'] }}" readonly>
-        <input type="hidden" name="mb_id" value="{{ $me['mb_id'] }}">
+        <input type="text" id="reg_mb_id" value="{{ $form['mb_id'] }}" readonly>
+        <input type="hidden" name="mb_id" value="{{ $form['mb_id'] }}">
         @else
         <input type="text" id="reg_mb_id" name="mb_id" required minlength="3" maxlength="20"
                onblur="reg_mb_id_check();">
@@ -36,21 +36,21 @@
 
     <div class="field">
         <label for="reg_mb_name">이름</label>
-        <input type="text" id="reg_mb_name" name="mb_name" value="{!! $me['mb_name'] !!}" required>
+        <input type="text" id="reg_mb_name" name="mb_name" value="{!! $form['mb_name'] !!}" required>
     </div>
     <div class="field">
         <label for="reg_mb_nick">닉네임</label>
-        <input type="text" id="reg_mb_nick" name="mb_nick" value="{!! $me['mb_nick'] !!}" required
+        <input type="text" id="reg_mb_nick" name="mb_nick" value="{!! $form['mb_nick'] !!}" required
                onblur="reg_mb_nick_check();">
     </div>
     <div class="field">
         <label for="reg_mb_email">이메일</label>
-        <input type="email" id="reg_mb_email" name="mb_email" value="{{ $me['mb_email'] }}" required
+        <input type="email" id="reg_mb_email" name="mb_email" value="{{ $form['mb_email'] }}" required
                onblur="reg_mb_email_check();">
     </div>
     <div class="field">
         <label for="reg_mb_homepage">홈페이지 <span class="muted">(선택)</span></label>
-        <input type="text" id="reg_mb_homepage" name="mb_homepage" value="{!! $me['mb_homepage'] !!}">
+        <input type="text" id="reg_mb_homepage" name="mb_homepage" value="{!! $form['mb_homepage'] !!}">
     </div>
 
     {!! $captcha_html !!}

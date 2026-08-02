@@ -623,7 +623,10 @@ function g5_map_register_form()
         'url'        => isset($urlencode) ? $urlencode : '',
         'agree'      => $agree,
         'agree2'     => $agree2,
-        'me' => array(
+        // 이름이 'me' 면 안 된다 — g5_view() 가 array_merge 로 합치며 뒤가 이기므로
+        // 레이아웃(g5_pro_common)의 me 를 통째로 덮어써 헤더 프로필 메뉴가 깨진다.
+        // mb_level 이 사라져 최고관리자에게 관리자 링크가 안 나오던 원인이었다.
+        'form' => array(
             'mb_id'       => isset($member['mb_id']) ? $member['mb_id'] : '',
             'mb_name'     => isset($member['mb_name']) ? get_text($member['mb_name']) : '',
             'mb_nick'     => isset($member['mb_nick']) ? get_text($member['mb_nick']) : '',
