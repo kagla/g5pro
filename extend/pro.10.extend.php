@@ -104,7 +104,63 @@ function g5_pro_common()
             'url'    => G5_URL.'/template/'.G5_TEMPLATE,
             'assets' => G5_URL.'/template/'.G5_TEMPLATE.'/assets',
         ),
+        'footer' => g5_pro_footer(),
     );
+}
+
+// 푸터에 올릴 내용관리 링크와 통신판매업자 정보.
+//
+// 순정은 이 둘을 두 곳에서 서로 다르게 한다 — tail.php 는 회사 정보를 파일에 하드코딩해
+// 관리자가 고칠 수 없고, shop/shop.tail.php 는 $default 에서 읽어 관리자 설정을 따라간다.
+// 뒤쪽이 옳으므로 그 방식과 항목 순서를 따른다.
+//
+// 뷰는 이 배열을 돌리기만 한다. 무엇이 있고 무엇을 숨길지는 여기서 정한다 —
+// 뷰가 de_admin_ 같은 이름을 몰라도 되게.
+function g5_pro_footer()
+{
+    global $g5, $default;
+
+    static $cache = null;
+    if ($cache !== null) return $cache;
+
+    // ── 내용관리 링크 — 순정 tail.php 와 같은 셋을 같은 순서로.
+    //    이름은 co_subject 를 쓴다. 관리자가 제목을 바꾸면 푸터도 따라온다.
+    //    지워진 쪽은 건너뛴다 (없는 주소를 내보내지 않는다).
+    $links = array();
+    foreach (array('company', 'privacy', 'provision') as $co_id) {
+        $row = sql_fetch(" select co_id, co_subject from `{$g5['content_table']}`
+                            where co_id = '".sql_real_escape_string($co_id)."' ", false);
+        if (empty($row['co_id'])) continue;
+        $links[] = array(
+            'href'  => get_pretty_url('content', $row['co_id']),
+            'label' => $row['co_subject'],
+        );
+    }
+
+    // ── 통신판매업자 정보 — 항목과 순서는 순정 shop/shop.tail.php 그대로.
+    //    쇼핑몰을 끄면 $default 자체가 없다. 그때는 빈 배열이 되어 링크만 남는다.
+    $fields = array(
+        'de_admin_company_name'      => '회사명',
+        'de_admin_company_addr'      => '주소',
+        'de_admin_company_saupja_no' => '사업자 등록번호',
+        'de_admin_company_owner'     => '대표',
+        'de_admin_company_tel'       => '전화',
+        'de_admin_company_fax'       => '팩스',
+        'de_admin_tongsin_no'        => '통신판매업신고번호',
+        'de_admin_info_name'         => '개인정보 보호책임자',
+        'de_admin_buga_no'           => '부가통신사업신고번호',
+    );
+
+    $company = array();
+    foreach ($fields as $key => $label) {
+        // 값이 없으면 줄을 통째로 뺀다 — 라벨만 덩그러니 남기지 않는다.
+        // 순정이 부가통신사업신고번호에만 쓰던 방식을 전 항목으로 넓혔다.
+        if (empty($default[$key])) continue;
+        $company[] = array('label' => $label, 'value' => trim($default[$key]));
+    }
+
+    $cache = array('links' => $links, 'company' => $company);
+    return $cache;
 }
 
 // 쇼핑몰처럼 head 이후에도 순정 스킨이 직접 echo 하는 화면에서, 그 잔여 출력을 버린다.

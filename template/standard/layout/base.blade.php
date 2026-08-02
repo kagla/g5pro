@@ -146,7 +146,28 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
 </main>
 <footer class="site-footer">
     <div class="wrap">
-        <p>{{ $site['title'] }} · powered by gnuboard5 + bladeone</p>
+        @if (count($footer['links']))
+        <nav class="ft-links" aria-label="사이트 정보">
+            @foreach ($footer['links'] as $l)
+            <a href="{{ $l['href'] }}">{{ $l['label'] }}</a>
+            @endforeach
+        </nav>
+        @endif
+
+        @if (count($footer['company']))
+        {{-- 통신판매업자 정보 — 라벨과 값의 짝이라 dl 로 짠다.
+             값이 빈 항목은 g5_pro_footer() 가 미리 걸러 여기까지 오지 않는다 --}}
+        <dl class="ft-company">
+            @foreach ($footer['company'] as $c)
+            <div class="ft-company-row">
+                <dt>{{ $c['label'] }}</dt>
+                <dd>{{ $c['value'] }}</dd>
+            </div>
+            @endforeach
+        </dl>
+        @endif
+
+        <p class="ft-copy">{{ $site['title'] }} · powered by gnuboard5 + bladeone</p>
     </div>
 </footer>
 @include('partials.popups')

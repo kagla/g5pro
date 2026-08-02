@@ -453,6 +453,26 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .site-footer .wrap { padding: var(--s5); text-align: center; }
 .site-footer p { margin: 0; }
 
+/* 푸터 전용 클래스로만 쓴다. footer a 같은 일반 선택자에 기대면 다른 규칙이 조용히 이긴다 */
+.ft-links {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: var(--s2) var(--s4); margin-bottom: var(--s4);
+}
+.ft-links a { color: var(--fg); font-weight: 600; text-decoration: none; }
+.ft-links a:hover, .ft-links a:focus-visible { text-decoration: underline; }
+
+/* 통신판매업자 정보 — 라벨과 값이 한 덩이로 붙어 다니도록 행마다 감싼다.
+   가운데 정렬한 줄에서 줄바꿈이 일어나도 라벨과 값이 흩어지지 않는다 */
+.ft-company {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: var(--s1) var(--s4); margin: 0 0 var(--s4);
+}
+.ft-company-row { display: flex; align-items: baseline; gap: var(--s2); }
+.ft-company dt { font-weight: 600; color: var(--fg); }
+.ft-company dd { margin: 0; }
+
+.ft-copy { padding-top: var(--s3); border-top: 1px solid var(--line); }
+
 /* ═══════════ 메인 히어로 (L1) ═══════════ */
 .hero {
     margin-bottom: var(--s5); padding: var(--s6) var(--s5);
