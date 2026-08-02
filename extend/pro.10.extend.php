@@ -355,6 +355,24 @@ function g5_pro_stats()
     return $s;
 }
 
+// ── 템플릿 자산 주소 — 파일 수정시각을 버전으로 붙인다.
+// 붙이지 않으면 CSS·JS 를 고쳐도 브라우저가 옛 파일을 계속 쓴다 (응답에 Cache-Control
+// 이 없어 브라우저가 알아서 오래 들고 있다). 순정은 head.sub.php 에서 ?ver=G5_CSS_VER
+// 로 같은 일을 하는데 템플릿 자산만 그 처리에서 빠져 있었다.
+// 파일을 고칠 때만 값이 바뀌므로, 안 고치면 캐시는 그대로 살아 있다.
+function g5_pro_asset($file)
+{
+    static $ver = array();
+
+    $url = G5_URL.'/template/'.G5_TEMPLATE.'/assets/'.$file;
+    if (!isset($ver[$file])) {
+        $mtime = @filemtime(G5_PATH.'/template/'.G5_TEMPLATE.'/assets/'.$file);
+        // 파일이 없으면 버전을 안 붙인다 — 매 요청 값이 달라져 캐시가 죽는 것을 막는다
+        $ver[$file] = $mtime ? (string)$mtime : '';
+    }
+    return $ver[$file] === '' ? $url : $url.'?ver='.$ver[$file];
+}
+
 // ── 접속자 요약 — 첫 화면 카드용.
 // bbs/current_connect.php 와 같은 조건(최고관리자 제외)으로 세야 카드 숫자와
 // 그 페이지의 목록 수가 어긋나지 않는다.

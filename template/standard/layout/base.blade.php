@@ -18,7 +18,7 @@
     }
 })();
 </script>
-<link rel="stylesheet" href="{{ $template['assets'] }}/style.css">
+<link rel="stylesheet" href="{{ g5_pro_asset('style.css') }}">
 <script>
 var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{ G5_ADMIN_URL }}",
     g5_is_member = {{ $me ? 1 : 0 }}, g5_is_mobile = false, g5_bo_table = "", g5_sca = "",
@@ -187,6 +187,6 @@ function hd_search_check(f) {
     return true;
 }
 </script>
-<script src="{{ $template['assets'] }}/theme.js"></script>
+<script src="{{ g5_pro_asset('theme.js') }}"></script>
 </body>
 </html>

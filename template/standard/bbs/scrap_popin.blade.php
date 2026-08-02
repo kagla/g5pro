@@ -17,7 +17,7 @@ if (window.name != 'win_scrap') {
     window.close();
 }
 </script>
-<link rel="stylesheet" href="{{ $template['assets'] }}/style.css">
+<link rel="stylesheet" href="{{ g5_pro_asset('style.css') }}">
 </head>
 <body class="popup-body">
 <div class="popup popup--card">

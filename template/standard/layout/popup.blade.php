@@ -15,7 +15,7 @@
     }
 })();
 </script>
-<link rel="stylesheet" href="{{ $template['assets'] }}/style.css">
+<link rel="stylesheet" href="{{ g5_pro_asset('style.css') }}">
 {!! $page_assets !!}
 @yield('head')
 </head>
