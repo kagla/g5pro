@@ -138,7 +138,18 @@ function g5_pro_footer()
     }
 
     // ── 통신판매업자 정보 — 항목과 순서는 순정 shop/shop.tail.php 그대로.
-    //    쇼핑몰을 끄면 $default 자체가 없다. 그때는 빈 배열이 되어 링크만 남는다.
+    //
+    // 쇼핑몰 화면에서만 내보낸다. 판별은 순정이 이미 쓰는 _SHOP_ 상수에 맡긴다 —
+    // shop/_common.php 가 쇼핑몰 화면마다 정의하고, 커뮤니티를 끈 쇼핑몰 전용
+    // 사이트라면 bbs/_common.php 도 정의한다. 그 두 경우가 곧 회사정보를 내야 할
+    // 자리라 조건이 그대로 맞아떨어진다. 경로 문자열을 들여다보는 것보다 낫다.
+    //
+    // 쇼핑몰을 아예 끄면 $default 자체가 없어 아래 empty() 에서 전부 걸러진다.
+    if (!defined('_SHOP_')) {
+        $cache = array('links' => $links, 'company' => array());
+        return $cache;
+    }
+
     $fields = array(
         'de_admin_company_name'      => '회사명',
         'de_admin_company_addr'      => '주소',
