@@ -167,7 +167,8 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
         </dl>
         @endif
 
-        <p class="ft-copy">{{ $site['title'] }} · powered by gnuboard5 + bladeone</p>
+        {{-- 연도는 해마다 손대지 않도록 서버 시각에서 뽑는다 --}}
+        <p class="ft-copy">{{ date('Y') }} &copy; GNUBOARD5 PRO</p>
     </div>
 </footer>
 @include('partials.popups')

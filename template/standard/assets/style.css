@@ -480,6 +480,12 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 /* 링크와 회사정보는 왼쪽에 붙이고 저작권만 가운데로 — 아래를 닫는 줄로 쓴다 */
 .ft-copy { padding-top: var(--s3); border-top: 1px solid var(--line); text-align: center; }
 
+/* 모바일에서는 회사정보를 접는다. 좁은 폭에서 아홉 항목이 일곱 줄을 차지해
+   푸터가 화면 하나를 채워 버린다. 기준점은 표가 카드로 바뀌는 자리와 같게 맞춘다 */
+@media (max-width: 620px) {
+    .ft-company { display: none; }
+}
+
 /* ═══════════ 메인 히어로 (L1) ═══════════ */
 .hero {
     margin-bottom: var(--s5); padding: var(--s6) var(--s5);
