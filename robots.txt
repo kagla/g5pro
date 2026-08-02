@@ -1,0 +1,38 @@
+User-agent: *
+
+# 관리자
+Disallow: /adm/
+
+# 로그인·가입·회원정보 — 수집할 값이 없고 개인정보가 지나간다
+Disallow: /bbs/login.php
+Disallow: /bbs/login_check.php
+Disallow: /bbs/logout.php
+Disallow: /bbs/register.php
+Disallow: /bbs/register_form.php
+Disallow: /bbs/register_result.php
+Disallow: /bbs/member_confirm.php
+Disallow: /bbs/member_cert_refresh.php
+Disallow: /bbs/password_lost.php
+Disallow: /bbs/password_reset.php
+Disallow: /bbs/password.php
+Disallow: /bbs/profile.php
+Disallow: /bbs/formmail.php
+
+# 개인 활동 — 로그인해야 보이고 사람마다 다르다
+Disallow: /bbs/memo.php
+Disallow: /bbs/memo_form.php
+Disallow: /bbs/memo_view.php
+Disallow: /bbs/scrap.php
+Disallow: /bbs/point.php
+Disallow: /bbs/current_connect.php
+
+# 주문 흐름 — 매번 달라지고 색인될 값이 없다
+Disallow: /shop/cart.php
+Disallow: /shop/orderform.php
+Disallow: /shop/orderinquiry.php
+Disallow: /shop/orderview.php
+Disallow: /shop/orderaddress.php
+Disallow: /shop/wishlist.php
+
+# /data/ 는 막지 않는다 — 올린 이미지가 이미지 검색에 잡히는 편이 이득이다.
+# Sitemap 줄도 넣지 않는다 — 아직 sitemap.xml 이 없어서, 가리키면 수집기 로그에 오류만 쌓인다.

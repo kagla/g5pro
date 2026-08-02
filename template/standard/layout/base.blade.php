@@ -4,6 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ $title }}</title>
+{{-- 값이 없으면 태그를 아예 안 낸다. 빈 description 은 없느니만 못하다 --}}
+@if ($seo['description'])
+<meta name="description" content="{{ $seo['description'] }}">
+@endif
+<link rel="canonical" href="{{ $seo['canonical'] }}">
+<meta property="og:type" content="{{ $seo['og']['type'] }}">
+<meta property="og:site_name" content="{{ $seo['og']['site_name'] }}">
+<meta property="og:title" content="{{ $seo['og']['title'] }}">
+<meta property="og:url" content="{{ $seo['og']['url'] }}">
+@if ($seo['description'])
+<meta property="og:description" content="{{ $seo['description'] }}">
+@endif
+@if ($seo['og']['image'])
+<meta property="og:image" content="{{ $seo['og']['image'] }}">
+@endif
 {!! $site['add_meta'] !!}
 <script>
 (function () {

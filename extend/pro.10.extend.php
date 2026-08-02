@@ -105,7 +105,95 @@ function g5_pro_common()
             'assets' => G5_URL.'/template/'.G5_TEMPLATE.'/assets',
         ),
         'footer' => g5_pro_footer(),
+        'seo'    => g5_pro_seo(),
     );
+}
+
+// 검색·공유용 메타. description·canonical·og 를 한 곳에서 만든다.
+//
+// 매핑이 52개다. 화면마다 값을 넘기게 하면 52곳을 손대야 하고 새 화면이 생길 때마다
+// 빠뜨린다. 렌더 시점의 전역에서 뽑으면 여기 한 곳만 읽으면 된다.
+//
+// 값이 없으면 빈 문자열을 준다. 태그를 낼지 말지는 레이아웃이 그것으로 가린다 —
+// 거리가 없는 화면에까지 사이트 제목을 재활용한 문구를 깔면 검색결과에서 화면이
+// 서로 구분되지 않고, 그런 중복 설명은 검색엔진도 무시한다.
+function g5_pro_seo()
+{
+    global $config, $g5, $view, $board, $co;
+
+    static $cache = null;
+    if ($cache !== null) return $cache;
+
+    $is_article = !empty($view['wr_id']);
+
+    // ── description
+    $description = '';
+    if ($is_article && isset($view['content'])) {
+        $description = g5_pro_excerpt($view['content']);
+    } else if (isset($co['co_content']) && $co['co_content'] !== '') {
+        $description = g5_pro_excerpt($co['co_content']);
+    } else if (isset($board['bo_content_head']) && $board['bo_content_head'] !== '') {
+        $description = g5_pro_excerpt($board['bo_content_head']);
+    }
+
+    // ── canonical — 화이트리스트에 있는 것만 남긴다.
+    //    빼는 목록으로 만들면 새 파라미터가 생길 때마다 canonical 이 오염된다.
+    //    page 는 남긴다 — 목록 2페이지는 1페이지와 다른 문서라 접으면 색인에서 사라진다.
+    $keep = array('bo_table', 'wr_id', 'co_id', 'po_id', 'qa_id', 'ca_id', 'it_id', 'page');
+    $query = array();
+    foreach ($keep as $k) {
+        if (!isset($_GET[$k]) || $_GET[$k] === '') continue;
+        if ($k === 'page' && (int)$_GET[$k] <= 1) continue;   // 1페이지는 파라미터 없는 주소와 같다
+        $query[] = $k.'='.urlencode(strip_tags((string)$_GET[$k]));
+    }
+    $path = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '/';
+    // /index.php 는 / 와 같은 문서다. 남겨 두면 canonical 이 스스로 중복을 만든다
+    $path = preg_replace('#/index\.php$#', '/', $path);
+    $canonical = G5_URL.$path.($query ? '?'.implode('&', $query) : '');
+
+    // ── og — 이미지는 글 본문의 첫 장. 없으면 안 단다.
+    //    공유 카드가 로고로 도배되느니 글자만으로 깔끔한 편이 낫다.
+    $image = '';
+    if ($is_article && isset($view['content'])
+        && preg_match('/<img[^>]+src=["\']([^"\']+)["\']/i', $view['content'], $m)) {
+        $image = g5_pro_abs_url($m[1]);
+    }
+
+    $cache = array(
+        'description' => $description,
+        'canonical'   => $canonical,
+        'og' => array(
+            'type'      => $is_article ? 'article' : 'website',
+            'title'     => (isset($g5['title']) && $g5['title']) ? $g5['title'] : $config['cf_title'],
+            'url'       => $canonical,
+            'image'     => $image,
+            'site_name' => $config['cf_title'],
+        ),
+    );
+    return $cache;
+}
+
+// 본문 HTML 에서 설명문을 뽑는다. 매핑의 목록 요약(excerpt)과 같은 방식이다 —
+// '<' 앞에 공백을 넣는 것은 태그를 지울 때 앞뒤 낱말이 들러붙지 않게 하기 위함이다.
+function g5_pro_excerpt($html, $len = 160)
+{
+    $text = strip_tags(str_replace('<', ' <', (string)$html));
+    // 엔티티를 실제 글자로 되돌린다. 안 그러면 &middot; 같은 것이 글자 그대로 남고,
+    // 뷰가 출력하며 & 를 다시 인코딩해 &amp;middot; 라는 쓰레기가 검색결과에 나간다
+    $text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
+    $text = trim(preg_replace('/\s+/u', ' ', $text));
+    return $text === '' ? '' : cut_str($text, $len, '…');
+}
+
+// 본문 속 이미지 주소를 절대주소로. og:image 는 상대주소를 받지 않는다.
+function g5_pro_abs_url($src)
+{
+    $src = trim($src);
+    if ($src === '' || preg_match('#^(https?:)?//#i', $src)) {
+        return preg_match('#^//#', $src) ? 'https:'.$src : $src;
+    }
+    if (strpos($src, 'data:') === 0) return '';   // 인라인 이미지는 쓸 수 없다
+    return G5_URL.'/'.ltrim($src, '/');
 }
 
 // 푸터에 올릴 내용관리 링크와 통신판매업자 정보.
