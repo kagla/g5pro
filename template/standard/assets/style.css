@@ -450,12 +450,12 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 /* ── 본문·푸터 ── */
 .site-main { padding: var(--s5) var(--s5) var(--s7); min-height: 60vh; }
 .site-footer { color: var(--muted); font-size: var(--t-sm); }
-.site-footer .wrap { padding: var(--s5); text-align: center; }
+.site-footer .wrap { padding: var(--s5); text-align: left; }
 .site-footer p { margin: 0; }
 
 /* 푸터 전용 클래스로만 쓴다. footer a 같은 일반 선택자에 기대면 다른 규칙이 조용히 이긴다 */
 .ft-links {
-    display: flex; flex-wrap: wrap; justify-content: center;
+    display: flex; flex-wrap: wrap; justify-content: flex-start;
     gap: var(--s2) var(--s4); margin-bottom: var(--s4);
 }
 .ft-links a { color: var(--fg); font-weight: 600; text-decoration: none; }
@@ -464,14 +464,15 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 /* 통신판매업자 정보 — 라벨과 값이 한 덩이로 붙어 다니도록 행마다 감싼다.
    가운데 정렬한 줄에서 줄바꿈이 일어나도 라벨과 값이 흩어지지 않는다 */
 .ft-company {
-    display: flex; flex-wrap: wrap; justify-content: center;
+    display: flex; flex-wrap: wrap; justify-content: flex-start;
     gap: var(--s1) var(--s4); margin: 0 0 var(--s4);
 }
 .ft-company-row { display: flex; align-items: baseline; gap: var(--s2); }
 .ft-company dt { font-weight: 600; color: var(--fg); }
 .ft-company dd { margin: 0; }
 
-.ft-copy { padding-top: var(--s3); border-top: 1px solid var(--line); }
+/* 링크와 회사정보는 왼쪽에 붙이고 저작권만 가운데로 — 아래를 닫는 줄로 쓴다 */
+.ft-copy { padding-top: var(--s3); border-top: 1px solid var(--line); text-align: center; }
 
 /* ═══════════ 메인 히어로 (L1) ═══════════ */
 .hero {
