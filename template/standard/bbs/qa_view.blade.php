@@ -18,8 +18,7 @@
         </div>
     </header>
 
-    <div class="post-content">{!! $item['content'] !!}</div>
-
+    {{-- 이미지 첨부 — 순정과 같이 본문 위에 둔다 (qa/basic/view.skin.php 의 bo_v_img) --}}
     @if (count($images))
     <div class="qa-images">
         @foreach ($images as $img)
@@ -27,6 +26,8 @@
         @endforeach
     </div>
     @endif
+
+    <div class="post-content">{!! $item['content'] !!}</div>
 
     @if (count($files))
     <div class="post-files">

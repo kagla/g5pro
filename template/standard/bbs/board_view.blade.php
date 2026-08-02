@@ -20,6 +20,16 @@
         </div>
     </header>
 
+    {{-- 이미지 첨부 — 순정과 같이 본문 위에 둔다 (view.skin.php 의 bo_v_img).
+         본문이 {이미지:n} 으로 이미 부른 것은 매퍼가 걸러 보낸다 --}}
+    @if (count($images))
+    <div class="post-images">
+        @foreach ($images as $img)
+        <div class="post-image">{!! $img !!}</div>
+        @endforeach
+    </div>
+    @endif
+
     <div class="post-content">{!! $post['content'] !!}</div>
 
     @if (count($files))

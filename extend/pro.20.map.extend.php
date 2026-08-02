@@ -236,9 +236,16 @@ function g5_map_board_view($comments)
     global $is_ip_view, $is_signature, $signature;
     global $prev_wr_subject, $prev_wr_date, $next_wr_subject, $next_wr_date;
 
-    include_once(G5_LIB_PATH.'/thumbnail.lib.php'); // get_view_thumbnail()
+    include_once(G5_LIB_PATH.'/thumbnail.lib.php'); // get_view_thumbnail(), get_file_thumbnail()
+
+    // 본문이 {이미지:n} 으로 직접 부른 첨부는 rich_content 안에 이미 그려져 있다.
+    // 그 번호는 아래 이미지 묶음에서 빼야 같은 그림이 두 번 나오지 않는다.
+    $inlined = array();
+    if (preg_match_all("/{이미지\:([0-9]+)[:]?([^}]*)}/i", $view['content'], $m))
+        $inlined = array_flip($m[1]);
 
     $files = array();
+    $images = array();
     if (isset($view['file']) && is_array($view['file'])) {
         for ($i = 0; $i < (int)$view['file']['count']; $i++) {
             if (empty($view['file'][$i]['source'])) continue;
@@ -250,6 +257,10 @@ function g5_map_board_view($comments)
                 'is_image' => (bool)$view['file'][$i]['view'],
                 'view'     => $view['file'][$i]['view'],   // 이미지면 <img> HTML
             );
+            // 이미지 첨부는 그림으로도 보여준다 (순정 view.skin.php 의 bo_v_img).
+            // get_file_thumbnail() 이 게시판 '이미지 폭' 설정까지 맞춰 준다.
+            if ($view['file'][$i]['view'] && !isset($inlined[$i]))
+                $images[] = get_file_thumbnail($view['file'][$i]);
         }
     }
 
@@ -283,6 +294,7 @@ function g5_map_board_view($comments)
             'ip'       => $is_ip_view ? $view['wr_ip'] : '',   // bo_use_ip_view
         ),
         'files'       => $files,
+        'images'      => $images,
         'links'       => $links,
         'comments'    => $comments,
         'list_href'   => short_url_clean(G5_BBS_URL.'/board.php?bo_table='.$bo_table.$qstr),

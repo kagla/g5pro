@@ -671,6 +671,10 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .post-meta { display: flex; align-items: baseline; gap: var(--s3); flex-wrap: wrap; font-size: var(--t-sm); color: var(--muted); font-variant-numeric: tabular-nums; }
 .post-content { padding: var(--s5); font-size: var(--t-lg); line-height: 1.8; overflow-wrap: break-word; }
 .post-files, .post-links { padding: var(--s3) var(--s5); border-top: 1px solid var(--line); font-size: var(--t-sm); }
+/* 이미지 첨부 — 순정처럼 본문 위에 온다. 제목단(.post-head)이 아래 여백을 0 으로
+   두고 본문이 제 위쪽 여백을 가지므로, 여기서는 위쪽만 띄운다 */
+.post-images { padding: var(--s4) var(--s5) 0; display: flex; flex-wrap: wrap; gap: var(--s3); }
+.post-images img { max-width: 100%; height: auto; border-radius: var(--r-md); }
 
 /* 댓글 — 소셜 피드 느낌 */
 .comments { margin-top: var(--s5); }
@@ -852,7 +856,7 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
     .bbs-search select { flex: none; max-width: 40%; }
     .bbs-actions { justify-content: flex-end; width: 100%; }
     .post-content { font-size: var(--t-md); padding: var(--s5) var(--s4); }
-    .post-head, .post-files, .post-links { padding-left: var(--s4); padding-right: var(--s4); }
+    .post-head, .post-files, .post-links, .post-images { padding-left: var(--s4); padding-right: var(--s4); }
     .list-simple li { padding: var(--s3) var(--s4); }
     .list-card > li { padding: var(--s3) var(--s4); border-radius: var(--r-xl); }
     .write-form, .member-box form { padding: var(--s4); }
@@ -2126,7 +2130,7 @@ input[type=checkbox], input[type=radio] {
 .qa-post .post-meta .chip { margin-left: var(--s2); }
 .qa-answer { margin-top: var(--s4); border-left: 3px solid var(--accent); }
 .qa-answer .post-head h2 { font-size: var(--t-md); }
-.qa-images { padding: 0 var(--s5) var(--s4); display: flex; flex-wrap: wrap; gap: var(--s3); }
+.qa-images { padding: var(--s4) var(--s5) 0; display: flex; flex-wrap: wrap; gap: var(--s3); }
 .qa-images img { max-width: 100%; height: auto; border-radius: var(--r-md); }
 .qa-nav, .qa-acts { display: flex; gap: var(--s2); }
 .qa-acts { margin-left: auto; }
