@@ -244,7 +244,9 @@ if (!isset($config['cf_lg_mid'])) {
     );
 }
 
-if (!isset($config['cf_optimize_date'])) {
+// cf_optimize_date 는 값이 NULL 인 채로 설치된다 — isset() 은 NULL 을 "없음"으로 보므로
+// 컬럼이 있는데도 ADD 를 다시 쏴서 중복 오류가 났다. 컬럼 유무는 array_key_exists 로 묻는다.
+if (!array_key_exists('cf_optimize_date', (array) $config)) {
     sql_query(
         " ALTER TABLE `{$g5['config_table']}`
                     ADD `cf_optimize_date` date NULL DEFAULT NULL AFTER `cf_popular_del` ",

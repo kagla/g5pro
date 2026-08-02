@@ -72,8 +72,9 @@ if($captcha_mp3 && is_array($captcha_mp3)) {
     }
 }
 
-// 실행일 기록
-if(isset($config['cf_optimize_date'])) {
+// 실행일 기록 — 설치 직후 값은 NULL 이다. isset() 로 물으면 영영 기록하지 못해
+// 하루 한 번 돌아야 할 정리가 최고관리자의 매 요청마다 돈다. 컬럼 유무만 본다.
+if(array_key_exists('cf_optimize_date', (array) $config)) {
     sql_query(" update {$g5['config_table']} set cf_optimize_date = '".G5_TIME_YMD."' ");
     
     run_event('cf_optimize_date_update', $config);
