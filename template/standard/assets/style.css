@@ -765,8 +765,10 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .lightbox-tools svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 .lightbox-pct {
     min-width: 4.2em; text-align: center; color: #fff;
-    font-size: var(--t-sm); font-variant-numeric: tabular-nums;
+    font-size: var(--t-sm); font-variant-numeric: tabular-nums; cursor: help;
 }
+/* 원본보다 크게 늘린 상태 — 흐린 것이 설정 탓이 아니라 원본 한계임을 알린다 */
+.lightbox-pct.over { color: #FFD166; }
 
 /* 눌러서 크게 볼 수 있다는 표시 — 없으면 클릭 가능한 줄 알 길이 없다 */
 a.view_image { position: relative; display: inline-block; cursor: zoom-in; }

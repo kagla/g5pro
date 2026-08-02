@@ -224,7 +224,16 @@
         imgEl.classList.toggle('is-zoomed', scale > 1);
         // 끌 수 있는 자리가 그림 밖까지이므로 손 모양도 상자 전체에 준다
         box.classList.toggle('is-zoomed', scale > 1);
-        if (pctEl) pctEl.textContent = pct() + '%';
+        if (!pctEl) return;
+        var p = pct();
+        pctEl.textContent = p + '%';
+        // 100% 를 넘기면 원본에 없는 화소를 늘리는 것이라 흐려진다. 왜 흐린지
+        // 알 수 있게 표시를 바꾸고, 원본이 몇 픽셀인지 알려 준다.
+        pctEl.classList.toggle('over', p > 100);
+        pctEl.title = imgEl.naturalWidth
+            ? '원본 ' + imgEl.naturalWidth + '×' + imgEl.naturalHeight + 'px'
+              + (p > 100 ? ' — 원본보다 크게 늘려 보고 있어 흐려집니다' : '')
+            : '';
     }
 
     function reset() { scale = 1; tx = 0; ty = 0; apply(); }
@@ -238,6 +247,21 @@
         scale = next;
         if (scale <= 1) { tx = 0; ty = 0; }     // 화면 안에 들어오면 위치를 되돌린다
         apply();
+    }
+
+    // 무엇을 띄울지 — 두 경로가 다르다.
+    //  첨부 이미지(view_file_link)  : img 의 src 가 이미 원본이고 fn 은 파일명뿐이다
+    //  본문 이미지(get_view_thumbnail): img 의 src 는 만들어 둔 썸네일이고,
+    //                                   원본은 링크의 fn 에 사이트 기준 경로로 들어 있다
+    // 뒤엣것을 img 의 src 로 띄우면 축소본을 늘리는 셈이라 뭉갠다.
+    function originalSrc(a, img) {
+        var href = a.getAttribute('href') || '';
+        var m = href.match(/[?&]fn=([^&]*)/);
+        if (m) {
+            var fn = decodeURIComponent(m[1].replace(/\+/g, ' '));
+            if (fn.charAt(0) === '/') return (window.g5_url || '') + fn;
+        }
+        return img.getAttribute('src');
     }
 
     function open(src, alt) {
@@ -265,9 +289,7 @@
         if (!img) return;   // 그림이 없으면 순정 동작(새 탭)에 맡긴다
         e.preventDefault();
         opener = a;
-        // href 는 view_image.php 라는 '페이지'다. 원본 그림은 안쪽 img 의 src 이고,
-        // width/height 로 작게 보일 뿐 파일 자체는 원본이다.
-        open(img.getAttribute('src'), img.getAttribute('alt'));
+        open(originalSrc(a, img), img.getAttribute('alt'));
     });
 
     document.addEventListener('keydown', function (e) {
