@@ -461,15 +461,21 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .ft-links a { color: var(--fg); font-weight: 600; text-decoration: none; }
 .ft-links a:hover, .ft-links a:focus-visible { text-decoration: underline; }
 
-/* 통신판매업자 정보 — 라벨과 값이 한 덩이로 붙어 다니도록 행마다 감싼다.
-   가운데 정렬한 줄에서 줄바꿈이 일어나도 라벨과 값이 흩어지지 않는다 */
+/* 통신판매업자 정보 — 한 문단처럼 흐르게 두고 항목 사이를 가는 세로선으로 끊는다.
+   라벨을 전부 볼드로 두면 아홉 번 반복되는 강조가 되어 아무것도 강조되지 않는다.
+   대신 무게를 뒤집는다 — 라벨은 흐리게 물러나고 값이 읽힌다.
+   행을 inline 으로 두어도 라벨과 값은 한 덩이로 묶여 줄바꿈에 흩어지지 않는다 */
+/* 항목 사이에 구분선을 그리려면 :not(:last-child) 같은 자리 기준이 필요한데, CSS 는 어떤
+   항목이 줄 끝인지 모른다. 그래서 줄이 접히면 구분선이 다음 줄 맨 앞에 남는다.
+   폭에 따라 계속 생기는 현상이라, 선 대신 간격으로 나눈다 */
 .ft-company {
     display: flex; flex-wrap: wrap; justify-content: flex-start;
-    gap: var(--s1) var(--s4); margin: 0 0 var(--s4);
+    gap: var(--s1) 28px; margin: 0 0 var(--s4);
 }
-.ft-company-row { display: flex; align-items: baseline; gap: var(--s2); }
-.ft-company dt { font-weight: 600; color: var(--fg); }
-.ft-company dd { margin: 0; }
+/* 행을 flex 항목으로 두면 줄 끝에서 라벨과 값이 다른 줄로 찢어지지 않는다 */
+.ft-company-row { display: flex; align-items: baseline; gap: 6px; }
+.ft-company dt { font-weight: 400; color: var(--muted); }
+.ft-company dd { margin: 0; color: var(--fg); }
 
 /* 링크와 회사정보는 왼쪽에 붙이고 저작권만 가운데로 — 아래를 닫는 줄로 쓴다 */
 .ft-copy { padding-top: var(--s3); border-top: 1px solid var(--line); text-align: center; }
