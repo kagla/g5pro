@@ -229,7 +229,7 @@ function g5_map_view_comment($list)
 // ── 게시판 읽기 (bbs/view.php) — $comments 는 호출부가 view_comment.php 로 수집해 전달
 function g5_map_board_view($comments)
 {
-    global $view, $board, $bo_table, $member, $is_admin, $qstr;
+    global $view, $board, $bo_table, $member, $is_admin, $is_member, $qstr;
     global $update_href, $delete_href, $reply_href, $prev_href, $next_href, $comment_action_url;
     global $scrap_href, $sca, $sfl, $stx, $spt, $page;
     global $good_href, $nogood_href, $copy_href, $move_href, $search_href;
@@ -322,6 +322,11 @@ function g5_map_board_view($comments)
         'prev' => $prev_href ? array('href' => $prev_href, 'subject' => $prev_wr_subject, 'date' => g5_pro_dt($prev_wr_date, false)) : null,
         'next' => $next_href ? array('href' => $next_href, 'subject' => $next_wr_subject, 'date' => g5_pro_dt($next_wr_date, false)) : null,
         // 추천·비추천 — href 는 회원이고 게시판이 켠 경우에만 값이 있다
+        // 비회원이 추천·비추천·스크랩을 누르면 로그인으로 보낸다. 보던 주소를 그대로 담아
+        // 검색어·페이지 상태까지 안고 돌아온다. 절대주소 + urlencode 는 순정 qawrite.php 가
+        // 쓰는 방식이고, login_check.php 의 check_url_host() 가 같은 호스트만 통과시킨다.
+        'login_href' => $is_member ? '' :
+            G5_BBS_URL.'/login.php?url='.urlencode(G5_URL.(isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/')),
         'good' => array(
             'use'    => (bool)$board['bo_use_good'],
             'href'   => $good_href ? $good_href.'&amp;'.$qstr : '',

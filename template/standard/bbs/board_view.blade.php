@@ -53,13 +53,15 @@
 
     @if ($good['use'] || $nogood['use'] || $use_sns)
     <div class="post-react">
-        {{-- 켜진 버튼은 내가 누른 것 — 다시 누르면 취소, 반대쪽을 누르면 갈아탄다 --}}
+        {{-- 켜진 버튼은 내가 누른 것 — 다시 누르면 취소, 반대쪽을 누르면 갈아탄다.
+             비회원은 href 가 없다. 막아 두는 대신 로그인으로 안내한다 --}}
         @if ($good['use'])
         <button type="button" class="react react-good{{ $good['mine'] ? ' is-on' : '' }}"
                 data-href="{!! $good['href'] !!}" data-kind="good"
+                data-login-href="{{ $login_href }}" data-label="추천"
                 aria-pressed="{{ $good['mine'] ? 'true' : 'false' }}"
                 title="{{ $good['mine'] ? '추천 취소' : '추천' }}"
-                @if (!$good['href']) disabled @endif>
+                @if (!$good['href'] && !$login_href) disabled @endif>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 21V10l4.5-7A2 2 0 0 1 14 4.6L13 9h5.5a2 2 0 0 1 2 2.4l-1.5 7A2 2 0 0 1 17 20H7Z"/></svg>
             추천 <b>{{ number_format($good['count']) }}</b>
         </button>
@@ -67,9 +69,10 @@
         @if ($nogood['use'])
         <button type="button" class="react react-nogood{{ $nogood['mine'] ? ' is-on' : '' }}"
                 data-href="{!! $nogood['href'] !!}" data-kind="nogood"
+                data-login-href="{{ $login_href }}" data-label="비추천"
                 aria-pressed="{{ $nogood['mine'] ? 'true' : 'false' }}"
                 title="{{ $nogood['mine'] ? '비추천 취소' : '비추천' }}"
-                @if (!$nogood['href']) disabled @endif>
+                @if (!$nogood['href'] && !$login_href) disabled @endif>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 3v11l-4.5 7A2 2 0 0 1 10 19.4L11 15H5.5a2 2 0 0 1-2-2.4l1.5-7A2 2 0 0 1 7 4h10Z"/></svg>
             비추천 <b>{{ number_format($nogood['count']) }}</b>
         </button>
@@ -170,6 +173,8 @@
         @if ($search_href)<a class="btn" href="{!! $search_href !!}">검색결과</a>@endif
         @if ($reply_href)<a class="btn" href="{!! $reply_href !!}">답변</a>@endif
         @if ($scrap_href)<a class="btn" href="{!! $scrap_href !!}" target="_blank" onclick="win_scrap(this.href); return false;">스크랩</a>@endif
+        {{-- 비회원에게도 자리를 보여 주고 누르면 로그인으로 안내한다. 순정은 아예 감췄다 --}}
+        @if (!$scrap_href && $login_href)<a class="btn react-login" href="{{ $login_href }}" data-label="스크랩">스크랩</a>@endif
     </div>
     <div class="bbs-actions">
         @if ($update_href)<a class="btn" href="{!! $update_href !!}">수정</a>@endif
@@ -264,9 +269,36 @@
         setTimeout(function () { if (msg.textContent === t) msg.textContent = ''; }, 2500);
     }
 
+    // 비회원 안내 — 묻고, 확인을 누를 때만 로그인으로 보낸다.
+    // 글을 읽던 사람을 동의 없이 데려가지 않는다. 돌아올 주소는 서버가 심어 둔다.
+    // 받침이 있으면 "은", 없으면 "는". 한글 음절은 0xAC00 부터 28개 종성 주기로 배열돼 있어
+    // 나머지가 0 이면 받침이 없다. "은(는)" 같은 표기를 화면에 내보내지 않으려고 계산한다
+    function josaEun(word) {
+        var c = word.charCodeAt(word.length - 1);
+        if (c < 0xAC00 || c > 0xD7A3) return '는';   // 한글이 아니면 안전한 쪽으로
+        return (c - 0xAC00) % 28 ? '은' : '는';
+    }
+    function askLogin(href, label) {
+        if (confirm(label + josaEun(label) + ' 회원만 할 수 있습니다.\n로그인하시겠습니까?')) location.href = href;
+    }
+    document.querySelectorAll('a.react-login[data-login-href], a.react-login').forEach(function (a) {
+        a.addEventListener('click', function (e) {
+            e.preventDefault();
+            askLogin(a.getAttribute('href'), a.dataset.label || '이 기능');
+        });
+    });
+
     Object.keys(btns).forEach(function (kind) {
         var b = btns[kind];
-        if (!b.dataset.href) return;   // 비회원이거나 자기 글 — 순정이 href 를 안 준다
+        if (!b.dataset.href) {
+            // 비회원 — 순정이 href 를 안 준다. 막아 두는 대신 로그인으로 안내한다
+            if (b.dataset.loginHref) {
+                b.addEventListener('click', function () {
+                    askLogin(b.dataset.loginHref, b.dataset.label || '이 기능');
+                });
+            }
+            return;
+        }
         b.addEventListener('click', function () {
             b.disabled = true;
             fetch(b.dataset.href.replace(/&amp;/g, '&'), {
