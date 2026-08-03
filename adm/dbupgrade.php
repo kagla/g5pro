@@ -644,14 +644,22 @@ if (defined('G5_USE_SHOP') && G5_USE_SHOP) {
             echo '데이터가 많으면 수 분이 걸릴 수 있습니다. 완료될 때까지 창을 닫지 마십시오.';
             echo '</p>';
             echo '<div style="margin:10px 0;height:18px;background:#dfe4ec;border-radius:9px;overflow:hidden;">';
-            echo '<div id="idx_stock_bar" style="height:100%;background:repeating-linear-gradient(45deg,#5b7cfa 0 12px,#8aa0fb 12px 24px);background-size:34px 34px;animation:idx_stripe 1s linear infinite;"></div>';
+            echo '<div id="idx_stock_bar" style="height:100%;width:0%;background:repeating-linear-gradient(45deg,#5b7cfa 0 12px,#8aa0fb 12px 24px);background-size:34px 34px;animation:idx_stripe 1s linear infinite;transition:width .3s;"></div>';
             echo '</div>';
             echo '<p id="idx_stock_elapsed" style="margin:0;">경과 0초</p>';
             echo '<style>@keyframes idx_stripe{0%{background-position:0 0}100%{background-position:34px 0}}</style>';
+            // 서버(MariaDB)가 인덱스 빌드 진행률을 주지 않으므로 행 수 기반
+            // 예상 소요 시간(약 15만 행/초, 최소 5초)에 맞춰 차오르는 곡선을 쓴다.
+            // 예상보다 오래 걸리면 95% 에서 대기하다 완료 시 100% 로 채운다.
             echo '<script>
             var idx_stock_t0 = Date.now();
+            var idx_stock_est = '.max(5, round((int)$row['cnt'] / 150000, 1)).'; // 예상 소요(초)
             var idx_stock_timer = setInterval(function() {
-                document.getElementById("idx_stock_elapsed").textContent = "경과 " + Math.round((Date.now() - idx_stock_t0) / 1000) + "초";
+                var t = (Date.now() - idx_stock_t0) / 1000;
+                var pct = Math.min(95, Math.round(100 * (1 - Math.exp(-1.6 * t / idx_stock_est))));
+                document.getElementById("idx_stock_bar").style.width = pct + "%";
+                document.getElementById("idx_stock_elapsed").textContent =
+                    "경과 " + Math.round(t) + "초 · 예상 진행률 " + pct + "%";
             }, 1000);
             </script>';
             echo '</div>';
@@ -675,6 +683,7 @@ if (defined('G5_USE_SHOP') && G5_USE_SHOP) {
 
             echo '<script>
             clearInterval(idx_stock_timer);
+            document.getElementById("idx_stock_bar").style.width = "100%";
             document.getElementById("idx_stock_bar").style.animation = "none";
             document.getElementById("idx_stock_bar").style.background = "#3fb950";
             document.querySelector("#idx_stock_progress p").innerHTML = "재고 조회용 인덱스(idx_stock) 생성이 완료되었습니다.";
