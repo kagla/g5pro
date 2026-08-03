@@ -634,13 +634,27 @@ if (defined('G5_USE_SHOP') && G5_USE_SHOP) {
     if (sql_query(" DESC `{$g5['g5_shop_cart_table']}` ", false)) {
         $index_result = sql_query(" SHOW INDEX FROM `{$g5['g5_shop_cart_table']}` WHERE Key_name = 'idx_stock' ", false);
         if (!$index_result || sql_num_rows($index_result) === 0) {
-            // 카트 행이 많으면 인덱스 생성에 수십 초가 걸리므로
-            // 멈춘 것처럼 보이지 않게 진행 중 메시지를 먼저 내보낸다
+            // 카트 행이 많으면 인덱스 생성에 수십 초가 걸리므로 멈춘 것처럼
+            // 보이지 않게 진행 바(줄무늬 애니메이션 + 경과 시간)를 먼저 내보낸다.
+            // MariaDB 가 인플레이스 인덱스 빌드의 진행률(%)은 노출하지 않아
+            // 실제 퍼센트 대신 경과 시간을 보여준다.
             $row = sql_fetch(" select count(*) as cnt from `{$g5['g5_shop_cart_table']}` ");
             echo '<div class="local_desc01 local_desc" id="idx_stock_progress"><p>';
             echo '장바구니 테이블(총 '.number_format((int)$row['cnt']).'건)에 재고 조회용 인덱스(idx_stock)를 생성하고 있습니다.<br>';
             echo '데이터가 많으면 수 분이 걸릴 수 있습니다. 완료될 때까지 창을 닫지 마십시오.';
-            echo '</p></div>';
+            echo '</p>';
+            echo '<div style="margin:10px 0;height:18px;background:#dfe4ec;border-radius:9px;overflow:hidden;">';
+            echo '<div id="idx_stock_bar" style="height:100%;background:repeating-linear-gradient(45deg,#5b7cfa 0 12px,#8aa0fb 12px 24px);background-size:34px 34px;animation:idx_stripe 1s linear infinite;"></div>';
+            echo '</div>';
+            echo '<p id="idx_stock_elapsed" style="margin:0;">경과 0초</p>';
+            echo '<style>@keyframes idx_stripe{0%{background-position:0 0}100%{background-position:34px 0}}</style>';
+            echo '<script>
+            var idx_stock_t0 = Date.now();
+            var idx_stock_timer = setInterval(function() {
+                document.getElementById("idx_stock_elapsed").textContent = "경과 " + Math.round((Date.now() - idx_stock_t0) / 1000) + "초";
+            }, 1000);
+            </script>';
+            echo '</div>';
             // php.ini output_buffering(기본 4096) 버퍼를 채워야 즉시 전송된다
             echo str_repeat(' ', 4096);
             @ob_flush();
@@ -659,8 +673,14 @@ if (defined('G5_USE_SHOP') && G5_USE_SHOP) {
                             ADD KEY `idx_stock` (`it_id`, `io_id`(64), `io_type`, `ct_stock_use`, `ct_status`(8), `ct_qty`) ", true);
             }
 
-            echo '<script>document.querySelector("#idx_stock_progress p").innerHTML = "재고 조회용 인덱스(idx_stock) 생성 완료 ('
-                .number_format(microtime(true) - $idx_stock_start, 1).'초)";</script>';
+            echo '<script>
+            clearInterval(idx_stock_timer);
+            document.getElementById("idx_stock_bar").style.animation = "none";
+            document.getElementById("idx_stock_bar").style.background = "#3fb950";
+            document.querySelector("#idx_stock_progress p").innerHTML = "재고 조회용 인덱스(idx_stock) 생성이 완료되었습니다.";
+            document.getElementById("idx_stock_elapsed").textContent = "소요 시간 '
+                .number_format(microtime(true) - $idx_stock_start, 1).'초";
+            </script>';
             @ob_flush();
             @flush();
 
