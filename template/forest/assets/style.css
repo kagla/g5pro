@@ -1,52 +1,63 @@
 /* ═══════════════════════════════════════════════════════════
-   g5pro template/cloud — ☁️ 클라우드 · 인디고 라이트
-   standard 를 복사해 토큰만 갈아 끼운 범용 모던 템플릿.
-   옅은 회백 바탕 + 흰 카드 + 인디고 솔리드 포인트, 그라디언트 없음.
+   g5pro template/forest — 🌲 포레스트 · 에메랄드 그린
+   standard(소다 블루)와 형태·색을 다 갈라놓은 범용 모던 템플릿:
+   에메랄드 컬러 헤더, 테두리 플랫 카드(그림자 최소), 알약 버튼,
+   모서리 축소. 그라디언트 없음, 솔리드 컬러만.
    메인은 통합 최신글 + 갤러리 썸네일 + 위젯 구성 (index.blade.php).
-   시안: docs/design/2026-08-03-template-mockups.html ① 클라우드
+   시안: docs/design/2026-08-03-template-mockups.html (색만 그린으로)
    ═══════════════════════════════════════════════════════════ */
 
 :root {
-    /* 바탕 — 흰색이 아니라 옅은 회백(쿨 그레이). 카드가 떠 보이게 하는 핵심 */
-    --bg: #F5F6FA;
+    /* 바탕 — 흰색이 아니라 초록기 낀 옅은 회백. 카드가 떠 보이게 하는 핵심 */
+    --bg: #F4F8F5;
     --card: #FFFFFF;
-    --fg: #1F2430;
-    --muted: #6B7280;
-    --line: #E7E9F0;
-    --btn-line: #848CA0;   /* 버튼 테두리 — 카드 위에서 3:1 이상 보이게 (--line 은 안 보인다) */
-    --row-hover: #F7F8FC;
+    --fg: #1E2B24;
+    --muted: #66736B;
+    --line: #E3EAE4;
+    --btn-line: #7F9086;   /* 버튼 테두리 — 카드 위에서 3:1 이상 보이게 (--line 은 안 보인다) */
+    --row-hover: #F3FAF5;
 
-    /* 클라우드 인디고 */
-    --accent: #5B5BD6;
+    /* 포레스트 에메랄드 */
+    --accent: #0C8060;     /* 흰 글씨와 4.9:1 */
     --accent-fg: #FFFFFF;
-    --accent-deep: #4343B8;
-    --accent-soft: #EEF0FF;
+    --accent-deep: #085E46;
+    --accent-soft: #DFF3E9;
 
-    /* 보조색 — 카테고리 칩 구분용 */
-    --teal: #0EA47A;
-    --teal-soft: #D7F5EA;
-    --teal-deep: #077A56;
+    /* 컬러 헤더 — 헤더만 에메랄드 솔리드. 다크에서는 짙은 초록으로 가라앉힌다 */
+    --header-bg: #0C8060;
+    --header-fg: #FFFFFF;
+    --header-dim: rgba(255,255,255,.82);
+    --header-hover: rgba(255,255,255,.14);
+    --header-on-bg: #FFFFFF;
+    --header-on-fg: #085E46;
+
+    /* 보조색 — 카테고리 칩 구분용. 이름은 teal 이지만 값은 앰버 —
+       주조색이 초록이라 청록 칩은 구분이 안 되어 색상환 반대쪽으로 보냈다 */
+    --teal: #C77008;
+    --teal-soft: #FBEDD7;
+    --teal-deep: #8F4E04;
     /* 헤더 영역 전환의 쇼핑몰 칸 — 켜졌을 때 알약 색(on), 꺼졌을 때 선 아이콘 색(off).
        커뮤니티(--accent 파랑)와 갈라 보이는 것이 목적이라 색상환 반대쪽 주황으로 간다.
        청록(--teal 계열)은 파랑과 색상차가 43° 뿐이라 나란히 두면 구분이 안 됐다. 주황은 161°.
        흰 아이콘이 얹히므로 그래픽 최소 대비 3:1 을 넘는 진한 쪽을 골랐다 */
-    --shop-on: #C2410C;          /* 흰 아이콘과 5.18:1 — 인디고 커뮤니티와 색상환 반대쪽 주황 */
+    --shop-on: #C2410C;          /* 흰 아이콘과 5.18:1 — 초록 커뮤니티와 확실히 갈리는 주황 */
     --shop-off: #C2410C;         /* 트랙 배경과 4.80:1 */
-    --indigo: #7C3AED;           /* 액센트가 이미 인디고라 칩 보조색은 바이올렛으로 비켜 간다 */
-    --indigo-soft: #F1E8FF;
+    --indigo: #7C3AED;           /* 칩 보조색 — 초록·앰버와 갈라지는 바이올렛 */
+    --indigo-soft: #F0E9FE;
     --danger: #EF4444;
     --danger-soft: #FEE2E2;
     --danger-deep: #B91C1C;
 
-    /* 이름은 grad 지만 값은 솔리드 — 클라우드는 그라디언트를 쓰지 않는다.
+    /* 이름은 grad 지만 값은 솔리드 — 포레스트는 그라디언트를 쓰지 않는다.
        standard 와 같은 자리(히어로·검색 요약·아바타·썸네일 자리)에 그대로 꽂힌다 */
-    --grad: #5B5BD6;
+    --grad: #0C8060;
 
-    /* 그림자 — 무채색의 부드러운 그림자 */
-    --sh-sm: 0 4px 12px rgba(31,36,48,.06);
-    --sh-md: 0 8px 22px rgba(31,36,48,.08);
-    --sh-lg: 0 12px 32px rgba(31,36,48,.12);
-    --sh-btn: 0 6px 16px rgba(91,91,214,.28);
+    /* 그림자 대신 헤어라인 — 카드가 그림자로 뜨는 standard 와 달리
+       1px 링 + 아주 옅은 그림자로 플랫하게 간다. 떠야 하는 팝오버(sh-lg)만 그림자 유지 */
+    --sh-sm: 0 1px 2px rgba(15,30,22,.06);
+    --sh-md: 0 0 0 1px var(--line), 0 1px 3px rgba(15,30,22,.05);
+    --sh-lg: 0 0 0 1px var(--pop-line), 0 12px 28px rgba(15,30,22,.14);
+    --sh-btn: 0 2px 8px rgba(12,128,96,.25);
 
     /* 여백 */
     --s1: 4px;  --s2: 8px;  --s3: 12px; --s4: 16px;
@@ -56,11 +67,10 @@
     --t-xs: 11px; --t-sm: 12.5px; --t-base: 13.5px; --t-md: 14.5px;
     --t-lg: 16px; --t-xl: 20px; --t-2xl: 25px;
 
-    /* 모서리 — 넉넉하게 */
-    --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px; --r-2xl: 24px; --r-full: 999px;
-    --r-btn: 8px;   /* 버튼·페이징·필터 — 알약이 아니라 살짝 둥근 사각 */
-    --r-input: 8px; /* 입력칸·텍스트에리어 — 나란히 놓이는 버튼(--r-btn)과 모서리를 맞춘다.
-                       카드(--r-xl)처럼 둥글면 입력칸이 아니라 알약처럼 읽힌다 */
+    /* 모서리 — standard(16~24)보다 한 단계 각지게. 대신 버튼은 알약 */
+    --r-sm: 6px; --r-md: 10px; --r-lg: 12px; --r-xl: 14px; --r-2xl: 16px; --r-full: 999px;
+    --r-btn: 999px;  /* 버튼·페이징·필터 — 알약. standard 의 둥근 사각과 갈라지는 포인트 */
+    --r-input: 10px; /* 입력칸·텍스트에리어 — 알약이면 입력칸으로 안 읽혀 살짝 둥근 사각 유지 */
 
     /* 떠 있는 메뉴의 표면 — 카드 위에 겹칠 때 구분되어야 한다.
        밝은 모드는 흰 배경에 그림자가 잘 보이므로 카드색 그대로 두고 얇은 테두리만 더한다. */
@@ -69,22 +79,30 @@
 }
 @media (prefers-color-scheme: dark) {
     :root {
-        --bg: #14161F;
-        --card: #1C1F2C;
-        --fg: #E5E7F0;
-        --muted: #9AA0B4;
-        --line: #2A2E40;
-        --btn-line: #5C637E;
-        --row-hover: #222635;
+        --bg: #101512;
+        --card: #181F1B;
+        --fg: #E4EDE7;
+        --muted: #93A29A;
+        --line: #27332C;
+        --btn-line: #5A6B61;
+        --row-hover: #1E2721;
 
-        --accent: #7577E8;
-        --accent-fg: #FFFFFF;
-        --accent-deep: #ABADF8;
-        --accent-soft: #272A48;
+        /* 다크의 액센트는 밝은 민트 — 위에 얹는 글씨는 흰색이 아니라 진초록(4.5:1↑) */
+        --accent: #3BBF95;
+        --accent-fg: #0A2B20;
+        --accent-deep: #7ADDBC;
+        --accent-soft: #16352A;
 
-        --teal: #34D3A6;
-        --teal-soft: #123B30;
-        --teal-deep: #7FE7C8;
+        --header-bg: #0E2E24;
+        --header-fg: #E7F2EC;
+        --header-dim: rgba(231,242,236,.75);
+        --header-hover: rgba(255,255,255,.10);
+        --header-on-bg: rgba(255,255,255,.16);
+        --header-on-fg: #FFFFFF;
+
+        --teal: #E8A33D;
+        --teal-soft: #3A2C12;
+        --teal-deep: #F5C97E;
         --shop-on: #EA6A0C;          /* 흰 아이콘과 3.20:1 */
         --shop-off: #F97316;         /* 트랙 배경과 6.48:1 */
         --indigo: #B79CFF;
@@ -93,36 +111,43 @@
         --danger-soft: #4A1E1E;
         --danger-deep: #FCA5A5;
 
-        --sh-sm: 0 4px 12px rgba(0,0,0,.30);
-        --sh-md: 0 8px 22px rgba(0,0,0,.36);
-        --sh-lg: 0 12px 32px rgba(0,0,0,.44);
-        --sh-btn: 0 6px 16px rgba(117,119,232,.30);
+        --sh-sm: 0 1px 2px rgba(0,0,0,.40);
+        --sh-md: 0 0 0 1px var(--line), 0 2px 6px rgba(0,0,0,.35);
+        --sh-lg: 0 0 0 1px var(--pop-line), 0 12px 30px rgba(0,0,0,.50);
+        --sh-btn: 0 2px 8px rgba(59,191,149,.25);
 
         /* 어두운 배경에서는 그림자가 거의 안 보인다. 밝기를 한 단계 올려 떠 보이게 한다 */
-        --pop: #242838;
-        --pop-line: #3C4158;
+        --pop: #212B25;
+        --pop-line: #3A4A40;
     }
 }
 :root[data-theme="dark"] {
     /* 어두운 배경에서는 그림자가 거의 안 보인다. 밝기를 한 단계 올려 떠 보이게 한다 */
-    --pop: #242838;
-    --pop-line: #3C4158;
-    --bg: #14161F;
-    --card: #1C1F2C;
-    --fg: #E5E7F0;
-    --muted: #9AA0B4;
-    --line: #2A2E40;
-    --btn-line: #5C637E;
-    --row-hover: #222635;
+    --pop: #212B25;
+    --pop-line: #3A4A40;
+    --bg: #101512;
+    --card: #181F1B;
+    --fg: #E4EDE7;
+    --muted: #93A29A;
+    --line: #27332C;
+    --btn-line: #5A6B61;
+    --row-hover: #1E2721;
 
-    --accent: #7577E8;
-    --accent-fg: #FFFFFF;
-    --accent-deep: #ABADF8;
-    --accent-soft: #272A48;
+    --accent: #3BBF95;
+    --accent-fg: #0A2B20;
+    --accent-deep: #7ADDBC;
+    --accent-soft: #16352A;
 
-    --teal: #34D3A6;
-    --teal-soft: #123B30;
-    --teal-deep: #7FE7C8;
+    --header-bg: #0E2E24;
+    --header-fg: #E7F2EC;
+    --header-dim: rgba(231,242,236,.75);
+    --header-hover: rgba(255,255,255,.10);
+    --header-on-bg: rgba(255,255,255,.16);
+    --header-on-fg: #FFFFFF;
+
+    --teal: #E8A33D;
+    --teal-soft: #3A2C12;
+    --teal-deep: #F5C97E;
     --shop-on: #EA6A0C;          /* 흰 아이콘과 3.20:1 */
     --shop-off: #F97316;         /* 트랙 배경과 6.48:1 */
     --indigo: #B79CFF;
@@ -131,42 +156,49 @@
     --danger-soft: #4A1E1E;
     --danger-deep: #FCA5A5;
 
-    --sh-sm: 0 4px 12px rgba(0,0,0,.30);
-    --sh-md: 0 8px 22px rgba(0,0,0,.36);
-    --sh-lg: 0 12px 32px rgba(0,0,0,.44);
-    --sh-btn: 0 6px 16px rgba(117,119,232,.30);
+    --sh-sm: 0 1px 2px rgba(0,0,0,.40);
+    --sh-md: 0 0 0 1px var(--line), 0 2px 6px rgba(0,0,0,.35);
+    --sh-lg: 0 0 0 1px var(--pop-line), 0 12px 30px rgba(0,0,0,.50);
+    --sh-btn: 0 2px 8px rgba(59,191,149,.25);
 }
 :root[data-theme="light"] {
     --pop: var(--card);
     --pop-line: var(--line);
-    --bg: #F5F6FA;
+    --bg: #F4F8F5;
     --card: #FFFFFF;
-    --fg: #1F2430;
-    --muted: #6B7280;
-    --line: #E7E9F0;
-    --btn-line: #848CA0;   /* 버튼 테두리 — 카드 위에서 3:1 이상 보이게 (--line 은 안 보인다) */
-    --row-hover: #F7F8FC;
+    --fg: #1E2B24;
+    --muted: #66736B;
+    --line: #E3EAE4;
+    --btn-line: #7F9086;   /* 버튼 테두리 — 카드 위에서 3:1 이상 보이게 (--line 은 안 보인다) */
+    --row-hover: #F3FAF5;
 
-    --accent: #5B5BD6;
+    --accent: #0C8060;
     --accent-fg: #FFFFFF;
-    --accent-deep: #4343B8;
-    --accent-soft: #EEF0FF;
+    --accent-deep: #085E46;
+    --accent-soft: #DFF3E9;
 
-    --teal: #0EA47A;
-    --teal-soft: #D7F5EA;
-    --teal-deep: #077A56;
+    --header-bg: #0C8060;
+    --header-fg: #FFFFFF;
+    --header-dim: rgba(255,255,255,.82);
+    --header-hover: rgba(255,255,255,.14);
+    --header-on-bg: #FFFFFF;
+    --header-on-fg: #085E46;
+
+    --teal: #C77008;
+    --teal-soft: #FBEDD7;
+    --teal-deep: #8F4E04;
     --shop-on: #C2410C;          /* 흰 아이콘과 5.18:1 */
     --shop-off: #C2410C;         /* 트랙 배경과 4.80:1 */
     --indigo: #7C3AED;
-    --indigo-soft: #F1E8FF;
+    --indigo-soft: #F0E9FE;
     --danger: #EF4444;
     --danger-soft: #FEE2E2;
     --danger-deep: #B91C1C;
 
-    --sh-sm: 0 4px 12px rgba(31,36,48,.06);
-    --sh-md: 0 8px 22px rgba(31,36,48,.08);
-    --sh-lg: 0 12px 32px rgba(31,36,48,.12);
-    --sh-btn: 0 6px 16px rgba(91,91,214,.28);
+    --sh-sm: 0 1px 2px rgba(15,30,22,.06);
+    --sh-md: 0 0 0 1px var(--line), 0 1px 3px rgba(15,30,22,.05);
+    --sh-lg: 0 0 0 1px var(--pop-line), 0 12px 28px rgba(15,30,22,.14);
+    --sh-btn: 0 2px 8px rgba(12,128,96,.25);
 }
 
 /* ── 기본 ── */
@@ -242,12 +274,12 @@ input[type=text], input[type=password], input[type=email], input[type=file], sel
 input:focus, select:focus, textarea:focus { background: var(--card); border-color: var(--accent); outline: none; }
 textarea { line-height: 1.6; border-radius: var(--r-input); }
 
-/* ── 헤더 (L1 pill nav + L2 검색) ── */
-.site-header { background: var(--card); box-shadow: var(--sh-sm); position: relative; z-index: 60; }
+/* ── 헤더 — 에메랄드 컬러 헤더 (standard 흰 헤더와 갈라지는 가장 큰 표식) ── */
+.site-header { background: var(--header-bg); position: relative; z-index: 60; }
 .site-header .wrap { position: relative; }
 .site-header .wrap { display: flex; align-items: center; gap: var(--s4); min-height: 62px; flex-wrap: wrap; }
-.logo { font-size: 18px; font-weight: 800; letter-spacing: -.02em; color: var(--accent); }
-.logo a:hover { color: var(--accent-deep); }
+.logo { font-size: 18px; font-weight: 800; letter-spacing: -.02em; color: var(--header-fg); }
+.logo a:hover { color: var(--header-dim); }
 
 /* overflow 를 주면 안 된다 — 절대배치된 .gnb-sub 드롭다운이 잘린다.
    넘치는 경우는 JS 가 .nav-collapsed 로 접어서 처리한다. */
@@ -257,22 +289,20 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
    글자 없이 큰 아이콘만 (말풍선 ↔ 카트라 모양으로 구분된다). 메뉴 밖이라 햄버거로 접히지 않는다 */
 .area-switch {
     display: inline-flex; flex: none; gap: 2px;
-    padding: 3px; border-radius: var(--r-btn); background: var(--bg);
+    padding: 3px; border-radius: var(--r-btn); background: rgba(0,0,0,.16);
 }
 .area-link {
     display: inline-flex; align-items: center; justify-content: center; flex: none;
-    width: 38px; height: 38px; border-radius: calc(var(--r-btn) - 2px);
-    color: var(--muted);
+    width: 38px; height: 38px; border-radius: var(--r-full);
+    color: var(--header-dim);
 }
-.area-link:hover { color: var(--accent); }
-.area-link.on { background: var(--accent); color: var(--accent-fg); box-shadow: var(--sh-sm); }
-.area-link.on:hover { color: var(--accent-fg); }
-/* 쇼핑몰 쪽은 다른 색으로 — 두 칸이 같은 파랑이면 어느 쪽이 켜졌는지 색으로 못 읽는다.
-   꺼졌을 때도 회색이 아니라 제 색을 옅게 지녀, 가기 전에 어느 칸이 쇼핑몰인지 알 수 있다 */
-.area-link.area-bag { color: var(--shop-off); }
-.area-link.area-bag.on { background: var(--shop-on); color: var(--accent-fg); }
-.area-link.area-bag:hover { color: var(--shop-on); }
-.area-link.area-bag.on:hover { color: var(--accent-fg); }
+.area-link:hover { color: var(--header-fg); }
+.area-link.on { background: var(--header-on-bg); color: var(--header-on-fg); }
+.area-link.on:hover { color: var(--header-on-fg); }
+/* 쇼핑몰 켜짐은 주황 알약 — 초록 헤더 위에서도 어느 영역인지 색으로 읽힌다.
+   꺼짐은 커뮤니티와 같은 흐린 흰색 (초록 위에 흐린 주황은 대비가 안 나온다) */
+.area-link.area-bag.on { background: var(--shop-on); color: #FFFFFF; }
+.area-link.area-bag.on:hover { color: #FFFFFF; }
 .area-link svg {
     width: 21px; height: 21px; fill: none;
     stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
@@ -282,7 +312,7 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .nav-toggle {
     display: none; align-items: center; justify-content: center;
     width: 36px; height: 36px; flex: none; order: 10;   /* 검색창(50)보다 앞 = 항상 첫 줄 우측 */
-    background: var(--bg); border: 0; border-radius: var(--r-md); cursor: pointer; color: var(--fg);
+    background: var(--header-hover); border: 0; border-radius: var(--r-md); cursor: pointer; color: var(--header-fg);
 }
 .nav-toggle .bars, .nav-toggle .bars::before, .nav-toggle .bars::after {
     display: block; width: 17px; height: 2px; border-radius: 2px;
@@ -292,18 +322,18 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .nav-toggle .bars::before, .nav-toggle .bars::after { content: ""; position: absolute; left: 0; }
 .nav-toggle .bars::before { top: -6px; }
 .nav-toggle .bars::after  { top: 6px; }
-.nav-toggle[aria-expanded="true"] { background: var(--accent-soft); color: var(--accent-deep); }
+.nav-toggle[aria-expanded="true"] { background: var(--header-on-bg); color: var(--header-on-fg); }
 .nav-toggle[aria-expanded="true"] .bars { background: transparent; }
 .nav-toggle[aria-expanded="true"] .bars::before { transform: translateY(6px) rotate(45deg); }
 .nav-toggle[aria-expanded="true"] .bars::after  { transform: translateY(-6px) rotate(-45deg); }
 .gnb-item { position: relative; flex: none; }
 .gnb-item > a {
-    display: block; padding: var(--s2) 9px; border-radius: var(--r-btn);
-    color: var(--muted); font-weight: 600; white-space: nowrap;
+    display: block; padding: var(--s2) var(--s3); border-radius: var(--r-btn);
+    color: var(--header-dim); font-weight: 600; white-space: nowrap;
 }
-.gnb-item > a:hover { background: var(--bg); color: var(--fg); }
-.gnb-item.on > a { background: var(--accent-soft); color: var(--accent-deep); font-weight: 700; }
-.gnb-item.section > a { color: var(--accent); }   /* 하위가 현재 화면 — 문맥만 표시 */
+.gnb-item > a:hover { background: var(--header-hover); color: var(--header-fg); }
+.gnb-item.on > a { background: var(--header-on-bg); color: var(--header-on-fg); font-weight: 700; }
+.gnb-item.section > a { color: var(--header-fg); }   /* 하위가 현재 화면 — 문맥만 표시 */
 .gnb-sub {
     position: absolute; top: 100%; left: 0; min-width: 160px; z-index: 70;
     background: var(--pop); border: 1px solid var(--pop-line); border-radius: var(--r-lg); padding: var(--s2);
@@ -326,8 +356,12 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .gnb-sub a:hover { background: var(--bg); color: var(--fg); }
 .gnb-sub a.on { color: var(--accent); font-weight: 700; }
 
-.header-util { display: flex; align-items: center; gap: var(--s2); font-size: var(--t-sm); color: var(--muted); }
-.login-link { font-weight: 600; padding: var(--s2); white-space: nowrap; }
+.header-util { display: flex; align-items: center; gap: var(--s2); font-size: var(--t-sm); color: var(--header-dim); }
+.login-link { font-weight: 600; padding: var(--s2); white-space: nowrap; color: var(--header-fg); }
+.login-link:hover { color: var(--header-fg); text-decoration: underline; }
+/* 헤더의 회원가입 버튼 — 초록 위 초록이 되지 않게 흰 알약으로 뒤집는다 */
+.site-header .btn-primary { background: var(--header-on-bg); border-color: transparent; color: var(--header-on-fg); box-shadow: none; }
+.site-header .btn-primary:hover { background: var(--header-on-bg); border-color: transparent; color: var(--header-on-fg); opacity: .92; }
 
 /* 헤더 아이콘 버튼 (검색·테마·닫기) */
 .icon-btn {
@@ -337,6 +371,9 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
     transition: color .15s, background .15s;
 }
 .icon-btn:hover { color: var(--accent); background: var(--accent-soft); }
+/* 컬러 헤더 위에서는 흐린 흰색으로 */
+.site-header .icon-btn { color: var(--header-dim); }
+.site-header .icon-btn:hover { color: var(--header-fg); background: var(--header-hover); }
 .icon-btn svg {
     width: 19px; height: 19px; fill: none;
     stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
@@ -354,6 +391,8 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 }
 .profile-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .profile-btn:hover, .profile-btn[aria-expanded="true"] { box-shadow: 0 0 0 2px var(--accent); }
+/* 컬러 헤더 위 아바타 링은 흰색으로 — 초록 링은 헤더에 묻힌다 */
+.site-header .profile-btn:hover, .site-header .profile-btn[aria-expanded="true"] { box-shadow: 0 0 0 2px var(--header-on-bg); }
 
 .profile-menu {
     position: absolute; top: calc(100% + var(--s2)); right: 0; z-index: 70;
@@ -423,6 +462,8 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
     display: flex; flex-direction: column; gap: var(--s2);
     margin-top: var(--s2); padding-top: var(--s3); border-top: 1px solid var(--line);
 }
+/* 접힘 패널 안의 회원가입 버튼 — 헤더용 흰 알약을 본래 초록 버튼으로 되돌린다 */
+.nav-collapsed .gnb-extra .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); box-shadow: var(--sh-btn); }
 .gnb-extra .search-open {
     display: flex; align-items: center; justify-content: center; gap: var(--s2);
 }
@@ -438,6 +479,11 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 }
 .nav-collapsed .gnb.open { display: flex; }
 .nav-collapsed .gnb-item > a { padding: var(--s3) var(--s4); border-radius: var(--r-md); font-size: var(--t-md); }
+/* 접힘 패널은 카드 배경이다 — 컬러 헤더용 흰 글씨를 본문 색으로 되돌린다 */
+.nav-collapsed .gnb-item > a { color: var(--muted); }
+.nav-collapsed .gnb-item > a:hover { background: var(--bg); color: var(--fg); }
+.nav-collapsed .gnb-item.on > a { background: var(--accent-soft); color: var(--accent-deep); }
+.nav-collapsed .gnb-item.section > a { color: var(--accent); }
 .nav-collapsed .gnb-sub {
     position: static; margin: 0 0 var(--s1) var(--s4);
     padding: 0; box-shadow: none; background: none; min-width: 0;
@@ -521,7 +567,7 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
     position: relative; overflow: hidden;
 }
 /* 솔리드 배경이라 standard 의 스크림(::before)·장식 원(::after)은 걷어냈다 —
-   #5B5BD6 위 흰 글씨는 5.9:1 로 막 없이 충분하다 */
+   #0C8060 위 흰 글씨는 4.9:1 로 막 없이 충분하다 */
 .hero h2 { font-size: var(--t-2xl); letter-spacing: -.02em; margin-bottom: var(--s2); }
 .hero p { margin: 0; font-size: var(--t-md); }
 
@@ -2302,13 +2348,13 @@ input[type=checkbox], input[type=radio] {
 .list-cards .od-misu { color: var(--danger); font-weight: 700; }
 
 /* ── 헤더 장바구니 — 아이콘 + 담긴 개수 배지 ── */
-.cart-btn { position: relative; color: var(--fg); }
-.cart-btn:hover { color: var(--accent); }
+.cart-btn { position: relative; color: var(--header-dim); }
+.cart-btn:hover { color: var(--header-fg); }
 .cart-count {
     position: absolute; top: 1px; right: 0;
     min-width: 16px; height: 16px; padding: 0 4px;
     display: flex; align-items: center; justify-content: center;
-    border-radius: var(--r-full); border: 2px solid var(--card);
+    border-radius: var(--r-full); border: 2px solid var(--header-bg);
     background: var(--danger); color: #fff;
     font-size: 10px; font-weight: 800; line-height: 1;
     font-variant-numeric: tabular-nums;
