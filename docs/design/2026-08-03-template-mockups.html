@@ -68,6 +68,121 @@ body {
 }
 
 /* ── d1-css: 잉크 Ink ── */
+.d1 .frame {
+    --bg: #FFFFFF;
+    --fg: #111111;
+    --muted: #777777;
+    --line: #DDDDDD;
+    background: var(--bg);
+    color: var(--fg);
+    border-radius: 0;
+    font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    font-size: 14px;
+}
+.d1 .serif { font-family: "Noto Serif KR", "Noto Serif CJK KR", "Nanum Myeongjo", "NanumMyeongjo", AppleMyungjo, Batang, Georgia, "Times New Roman", serif; }
+.d1 a { color: var(--fg); text-decoration: none; }
+
+.d1 .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 14px 32px;
+    border-bottom: 1px solid var(--fg);
+    font-size: 12.5px;
+    color: var(--muted);
+}
+.d1 .masthead {
+    text-align: center;
+    padding: 34px 32px 26px;
+    border-bottom: 3px double var(--fg);
+}
+.d1 .masthead h1 { font-size: 42px; font-weight: 800; letter-spacing: 2px; }
+.d1 .masthead p { color: var(--muted); font-size: 12.5px; letter-spacing: 4px; margin-top: 6px; }
+.d1 .nav {
+    display: flex;
+    justify-content: center;
+    gap: 36px;
+    padding: 13px 32px;
+    border-bottom: 1px solid var(--fg);
+    font-size: 13.5px;
+    letter-spacing: 1px;
+}
+.d1 .nav a.on { border-bottom: 2px solid var(--fg); padding-bottom: 2px; }
+
+.d1 .paper { padding: 36px 32px; }
+.d1 .lead {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 36px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--line);
+}
+.d1 .kicker {
+    font-size: 11.5px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    margin-bottom: 10px;
+}
+.d1 .lead h2 { font-size: 30px; line-height: 1.35; font-weight: 700; }
+.d1 .lead .std { margin-top: 14px; color: #444; line-height: 1.8; }
+.d1 .lead .byline { margin-top: 16px; font-size: 12.5px; color: var(--muted); }
+.d1 .lead-side { border-left: 1px solid var(--line); padding-left: 36px; }
+.d1 .lead-side li {
+    list-style: none;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+}
+.d1 .lead-side li:last-child { border-bottom: 0; }
+.d1 .lead-side h3 { font-size: 15.5px; font-weight: 600; line-height: 1.45; }
+.d1 .lead-side .m { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+.d1 .cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    padding-top: 30px;
+}
+.d1 .col { padding: 0 28px; border-left: 1px solid var(--line); }
+.d1 .col:first-child { padding-left: 0; border-left: 0; }
+.d1 .col:last-child { padding-right: 0; }
+.d1 .col > h3 {
+    font-size: 13px;
+    letter-spacing: 2px;
+    padding-bottom: 10px;
+    margin-bottom: 6px;
+    border-bottom: 2px solid var(--fg);
+}
+.d1 .col li { list-style: none; padding: 9px 0; border-bottom: 1px dotted var(--line); }
+.d1 .col li:last-child { border-bottom: 0; }
+.d1 .col a { font-size: 13.5px; line-height: 1.5; }
+.d1 .col a:hover { text-decoration: underline; }
+.d1 .col .m { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.d1 .rank { counter-reset: r; }
+.d1 .rank li { display: flex; gap: 12px; align-items: baseline; }
+.d1 .rank li::before {
+    counter-increment: r;
+    content: counter(r, decimal-leading-zero);
+    font-family: Georgia, serif;
+    font-size: 17px;
+    color: var(--muted);
+}
+.d1 .foot {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 32px;
+    border-top: 1px solid var(--fg);
+    font-size: 12px;
+    color: var(--muted);
+}
+@media (max-width: 720px) {
+    .d1 .lead { grid-template-columns: 1fr; }
+    .d1 .lead-side { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 8px; }
+    .d1 .cols { grid-template-columns: 1fr; }
+    .d1 .col { padding: 0; border-left: 0; margin-top: 26px; }
+    .d1 .col:first-child { margin-top: 0; }
+    .d1 .nav { gap: 18px; flex-wrap: wrap; }
+    .d1 .masthead h1 { font-size: 30px; }
+}
 
 /* ── d2-css: 터미널 Terminal ── */
 
@@ -96,6 +211,78 @@ body {
     </header>
     <div class="frame">
         <!-- d1-body -->
+        <div class="top">
+            <span>2026년 8월 3일 월요일 · 제1024호</span>
+            <span>로그인 · 회원가입</span>
+        </div>
+        <div class="masthead">
+            <h1 class="serif">한 걸음</h1>
+            <p>우리 동네 사람들의 기록</p>
+        </div>
+        <nav class="nav">
+            <a class="on" href="#d1">최신</a>
+            <a href="#d1">자유게시판</a>
+            <a href="#d1">질문답변</a>
+            <a href="#d1">갤러리</a>
+            <a href="#d1">공지사항</a>
+        </nav>
+        <div class="paper">
+            <div class="lead">
+                <article>
+                    <div class="kicker">오늘의 글</div>
+                    <h2 class="serif">십 년 다닌 골목 빵집이 문을 닫는다기에, 마지막 식빵을 사 왔습니다</h2>
+                    <p class="std">퇴근길에 늘 지나치던 자리였다. 셔터에 붙은 안내문을 읽고 한참을 서 있다가, 진열대에 남은 식빵 두 덩이를 모두 샀다. 계산을 하며 사장님과 나눈 짧은 대화를 옮겨 적는다…</p>
+                    <div class="byline">자유게시판 · 골목산책 · 댓글 47 · 조회 1,203</div>
+                </article>
+                <ul class="lead-side">
+                    <li>
+                        <h3 class="serif">장마 끝 물난리 대비, 반지하 세대가 미리 할 일 목록</h3>
+                        <div class="m">정보공유 · 비오는수요일 · 댓글 31</div>
+                    </li>
+                    <li>
+                        <h3 class="serif">초등 입학 준비물, 십 년 전과 달라진 것들</h3>
+                        <div class="m">육아 · 두아이아빠 · 댓글 24</div>
+                    </li>
+                    <li>
+                        <h3 class="serif">새벽 다섯 시 반, 첫차 기사님들의 인사법</h3>
+                        <div class="m">에세이 · 야간비행 · 댓글 18</div>
+                    </li>
+                </ul>
+            </div>
+            <div class="cols">
+                <div class="col">
+                    <h3>자유게시판</h3>
+                    <ul>
+                        <li><a href="#d1">에어컨 없이 여름 나는 분 계신가요</a><div class="m">무더위 · 10분 전</div></li>
+                        <li><a href="#d1">아파트 단지 길고양이 급식소 논쟁, 다들 어떻게 정리하셨나요</a><div class="m">이웃 · 32분 전</div></li>
+                        <li><a href="#d1">중고로 산 필름카메라, 첫 롤 현상 결과</a><div class="m">취미 · 1시간 전</div></li>
+                        <li><a href="#d1">동네 헬스장 삼 개월 끊고 두 번 간 사람 모임</a><div class="m">잡담 · 2시간 전</div></li>
+                    </ul>
+                </div>
+                <div class="col">
+                    <h3>질문답변</h3>
+                    <ul>
+                        <li><a href="#d1">전세 계약 전 등기부등본, 어디까지 확인해야 하나요</a><div class="m">답변 6 · 채택됨</div></li>
+                        <li><a href="#d1">키보드에 커피를 쏟았습니다. 순서대로 뭘 해야 할까요</a><div class="m">답변 9</div></li>
+                        <li><a href="#d1">부모님 스마트폰 글자 크기, 앱마다 따로 키우는 법</a><div class="m">답변 4 · 채택됨</div></li>
+                        <li><a href="#d1">베란다 텃밥 상추가 자꾸 시들어요</a><div class="m">답변 2</div></li>
+                    </ul>
+                </div>
+                <div class="col">
+                    <h3>주간 인기</h3>
+                    <ul class="rank">
+                        <li><a href="#d1">회사 앞 칼국수집 삼십 년 단골이 알려주는 주문법</a></li>
+                        <li><a href="#d1">퇴근 후 삼십 분, 한강 러닝 코스 정리</a></li>
+                        <li><a href="#d1">이사 견적 세 군데 비교해 본 실제 후기</a></li>
+                        <li><a href="#d1">덜컹거리는 선풍기 소음, 나사 하나로 잡았습니다</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="foot">
+            <span>한 걸음 — 그누보드5 프로</span>
+            <span>이용약관 · 개인정보처리방침 · 접속자 214</span>
+        </div>
     </div>
 </section>
 
