@@ -462,6 +462,184 @@ body {
 }
 
 /* ── d4-css: 팝 Pop ── */
+.d4 .frame {
+    --bg: #FFF8E7;
+    --yellow: #FFD93D;
+    --pink: #FF6FA5;
+    --blue: #4D96FF;
+    --green: #6BCB77;
+    --fg: #111111;
+    background: var(--bg);
+    color: var(--fg);
+    border: 3px solid var(--fg);
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+}
+.d4 a { color: var(--fg); text-decoration: none; }
+
+.d4 .top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 24px;
+    background: var(--blue);
+    border-bottom: 3px solid var(--fg);
+}
+.d4 .logo {
+    background: var(--yellow);
+    border: 3px solid var(--fg);
+    box-shadow: 4px 4px 0 var(--fg);
+    padding: 6px 14px;
+    font-size: 19px;
+    font-weight: 900;
+    transform: rotate(-2deg);
+    letter-spacing: -.5px;
+}
+.d4 .top nav { display: flex; gap: 10px; margin-left: 10px; flex-wrap: wrap; }
+.d4 .top nav a {
+    background: #FFF;
+    border: 2px solid var(--fg);
+    box-shadow: 3px 3px 0 var(--fg);
+    padding: 5px 12px;
+    font-size: 13px;
+    font-weight: 700;
+}
+.d4 .top nav a:hover { transform: translate(1px, 1px); box-shadow: 2px 2px 0 var(--fg); }
+.d4 .top .login {
+    margin-left: auto;
+    background: var(--fg);
+    color: #FFF;
+    border: 2px solid var(--fg);
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 700;
+}
+.d4 .hero {
+    position: relative;
+    padding: 40px 24px 44px;
+    background: var(--yellow);
+    border-bottom: 3px solid var(--fg);
+    overflow: hidden;
+}
+.d4 .hero h2 {
+    font-size: 34px;
+    font-weight: 900;
+    line-height: 1.3;
+    max-width: 640px;
+    letter-spacing: -.5px;
+}
+.d4 .hero h2 mark {
+    background: var(--pink);
+    color: var(--fg);
+    padding: 0 8px;
+    border: 2px solid var(--fg);
+}
+.d4 .hero p { margin-top: 12px; font-weight: 600; }
+.d4 .hero .cta {
+    display: inline-block;
+    margin-top: 18px;
+    background: var(--green);
+    border: 3px solid var(--fg);
+    box-shadow: 5px 5px 0 var(--fg);
+    padding: 10px 22px;
+    font-weight: 900;
+    font-size: 15px;
+}
+.d4 .hero .cta:hover { transform: translate(2px, 2px); box-shadow: 3px 3px 0 var(--fg); }
+.d4 .sticker {
+    position: absolute;
+    right: 34px;
+    top: 34px;
+    width: 120px;
+    height: 120px;
+    background: var(--pink);
+    border: 3px solid var(--fg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-weight: 900;
+    font-size: 15px;
+    line-height: 1.35;
+    transform: rotate(8deg);
+    box-shadow: 5px 5px 0 var(--fg);
+}
+.d4 .boards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 24px;
+}
+.d4 .block {
+    border: 3px solid var(--fg);
+    box-shadow: 6px 6px 0 var(--fg);
+    background: #FFFFFF;
+}
+.d4 .block > h3 {
+    padding: 10px 14px;
+    border-bottom: 3px solid var(--fg);
+    font-size: 15px;
+    font-weight: 900;
+}
+.d4 .block.b1 > h3 { background: var(--blue); color: #FFF; }
+.d4 .block.b2 > h3 { background: var(--green); }
+.d4 .block.b3 > h3 { background: var(--pink); }
+.d4 .block li {
+    list-style: none;
+    padding: 10px 14px;
+    border-bottom: 2px dashed #CCC;
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.5;
+}
+.d4 .block li:last-child { border-bottom: 0; }
+.d4 .block li .m { display: block; font-size: 11.5px; font-weight: 400; color: #666; margin-top: 2px; }
+.d4 .block li .badge {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 900;
+    background: var(--yellow);
+    border: 2px solid var(--fg);
+    padding: 0 6px;
+    margin-right: 6px;
+    transform: rotate(-1deg);
+}
+.d4 .strip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin: 0 24px 24px;
+    padding: 14px 18px;
+    background: var(--pink);
+    border: 3px solid var(--fg);
+    box-shadow: 6px 6px 0 var(--fg);
+    font-weight: 900;
+    flex-wrap: wrap;
+}
+.d4 .strip .nums { display: flex; gap: 18px; font-size: 13.5px; flex-wrap: wrap; }
+.d4 .strip .nums b { background: #FFF; border: 2px solid var(--fg); padding: 1px 8px; margin-left: 4px; }
+.d4 .foot {
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 24px;
+    background: var(--fg);
+    color: #FFF;
+    font-size: 12.5px;
+    font-weight: 600;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.d4 .foot a { color: var(--yellow); }
+@media (max-width: 720px) {
+    .d4 .top { flex-wrap: wrap; }
+    .d4 .top .login { margin-left: 0; }
+    .d4 .hero h2 { font-size: 26px; }
+    .d4 .sticker { position: static; margin-top: 20px; transform: rotate(-3deg); }
+    .d4 .boards { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
@@ -702,6 +880,60 @@ body {
     </header>
     <div class="frame">
         <!-- d4-body -->
+        <div class="top">
+            <span class="logo">동네오락실</span>
+            <nav>
+                <a href="#d4">자유</a>
+                <a href="#d4">유머</a>
+                <a href="#d4">게임</a>
+                <a href="#d4">장터</a>
+            </nav>
+            <a class="login" href="#d4">로그인</a>
+        </div>
+        <div class="hero">
+            <h2>오늘 웃긴 일 있었으면<br><mark>여기다 풀어놓고 가세요</mark></h2>
+            <p>하루 한 번, 아무거나 올리는 동네 오락실. 눈치 볼 것 없음.</p>
+            <a class="cta" href="#d4">글쓰기 GO →</a>
+            <div class="sticker">오늘<br>새 글<br>77개!</div>
+        </div>
+        <div class="boards">
+            <div class="block b1">
+                <h3>자유게시판</h3>
+                <ul>
+                    <li><span class="badge">HOT</span><a href="#d4">편의점 야간 알바가 겪은 오늘의 손님 3인</a><span class="m">웃참실패 · 댓글 61</span></li>
+                    <li><a href="#d4">버스에서 이어폰 없이 통화하는 분께 드리는 편지</a><span class="m">교통정리 · 댓글 28</span></li>
+                    <li><a href="#d4">우리 집 고양이가 리모컨을 숨기는 위치 통계</a><span class="m">집사일기 · 댓글 44</span></li>
+                </ul>
+            </div>
+            <div class="block b2">
+                <h3>게임</h3>
+                <ul>
+                    <li><span class="badge">공략</span><a href="#d4">주말에 클리어한 인디게임 셋, 짧은 감상</a><span class="m">패드요정 · 댓글 12</span></li>
+                    <li><a href="#d4">철권 초보 탈출 3주 커리큘럼 만들어 봄</a><span class="m">막고차기 · 댓글 19</span></li>
+                    <li><a href="#d4">옛날 오락실 기판 수집, 이번 달 득템</a><span class="m">기판장인 · 댓글 8</span></li>
+                </ul>
+            </div>
+            <div class="block b3">
+                <h3>장터</h3>
+                <ul>
+                    <li><span class="badge">급처</span><a href="#d4">키보드 갈축 → 적축 갈아타서 갈축 내놓습니다</a><span class="m">3만원 · 직거래</span></li>
+                    <li><a href="#d4">듀얼모니터 암 하나 나눔합니다 (나사 있음)</a><span class="m">나눔 · 마감임박</span></li>
+                    <li><a href="#d4">캠핑 의자 2개, 한 번 쓰고 창고행이었음</a><span class="m">2만원 · 택배가능</span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="strip">
+            <span>지금 이 순간</span>
+            <span class="nums">
+                <span>접속자<b>98</b></span>
+                <span>오늘 댓글<b>412</b></span>
+                <span>오늘 좋아요<b>1,024</b></span>
+            </span>
+        </div>
+        <div class="foot">
+            <span>동네오락실 — 그누보드5 프로</span>
+            <span><a href="#d4">이용약관</a> · <a href="#d4">개인정보처리방침</a></span>
+        </div>
     </div>
 </section>
 
