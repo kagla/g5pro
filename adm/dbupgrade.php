@@ -629,6 +629,25 @@ if (defined('G5_USE_SHOP') && G5_USE_SHOP) {
                     ) ENGINE=MyISAM DEFAULT CHARSET=utf8 ", true);
         $is_check = true;
     }
+
+    // 재고 대기수량 SUM 쿼리용 복합 인덱스 (get_it_stock_qty, get_option_stock_qty)
+    if (sql_query(" DESC `{$g5['g5_shop_cart_table']}` ", false)) {
+        $index_result = sql_query(" SHOW INDEX FROM `{$g5['g5_shop_cart_table']}` WHERE Key_name = 'idx_stock' ", false);
+        if (!$index_result || sql_num_rows($index_result) === 0) {
+            // 전체 컬럼 커버링 인덱스를 우선 시도 (InnoDB·utf8mb4 등 키 3072바이트 환경)
+            sql_query(" ALTER TABLE `{$g5['g5_shop_cart_table']}`
+                        ADD KEY `idx_stock` (`it_id`, `io_id`, `io_type`, `ct_stock_use`, `ct_status`, `ct_qty`) ", false);
+
+            $index_result = sql_query(" SHOW INDEX FROM `{$g5['g5_shop_cart_table']}` WHERE Key_name = 'idx_stock' ", false);
+            if (!$index_result || sql_num_rows($index_result) === 0) {
+                // 키 길이 제한 환경(MyISAM 1000바이트 등)은 프리픽스판으로 폴백
+                sql_query(" ALTER TABLE `{$g5['g5_shop_cart_table']}`
+                            ADD KEY `idx_stock` (`it_id`, `io_id`(64), `io_type`, `ct_stock_use`, `ct_status`(8), `ct_qty`) ", true);
+            }
+
+            $is_check = true;
+        }
+    }
 }
 
 $is_check = run_replace('admin_dbupgrade', $is_check);

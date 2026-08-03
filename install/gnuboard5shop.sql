@@ -61,7 +61,8 @@ CREATE TABLE IF NOT EXISTS `g5_shop_cart` (
   PRIMARY KEY (`ct_id`),
   KEY `od_id` (`od_id`),
   KEY `it_id` (`it_id`),
-  KEY `ct_status` (`ct_status`)
+  KEY `ct_status` (`ct_status`),
+  KEY `idx_stock` (`it_id`,`io_id`(64),`io_type`,`ct_stock_use`,`ct_status`(8),`ct_qty`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
