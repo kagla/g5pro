@@ -43,6 +43,18 @@ if (!isset($config['cf_template'])) {
 }
 $g5_pro_tpl = trim($config['cf_template']);
 if (!$g5_pro_tpl || !is_dir(G5_PATH.'/template/'.$g5_pro_tpl)) $g5_pro_tpl = 'standard';
+
+// ?template=<이름> — 루트 메인 한정 1회성 미리보기 (설계: docs/superpowers/specs/2026-08-03-template-preview-design.md, 로컬 문서)
+// 메인 외 화면은 템플릿별 코드 차이가 뒷문이 될 수 있어, 실행 스크립트가 루트 index.php 일 때만 먹는다.
+// 인증을 안 얹는 근거: template/ 아래 디렉터리를 심을 수 있는 공격자는 이미 웹루트 쓰기 권한자다.
+// 불합격은 조용히 기본 템플릿 — DB·세션을 건드리지 않으므로 링크를 타고 나가면 그 즉시 원래대로다.
+if (isset($_GET['template']) && is_string($_GET['template'])
+    && preg_match('/^[A-Za-z0-9_-]{1,100}$/', $_GET['template'])
+    && realpath($_SERVER['SCRIPT_FILENAME']) === realpath(G5_PATH.'/index.php')
+    && is_dir(G5_PATH.'/template/'.$_GET['template'])) {
+    $g5_pro_tpl = $_GET['template'];
+    header('X-Robots-Tag: noindex');   // 미리보기 URL 이 퍼져도 검색엔진에 안 잡히게
+}
 define('G5_TEMPLATE', $g5_pro_tpl);
 unset($g5_pro_tpl);
 
