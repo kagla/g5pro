@@ -185,6 +185,146 @@ body {
 }
 
 /* ── d2-css: 터미널 Terminal ── */
+.d2 .frame {
+    --bg: #0D1117;
+    --panel: #161B22;
+    --fg: #C9D1D9;
+    --dim: #8B949E;
+    --green: #3FB950;
+    --cyan: #39C5CF;
+    --amber: #D29922;
+    --line: #30363D;
+    background: var(--bg);
+    color: var(--fg);
+    border-color: #000;
+    font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    font-size: 14px;
+}
+.d2 .mono { font-family: "JetBrains Mono", "Fira Code", ui-monospace, "Cascadia Code", Consolas, monospace; }
+.d2 a { color: var(--fg); text-decoration: none; }
+
+.d2 .chrome {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #010409;
+    border-bottom: 1px solid var(--line);
+}
+.d2 .dot { width: 12px; height: 12px; border-radius: 50%; }
+.d2 .dot.r { background: #FF5F56; } .d2 .dot.y { background: #FFBD2E; } .d2 .dot.g { background: #27C93F; }
+.d2 .chrome .title { margin-left: 10px; font-size: 12px; color: var(--dim); }
+
+.d2 .bar {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 13px 24px;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+}
+.d2 .bar .logo { color: var(--green); font-weight: 700; font-size: 14px; }
+.d2 .bar a:hover { color: var(--cyan); }
+.d2 .bar .right { margin-left: auto; color: var(--dim); font-size: 12px; }
+.d2 .bar .right b { color: var(--cyan); font-weight: 600; }
+
+.d2 .hero {
+    padding: 36px 24px 30px;
+    border-bottom: 1px solid var(--line);
+    background:
+        radial-gradient(ellipse 60% 90% at 80% -20%, rgba(57,197,207,.12), transparent),
+        radial-gradient(ellipse 50% 80% at 15% 120%, rgba(63,185,80,.10), transparent);
+}
+.d2 .hero .path { color: var(--dim); font-size: 13px; }
+.d2 .hero .path b { color: var(--green); font-weight: 600; }
+.d2 .hero h2 { font-size: 24px; margin-top: 10px; font-weight: 700; }
+.d2 .hero h2 .cursor {
+    display: inline-block;
+    width: 11px; height: 24px;
+    background: var(--green);
+    vertical-align: -3px;
+    margin-left: 6px;
+}
+.d2 .hero p { color: var(--dim); margin-top: 8px; font-size: 13.5px; }
+
+.d2 .grid {
+    display: grid;
+    grid-template-columns: 1.7fr 1fr;
+    gap: 20px;
+    padding: 20px 24px 24px;
+}
+.d2 .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+}
+.d2 .panel > h3 {
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    color: var(--dim);
+}
+.d2 .panel > h3 b { color: var(--cyan); font-weight: 600; }
+.d2 .ls { padding: 6px 0; }
+.d2 .ls li {
+    list-style: none;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 8px 14px;
+    font-size: 13px;
+}
+.d2 .ls li:hover { background: rgba(57,197,207,.06); }
+.d2 .tag {
+    flex: 0 0 auto;
+    font-size: 11.5px;
+    color: var(--green);
+}
+.d2 .tag.q { color: var(--amber); }
+.d2 .tag.n { color: var(--cyan); }
+.d2 .ls .t { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.d2 .ls .c { flex: 0 0 auto; color: var(--dim); font-size: 12px; }
+.d2 .ls .new { color: var(--green); }
+.d2 .side { display: flex; flex-direction: column; gap: 20px; }
+.d2 .stat { padding: 12px 14px; font-size: 12.5px; color: var(--dim); }
+.d2 .stat .row { display: flex; justify-content: space-between; padding: 5px 0; }
+.d2 .stat .row b { color: var(--fg); font-weight: 600; }
+.d2 .meter {
+    height: 8px;
+    background: #010409;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    margin-top: 4px;
+    overflow: hidden;
+}
+.d2 .meter i { display: block; height: 100%; background: linear-gradient(90deg, var(--green), var(--cyan)); }
+.d2 .hot li {
+    list-style: none;
+    padding: 8px 14px;
+    font-size: 13px;
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+}
+.d2 .hot .n { color: var(--cyan); font-size: 12px; }
+.d2 .status {
+    display: flex;
+    gap: 18px;
+    padding: 10px 24px;
+    background: #010409;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--dim);
+}
+.d2 .status .ok { color: var(--green); }
+@media (max-width: 720px) {
+    .d2 .grid { grid-template-columns: 1fr; }
+    .d2 .bar { flex-wrap: wrap; gap: 12px; }
+    .d2 .bar .right { flex-basis: 100%; margin-left: 0; }
+    .d2 .status { flex-wrap: wrap; gap: 8px; }
+}
 
 /* ── d3-css: 온기 Hearth ── */
 
@@ -293,6 +433,61 @@ body {
     </header>
     <div class="frame">
         <!-- d2-body -->
+        <div class="chrome">
+            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+            <span class="title mono">devhole — 개발자 구덩이 : bash</span>
+        </div>
+        <nav class="bar mono">
+            <span class="logo">devhole:~$</span>
+            <a href="#d2">board/</a>
+            <a href="#d2">qna/</a>
+            <a href="#d2">code/</a>
+            <a href="#d2">jobs/</a>
+            <span class="right">logged in as <b>guest</b> · <a href="#d2">[login]</a></span>
+        </nav>
+        <div class="hero">
+            <div class="path mono"><b>~/devhole</b> on <span style="color:#39C5CF">main</span> · 우리끼리 파는 개발 구덩이</div>
+            <h2 class="mono">$ 오늘도 삽질 로그를 남긴다<span class="cursor"></span></h2>
+            <p>막힌 곳, 판 곳, 묻힌 곳. 검색해도 안 나오면 여기에 물어보세요.</p>
+        </div>
+        <div class="grid">
+            <div class="panel">
+                <h3 class="mono"><b>$</b> ls -la ./최신글 <span style="float:right">total 1,842</span></h3>
+                <ul class="ls">
+                    <li><span class="tag mono">[삽질]</span><a class="t" href="#d2">도커 컨테이너 시간대가 9시간 어긋난 채 배포된 지 3주였다</a><span class="c">42</span></li>
+                    <li><span class="tag q mono">[질문]</span><a class="t" href="#d2">nginx 리버스 프록시 뒤에서 실제 IP 를 남기려면</a><span class="c">7</span></li>
+                    <li><span class="tag mono">[삽질]</span><a class="t" href="#d2">크론이 안 돌길래 봤더니 서버 시간이 아니라 내 탓이었음</a><span class="c">19</span></li>
+                    <li><span class="tag n mono">[정보]</span><a class="t" href="#d2">rsync --dry-run 을 먼저 치는 습관이 살린 금요일 밤</a><span class="c new">new</span></li>
+                    <li><span class="tag q mono">[질문]</span><a class="t" href="#d2">git rebase 하다 동료 커밋을 날렸습니다. 복구 가능할까요</a><span class="c">23</span></li>
+                    <li><span class="tag n mono">[정보]</span><a class="t" href="#d2">사내 위키를 mdBook 으로 옮긴 과정 정리</a><span class="c">11</span></li>
+                    <li><span class="tag mono">[삽질]</span><a class="t" href="#d2">utf8 과 utf8mb4 사이에서 이모지가 죽었다</a><span class="c">31</span></li>
+                </ul>
+            </div>
+            <div class="side">
+                <div class="panel">
+                    <h3 class="mono"><b>$</b> top -o 조회수</h3>
+                    <ul class="hot">
+                        <li><span class="n mono">1.</span><a href="#d2">신입 때 짠 코드를 5년 만에 다시 만났다</a></li>
+                        <li><span class="n mono">2.</span><a href="#d2">사이드 프로젝트 서버비 월 3천원으로 줄이기</a></li>
+                        <li><span class="n mono">3.</span><a href="#d2">면접에서 받은 최악의 라이브 코딩 문제</a></li>
+                    </ul>
+                </div>
+                <div class="panel">
+                    <h3 class="mono"><b>$</b> uptime</h3>
+                    <div class="stat">
+                        <div class="row"><span>접속자</span><b>132명</b></div>
+                        <div class="row"><span>오늘 새 글</span><b>47건</b></div>
+                        <div class="row"><span>오늘 댓글</span><b>318개</b></div>
+                        <div class="meter"><i style="width:64%"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="status mono">
+            <span class="ok">● online</span>
+            <span>devhole v5.pro</span>
+            <span>이용약관 · 개인정보처리방침</span>
+        </div>
     </div>
 </section>
 
