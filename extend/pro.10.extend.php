@@ -633,6 +633,74 @@ function g5_latest_rows($bo_table, $rows = 6, $subject_len = 40)
     );
 }
 
+// 통합 최신글 — 여러 게시판을 시간순으로 한 줄로 섞는다 (메인 '방금 올라온 글').
+// 게시판별 최신 $rows 개를 모아 다시 최신순으로 자르므로, 한 게시판이 도배해도
+// 최대 $rows 개 안에서만 차지한다.
+function g5_latest_mixed($bo_tables, $rows = 8, $subject_len = 60)
+{
+    $mixed = array();
+    foreach ((array)$bo_tables as $bt) {
+        $lt = g5_latest_rows($bt, $rows, $subject_len);
+        if (!$lt['board']) continue;
+        foreach ($lt['items'] as $it) {
+            $mixed[] = array(
+                'bo_table'   => $lt['board']['bo_table'],
+                'bo_subject' => $lt['board']['bo_subject'],
+                'item'       => $it,
+            );
+        }
+    }
+    usort($mixed, function ($a, $b) {
+        return strcmp($b['item']['wr_datetime'], $a['item']['wr_datetime']);
+    });
+    return array_slice($mixed, 0, $rows);
+}
+
+// 최신글 + 목록 썸네일 (메인 갤러리 카드용).
+// 크기를 게시판 설정(bo_gallery_*)이 아니라 인자로 받는 것은 메인 카드의 칸 크기가
+// 게시판 목록과 다르기 때문이다. src 가 비면 이미지 없는 글 — 뷰가 자리 표시로 그린다.
+function g5_latest_thumb_rows($bo_table, $rows = 4, $thumb_w = 400, $thumb_h = 260, $subject_len = 40)
+{
+    include_once(G5_LIB_PATH.'/thumbnail.lib.php');
+    $lt = g5_latest_rows($bo_table, $rows, $subject_len);
+    foreach ($lt['items'] as $i => $it) {
+        $lt['items'][$i]['thumb'] = get_list_thumbnail($bo_table, $it['wr_id'], $thumb_w, $thumb_h, false, true);
+    }
+    return $lt;
+}
+
+// 인기글 — 최근 $days 일 조회수 상위를 게시판 몇 곳에서 모아 병합한다.
+// 최근 글이 하나도 없으면 기간을 무시하고 전체에서 뽑는다 — 글이 뜸한 사이트에서
+// 위젯이 텅 비어 보이는 것보다 낫다.
+function g5_hot_rows($bo_tables, $rows = 5, $days = 7, $subject_len = 40)
+{
+    global $g5;
+
+    $since = date('Y-m-d 00:00:00', G5_SERVER_TIME - $days * 86400);
+    foreach (array($since, null) as $from) {
+        $hot = array();
+        foreach ((array)$bo_tables as $bt) {
+            $board = sql_fetch(" select * from `{$g5['board_table']}` where bo_table = '".sql_escape_string($bt)."' ");
+            if (!$board) continue;
+            $write_table = $g5['write_prefix'].$board['bo_table'];
+            $where = " wr_is_comment = 0 ".($from !== null ? " and wr_datetime >= '{$from}' " : '');
+            $result = sql_query(" select * from `{$write_table}` where {$where} order by wr_hit desc limit 0, ".(int)$rows, false);
+            while ($result && ($row = sql_fetch_array($result))) {
+                $hot[] = array(
+                    'bo_table'   => $board['bo_table'],
+                    'bo_subject' => $board['bo_subject'],
+                    'item'       => get_list($row, $board, '', $subject_len),
+                );
+            }
+        }
+        if (count($hot)) break;
+    }
+    usort($hot, function ($a, $b) {
+        return (int)$b['item']['wr_hit'] - (int)$a['item']['wr_hit'];
+    });
+    return array_slice($hot, 0, $rows);
+}
+
 // 메인 히어로용 사이트 통계 (가벼운 집계 3건)
 function g5_pro_stats()
 {
