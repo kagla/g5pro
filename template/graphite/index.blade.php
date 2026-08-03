@@ -10,7 +10,7 @@
     $chips = array('notice' => 'c3', 'free' => '', 'qa' => 'c2', 'gallery' => 'c4');
 @endphp
 
-<section class="hero home-hero">
+<section class="home-hero">
     <div>
         <h2>👋 어서 오세요, {{ $site['title'] }}입니다</h2>
         <p>회원 {{ number_format($stats['members']) }}명이 함께하는 커뮤니티 · 오늘 하루 이야기를 편하게 나눠 보세요</p>

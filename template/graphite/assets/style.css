@@ -1,63 +1,63 @@
 /* ═══════════════════════════════════════════════════════════
-   g5pro template/forest — 🌲 포레스트 · 에메랄드 그린
+   g5pro template/graphite — ⬛ 그래파이트 · 모노 미니멀
    standard(소다 블루)와 형태·색을 다 갈라놓은 범용 모던 템플릿:
-   에메랄드 컬러 헤더, 테두리 플랫 카드(그림자 최소), 알약 버튼,
-   모서리 축소. 그라디언트 없음, 솔리드 컬러만.
+   무채색 베이스 + 검정 버튼, 블랙 헤더, 테두리 플랫 카드(그림자
+   최소), 알약 버튼, 컬러 블록 히어로 없이 타이포 중심 메인.
+   그라디언트 없음, 솔리드 컬러만. 색은 칩·상태 표시에만 아껴 쓴다.
    메인은 통합 최신글 + 갤러리 썸네일 + 위젯 구성 (index.blade.php).
-   시안: docs/design/2026-08-03-template-mockups.html (색만 그린으로)
    ═══════════════════════════════════════════════════════════ */
 
 :root {
-    /* 바탕 — 흰색이 아니라 초록기 낀 옅은 회백. 카드가 떠 보이게 하는 핵심 */
-    --bg: #F4F8F5;
+    /* 바탕 — 아주 옅은 뉴트럴 그레이. 카드가 떠 보이게 하는 핵심 */
+    --bg: #F7F7F8;
     --card: #FFFFFF;
-    --fg: #1E2B24;
-    --muted: #66736B;
-    --line: #E3EAE4;
-    --btn-line: #7F9086;   /* 버튼 테두리 — 카드 위에서 3:1 이상 보이게 (--line 은 안 보인다) */
-    --row-hover: #F3FAF5;
+    --fg: #17181A;
+    --muted: #71737A;
+    --line: #E8E8EA;
+    --btn-line: #8A8C94;   /* 버튼 테두리 — 카드 위에서 3:1 이상 보이게 (--line 은 안 보인다) */
+    --row-hover: #F4F4F5;
 
-    /* 포레스트 에메랄드 */
-    --accent: #0C8060;     /* 흰 글씨와 4.9:1 */
+    /* 그래파이트 — 주조색이 곧 검정. 버튼·활성 상태가 전부 잉크색이다 */
+    --accent: #17181A;
     --accent-fg: #FFFFFF;
-    --accent-deep: #085E46;
-    --accent-soft: #DFF3E9;
+    --accent-deep: #000000;
+    --accent-soft: #EEEEF0;
 
-    /* 컬러 헤더 — 헤더만 에메랄드 솔리드. 다크에서는 짙은 초록으로 가라앉힌다 */
-    --header-bg: #0C8060;
+    /* 블랙 헤더 — 다크 모드에서는 바탕보다 반 단계 밝은 판으로 */
+    --header-bg: #111214;
     --header-fg: #FFFFFF;
-    --header-dim: rgba(255,255,255,.82);
-    --header-hover: rgba(255,255,255,.14);
+    --header-dim: rgba(255,255,255,.72);
+    --header-hover: rgba(255,255,255,.12);
     --header-on-bg: #FFFFFF;
-    --header-on-fg: #085E46;
+    --header-on-fg: #111214;
 
-    /* 보조색 — 카테고리 칩 구분용. 이름은 teal 이지만 값은 앰버 —
-       주조색이 초록이라 청록 칩은 구분이 안 되어 색상환 반대쪽으로 보냈다 */
-    --teal: #C77008;
-    --teal-soft: #FBEDD7;
-    --teal-deep: #8F4E04;
+    /* 보조색 — 카테고리 칩 구분용. 무채색 판 위에서만 색을 아껴 쓴다.
+       이름은 teal 이지만 값은 앰버 (모노 베이스에서 청록은 파랑처럼 읽힌다) */
+    --teal: #B45309;
+    --teal-soft: #F6E9DA;
+    --teal-deep: #83420C;
     /* 헤더 영역 전환의 쇼핑몰 칸 — 켜졌을 때 알약 색(on), 꺼졌을 때 선 아이콘 색(off).
        커뮤니티(--accent 파랑)와 갈라 보이는 것이 목적이라 색상환 반대쪽 주황으로 간다.
        청록(--teal 계열)은 파랑과 색상차가 43° 뿐이라 나란히 두면 구분이 안 됐다. 주황은 161°.
        흰 아이콘이 얹히므로 그래픽 최소 대비 3:1 을 넘는 진한 쪽을 골랐다 */
-    --shop-on: #C2410C;          /* 흰 아이콘과 5.18:1 — 초록 커뮤니티와 확실히 갈리는 주황 */
+    --shop-on: #C2410C;          /* 흰 아이콘과 5.18:1 — 무채색 판에서 유일하게 튀는 주황 */
     --shop-off: #C2410C;         /* 트랙 배경과 4.80:1 */
-    --indigo: #7C3AED;           /* 칩 보조색 — 초록·앰버와 갈라지는 바이올렛 */
-    --indigo-soft: #F0E9FE;
-    --danger: #EF4444;
-    --danger-soft: #FEE2E2;
-    --danger-deep: #B91C1C;
+    --indigo: #6D28D9;           /* 칩 보조색 — 앰버와 갈라지는 바이올렛 */
+    --indigo-soft: #EFE7FD;
+    --danger: #DC2626;
+    --danger-soft: #FDE3E3;
+    --danger-deep: #A61B1B;
 
-    /* 이름은 grad 지만 값은 솔리드 — 포레스트는 그라디언트를 쓰지 않는다.
-       standard 와 같은 자리(히어로·검색 요약·아바타·썸네일 자리)에 그대로 꽂힌다 */
-    --grad: #0C8060;
+    /* 이름은 grad 지만 값은 솔리드 — 그래파이트는 그라디언트를 쓰지 않는다.
+       standard 와 같은 자리(검색 요약 배너·아바타·썸네일 자리)에 그대로 꽂힌다 */
+    --grad: #17181A;
 
     /* 그림자 대신 헤어라인 — 카드가 그림자로 뜨는 standard 와 달리
        1px 링 + 아주 옅은 그림자로 플랫하게 간다. 떠야 하는 팝오버(sh-lg)만 그림자 유지 */
-    --sh-sm: 0 1px 2px rgba(15,30,22,.06);
-    --sh-md: 0 0 0 1px var(--line), 0 1px 3px rgba(15,30,22,.05);
-    --sh-lg: 0 0 0 1px var(--pop-line), 0 12px 28px rgba(15,30,22,.14);
-    --sh-btn: 0 2px 8px rgba(12,128,96,.25);
+    --sh-sm: 0 1px 2px rgba(23,24,26,.06);
+    --sh-md: 0 0 0 1px var(--line), 0 1px 3px rgba(23,24,26,.04);
+    --sh-lg: 0 0 0 1px var(--pop-line), 0 12px 28px rgba(23,24,26,.14);
+    --sh-btn: 0 2px 8px rgba(23,24,26,.22);
 
     /* 여백 */
     --s1: 4px;  --s2: 8px;  --s3: 12px; --s4: 16px;
@@ -79,126 +79,126 @@
 }
 @media (prefers-color-scheme: dark) {
     :root {
-        --bg: #101512;
-        --card: #181F1B;
-        --fg: #E4EDE7;
-        --muted: #93A29A;
-        --line: #27332C;
-        --btn-line: #5A6B61;
-        --row-hover: #1E2721;
+        --bg: #0C0D0F;
+        --card: #16171A;
+        --fg: #ECEDEF;
+        --muted: #9A9CA3;
+        --line: #27282C;
+        --btn-line: #5C5E66;
+        --row-hover: #1C1D21;
 
-        /* 다크의 액센트는 밝은 민트 — 위에 얹는 글씨는 흰색이 아니라 진초록(4.5:1↑) */
-        --accent: #3BBF95;
-        --accent-fg: #0A2B20;
-        --accent-deep: #7ADDBC;
-        --accent-soft: #16352A;
+        /* 다크의 액센트는 흰색 — 흰 버튼에 검정 글씨 (모노의 반전) */
+        --accent: #FFFFFF;
+        --accent-fg: #111214;
+        --accent-deep: #D4D5D9;
+        --accent-soft: #232428;
 
-        --header-bg: #0E2E24;
-        --header-fg: #E7F2EC;
-        --header-dim: rgba(231,242,236,.75);
+        --header-bg: #17181C;
+        --header-fg: #FFFFFF;
+        --header-dim: rgba(255,255,255,.68);
         --header-hover: rgba(255,255,255,.10);
-        --header-on-bg: rgba(255,255,255,.16);
-        --header-on-fg: #FFFFFF;
+        --header-on-bg: #FFFFFF;
+        --header-on-fg: #111214;
 
         --teal: #E8A33D;
-        --teal-soft: #3A2C12;
+        --teal-soft: #382B12;
         --teal-deep: #F5C97E;
         --shop-on: #EA6A0C;          /* 흰 아이콘과 3.20:1 */
         --shop-off: #F97316;         /* 트랙 배경과 6.48:1 */
         --indigo: #B79CFF;
-        --indigo-soft: #2E2650;
+        --indigo-soft: #2C2450;
         --danger: #F87171;
-        --danger-soft: #4A1E1E;
+        --danger-soft: #46201F;
         --danger-deep: #FCA5A5;
 
         --sh-sm: 0 1px 2px rgba(0,0,0,.40);
         --sh-md: 0 0 0 1px var(--line), 0 2px 6px rgba(0,0,0,.35);
         --sh-lg: 0 0 0 1px var(--pop-line), 0 12px 30px rgba(0,0,0,.50);
-        --sh-btn: 0 2px 8px rgba(59,191,149,.25);
+        --sh-btn: 0 2px 8px rgba(0,0,0,.35);
 
         /* 어두운 배경에서는 그림자가 거의 안 보인다. 밝기를 한 단계 올려 떠 보이게 한다 */
-        --pop: #212B25;
-        --pop-line: #3A4A40;
+        --pop: #202126;
+        --pop-line: #383A41;
     }
 }
 :root[data-theme="dark"] {
     /* 어두운 배경에서는 그림자가 거의 안 보인다. 밝기를 한 단계 올려 떠 보이게 한다 */
-    --pop: #212B25;
-    --pop-line: #3A4A40;
-    --bg: #101512;
-    --card: #181F1B;
-    --fg: #E4EDE7;
-    --muted: #93A29A;
-    --line: #27332C;
-    --btn-line: #5A6B61;
-    --row-hover: #1E2721;
+    --pop: #202126;
+    --pop-line: #383A41;
+    --bg: #0C0D0F;
+    --card: #16171A;
+    --fg: #ECEDEF;
+    --muted: #9A9CA3;
+    --line: #27282C;
+    --btn-line: #5C5E66;
+    --row-hover: #1C1D21;
 
-    --accent: #3BBF95;
-    --accent-fg: #0A2B20;
-    --accent-deep: #7ADDBC;
-    --accent-soft: #16352A;
+    --accent: #FFFFFF;
+    --accent-fg: #111214;
+    --accent-deep: #D4D5D9;
+    --accent-soft: #232428;
 
-    --header-bg: #0E2E24;
-    --header-fg: #E7F2EC;
-    --header-dim: rgba(231,242,236,.75);
+    --header-bg: #17181C;
+    --header-fg: #FFFFFF;
+    --header-dim: rgba(255,255,255,.68);
     --header-hover: rgba(255,255,255,.10);
-    --header-on-bg: rgba(255,255,255,.16);
-    --header-on-fg: #FFFFFF;
+    --header-on-bg: #FFFFFF;
+    --header-on-fg: #111214;
 
     --teal: #E8A33D;
-    --teal-soft: #3A2C12;
+    --teal-soft: #382B12;
     --teal-deep: #F5C97E;
     --shop-on: #EA6A0C;          /* 흰 아이콘과 3.20:1 */
     --shop-off: #F97316;         /* 트랙 배경과 6.48:1 */
     --indigo: #B79CFF;
-    --indigo-soft: #2E2650;
+    --indigo-soft: #2C2450;
     --danger: #F87171;
-    --danger-soft: #4A1E1E;
+    --danger-soft: #46201F;
     --danger-deep: #FCA5A5;
 
     --sh-sm: 0 1px 2px rgba(0,0,0,.40);
     --sh-md: 0 0 0 1px var(--line), 0 2px 6px rgba(0,0,0,.35);
     --sh-lg: 0 0 0 1px var(--pop-line), 0 12px 30px rgba(0,0,0,.50);
-    --sh-btn: 0 2px 8px rgba(59,191,149,.25);
+    --sh-btn: 0 2px 8px rgba(0,0,0,.35);
 }
 :root[data-theme="light"] {
     --pop: var(--card);
     --pop-line: var(--line);
-    --bg: #F4F8F5;
+    --bg: #F7F7F8;
     --card: #FFFFFF;
-    --fg: #1E2B24;
-    --muted: #66736B;
-    --line: #E3EAE4;
-    --btn-line: #7F9086;   /* 버튼 테두리 — 카드 위에서 3:1 이상 보이게 (--line 은 안 보인다) */
-    --row-hover: #F3FAF5;
+    --fg: #17181A;
+    --muted: #71737A;
+    --line: #E8E8EA;
+    --btn-line: #8A8C94;   /* 버튼 테두리 — 카드 위에서 3:1 이상 보이게 (--line 은 안 보인다) */
+    --row-hover: #F4F4F5;
 
-    --accent: #0C8060;
+    --accent: #17181A;
     --accent-fg: #FFFFFF;
-    --accent-deep: #085E46;
-    --accent-soft: #DFF3E9;
+    --accent-deep: #000000;
+    --accent-soft: #EEEEF0;
 
-    --header-bg: #0C8060;
+    --header-bg: #111214;
     --header-fg: #FFFFFF;
-    --header-dim: rgba(255,255,255,.82);
-    --header-hover: rgba(255,255,255,.14);
+    --header-dim: rgba(255,255,255,.72);
+    --header-hover: rgba(255,255,255,.12);
     --header-on-bg: #FFFFFF;
-    --header-on-fg: #085E46;
+    --header-on-fg: #111214;
 
-    --teal: #C77008;
-    --teal-soft: #FBEDD7;
-    --teal-deep: #8F4E04;
+    --teal: #B45309;
+    --teal-soft: #F6E9DA;
+    --teal-deep: #83420C;
     --shop-on: #C2410C;          /* 흰 아이콘과 5.18:1 */
     --shop-off: #C2410C;         /* 트랙 배경과 4.80:1 */
-    --indigo: #7C3AED;
-    --indigo-soft: #F0E9FE;
-    --danger: #EF4444;
-    --danger-soft: #FEE2E2;
-    --danger-deep: #B91C1C;
+    --indigo: #6D28D9;
+    --indigo-soft: #EFE7FD;
+    --danger: #DC2626;
+    --danger-soft: #FDE3E3;
+    --danger-deep: #A61B1B;
 
-    --sh-sm: 0 1px 2px rgba(15,30,22,.06);
-    --sh-md: 0 0 0 1px var(--line), 0 1px 3px rgba(15,30,22,.05);
-    --sh-lg: 0 0 0 1px var(--pop-line), 0 12px 28px rgba(15,30,22,.14);
-    --sh-btn: 0 2px 8px rgba(12,128,96,.25);
+    --sh-sm: 0 1px 2px rgba(23,24,26,.06);
+    --sh-md: 0 0 0 1px var(--line), 0 1px 3px rgba(23,24,26,.04);
+    --sh-lg: 0 0 0 1px var(--pop-line), 0 12px 28px rgba(23,24,26,.14);
+    --sh-btn: 0 2px 8px rgba(23,24,26,.22);
 }
 
 /* ── 기본 ── */
@@ -274,7 +274,7 @@ input[type=text], input[type=password], input[type=email], input[type=file], sel
 input:focus, select:focus, textarea:focus { background: var(--card); border-color: var(--accent); outline: none; }
 textarea { line-height: 1.6; border-radius: var(--r-input); }
 
-/* ── 헤더 — 에메랄드 컬러 헤더 (standard 흰 헤더와 갈라지는 가장 큰 표식) ── */
+/* ── 헤더 — 블랙 헤더 (standard 흰 헤더와 갈라지는 가장 큰 표식) ── */
 .site-header { background: var(--header-bg); position: relative; z-index: 60; }
 .site-header .wrap { position: relative; }
 .site-header .wrap { display: flex; align-items: center; gap: var(--s4); min-height: 62px; flex-wrap: wrap; }
@@ -299,8 +299,8 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .area-link:hover { color: var(--header-fg); }
 .area-link.on { background: var(--header-on-bg); color: var(--header-on-fg); }
 .area-link.on:hover { color: var(--header-on-fg); }
-/* 쇼핑몰 켜짐은 주황 알약 — 초록 헤더 위에서도 어느 영역인지 색으로 읽힌다.
-   꺼짐은 커뮤니티와 같은 흐린 흰색 (초록 위에 흐린 주황은 대비가 안 나온다) */
+/* 쇼핑몰 켜짐은 주황 알약 — 검정 헤더 위에서도 어느 영역인지 색으로 읽힌다.
+   꺼짐은 커뮤니티와 같은 흐린 흰색 (검정 위에 흐린 주황은 대비가 안 나온다) */
 .area-link.area-bag.on { background: var(--shop-on); color: #FFFFFF; }
 .area-link.area-bag.on:hover { color: #FFFFFF; }
 .area-link svg {
@@ -359,7 +359,7 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .header-util { display: flex; align-items: center; gap: var(--s2); font-size: var(--t-sm); color: var(--header-dim); }
 .login-link { font-weight: 600; padding: var(--s2); white-space: nowrap; color: var(--header-fg); }
 .login-link:hover { color: var(--header-fg); text-decoration: underline; }
-/* 헤더의 회원가입 버튼 — 초록 위 초록이 되지 않게 흰 알약으로 뒤집는다 */
+/* 헤더의 회원가입 버튼 — 검정 위 검정이 되지 않게 흰 알약으로 뒤집는다 */
 .site-header .btn-primary { background: var(--header-on-bg); border-color: transparent; color: var(--header-on-fg); box-shadow: none; }
 .site-header .btn-primary:hover { background: var(--header-on-bg); border-color: transparent; color: var(--header-on-fg); opacity: .92; }
 
@@ -391,7 +391,7 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 }
 .profile-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .profile-btn:hover, .profile-btn[aria-expanded="true"] { box-shadow: 0 0 0 2px var(--accent); }
-/* 컬러 헤더 위 아바타 링은 흰색으로 — 초록 링은 헤더에 묻힌다 */
+/* 컬러 헤더 위 아바타 링은 흰색으로 — 잉크색 링은 헤더에 묻힌다 */
 .site-header .profile-btn:hover, .site-header .profile-btn[aria-expanded="true"] { box-shadow: 0 0 0 2px var(--header-on-bg); }
 
 .profile-menu {
@@ -462,7 +462,7 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
     display: flex; flex-direction: column; gap: var(--s2);
     margin-top: var(--s2); padding-top: var(--s3); border-top: 1px solid var(--line);
 }
-/* 접힘 패널 안의 회원가입 버튼 — 헤더용 흰 알약을 본래 초록 버튼으로 되돌린다 */
+/* 접힘 패널 안의 회원가입 버튼 — 헤더용 흰 알약을 본래 잉크색 버튼으로 되돌린다 */
 .nav-collapsed .gnb-extra .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); box-shadow: var(--sh-btn); }
 .gnb-extra .search-open {
     display: flex; align-items: center; justify-content: center; gap: var(--s2);
@@ -567,18 +567,24 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
     position: relative; overflow: hidden;
 }
 /* 솔리드 배경이라 standard 의 스크림(::before)·장식 원(::after)은 걷어냈다 —
-   #0C8060 위 흰 글씨는 4.9:1 로 막 없이 충분하다 */
+   #17181A 위 흰 글씨는 17:1 로 막 없이 충분하다 */
 .hero h2 { font-size: var(--t-2xl); letter-spacing: -.02em; margin-bottom: var(--s2); }
 .hero p { margin: 0; font-size: var(--t-md); }
 
-/* ── 클라우드 메인 — 히어로 + 통합 최신글 + 갤러리 + 사이드 위젯 ── */
+/* ── 그래파이트 메인 — 타이포 히어로 + 통합 최신글 + 갤러리 + 사이드 위젯 ──
+   standard 의 컬러 블록 히어로 대신, 바탕에 큰 검정 타이포로 인사한다 */
 .home-hero {
-    display: flex; align-items: center; justify-content: space-between;
+    display: flex; align-items: flex-end; justify-content: space-between;
     gap: var(--s4); flex-wrap: wrap;
+    padding: var(--s4) 0 var(--s5); margin-bottom: var(--s5);
+    border-bottom: 1px solid var(--line);
 }
+.home-hero h2 { font-size: 30px; font-weight: 800; letter-spacing: -.03em; }
+.home-hero p { margin: var(--s2) 0 0; color: var(--muted); font-size: var(--t-md); }
 .hero-pills { display: flex; gap: var(--s2); flex-wrap: wrap; }
 .hero-pills span {
-    background: rgba(255,255,255,.16); border-radius: var(--r-full);
+    background: var(--card); box-shadow: var(--sh-md); color: var(--fg);
+    border-radius: var(--r-full);
     padding: var(--s2) var(--s4); font-size: var(--t-sm); font-weight: 600; white-space: nowrap;
 }
 .home-grid { display: grid; grid-template-columns: 1.8fr 1fr; gap: var(--s4); align-items: start; }
