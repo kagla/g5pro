@@ -327,6 +327,139 @@ body {
 }
 
 /* ── d3-css: 온기 Hearth ── */
+.d3 .frame {
+    --bg: #FAF3E7;
+    --card: #FFFBF2;
+    --fg: #3B2A1E;
+    --muted: #8A705C;
+    --brown: #8B5E3C;
+    --wine: #8E3B46;
+    --line: #E8D9C3;
+    background: var(--bg);
+    color: var(--fg);
+    border-color: var(--line);
+    font-size: 14px;
+    font-family: "Noto Serif KR", "Noto Serif CJK KR", "Nanum Myeongjo", "NanumMyeongjo", AppleMyungjo, Batang, Georgia, serif;
+}
+.d3 a { color: var(--fg); text-decoration: none; }
+
+.d3 .top {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+    padding: 20px 36px;
+    border-bottom: 1px solid var(--line);
+}
+.d3 .top .logo { font-size: 24px; font-weight: 700; letter-spacing: 1px; }
+.d3 .top .logo em { font-style: normal; color: var(--wine); }
+.d3 .top nav { display: flex; gap: 22px; font-size: 14px; margin-left: 8px; }
+.d3 .top nav a:hover { color: var(--wine); }
+.d3 .top .join {
+    margin-left: auto;
+    font-size: 13px;
+    color: var(--card);
+    background: var(--brown);
+    padding: 8px 18px;
+    border-radius: 999px;
+}
+.d3 .feature {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: 40px;
+    align-items: center;
+    padding: 44px 36px;
+    border-bottom: 1px solid var(--line);
+}
+.d3 .feature .cat {
+    display: inline-block;
+    font-size: 12.5px;
+    letter-spacing: 2px;
+    color: var(--wine);
+    border: 1px solid var(--wine);
+    padding: 4px 12px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+}
+.d3 .feature h2 { font-size: 34px; line-height: 1.4; font-weight: 700; }
+.d3 .feature .lede { margin-top: 14px; color: var(--muted); line-height: 1.85; font-size: 15px; }
+.d3 .feature .by { margin-top: 18px; font-size: 13px; color: var(--muted); }
+.d3 .feature .art {
+    aspect-ratio: 4 / 3;
+    border-radius: 10px;
+    background:
+        radial-gradient(circle at 25% 30%, rgba(255,255,255,.55), transparent 40%),
+        radial-gradient(circle at 80% 20%, #E9B44C 0 18%, transparent 19%),
+        linear-gradient(160deg, #D98E56, #8E3B46 70%, #5C2A32);
+    box-shadow: 0 14px 30px rgba(90,50,30,.18);
+}
+.d3 .mag {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 40px;
+    padding: 36px;
+}
+.d3 h3.sec {
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--brown);
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--brown);
+    margin-bottom: 4px;
+}
+.d3 .stories article { padding: 20px 0; border-bottom: 1px solid var(--line); }
+.d3 .stories article:last-child { border-bottom: 0; }
+.d3 .stories h4 { font-size: 18.5px; font-weight: 700; line-height: 1.5; }
+.d3 .stories h4 a:hover { color: var(--wine); }
+.d3 .stories p { margin-top: 6px; color: var(--muted); font-size: 13.5px; line-height: 1.75; }
+.d3 .stories .m { margin-top: 8px; font-size: 12.5px; color: var(--muted); }
+.d3 .stories .m b { color: var(--wine); font-weight: 600; }
+.d3 .shelf { display: flex; flex-direction: column; gap: 32px; }
+.d3 .best li {
+    list-style: none;
+    display: flex;
+    gap: 14px;
+    align-items: baseline;
+    padding: 12px 0;
+    border-bottom: 1px dotted var(--line);
+}
+.d3 .best li:last-child { border-bottom: 0; }
+.d3 .best .no {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--wine);
+    font-style: italic;
+    min-width: 26px;
+}
+.d3 .best a { font-size: 14.5px; line-height: 1.55; }
+.d3 .best a:hover { color: var(--wine); }
+.d3 .notice {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px 20px;
+    box-shadow: 0 8px 20px rgba(90,50,30,.08);
+}
+.d3 .notice h4 { font-size: 14px; color: var(--brown); margin-bottom: 8px; letter-spacing: 1px; }
+.d3 .notice li { list-style: none; font-size: 13.5px; padding: 6px 0; color: var(--fg); }
+.d3 .notice li a:hover { color: var(--wine); }
+.d3 .notice li span { color: var(--muted); font-size: 12px; margin-left: 6px; }
+.d3 .foot {
+    background: var(--brown);
+    color: #F3E4CF;
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 36px;
+    font-size: 13px;
+}
+@media (max-width: 720px) {
+    .d3 .top { flex-wrap: wrap; gap: 14px; }
+    .d3 .top .join { margin-left: 0; }
+    .d3 .top nav { flex-wrap: wrap; gap: 14px; margin-left: 0; }
+    .d3 .feature { grid-template-columns: 1fr; padding: 30px 24px; gap: 24px; }
+    .d3 .feature h2 { font-size: 26px; }
+    .d3 .mag { grid-template-columns: 1fr; padding: 28px 24px; }
+    .d3 .foot { flex-direction: column; gap: 6px; }
+}
 
 /* ── d4-css: 팝 Pop ── */
 </style>
@@ -498,6 +631,67 @@ body {
     </header>
     <div class="frame">
         <!-- d3-body -->
+        <div class="top">
+            <span class="logo">부엌<em>과</em>서재</span>
+            <nav>
+                <a href="#d3">오늘의 식탁</a>
+                <a href="#d3">읽은 책</a>
+                <a href="#d3">살림 노트</a>
+                <a href="#d3">동네 소식</a>
+            </nav>
+            <a class="join" href="#d3">함께하기</a>
+        </div>
+        <div class="feature">
+            <article>
+                <span class="cat">이달의 이야기</span>
+                <h2>여름 매실청을 처음 담그며 배운 것들 — 설탕과 기다림의 비율</h2>
+                <p class="lede">유월에 절인 매실이 두 달 만에 맑은 청이 되었습니다. 어머니의 눈대중을 계량으로 옮겨 적으며, 실패한 첫 병과 성공한 둘째 병의 차이를 기록했습니다.</p>
+                <div class="by">살림 노트 · 초록대문집 · 댓글 52 · 스크랩 128</div>
+            </article>
+            <div class="art" role="img" aria-label="일러스트 자리"></div>
+        </div>
+        <div class="mag">
+            <div class="stories">
+                <h3 class="sec">새로 올라온 이야기</h3>
+                <article>
+                    <h4><a href="#d3">토요일 아침 시장 바구니 — 팔천 원으로 차린 일주일 반찬</a></h4>
+                    <p>콩나물 한 봉지, 애호박 두 개, 두부 한 모. 소박한 바구니가 식탁이 되기까지의 기록.</p>
+                    <div class="m"><b>오늘의 식탁</b> · 반찬생활자 · 댓글 17</div>
+                </article>
+                <article>
+                    <h4><a href="#d3">『밤은 부드러워』를 덮고 쓴 짧은 독후감</a></h4>
+                    <p>여름밤에 어울리는 문장들을 몇 개 옮겨 적었습니다. 같이 읽은 분들의 밑줄이 궁금합니다.</p>
+                    <div class="m"><b>읽은 책</b> · 첫차도서관 · 댓글 9</div>
+                </article>
+                <article>
+                    <h4><a href="#d3">낡은 프라이팬 되살리기, 시즈닝 삼 일의 기록</a></h4>
+                    <p>버리려던 무쇠 팬이 들기름 세 번에 거울처럼 돌아왔습니다. 사진과 함께 순서를 남깁니다.</p>
+                    <div class="m"><b>살림 노트</b> · 무쇠손 · 댓글 23</div>
+                </article>
+            </div>
+            <aside class="shelf">
+                <div>
+                    <h3 class="sec">많이 읽은 글</h3>
+                    <ul class="best">
+                        <li><span class="no">1</span><a href="#d3">냉장고 파먹기 이 주째, 오늘의 발견은 묵은지 볶음밥</a></li>
+                        <li><span class="no">2</span><a href="#d3">동네 책방이 문을 열었습니다. 첫 손님이 되어 주세요</a></li>
+                        <li><span class="no">3</span><a href="#d3">선풍기 바람에도 잘 마르는 여름 빨래 너는 법</a></li>
+                        <li><span class="no">4</span><a href="#d3">복숭아 무르기 전에 — 여름 과일 보관 정리</a></li>
+                    </ul>
+                </div>
+                <div class="notice">
+                    <h4>알림</h4>
+                    <ul>
+                        <li><a href="#d3">8월 정기 벼룩시장은 둘째 주 토요일입니다</a><span>공지</span></li>
+                        <li><a href="#d3">여름 김장 공동구매 신청을 받습니다</a><span>마감 8/10</span></li>
+                    </ul>
+                </div>
+            </aside>
+        </div>
+        <div class="foot">
+            <span>부엌과서재 — 그누보드5 프로</span>
+            <span>이용약관 · 개인정보처리방침 · 오늘 방문 1,041</span>
+        </div>
     </div>
 </section>
 
