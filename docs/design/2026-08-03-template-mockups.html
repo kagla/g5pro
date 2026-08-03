@@ -8,6 +8,7 @@
 /* ═══════════════════════════════════════════════════
    시안 밖 — 페이지 자체는 무채색 최소한으로.
    시안 전용 규칙은 반드시 .d1~.d4 접두사로 스코프한다.
+   방향: 범용 모던 4종 — 솔리드 컬러(그라디언트 없음), 이모지 포인트.
    ═══════════════════════════════════════════════════ */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -67,578 +68,566 @@ body {
     font-size: 13px;
 }
 
-/* ── d1-css: 잉크 Ink ── */
+/* ── d1-css: 클라우드 Cloud — 인디고 라이트 ── */
 .d1 .frame {
-    --bg: #FFFFFF;
-    --fg: #111111;
-    --muted: #777777;
-    --line: #DDDDDD;
+    --bg: #F5F6FA;
+    --card: #FFFFFF;
+    --fg: #1F2430;
+    --muted: #6B7280;
+    --line: #E7E9F0;
+    --accent: #5B5BD6;
+    --accent-soft: #EEF0FF;
+    --hot: #E1543E;
     background: var(--bg);
     color: var(--fg);
-    border-radius: 0;
-    font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
     font-size: 14px;
 }
-.d1 .serif { font-family: "Noto Serif KR", "Noto Serif CJK KR", "Nanum Myeongjo", "NanumMyeongjo", AppleMyungjo, Batang, Georgia, "Times New Roman", serif; }
 .d1 a { color: var(--fg); text-decoration: none; }
-
 .d1 .top {
     display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 14px 32px;
-    border-bottom: 1px solid var(--fg);
-    font-size: 12.5px;
-    color: var(--muted);
+    align-items: center;
+    gap: 24px;
+    padding: 16px 28px;
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
 }
-.d1 .masthead {
-    text-align: center;
-    padding: 34px 32px 26px;
-    border-bottom: 3px double var(--fg);
-}
-.d1 .masthead h1 { font-size: 42px; font-weight: 800; letter-spacing: 2px; }
-.d1 .masthead p { color: var(--muted); font-size: 12.5px; letter-spacing: 4px; margin-top: 6px; }
-.d1 .nav {
-    display: flex;
-    justify-content: center;
-    gap: 36px;
-    padding: 13px 32px;
-    border-bottom: 1px solid var(--fg);
+.d1 .logo { font-size: 18px; font-weight: 800; letter-spacing: -.3px; }
+.d1 .logo b { color: var(--accent); }
+.d1 .top nav { display: flex; gap: 6px; }
+.d1 .top nav a {
+    padding: 7px 14px;
+    border-radius: 10px;
     font-size: 13.5px;
-    letter-spacing: 1px;
-}
-.d1 .nav a.on { border-bottom: 2px solid var(--fg); padding-bottom: 2px; }
-
-.d1 .paper { padding: 36px 32px; }
-.d1 .lead {
-    display: grid;
-    grid-template-columns: 1.6fr 1fr;
-    gap: 36px;
-    padding-bottom: 32px;
-    border-bottom: 1px solid var(--line);
-}
-.d1 .kicker {
-    font-size: 11.5px;
-    letter-spacing: 3px;
     color: var(--muted);
-    margin-bottom: 10px;
 }
-.d1 .lead h2 { font-size: 30px; line-height: 1.35; font-weight: 700; }
-.d1 .lead .std { margin-top: 14px; color: #444; line-height: 1.8; }
-.d1 .lead .byline { margin-top: 16px; font-size: 12.5px; color: var(--muted); }
-.d1 .lead-side { border-left: 1px solid var(--line); padding-left: 36px; }
-.d1 .lead-side li {
-    list-style: none;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--line);
+.d1 .top nav a.on { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+.d1 .top nav a:hover { background: var(--bg); }
+.d1 .top .login {
+    margin-left: auto;
+    background: var(--accent);
+    color: #FFF;
+    font-weight: 700;
+    font-size: 13.5px;
+    padding: 9px 18px;
+    border-radius: 10px;
+    box-shadow: 0 6px 14px rgba(91,91,214,.28);
 }
-.d1 .lead-side li:last-child { border-bottom: 0; }
-.d1 .lead-side h3 { font-size: 15.5px; font-weight: 600; line-height: 1.45; }
-.d1 .lead-side .m { font-size: 12px; color: var(--muted); margin-top: 4px; }
-
-.d1 .cols {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 0;
-    padding-top: 30px;
+.d1 .hero {
+    background: var(--accent);
+    color: #FFF;
+    margin: 24px 28px 0;
+    border-radius: 18px;
+    padding: 30px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
 }
-.d1 .col { padding: 0 28px; border-left: 1px solid var(--line); }
-.d1 .col:first-child { padding-left: 0; border-left: 0; }
-.d1 .col:last-child { padding-right: 0; }
-.d1 .col > h3 {
+.d1 .hero h2 { font-size: 23px; font-weight: 800; letter-spacing: -.3px; }
+.d1 .hero p { margin-top: 6px; opacity: .85; font-size: 13.5px; }
+.d1 .hero .pills { display: flex; gap: 10px; flex-wrap: wrap; }
+.d1 .hero .pills span {
+    background: rgba(255,255,255,.16);
+    border-radius: 999px;
+    padding: 8px 16px;
     font-size: 13px;
-    letter-spacing: 2px;
-    padding-bottom: 10px;
-    margin-bottom: 6px;
-    border-bottom: 2px solid var(--fg);
+    font-weight: 600;
+    white-space: nowrap;
 }
-.d1 .col li { list-style: none; padding: 9px 0; border-bottom: 1px dotted var(--line); }
-.d1 .col li:last-child { border-bottom: 0; }
-.d1 .col a { font-size: 13.5px; line-height: 1.5; }
-.d1 .col a:hover { text-decoration: underline; }
-.d1 .col .m { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
-.d1 .rank { counter-reset: r; }
-.d1 .rank li { display: flex; gap: 12px; align-items: baseline; }
-.d1 .rank li::before {
-    counter-increment: r;
-    content: counter(r, decimal-leading-zero);
-    font-family: Georgia, serif;
-    font-size: 17px;
-    color: var(--muted);
+.d1 .grid {
+    display: grid;
+    grid-template-columns: 1.8fr 1fr;
+    gap: 20px;
+    padding: 20px 28px 28px;
 }
+.d1 .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 4px 14px rgba(31,36,48,.05);
+    overflow: hidden;
+}
+.d1 .card > h3 {
+    font-size: 15px;
+    font-weight: 800;
+    padding: 16px 20px 12px;
+}
+.d1 .card > h3 small { color: var(--muted); font-weight: 500; font-size: 12.5px; margin-left: 8px; }
+.d1 .list li {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--line);
+}
+.d1 .list li:hover { background: #FAFAFE; }
+.d1 .chip {
+    flex: 0 0 auto;
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 8px;
+    padding: 3px 10px;
+}
+.d1 .list .t { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.d1 .list .t .cnt { color: var(--accent); font-weight: 700; font-size: 12.5px; margin-left: 4px; }
+.d1 .list .m { flex: 0 0 auto; color: var(--muted); font-size: 12.5px; }
+.d1 .side { display: flex; flex-direction: column; gap: 20px; }
+.d1 .rank li {
+    list-style: none;
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    padding: 11px 20px;
+    border-top: 1px solid var(--line);
+}
+.d1 .rank .no {
+    font-weight: 800;
+    color: var(--accent);
+    font-size: 14px;
+    min-width: 18px;
+}
+.d1 .rank li:nth-child(-n+1) .no { color: var(--hot); }
+.d1 .rank a { font-size: 13.5px; font-weight: 600; line-height: 1.5; }
+.d1 .stats { display: flex; padding: 8px 12px 16px; gap: 10px; }
+.d1 .stats div {
+    flex: 1;
+    text-align: center;
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 12px 8px;
+}
+.d1 .stats b { display: block; font-size: 18px; color: var(--accent); }
+.d1 .stats span { font-size: 12px; color: var(--muted); }
 .d1 .foot {
     display: flex;
     justify-content: space-between;
-    padding: 16px 32px;
-    border-top: 1px solid var(--fg);
-    font-size: 12px;
+    padding: 16px 28px;
+    border-top: 1px solid var(--line);
+    background: var(--card);
     color: var(--muted);
+    font-size: 12.5px;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 @media (max-width: 720px) {
-    .d1 .lead { grid-template-columns: 1fr; }
-    .d1 .lead-side { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 8px; }
-    .d1 .cols { grid-template-columns: 1fr; }
-    .d1 .col { padding: 0; border-left: 0; margin-top: 26px; }
-    .d1 .col:first-child { margin-top: 0; }
-    .d1 .nav { gap: 18px; flex-wrap: wrap; }
-    .d1 .masthead h1 { font-size: 30px; }
+    .d1 .top { flex-wrap: wrap; gap: 12px; }
+    .d1 .top nav { order: 3; flex-basis: 100%; overflow-x: auto; }
+    .d1 .top .login { margin-left: auto; }
+    .d1 .hero { margin: 16px; padding: 22px; }
+    .d1 .grid { grid-template-columns: 1fr; padding: 16px; }
+    .d1 .list .m { display: none; }
 }
 
-/* ── d2-css: 터미널 Terminal ── */
+/* ── d2-css: 나이트 Night — 다크 모던 ── */
 .d2 .frame {
-    --bg: #0D1117;
-    --panel: #161B22;
-    --fg: #C9D1D9;
-    --dim: #8B949E;
-    --green: #3FB950;
-    --cyan: #39C5CF;
-    --amber: #D29922;
-    --line: #30363D;
+    --bg: #111827;
+    --card: #1B2333;
+    --fg: #E5E7EB;
+    --muted: #9CA3AF;
+    --line: #2A3447;
+    --violet: #A78BFA;
+    --violet-deep: #7C5CF0;
+    --cyan: #67E8F9;
+    --amber: #FBBF24;
     background: var(--bg);
     color: var(--fg);
     border-color: #000;
-    font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
     font-size: 14px;
 }
-.d2 .mono { font-family: "JetBrains Mono", "Fira Code", ui-monospace, "Cascadia Code", Consolas, monospace; }
 .d2 a { color: var(--fg); text-decoration: none; }
-
-.d2 .chrome {
+.d2 .top {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 16px;
-    background: #010409;
+    gap: 24px;
+    padding: 16px 28px;
     border-bottom: 1px solid var(--line);
 }
-.d2 .dot { width: 12px; height: 12px; border-radius: 50%; }
-.d2 .dot.r { background: #FF5F56; } .d2 .dot.y { background: #FFBD2E; } .d2 .dot.g { background: #27C93F; }
-.d2 .chrome .title { margin-left: 10px; font-size: 12px; color: var(--dim); }
-
-.d2 .bar {
-    display: flex;
-    align-items: center;
-    gap: 22px;
-    padding: 13px 24px;
-    border-bottom: 1px solid var(--line);
-    font-size: 13px;
+.d2 .logo { font-size: 18px; font-weight: 800; }
+.d2 .logo b { color: var(--violet); }
+.d2 .top nav { display: flex; gap: 4px; }
+.d2 .top nav a { padding: 7px 14px; border-radius: 10px; font-size: 13.5px; color: var(--muted); }
+.d2 .top nav a.on { background: rgba(167,139,250,.14); color: var(--violet); font-weight: 700; }
+.d2 .top nav a:hover { background: var(--card); }
+.d2 .top .login {
+    margin-left: auto;
+    background: var(--violet-deep);
+    color: #FFF;
+    font-weight: 700;
+    font-size: 13.5px;
+    padding: 9px 18px;
+    border-radius: 10px;
 }
-.d2 .bar .logo { color: var(--green); font-weight: 700; font-size: 14px; }
-.d2 .bar a:hover { color: var(--cyan); }
-.d2 .bar .right { margin-left: auto; color: var(--dim); font-size: 12px; }
-.d2 .bar .right b { color: var(--cyan); font-weight: 600; }
-
 .d2 .hero {
-    padding: 36px 24px 30px;
-    border-bottom: 1px solid var(--line);
-    background:
-        radial-gradient(ellipse 60% 90% at 80% -20%, rgba(57,197,207,.12), transparent),
-        radial-gradient(ellipse 50% 80% at 15% 120%, rgba(63,185,80,.10), transparent);
+    margin: 24px 28px 0;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 28px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
 }
-.d2 .hero .path { color: var(--dim); font-size: 13px; }
-.d2 .hero .path b { color: var(--green); font-weight: 600; }
-.d2 .hero h2 { font-size: 24px; margin-top: 10px; font-weight: 700; }
-.d2 .hero h2 .cursor {
-    display: inline-block;
-    width: 11px; height: 24px;
-    background: var(--green);
-    vertical-align: -3px;
-    margin-left: 6px;
+.d2 .hero h2 { font-size: 22px; font-weight: 800; }
+.d2 .hero h2 b { color: var(--violet); }
+.d2 .hero p { color: var(--muted); font-size: 13.5px; margin-top: 6px; }
+.d2 .hero .write {
+    background: var(--violet-deep);
+    color: #FFF;
+    font-weight: 700;
+    padding: 11px 22px;
+    border-radius: 12px;
+    font-size: 14px;
+    white-space: nowrap;
 }
-.d2 .hero p { color: var(--dim); margin-top: 8px; font-size: 13.5px; }
-
 .d2 .grid {
     display: grid;
-    grid-template-columns: 1.7fr 1fr;
+    grid-template-columns: 1.8fr 1fr;
     gap: 20px;
-    padding: 20px 24px 24px;
+    padding: 20px 28px 28px;
 }
-.d2 .panel {
-    background: var(--panel);
+.d2 .card {
+    background: var(--card);
     border: 1px solid var(--line);
-    border-radius: 6px;
+    border-radius: 16px;
     overflow: hidden;
 }
-.d2 .panel > h3 {
-    font-size: 12.5px;
-    font-weight: 600;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--line);
-    color: var(--dim);
-}
-.d2 .panel > h3 b { color: var(--cyan); font-weight: 600; }
-.d2 .ls { padding: 6px 0; }
-.d2 .ls li {
+.d2 .card > h3 { font-size: 15px; font-weight: 800; padding: 16px 20px 12px; }
+.d2 .card > h3 small { color: var(--muted); font-weight: 500; font-size: 12.5px; margin-left: 8px; }
+.d2 .list li {
     list-style: none;
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 12px;
-    padding: 8px 14px;
-    font-size: 13px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--line);
 }
-.d2 .ls li:hover { background: rgba(57,197,207,.06); }
+.d2 .list li:hover { background: #202A3D; }
 .d2 .tag {
     flex: 0 0 auto;
-    font-size: 11.5px;
-    color: var(--green);
-}
-.d2 .tag.q { color: var(--amber); }
-.d2 .tag.n { color: var(--cyan); }
-.d2 .ls .t { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.d2 .ls .c { flex: 0 0 auto; color: var(--dim); font-size: 12px; }
-.d2 .ls .new { color: var(--green); }
-.d2 .side { display: flex; flex-direction: column; gap: 20px; }
-.d2 .stat { padding: 12px 14px; font-size: 12.5px; color: var(--dim); }
-.d2 .stat .row { display: flex; justify-content: space-between; padding: 5px 0; }
-.d2 .stat .row b { color: var(--fg); font-weight: 600; }
-.d2 .meter {
-    height: 8px;
-    background: #010409;
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    margin-top: 4px;
-    overflow: hidden;
-}
-.d2 .meter i { display: block; height: 100%; background: linear-gradient(90deg, var(--green), var(--cyan)); }
-.d2 .hot li {
-    list-style: none;
-    padding: 8px 14px;
-    font-size: 13px;
-    display: flex;
-    gap: 10px;
-    align-items: baseline;
-}
-.d2 .hot .n { color: var(--cyan); font-size: 12px; }
-.d2 .status {
-    display: flex;
-    gap: 18px;
-    padding: 10px 24px;
-    background: #010409;
-    border-top: 1px solid var(--line);
     font-size: 12px;
-    color: var(--dim);
+    font-weight: 700;
+    border-radius: 8px;
+    padding: 3px 10px;
+    background: rgba(167,139,250,.14);
+    color: var(--violet);
 }
-.d2 .status .ok { color: var(--green); }
+.d2 .tag.c { background: rgba(103,232,249,.12); color: var(--cyan); }
+.d2 .tag.a { background: rgba(251,191,36,.12); color: var(--amber); }
+.d2 .list .t { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.d2 .list .m { flex: 0 0 auto; color: var(--muted); font-size: 12.5px; }
+.d2 .side { display: flex; flex-direction: column; gap: 20px; }
+.d2 .rank li {
+    list-style: none;
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    padding: 11px 20px;
+    border-top: 1px solid var(--line);
+}
+.d2 .rank .no { font-weight: 800; color: var(--cyan); min-width: 18px; font-size: 14px; }
+.d2 .rank a { font-size: 13.5px; font-weight: 600; line-height: 1.5; }
+.d2 .stats { display: flex; padding: 8px 12px 16px; gap: 10px; }
+.d2 .stats div { flex: 1; text-align: center; background: var(--bg); border-radius: 12px; padding: 12px 8px; }
+.d2 .stats b { display: block; font-size: 18px; color: var(--violet); }
+.d2 .stats span { font-size: 12px; color: var(--muted); }
+.d2 .foot {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 28px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 12.5px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
 @media (max-width: 720px) {
-    .d2 .grid { grid-template-columns: 1fr; }
-    .d2 .bar { flex-wrap: wrap; gap: 12px; }
-    .d2 .bar .right { flex-basis: 100%; margin-left: 0; }
-    .d2 .status { flex-wrap: wrap; gap: 8px; }
+    .d2 .top { flex-wrap: wrap; gap: 12px; }
+    .d2 .top nav { order: 3; flex-basis: 100%; overflow-x: auto; }
+    .d2 .hero { margin: 16px; padding: 22px; }
+    .d2 .grid { grid-template-columns: 1fr; padding: 16px; }
+    .d2 .list .m { display: none; }
 }
 
-/* ── d3-css: 온기 Hearth ── */
+/* ── d3-css: 피크닉 Picnic — 파스텔 컬러풀 ── */
 .d3 .frame {
-    --bg: #FAF3E7;
-    --card: #FFFBF2;
-    --fg: #3B2A1E;
-    --muted: #8A705C;
-    --brown: #8B5E3C;
-    --wine: #8E3B46;
-    --line: #E8D9C3;
+    --bg: #FFFDF7;
+    --card: #FFFFFF;
+    --fg: #33302E;
+    --muted: #8A8378;
+    --line: #F0EADF;
+    --pink: #FF7AA2;
+    --pink-soft: #FFE3ED;
+    --mint-soft: #DDF6E8;
+    --mint-deep: #199B67;
+    --sky-soft: #DFF0FF;
+    --sky-deep: #2278C8;
+    --lemon-soft: #FFF3C4;
+    --lemon-deep: #A07800;
     background: var(--bg);
     color: var(--fg);
-    border-color: var(--line);
     font-size: 14px;
-    font-family: "Noto Serif KR", "Noto Serif CJK KR", "Nanum Myeongjo", "NanumMyeongjo", AppleMyungjo, Batang, Georgia, serif;
 }
 .d3 a { color: var(--fg); text-decoration: none; }
-
 .d3 .top {
     display: flex;
     align-items: center;
-    gap: 26px;
-    padding: 20px 36px;
-    border-bottom: 1px solid var(--line);
-}
-.d3 .top .logo { font-size: 24px; font-weight: 700; letter-spacing: 1px; }
-.d3 .top .logo em { font-style: normal; color: var(--wine); }
-.d3 .top nav { display: flex; gap: 22px; font-size: 14px; margin-left: 8px; }
-.d3 .top nav a:hover { color: var(--wine); }
-.d3 .top .join {
-    margin-left: auto;
-    font-size: 13px;
-    color: var(--card);
-    background: var(--brown);
-    padding: 8px 18px;
-    border-radius: 999px;
-}
-.d3 .feature {
-    display: grid;
-    grid-template-columns: 1.25fr 1fr;
-    gap: 40px;
-    align-items: center;
-    padding: 44px 36px;
-    border-bottom: 1px solid var(--line);
-}
-.d3 .feature .cat {
-    display: inline-block;
-    font-size: 12.5px;
-    letter-spacing: 2px;
-    color: var(--wine);
-    border: 1px solid var(--wine);
-    padding: 4px 12px;
-    border-radius: 999px;
-    margin-bottom: 16px;
-}
-.d3 .feature h2 { font-size: 34px; line-height: 1.4; font-weight: 700; }
-.d3 .feature .lede { margin-top: 14px; color: var(--muted); line-height: 1.85; font-size: 15px; }
-.d3 .feature .by { margin-top: 18px; font-size: 13px; color: var(--muted); }
-.d3 .feature .art {
-    aspect-ratio: 4 / 3;
-    border-radius: 10px;
-    background:
-        radial-gradient(circle at 25% 30%, rgba(255,255,255,.55), transparent 40%),
-        radial-gradient(circle at 80% 20%, #E9B44C 0 18%, transparent 19%),
-        linear-gradient(160deg, #D98E56, #8E3B46 70%, #5C2A32);
-    box-shadow: 0 14px 30px rgba(90,50,30,.18);
-}
-.d3 .mag {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr;
-    gap: 40px;
-    padding: 36px;
-}
-.d3 h3.sec {
-    font-size: 15px;
-    letter-spacing: 3px;
-    color: var(--brown);
-    padding-bottom: 12px;
-    border-bottom: 2px solid var(--brown);
-    margin-bottom: 4px;
-}
-.d3 .stories article { padding: 20px 0; border-bottom: 1px solid var(--line); }
-.d3 .stories article:last-child { border-bottom: 0; }
-.d3 .stories h4 { font-size: 18.5px; font-weight: 700; line-height: 1.5; }
-.d3 .stories h4 a:hover { color: var(--wine); }
-.d3 .stories p { margin-top: 6px; color: var(--muted); font-size: 13.5px; line-height: 1.75; }
-.d3 .stories .m { margin-top: 8px; font-size: 12.5px; color: var(--muted); }
-.d3 .stories .m b { color: var(--wine); font-weight: 600; }
-.d3 .shelf { display: flex; flex-direction: column; gap: 32px; }
-.d3 .best li {
-    list-style: none;
-    display: flex;
-    gap: 14px;
-    align-items: baseline;
-    padding: 12px 0;
-    border-bottom: 1px dotted var(--line);
-}
-.d3 .best li:last-child { border-bottom: 0; }
-.d3 .best .no {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--wine);
-    font-style: italic;
-    min-width: 26px;
-}
-.d3 .best a { font-size: 14.5px; line-height: 1.55; }
-.d3 .best a:hover { color: var(--wine); }
-.d3 .notice {
+    gap: 20px;
+    padding: 16px 28px;
     background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 18px 20px;
-    box-shadow: 0 8px 20px rgba(90,50,30,.08);
+    border-bottom: 1px solid var(--line);
 }
-.d3 .notice h4 { font-size: 14px; color: var(--brown); margin-bottom: 8px; letter-spacing: 1px; }
-.d3 .notice li { list-style: none; font-size: 13.5px; padding: 6px 0; color: var(--fg); }
-.d3 .notice li a:hover { color: var(--wine); }
-.d3 .notice li span { color: var(--muted); font-size: 12px; margin-left: 6px; }
-.d3 .foot {
-    background: var(--brown);
-    color: #F3E4CF;
+.d3 .logo { font-size: 19px; font-weight: 800; }
+.d3 .logo b { color: var(--pink); }
+.d3 .top nav { display: flex; gap: 8px; flex-wrap: wrap; }
+.d3 .top nav a { padding: 7px 15px; border-radius: 999px; font-size: 13.5px; font-weight: 600; }
+.d3 .top nav a.p { background: var(--pink-soft); color: #C23F66; }
+.d3 .top nav a.m { background: var(--mint-soft); color: var(--mint-deep); }
+.d3 .top nav a.s { background: var(--sky-soft); color: var(--sky-deep); }
+.d3 .top nav a.l { background: var(--lemon-soft); color: var(--lemon-deep); }
+.d3 .top .login {
+    margin-left: auto;
+    background: var(--pink);
+    color: #FFF;
+    font-weight: 700;
+    font-size: 13.5px;
+    padding: 9px 20px;
+    border-radius: 999px;
+    box-shadow: 0 6px 14px rgba(255,122,162,.35);
+}
+.d3 .hero {
+    margin: 24px 28px 0;
+    background: var(--pink-soft);
+    border-radius: 22px;
+    padding: 30px 32px;
     display: flex;
     justify-content: space-between;
-    padding: 20px 36px;
-    font-size: 13px;
-}
-@media (max-width: 720px) {
-    .d3 .top { flex-wrap: wrap; gap: 14px; }
-    .d3 .top .join { margin-left: 0; }
-    .d3 .top nav { flex-wrap: wrap; gap: 14px; margin-left: 0; }
-    .d3 .feature { grid-template-columns: 1fr; padding: 30px 24px; gap: 24px; }
-    .d3 .feature h2 { font-size: 26px; }
-    .d3 .mag { grid-template-columns: 1fr; padding: 28px 24px; }
-    .d3 .foot { flex-direction: column; gap: 6px; }
-}
-
-/* ── d4-css: 팝 Pop ── */
-.d4 .frame {
-    --bg: #FFF8E7;
-    --yellow: #FFD93D;
-    --pink: #FF6FA5;
-    --blue: #4D96FF;
-    --green: #6BCB77;
-    --fg: #111111;
-    background: var(--bg);
-    color: var(--fg);
-    border: 3px solid var(--fg);
-    border-radius: 4px;
-    font-size: 14px;
-    font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
-}
-.d4 a { color: var(--fg); text-decoration: none; }
-
-.d4 .top {
-    display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 16px 24px;
-    background: var(--blue);
-    border-bottom: 3px solid var(--fg);
+    gap: 20px;
+    flex-wrap: wrap;
 }
-.d4 .logo {
-    background: var(--yellow);
-    border: 3px solid var(--fg);
-    box-shadow: 4px 4px 0 var(--fg);
-    padding: 6px 14px;
-    font-size: 19px;
-    font-weight: 900;
-    transform: rotate(-2deg);
-    letter-spacing: -.5px;
-}
-.d4 .top nav { display: flex; gap: 10px; margin-left: 10px; flex-wrap: wrap; }
-.d4 .top nav a {
-    background: #FFF;
-    border: 2px solid var(--fg);
-    box-shadow: 3px 3px 0 var(--fg);
-    padding: 5px 12px;
-    font-size: 13px;
-    font-weight: 700;
-}
-.d4 .top nav a:hover { transform: translate(1px, 1px); box-shadow: 2px 2px 0 var(--fg); }
-.d4 .top .login {
-    margin-left: auto;
-    background: var(--fg);
+.d3 .hero h2 { font-size: 23px; font-weight: 800; letter-spacing: -.3px; }
+.d3 .hero p { margin-top: 6px; color: #A05A72; font-size: 13.5px; font-weight: 600; }
+.d3 .hero .write {
+    background: var(--pink);
     color: #FFF;
-    border: 2px solid var(--fg);
-    padding: 6px 14px;
-    font-size: 13px;
-    font-weight: 700;
+    font-weight: 800;
+    padding: 12px 24px;
+    border-radius: 999px;
+    font-size: 14.5px;
+    box-shadow: 0 8px 18px rgba(255,122,162,.4);
+    white-space: nowrap;
 }
-.d4 .hero {
-    position: relative;
-    padding: 40px 24px 44px;
-    background: var(--yellow);
-    border-bottom: 3px solid var(--fg);
-    overflow: hidden;
-}
-.d4 .hero h2 {
-    font-size: 34px;
-    font-weight: 900;
-    line-height: 1.3;
-    max-width: 640px;
-    letter-spacing: -.5px;
-}
-.d4 .hero h2 mark {
-    background: var(--pink);
-    color: var(--fg);
-    padding: 0 8px;
-    border: 2px solid var(--fg);
-}
-.d4 .hero p { margin-top: 12px; font-weight: 600; }
-.d4 .hero .cta {
-    display: inline-block;
-    margin-top: 18px;
-    background: var(--green);
-    border: 3px solid var(--fg);
-    box-shadow: 5px 5px 0 var(--fg);
-    padding: 10px 22px;
-    font-weight: 900;
-    font-size: 15px;
-}
-.d4 .hero .cta:hover { transform: translate(2px, 2px); box-shadow: 3px 3px 0 var(--fg); }
-.d4 .sticker {
-    position: absolute;
-    right: 34px;
-    top: 34px;
-    width: 120px;
-    height: 120px;
-    background: var(--pink);
-    border: 3px solid var(--fg);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    font-weight: 900;
-    font-size: 15px;
-    line-height: 1.35;
-    transform: rotate(8deg);
-    box-shadow: 5px 5px 0 var(--fg);
-}
-.d4 .boards {
+.d3 .boards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
-    padding: 24px;
+    padding: 20px 28px;
 }
-.d4 .block {
-    border: 3px solid var(--fg);
-    box-shadow: 6px 6px 0 var(--fg);
-    background: #FFFFFF;
+.d3 .board {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 6px 16px rgba(51,48,46,.05);
 }
-.d4 .block > h3 {
-    padding: 10px 14px;
-    border-bottom: 3px solid var(--fg);
-    font-size: 15px;
-    font-weight: 900;
-}
-.d4 .block.b1 > h3 { background: var(--blue); color: #FFF; }
-.d4 .block.b2 > h3 { background: var(--green); }
-.d4 .block.b3 > h3 { background: var(--pink); }
-.d4 .block li {
+.d3 .board > h3 { font-size: 15px; font-weight: 800; padding: 14px 18px; }
+.d3 .board.bm > h3 { background: var(--mint-soft); color: var(--mint-deep); }
+.d3 .board.bs > h3 { background: var(--sky-soft); color: var(--sky-deep); }
+.d3 .board.bl > h3 { background: var(--lemon-soft); color: var(--lemon-deep); }
+.d3 .board li {
     list-style: none;
-    padding: 10px 14px;
-    border-bottom: 2px dashed #CCC;
+    padding: 11px 18px;
+    border-top: 1px solid var(--line);
     font-size: 13.5px;
     font-weight: 600;
     line-height: 1.5;
 }
-.d4 .block li:last-child { border-bottom: 0; }
-.d4 .block li .m { display: block; font-size: 11.5px; font-weight: 400; color: #666; margin-top: 2px; }
-.d4 .block li .badge {
-    display: inline-block;
-    font-size: 10.5px;
-    font-weight: 900;
-    background: var(--yellow);
-    border: 2px solid var(--fg);
-    padding: 0 6px;
-    margin-right: 6px;
-    transform: rotate(-1deg);
-}
-.d4 .strip {
+.d3 .board li .m { display: block; font-size: 12px; font-weight: 400; color: var(--muted); margin-top: 2px; }
+.d3 .strip {
+    margin: 4px 28px 24px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 16px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 16px;
-    margin: 0 24px 24px;
-    padding: 14px 18px;
-    background: var(--pink);
-    border: 3px solid var(--fg);
-    box-shadow: 6px 6px 0 var(--fg);
-    font-weight: 900;
     flex-wrap: wrap;
+    box-shadow: 0 6px 16px rgba(51,48,46,.05);
 }
-.d4 .strip .nums { display: flex; gap: 18px; font-size: 13.5px; flex-wrap: wrap; }
-.d4 .strip .nums b { background: #FFF; border: 2px solid var(--fg); padding: 1px 8px; margin-left: 4px; }
-.d4 .foot {
+.d3 .strip h3 { font-size: 14.5px; font-weight: 800; }
+.d3 .strip .nums { display: flex; gap: 22px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.d3 .strip .nums b { color: var(--fg); font-size: 15px; margin-right: 3px; }
+.d3 .foot {
     display: flex;
     justify-content: space-between;
-    padding: 14px 24px;
-    background: var(--fg);
-    color: #FFF;
+    padding: 16px 28px;
+    background: var(--card);
+    border-top: 1px solid var(--line);
+    color: var(--muted);
     font-size: 12.5px;
-    font-weight: 600;
     flex-wrap: wrap;
     gap: 8px;
 }
-.d4 .foot a { color: var(--yellow); }
 @media (max-width: 720px) {
-    .d4 .top { flex-wrap: wrap; }
-    .d4 .top .login { margin-left: 0; }
-    .d4 .hero h2 { font-size: 26px; }
-    .d4 .sticker { position: static; margin-top: 20px; transform: rotate(-3deg); }
-    .d4 .boards { grid-template-columns: 1fr; }
+    .d3 .top { flex-wrap: wrap; gap: 12px; }
+    .d3 .top nav { order: 3; flex-basis: 100%; }
+    .d3 .hero { margin: 16px; padding: 22px; }
+    .d3 .boards { grid-template-columns: 1fr; padding: 16px 16px 8px; }
+    .d3 .strip { margin: 8px 16px 16px; }
+}
+
+/* ── d4-css: 코랄 Coral — 웜 모던 ── */
+.d4 .frame {
+    --bg: #FFF8F2;
+    --card: #FFFFFF;
+    --fg: #3A2E28;
+    --muted: #97897E;
+    --line: #F1E5DA;
+    --coral: #F2603D;
+    --coral-soft: #FFE8E0;
+    --sand: #F7EFE6;
+    background: var(--bg);
+    color: var(--fg);
+    font-size: 14px;
+}
+.d4 a { color: var(--fg); text-decoration: none; }
+.d4 .top {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 16px 28px;
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+}
+.d4 .logo { font-size: 18px; font-weight: 800; }
+.d4 .logo b { color: var(--coral); }
+.d4 .top nav { display: flex; gap: 22px; font-size: 13.5px; font-weight: 600; }
+.d4 .top nav a { color: var(--muted); padding: 4px 0; }
+.d4 .top nav a.on { color: var(--coral); border-bottom: 2px solid var(--coral); }
+.d4 .top nav a:hover { color: var(--fg); }
+.d4 .top .login {
+    margin-left: auto;
+    border: 1.5px solid var(--coral);
+    color: var(--coral);
+    font-weight: 700;
+    font-size: 13.5px;
+    padding: 8px 18px;
+    border-radius: 999px;
+}
+.d4 .hero {
+    margin: 24px 28px 0;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 20px;
+}
+.d4 .hero .main {
+    background: var(--coral);
+    color: #FFF;
+    border-radius: 18px;
+    padding: 28px 30px;
+}
+.d4 .hero .main .cat {
+    display: inline-block;
+    background: rgba(255,255,255,.2);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: 12.5px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+.d4 .hero .main h2 { font-size: 22px; font-weight: 800; line-height: 1.45; }
+.d4 .hero .main p { margin-top: 10px; font-size: 13.5px; opacity: .9; }
+.d4 .hero .sub {
+    background: var(--sand);
+    border-radius: 18px;
+    padding: 22px 24px;
+}
+.d4 .hero .sub h3 { font-size: 14px; font-weight: 800; margin-bottom: 10px; }
+.d4 .hero .sub li {
+    list-style: none;
+    font-size: 13.5px;
+    font-weight: 600;
+    padding: 8px 0;
+    border-bottom: 1px dashed #E5D5C6;
+}
+.d4 .hero .sub li:last-child { border-bottom: 0; }
+.d4 .hero .sub li span { color: var(--muted); font-size: 12px; font-weight: 400; margin-left: 6px; }
+.d4 .grid {
+    display: grid;
+    grid-template-columns: 1.8fr 1fr;
+    gap: 20px;
+    padding: 20px 28px 28px;
+}
+.d4 .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 4px 14px rgba(58,46,40,.05);
+    overflow: hidden;
+}
+.d4 .card > h3 { font-size: 15px; font-weight: 800; padding: 16px 20px 12px; }
+.d4 .card > h3 small { color: var(--muted); font-weight: 500; font-size: 12.5px; margin-left: 8px; }
+.d4 .list li {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--line);
+}
+.d4 .list li:hover { background: #FFFBF7; }
+.d4 .chip {
+    flex: 0 0 auto;
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--coral-soft);
+    color: #C2472B;
+    border-radius: 999px;
+    padding: 3px 11px;
+}
+.d4 .chip.s { background: var(--sand); color: #8A6A4C; }
+.d4 .list .t { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.d4 .list .m { flex: 0 0 auto; color: var(--muted); font-size: 12.5px; }
+.d4 .side { display: flex; flex-direction: column; gap: 20px; }
+.d4 .rank li {
+    list-style: none;
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    padding: 11px 20px;
+    border-top: 1px solid var(--line);
+}
+.d4 .rank .no { font-weight: 800; color: var(--coral); min-width: 18px; font-size: 14px; }
+.d4 .rank a { font-size: 13.5px; font-weight: 600; line-height: 1.5; }
+.d4 .stats { display: flex; padding: 8px 12px 16px; gap: 10px; }
+.d4 .stats div { flex: 1; text-align: center; background: var(--sand); border-radius: 12px; padding: 12px 8px; }
+.d4 .stats b { display: block; font-size: 18px; color: var(--coral); }
+.d4 .stats span { font-size: 12px; color: var(--muted); }
+.d4 .foot {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 28px;
+    background: var(--card);
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 12.5px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+@media (max-width: 720px) {
+    .d4 .top { flex-wrap: wrap; gap: 12px; }
+    .d4 .top nav { order: 3; flex-basis: 100%; overflow-x: auto; }
+    .d4 .hero { margin: 16px; grid-template-columns: 1fr; }
+    .d4 .grid { grid-template-columns: 1fr; padding: 16px; }
+    .d4 .list .m { display: none; }
 }
 </style>
 </head>
@@ -646,157 +635,142 @@ body {
 
 <header class="page-head">
     <h1>새 템플릿 디자인 시안 4종</h1>
-    <p>template/standard(소다 블루 · 카드 그리드)와 다른 방향 넷 — 메인 페이지 축소판으로 비교한다. 2026-08-03</p>
+    <p>template/standard(소다 블루 · 카드 그리드)와 다른 범용 모던 4종 — 솔리드 컬러, 이모지 포인트. 메인 페이지 축소판으로 비교한다. 2026-08-03</p>
 </header>
 <nav class="toc">
-    <a href="#d1">① 잉크 Ink</a>
-    <a href="#d2">② 터미널 Terminal</a>
-    <a href="#d3">③ 온기 Hearth</a>
-    <a href="#d4">④ 팝 Pop</a>
+    <a href="#d1">① 클라우드 Cloud</a>
+    <a href="#d2">② 나이트 Night</a>
+    <a href="#d3">③ 피크닉 Picnic</a>
+    <a href="#d4">④ 코랄 Coral</a>
 </nav>
 
 <section class="mock d1" id="d1">
     <header class="mock-label">
-        <h2>① 잉크 Ink</h2>
-        <p>미니멀 모노크롬 에디토리얼 — 흰 바탕, 세리프 제목, 가는 괘선, 카드 없는 신문 조판</p>
+        <h2>① 클라우드 Cloud</h2>
+        <p>인디고 라이트 — 옅은 회백 바탕, 흰 카드, 인디고 포인트, 부드러운 그림자</p>
     </header>
     <div class="frame">
         <!-- d1-body -->
         <div class="top">
-            <span>2026년 8월 3일 월요일 · 제1024호</span>
-            <span>로그인 · 회원가입</span>
+            <span class="logo">☁️ 모두<b>의숲</b></span>
+            <nav>
+                <a class="on" href="#d1">🏠 홈</a>
+                <a href="#d1">💬 자유게시판</a>
+                <a href="#d1">❓ 질문답변</a>
+                <a href="#d1">📸 갤러리</a>
+                <a href="#d1">📢 공지</a>
+            </nav>
+            <a class="login" href="#d1">로그인</a>
         </div>
-        <div class="masthead">
-            <h1 class="serif">한 걸음</h1>
-            <p>우리 동네 사람들의 기록</p>
+        <div class="hero">
+            <div>
+                <h2>👋 어서 오세요, 모두의숲입니다</h2>
+                <p>오늘 하루 이야기를 편하게 나눠 보세요.</p>
+            </div>
+            <div class="pills">
+                <span>✍️ 오늘 새 글 47</span>
+                <span>💬 새 댓글 312</span>
+                <span>👥 접속자 214</span>
+            </div>
         </div>
-        <nav class="nav">
-            <a class="on" href="#d1">최신</a>
-            <a href="#d1">자유게시판</a>
-            <a href="#d1">질문답변</a>
-            <a href="#d1">갤러리</a>
-            <a href="#d1">공지사항</a>
-        </nav>
-        <div class="paper">
-            <div class="lead">
-                <article>
-                    <div class="kicker">오늘의 글</div>
-                    <h2 class="serif">십 년 다닌 골목 빵집이 문을 닫는다기에, 마지막 식빵을 사 왔습니다</h2>
-                    <p class="std">퇴근길에 늘 지나치던 자리였다. 셔터에 붙은 안내문을 읽고 한참을 서 있다가, 진열대에 남은 식빵 두 덩이를 모두 샀다. 계산을 하며 사장님과 나눈 짧은 대화를 옮겨 적는다…</p>
-                    <div class="byline">자유게시판 · 골목산책 · 댓글 47 · 조회 1,203</div>
-                </article>
-                <ul class="lead-side">
-                    <li>
-                        <h3 class="serif">장마 끝 물난리 대비, 반지하 세대가 미리 할 일 목록</h3>
-                        <div class="m">정보공유 · 비오는수요일 · 댓글 31</div>
-                    </li>
-                    <li>
-                        <h3 class="serif">초등 입학 준비물, 십 년 전과 달라진 것들</h3>
-                        <div class="m">육아 · 두아이아빠 · 댓글 24</div>
-                    </li>
-                    <li>
-                        <h3 class="serif">새벽 다섯 시 반, 첫차 기사님들의 인사법</h3>
-                        <div class="m">에세이 · 야간비행 · 댓글 18</div>
-                    </li>
+        <div class="grid">
+            <div class="card">
+                <h3>🕒 방금 올라온 글 <small>전체 보기 →</small></h3>
+                <ul class="list">
+                    <li><span class="chip">💬 자유</span><a class="t" href="#d1">주말에 다녀온 근교 수목원, 사진 몇 장 올립니다 <span class="cnt">+12</span></a><span class="m">산들바람 · 5분 전</span></li>
+                    <li><span class="chip">❓ 질문</span><a class="t" href="#d1">노트북 배터리 교체, 직접 해보신 분 계신가요 <span class="cnt">+4</span></a><span class="m">초보수리공 · 18분 전</span></li>
+                    <li><span class="chip">💬 자유</span><a class="t" href="#d1">퇴근길에 듣기 좋은 플레이리스트 공유해요 <span class="cnt">+9</span></a><span class="m">골목음악가 · 32분 전</span></li>
+                    <li><span class="chip">📸 갤러리</span><a class="t" href="#d1">베란다 텃밭 방울토마토 첫 수확 🍅</a><span class="m">초록엄지 · 1시간 전</span></li>
+                    <li><span class="chip">❓ 질문</span><a class="t" href="#d1">전세 계약 전 꼭 확인할 서류 정리 부탁드려요 <span class="cnt">+7</span></a><span class="m">이사준비생 · 2시간 전</span></li>
+                    <li><span class="chip">💬 자유</span><a class="t" href="#d1">동네 헬스장 새벽반 다니시는 분 있나요</a><span class="m">아침형인간 · 3시간 전</span></li>
                 </ul>
             </div>
-            <div class="cols">
-                <div class="col">
-                    <h3>자유게시판</h3>
-                    <ul>
-                        <li><a href="#d1">에어컨 없이 여름 나는 분 계신가요</a><div class="m">무더위 · 10분 전</div></li>
-                        <li><a href="#d1">아파트 단지 길고양이 급식소 논쟁, 다들 어떻게 정리하셨나요</a><div class="m">이웃 · 32분 전</div></li>
-                        <li><a href="#d1">중고로 산 필름카메라, 첫 롤 현상 결과</a><div class="m">취미 · 1시간 전</div></li>
-                        <li><a href="#d1">동네 헬스장 삼 개월 끊고 두 번 간 사람 모임</a><div class="m">잡담 · 2시간 전</div></li>
-                    </ul>
-                </div>
-                <div class="col">
-                    <h3>질문답변</h3>
-                    <ul>
-                        <li><a href="#d1">전세 계약 전 등기부등본, 어디까지 확인해야 하나요</a><div class="m">답변 6 · 채택됨</div></li>
-                        <li><a href="#d1">키보드에 커피를 쏟았습니다. 순서대로 뭘 해야 할까요</a><div class="m">답변 9</div></li>
-                        <li><a href="#d1">부모님 스마트폰 글자 크기, 앱마다 따로 키우는 법</a><div class="m">답변 4 · 채택됨</div></li>
-                        <li><a href="#d1">베란다 텃밥 상추가 자꾸 시들어요</a><div class="m">답변 2</div></li>
-                    </ul>
-                </div>
-                <div class="col">
-                    <h3>주간 인기</h3>
+            <div class="side">
+                <div class="card">
+                    <h3>🔥 이번 주 인기</h3>
                     <ul class="rank">
-                        <li><a href="#d1">회사 앞 칼국수집 삼십 년 단골이 알려주는 주문법</a></li>
-                        <li><a href="#d1">퇴근 후 삼십 분, 한강 러닝 코스 정리</a></li>
-                        <li><a href="#d1">이사 견적 세 군데 비교해 본 실제 후기</a></li>
-                        <li><a href="#d1">덜컹거리는 선풍기 소음, 나사 하나로 잡았습니다</a></li>
+                        <li><span class="no">1</span><a href="#d1">에어컨 전기요금 반으로 줄인 설정법</a></li>
+                        <li><span class="no">2</span><a href="#d1">회사 앞 칼국수집 30년 단골의 주문법</a></li>
+                        <li><span class="no">3</span><a href="#d1">이사 견적 세 군데 비교 실제 후기</a></li>
+                        <li><span class="no">4</span><a href="#d1">한강 러닝 코스 초보용 정리</a></li>
                     </ul>
+                </div>
+                <div class="card">
+                    <h3>📊 오늘의 우리 동네</h3>
+                    <div class="stats">
+                        <div><b>47</b><span>새 글</span></div>
+                        <div><b>312</b><span>댓글</span></div>
+                        <div><b>214</b><span>접속자</span></div>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="foot">
-            <span>한 걸음 — 그누보드5 프로</span>
-            <span>이용약관 · 개인정보처리방침 · 접속자 214</span>
+            <span>☁️ 모두의숲 — 그누보드5 프로</span>
+            <span>이용약관 · 개인정보처리방침</span>
         </div>
     </div>
 </section>
 
 <section class="mock d2" id="d2">
     <header class="mock-label">
-        <h2>② 터미널 Terminal</h2>
-        <p>다크 네온 테크 — 진회색 바탕, 초록/시안 네온, 모노스페이스, 프롬프트 모티프</p>
+        <h2>② 나이트 Night</h2>
+        <p>다크 모던 — 딥 네이비 바탕, 보라·시안 포인트, 눈이 편한 야간 톤</p>
     </header>
     <div class="frame">
         <!-- d2-body -->
-        <div class="chrome">
-            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-            <span class="title mono">devhole — 개발자 구덩이 : bash</span>
+        <div class="top">
+            <span class="logo">🌙 밤<b>마실</b></span>
+            <nav>
+                <a class="on" href="#d2">🏠 홈</a>
+                <a href="#d2">💬 라운지</a>
+                <a href="#d2">❓ 질문</a>
+                <a href="#d2">🎮 취미</a>
+                <a href="#d2">📢 공지</a>
+            </nav>
+            <a class="login" href="#d2">로그인</a>
         </div>
-        <nav class="bar mono">
-            <span class="logo">devhole:~$</span>
-            <a href="#d2">board/</a>
-            <a href="#d2">qna/</a>
-            <a href="#d2">code/</a>
-            <a href="#d2">jobs/</a>
-            <span class="right">logged in as <b>guest</b> · <a href="#d2">[login]</a></span>
-        </nav>
         <div class="hero">
-            <div class="path mono"><b>~/devhole</b> on <span style="color:#39C5CF">main</span> · 우리끼리 파는 개발 구덩이</div>
-            <h2 class="mono">$ 오늘도 삽질 로그를 남긴다<span class="cursor"></span></h2>
-            <p>막힌 곳, 판 곳, 묻힌 곳. 검색해도 안 나오면 여기에 물어보세요.</p>
+            <div>
+                <h2>🌙 오늘 밤도 <b>밤마실</b> 나오셨네요</h2>
+                <p>잠들기 아까운 이야기들이 기다리고 있어요.</p>
+            </div>
+            <a class="write" href="#d2">✍️ 글쓰기</a>
         </div>
         <div class="grid">
-            <div class="panel">
-                <h3 class="mono"><b>$</b> ls -la ./최신글 <span style="float:right">total 1,842</span></h3>
-                <ul class="ls">
-                    <li><span class="tag mono">[삽질]</span><a class="t" href="#d2">도커 컨테이너 시간대가 9시간 어긋난 채 배포된 지 3주였다</a><span class="c">42</span></li>
-                    <li><span class="tag q mono">[질문]</span><a class="t" href="#d2">nginx 리버스 프록시 뒤에서 실제 IP 를 남기려면</a><span class="c">7</span></li>
-                    <li><span class="tag mono">[삽질]</span><a class="t" href="#d2">크론이 안 돌길래 봤더니 서버 시간이 아니라 내 탓이었음</a><span class="c">19</span></li>
-                    <li><span class="tag n mono">[정보]</span><a class="t" href="#d2">rsync --dry-run 을 먼저 치는 습관이 살린 금요일 밤</a><span class="c new">new</span></li>
-                    <li><span class="tag q mono">[질문]</span><a class="t" href="#d2">git rebase 하다 동료 커밋을 날렸습니다. 복구 가능할까요</a><span class="c">23</span></li>
-                    <li><span class="tag n mono">[정보]</span><a class="t" href="#d2">사내 위키를 mdBook 으로 옮긴 과정 정리</a><span class="c">11</span></li>
-                    <li><span class="tag mono">[삽질]</span><a class="t" href="#d2">utf8 과 utf8mb4 사이에서 이모지가 죽었다</a><span class="c">31</span></li>
+            <div class="card">
+                <h3>🕒 방금 올라온 글 <small>전체 보기 →</small></h3>
+                <ul class="list">
+                    <li><span class="tag">💬 라운지</span><a class="t" href="#d2">새벽 라디오 들으면서 야식 먹는 사람 저뿐인가요</a><span class="m">야식단속반 · 3분 전</span></li>
+                    <li><span class="tag c">🎮 취미</span><a class="t" href="#d2">주말에 클리어한 인디게임 셋, 짧은 감상</a><span class="m">패드요정 · 15분 전</span></li>
+                    <li><span class="tag a">❓ 질문</span><a class="t" href="#d2">모니터 두 대 쓰시는 분, 암 거치대 어떤 거 쓰세요</a><span class="m">듀얼장인 · 27분 전</span></li>
+                    <li><span class="tag">💬 라운지</span><a class="t" href="#d2">퇴근하고 배우는 피아노 3개월 차 근황 🎹</a><span class="m">건반위의곰 · 44분 전</span></li>
+                    <li><span class="tag c">🎮 취미</span><a class="t" href="#d2">필름 카메라 첫 롤 현상 결과 공유</a><span class="m">36장의기록 · 1시간 전</span></li>
+                    <li><span class="tag a">❓ 질문</span><a class="t" href="#d2">자취방 곰팡이, 여름마다 어떻게 잡으세요</a><span class="m">첫자취 · 2시간 전</span></li>
                 </ul>
             </div>
             <div class="side">
-                <div class="panel">
-                    <h3 class="mono"><b>$</b> top -o 조회수</h3>
-                    <ul class="hot">
-                        <li><span class="n mono">1.</span><a href="#d2">신입 때 짠 코드를 5년 만에 다시 만났다</a></li>
-                        <li><span class="n mono">2.</span><a href="#d2">사이드 프로젝트 서버비 월 3천원으로 줄이기</a></li>
-                        <li><span class="n mono">3.</span><a href="#d2">면접에서 받은 최악의 라이브 코딩 문제</a></li>
+                <div class="card">
+                    <h3>🔥 지금 뜨는 글</h3>
+                    <ul class="rank">
+                        <li><span class="no">1</span><a href="#d2">신입 때 짠 코드를 5년 만에 다시 만났다</a></li>
+                        <li><span class="no">2</span><a href="#d2">한 달 식비 30만 원 도전 중간 결산</a></li>
+                        <li><span class="no">3</span><a href="#d2">면접에서 받은 최악의 질문 모음</a></li>
+                        <li><span class="no">4</span><a href="#d2">심야 영화관 혼자 가는 즐거움</a></li>
                     </ul>
                 </div>
-                <div class="panel">
-                    <h3 class="mono"><b>$</b> uptime</h3>
-                    <div class="stat">
-                        <div class="row"><span>접속자</span><b>132명</b></div>
-                        <div class="row"><span>오늘 새 글</span><b>47건</b></div>
-                        <div class="row"><span>오늘 댓글</span><b>318개</b></div>
-                        <div class="meter"><i style="width:64%"></i></div>
+                <div class="card">
+                    <h3>📊 오늘 밤 현황</h3>
+                    <div class="stats">
+                        <div><b>36</b><span>새 글</span></div>
+                        <div><b>188</b><span>댓글</span></div>
+                        <div><b>97</b><span>접속자</span></div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="status mono">
-            <span class="ok">● online</span>
-            <span>devhole v5.pro</span>
+        <div class="foot">
+            <span>🌙 밤마실 — 그누보드5 프로</span>
             <span>이용약관 · 개인정보처리방침</span>
         </div>
     </div>
@@ -804,135 +778,137 @@ body {
 
 <section class="mock d3" id="d3">
     <header class="mock-label">
-        <h2>③ 온기 Hearth</h2>
-        <p>따뜻한 세리프 매거진 — 크림 종이, 브라운/버건디, 큼직한 세리프, 잡지 레이아웃</p>
+        <h2>③ 피크닉 Picnic</h2>
+        <p>파스텔 컬러풀 — 밝은 크림 바탕에 핑크·민트·하늘·레몬 파스텔 칩으로 화사하게</p>
     </header>
     <div class="frame">
         <!-- d3-body -->
         <div class="top">
-            <span class="logo">부엌<em>과</em>서재</span>
+            <span class="logo">🧺 피크<b>닉</b></span>
             <nav>
-                <a href="#d3">오늘의 식탁</a>
-                <a href="#d3">읽은 책</a>
-                <a href="#d3">살림 노트</a>
-                <a href="#d3">동네 소식</a>
+                <a class="p" href="#d3">💬 수다</a>
+                <a class="m" href="#d3">🌱 취미</a>
+                <a class="s" href="#d3">✈️ 여행</a>
+                <a class="l" href="#d3">🍳 요리</a>
             </nav>
-            <a class="join" href="#d3">함께하기</a>
+            <a class="login" href="#d3">로그인</a>
         </div>
-        <div class="feature">
-            <article>
-                <span class="cat">이달의 이야기</span>
-                <h2>여름 매실청을 처음 담그며 배운 것들 — 설탕과 기다림의 비율</h2>
-                <p class="lede">유월에 절인 매실이 두 달 만에 맑은 청이 되었습니다. 어머니의 눈대중을 계량으로 옮겨 적으며, 실패한 첫 병과 성공한 둘째 병의 차이를 기록했습니다.</p>
-                <div class="by">살림 노트 · 초록대문집 · 댓글 52 · 스크랩 128</div>
-            </article>
-            <div class="art" role="img" aria-label="일러스트 자리"></div>
-        </div>
-        <div class="mag">
-            <div class="stories">
-                <h3 class="sec">새로 올라온 이야기</h3>
-                <article>
-                    <h4><a href="#d3">토요일 아침 시장 바구니 — 팔천 원으로 차린 일주일 반찬</a></h4>
-                    <p>콩나물 한 봉지, 애호박 두 개, 두부 한 모. 소박한 바구니가 식탁이 되기까지의 기록.</p>
-                    <div class="m"><b>오늘의 식탁</b> · 반찬생활자 · 댓글 17</div>
-                </article>
-                <article>
-                    <h4><a href="#d3">『밤은 부드러워』를 덮고 쓴 짧은 독후감</a></h4>
-                    <p>여름밤에 어울리는 문장들을 몇 개 옮겨 적었습니다. 같이 읽은 분들의 밑줄이 궁금합니다.</p>
-                    <div class="m"><b>읽은 책</b> · 첫차도서관 · 댓글 9</div>
-                </article>
-                <article>
-                    <h4><a href="#d3">낡은 프라이팬 되살리기, 시즈닝 삼 일의 기록</a></h4>
-                    <p>버리려던 무쇠 팬이 들기름 세 번에 거울처럼 돌아왔습니다. 사진과 함께 순서를 남깁니다.</p>
-                    <div class="m"><b>살림 노트</b> · 무쇠손 · 댓글 23</div>
-                </article>
+        <div class="hero">
+            <div>
+                <h2>🧺 오늘도 즐거운 피크닉!</h2>
+                <p>가볍게 펼쳐 놓고 도란도란, 관심사별 돗자리에 앉아 보세요.</p>
             </div>
-            <aside class="shelf">
-                <div>
-                    <h3 class="sec">많이 읽은 글</h3>
-                    <ul class="best">
-                        <li><span class="no">1</span><a href="#d3">냉장고 파먹기 이 주째, 오늘의 발견은 묵은지 볶음밥</a></li>
-                        <li><span class="no">2</span><a href="#d3">동네 책방이 문을 열었습니다. 첫 손님이 되어 주세요</a></li>
-                        <li><span class="no">3</span><a href="#d3">선풍기 바람에도 잘 마르는 여름 빨래 너는 법</a></li>
-                        <li><span class="no">4</span><a href="#d3">복숭아 무르기 전에 — 여름 과일 보관 정리</a></li>
-                    </ul>
-                </div>
-                <div class="notice">
-                    <h4>알림</h4>
-                    <ul>
-                        <li><a href="#d3">8월 정기 벼룩시장은 둘째 주 토요일입니다</a><span>공지</span></li>
-                        <li><a href="#d3">여름 김장 공동구매 신청을 받습니다</a><span>마감 8/10</span></li>
-                    </ul>
-                </div>
-            </aside>
+            <a class="write" href="#d3">✍️ 이야기 꺼내기</a>
+        </div>
+        <div class="boards">
+            <div class="board bm">
+                <h3>🌱 취미 돗자리</h3>
+                <ul>
+                    <li><a href="#d3">뜨개질 3주 차, 첫 목도리 완성했어요 🧶</a><span class="m">코바늘요정 · 댓글 14</span></li>
+                    <li><a href="#d3">홈카페 장비 미니멀로 꾸리기</a><span class="m">라떼는말이야 · 댓글 9</span></li>
+                    <li><a href="#d3">주말 등산 초보 코스 추천받아요</a><span class="m">둘레길입문 · 댓글 21</span></li>
+                </ul>
+            </div>
+            <div class="board bs">
+                <h3>✈️ 여행 돗자리</h3>
+                <ul>
+                    <li><a href="#d3">당일치기 기차 여행, 이번엔 정동진 🚆</a><span class="m">간이역수집가 · 댓글 17</span></li>
+                    <li><a href="#d3">제주 비 오는 날 코스 정리해 봤어요</a><span class="m">우산과바다 · 댓글 12</span></li>
+                    <li><a href="#d3">여권 갱신 후기와 준비물 체크리스트</a><span class="m">출국준비중 · 댓글 6</span></li>
+                </ul>
+            </div>
+            <div class="board bl">
+                <h3>🍳 요리 돗자리</h3>
+                <ul>
+                    <li><a href="#d3">자취생 원팬 파스타 10분 레시피 🍝</a><span class="m">프라이팬하나 · 댓글 25</span></li>
+                    <li><a href="#d3">여름 김치 세 가지, 어머니 레시피 기록</a><span class="m">손맛계승자 · 댓글 19</span></li>
+                    <li><a href="#d3">에어프라이어 감자칩 실패담과 성공법</a><span class="m">바삭연구소 · 댓글 11</span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="strip">
+            <h3>📊 지금 피크닉장은</h3>
+            <div class="nums">
+                <span><b>52</b>오늘 새 글 ✍️</span>
+                <span><b>347</b>오늘 댓글 💬</span>
+                <span><b>168</b>접속자 👥</span>
+                <span><b>1,024</b>오늘 좋아요 ❤️</span>
+            </div>
         </div>
         <div class="foot">
-            <span>부엌과서재 — 그누보드5 프로</span>
-            <span>이용약관 · 개인정보처리방침 · 오늘 방문 1,041</span>
+            <span>🧺 피크닉 — 그누보드5 프로</span>
+            <span>이용약관 · 개인정보처리방침</span>
         </div>
     </div>
 </section>
 
 <section class="mock d4" id="d4">
     <header class="mock-label">
-        <h2>④ 팝 Pop</h2>
-        <p>네오브루탈리즘 — 원색 블록, 굵은 검정 테두리, 딱딱한 오프셋 그림자, 레트로 스티커</p>
+        <h2>④ 코랄 Coral</h2>
+        <p>웜 모던 — 따뜻한 크림 바탕, 코랄 포인트, 피처 배너 + 리스트의 잡지형 구성</p>
     </header>
     <div class="frame">
         <!-- d4-body -->
         <div class="top">
-            <span class="logo">동네오락실</span>
+            <span class="logo">🍊 귤<b>동네</b></span>
             <nav>
-                <a href="#d4">자유</a>
-                <a href="#d4">유머</a>
-                <a href="#d4">게임</a>
-                <a href="#d4">장터</a>
+                <a class="on" href="#d4">🏠 홈</a>
+                <a href="#d4">💬 이웃수다</a>
+                <a href="#d4">🏪 동네가게</a>
+                <a href="#d4">📸 골목사진</a>
+                <a href="#d4">📢 알림</a>
             </nav>
             <a class="login" href="#d4">로그인</a>
         </div>
         <div class="hero">
-            <h2>오늘 웃긴 일 있었으면<br><mark>여기다 풀어놓고 가세요</mark></h2>
-            <p>하루 한 번, 아무거나 올리는 동네 오락실. 눈치 볼 것 없음.</p>
-            <a class="cta" href="#d4">글쓰기 GO →</a>
-            <div class="sticker">오늘<br>새 글<br>77개!</div>
+            <article class="main">
+                <span class="cat">⭐ 오늘의 이야기</span>
+                <h2>십 년 다닌 골목 빵집의 마지막 날, 식빵 두 덩이를 샀습니다</h2>
+                <p>셔터에 붙은 안내문 앞에서 한참을 서 있다가, 사장님과 나눈 짧은 대화를 옮겨 적었습니다. 💬 댓글 47 · 👀 조회 1,203</p>
+            </article>
+            <aside class="sub">
+                <h3>📢 동네 알림판</h3>
+                <ul>
+                    <li>🎪 8월 벼룩시장은 둘째 주 토요일 <span>공지</span></li>
+                    <li>🥬 여름 채소 공동구매 신청 중 <span>마감 8/10</span></li>
+                    <li>📚 작은도서관 야간 개방 시작 <span>새 소식</span></li>
+                </ul>
+            </aside>
         </div>
-        <div class="boards">
-            <div class="block b1">
-                <h3>자유게시판</h3>
-                <ul>
-                    <li><span class="badge">HOT</span><a href="#d4">편의점 야간 알바가 겪은 오늘의 손님 3인</a><span class="m">웃참실패 · 댓글 61</span></li>
-                    <li><a href="#d4">버스에서 이어폰 없이 통화하는 분께 드리는 편지</a><span class="m">교통정리 · 댓글 28</span></li>
-                    <li><a href="#d4">우리 집 고양이가 리모컨을 숨기는 위치 통계</a><span class="m">집사일기 · 댓글 44</span></li>
+        <div class="grid">
+            <div class="card">
+                <h3>🕒 방금 올라온 글 <small>전체 보기 →</small></h3>
+                <ul class="list">
+                    <li><span class="chip">💬 수다</span><a class="t" href="#d4">골목 어귀 평상, 저녁마다 모이는 사람들</a><span class="m">평상지기 · 7분 전</span></li>
+                    <li><span class="chip s">🏪 가게</span><a class="t" href="#d4">새로 생긴 과일가게, 자두가 참 답니다 🍑</a><span class="m">과일탐험대 · 25분 전</span></li>
+                    <li><span class="chip">💬 수다</span><a class="t" href="#d4">저녁 산책길에 만난 노을 사진 몇 장</a><span class="m">노을수집가 · 40분 전</span></li>
+                    <li><span class="chip s">🏪 가게</span><a class="t" href="#d4">세탁소 사장님의 얼룩 제거 꿀팁 모음</a><span class="m">다림질장인 · 1시간 전</span></li>
+                    <li><span class="chip">💬 수다</span><a class="t" href="#d4">아이와 함께 가기 좋은 근처 물놀이터 정리</a><span class="m">두아이아빠 · 2시간 전</span></li>
                 </ul>
             </div>
-            <div class="block b2">
-                <h3>게임</h3>
-                <ul>
-                    <li><span class="badge">공략</span><a href="#d4">주말에 클리어한 인디게임 셋, 짧은 감상</a><span class="m">패드요정 · 댓글 12</span></li>
-                    <li><a href="#d4">철권 초보 탈출 3주 커리큘럼 만들어 봄</a><span class="m">막고차기 · 댓글 19</span></li>
-                    <li><a href="#d4">옛날 오락실 기판 수집, 이번 달 득템</a><span class="m">기판장인 · 댓글 8</span></li>
-                </ul>
+            <div class="side">
+                <div class="card">
+                    <h3>🔥 많이 읽은 글</h3>
+                    <ul class="rank">
+                        <li><span class="no">1</span><a href="#d4">냉장고 파먹기 이 주째, 오늘의 발견</a></li>
+                        <li><span class="no">2</span><a href="#d4">동네 책방 첫 손님이 되어 주세요</a></li>
+                        <li><span class="no">3</span><a href="#d4">선풍기 바람에도 잘 마르는 빨래 너는 법</a></li>
+                        <li><span class="no">4</span><a href="#d4">복숭아 무르기 전에, 여름 과일 보관법</a></li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>📊 오늘의 귤동네</h3>
+                    <div class="stats">
+                        <div><b>41</b><span>새 글</span></div>
+                        <div><b>266</b><span>댓글</span></div>
+                        <div><b>153</b><span>접속자</span></div>
+                    </div>
+                </div>
             </div>
-            <div class="block b3">
-                <h3>장터</h3>
-                <ul>
-                    <li><span class="badge">급처</span><a href="#d4">키보드 갈축 → 적축 갈아타서 갈축 내놓습니다</a><span class="m">3만원 · 직거래</span></li>
-                    <li><a href="#d4">듀얼모니터 암 하나 나눔합니다 (나사 있음)</a><span class="m">나눔 · 마감임박</span></li>
-                    <li><a href="#d4">캠핑 의자 2개, 한 번 쓰고 창고행이었음</a><span class="m">2만원 · 택배가능</span></li>
-                </ul>
-            </div>
-        </div>
-        <div class="strip">
-            <span>지금 이 순간</span>
-            <span class="nums">
-                <span>접속자<b>98</b></span>
-                <span>오늘 댓글<b>412</b></span>
-                <span>오늘 좋아요<b>1,024</b></span>
-            </span>
         </div>
         <div class="foot">
-            <span>동네오락실 — 그누보드5 프로</span>
-            <span><a href="#d4">이용약관</a> · <a href="#d4">개인정보처리방침</a></span>
+            <span>🍊 귤동네 — 그누보드5 프로</span>
+            <span>이용약관 · 개인정보처리방침</span>
         </div>
     </div>
 </section>
