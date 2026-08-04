@@ -1,6 +1,8 @@
 <div class="local_desc01 local_desc">
     <p>날짜별 요금과 판매 실수를 관리합니다. 지정하지 않은 날은 객실에 등록한 기본 요금·기본 실수를 그대로 씁니다.</p>
     <p>파랗게 강조된 값이 이 캘린더에서 따로 지정한 값입니다.</p>
+    <p><strong>성수기·비수기</strong>는 아래 기간 일괄 적용에서 요금 비율(성수기 150%, 비수기 80% 등)을 넣고
+        <strong>전체 객실</strong>을 체크하면 한 번에 잡힙니다. 되돌릴 때는 같은 기간에 요금 -1 을 적용하십시오.</p>
 </div>
 
 @if (!$room)
@@ -102,9 +104,19 @@
             </td>
         </tr>
         <tr>
+            <th scope="row">적용 대상</th>
+            <td><label><input type="checkbox" name="all_rooms" value="1" id="all_rooms"> 전체 객실({{ count($rooms) }}개)에 적용</label>
+                <span class="frm_info">체크하지 않으면 위에서 고른 객실에만 적용됩니다.</span></td>
+        </tr>
+        <tr>
             <th scope="row"><label for="set_price">요금</label></th>
             <td><input type="number" name="set_price" value="" id="set_price" class="frm_input" size="10" min="-1"> 원
-                <span class="frm_info">비워 두면 요금은 건드리지 않습니다. -1 을 넣으면 지정을 해제해 객실 기본 요금(주중/주말)으로 되돌립니다.</span></td>
+                또는 기본요금의
+                <label for="set_percent" class="sound_only">요금 비율</label>
+                <input type="number" name="set_percent" value="" id="set_percent" class="frm_input" size="5" min="1" max="999"> %
+                <span class="frm_info">비워 두면 요금은 건드리지 않습니다. 액수와 비율은 둘 중 하나만 넣으십시오.</span>
+                <span class="frm_info">비율은 각 객실의 기본 요금(주중/주말) 기준이라 전체 객실 적용과 함께 쓰기 좋습니다. 100원 단위로 반올림됩니다.</span>
+                <span class="frm_info">-1 을 넣으면 지정을 해제해 객실 기본 요금(주중/주말)으로 되돌립니다.</span></td>
         </tr>
         <tr>
             <th scope="row"><label for="set_count">판매 실수</label></th>
@@ -117,7 +129,18 @@
 </div>
 
 <div class="btn_confirm01 btn_confirm">
-    <input type="submit" value="적용" class="btn_submit btn">
+    <input type="submit" value="적용" id="btn_calendar_apply" class="btn_submit btn">
 </div>
 </form>
+
+<script>
+jQuery(function($) {
+    // 요소에 직접 건 핸들러라 admin.js 의 document 위임 핸들러(토큰 채우기)보다 먼저 돈다.
+    // 취소하면 false 를 돌려 전파까지 끊어 제출 자체를 막는다.
+    $("#btn_calendar_apply").on("click", function() {
+        if ($("#all_rooms").is(":checked")
+            && !confirm("전체 객실 {{ count($rooms) }}개에 적용할까요?")) return false;
+    });
+});
+</script>
 @endif
