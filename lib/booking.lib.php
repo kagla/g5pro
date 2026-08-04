@@ -244,15 +244,24 @@ function booking_remain_count($room, $date)
     return booking_sellable_count($room, $date) - booking_booked_count($room['br_id'], $date);
 }
 
-// 취소 정책 "남은일수:환불율" 줄 목록에서 환불율(0~100)을 고른다
-function booking_refund_rate($policy_text, $days_before)
+// 취소 정책 "남은일수:환불율" 줄 목록을 array(남은일수 => 환불율) 로 편다.
+// 남은일수 내림차순(krsort)이라 앞에서부터 처음 걸리는 단계가 곧 적용 단계다.
+// 판정(booking_refund_rate)도 화면 고지(booking/room.php)도 이 한 함수만 쓴다 —
+// 파싱이 두 곳에 흩어지면 손님이 본 규정과 실제 적용 규정이 갈린다
+function booking_cancel_rules($policy_text)
 {
     $rules = array();
     foreach (preg_split('/[\r\n]+/', trim((string)$policy_text)) as $line) {
         if (preg_match('/^\s*(\d+)\s*:\s*(\d+)\s*$/', $line, $m)) $rules[(int)$m[1]] = min(100, (int)$m[2]);
     }
     krsort($rules);
-    foreach ($rules as $n => $rate) { if ($days_before >= $n) return $rate; }
+    return $rules;
+}
+
+// 취소 정책 "남은일수:환불율" 줄 목록에서 환불율(0~100)을 고른다
+function booking_refund_rate($policy_text, $days_before)
+{
+    foreach (booking_cancel_rules($policy_text) as $n => $rate) { if ($days_before >= $n) return $rate; }
     return 0;
 }
 

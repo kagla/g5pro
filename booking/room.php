@@ -24,14 +24,9 @@ while ($r = sql_fetch_array($result)) $addons[] = $r;
 // 이니시스 상점키·API 키가 들어 있어 통째로 뷰에 넘기면 안 된다.
 $bc = booking_config();
 
-// 취소 규정 "남은일수:환불율" 을 사람이 읽는 줄로 편다. 판정 자체는 booking_refund_rate() 가 한다
-$cancel_rules = array();
-foreach (preg_split('/[\r\n]+/', trim($bc['bc_cancel_policy'])) as $line) {
-    if (preg_match('/^\s*(\d+)\s*:\s*(\d+)\s*$/', $line, $m)) {
-        $cancel_rules[(int)$m[1]] = min(100, (int)$m[2]);
-    }
-}
-krsort($cancel_rules);
+// 취소 규정 "남은일수:환불율" 을 사람이 읽는 줄로 편다. 판정 자체는 booking_refund_rate() 가 한다 —
+// 둘 다 booking_cancel_rules() 한 곳에서 파싱하므로 고지와 실제 환불율이 어긋나지 않는다
+$cancel_rules = booking_cancel_rules($bc['bc_cancel_policy']);
 
 $conf = array(
     'checkin_time'  => $bc['bc_checkin_time'],
