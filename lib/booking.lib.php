@@ -256,6 +256,18 @@ function booking_refund_rate($policy_text, $days_before)
     return 0;
 }
 
+// 환불액. 화면이 미리 보여 주는 예정액도, 실제로 나가는 돈도 이 한 식으로만 구한다 —
+// 계산이 두 곳에 흩어지면 손님이 본 금액과 다른 돈이 나간다.
+// 10원 미만은 버린다 (카드 부분취소는 10원 단위로 접수된다)
+function booking_refund_amount($total_price, $rate)
+{
+    $total = (int)$total_price;
+    if ($total < 1) return 0;
+    $amount = (int)floor($total * (int)$rate / 100 / 10) * 10;
+    if ($amount < 0) return 0;
+    return min($amount, $total);
+}
+
 // 유일한 예약번호(대문자 영숫자 10자)
 function booking_new_no()
 {
@@ -423,8 +435,11 @@ function booking_inicis_conf()
         return array(
             'mid'        => 'INIpayTest',
             'sign_key'   => 'SU5JTElURV9UUklQTEVERVNfS0VZU1RS',
-            'iniapi_key' => '',
-            'iniapi_iv'  => '',
+            // 취소(환불) API 는 INIAPI Key 로 서명한다. 테스트 상점의 키는 이니시스가 공개한
+            // 고정값이다 — 비워 두면 테스트 결제는 되는데 취소만 영영 실패한다
+            // (영카트 get_inicis_iniapi_key() 가 INIpayTest 에 쓰는 값과 같다)
+            'iniapi_key' => 'ItEQKi3rY7uvDS8l',
+            'iniapi_iv'  => 'HYb3yQ4f65QL89==',
             'js_url'     => 'https://stgstdpay.inicis.com/stdjs/INIStdPay.js',
             'refund_url' => 'https://stginiapi.inicis.com/api/v1/refund',
             'test'       => 1,
@@ -458,6 +473,165 @@ function booking_inicis_log($oid, $tid, $type, $price, $result_code, $data)
         bl_result_code = '".sql_real_escape_string(substr((string)$result_code, 0, 10))."',
         bl_data = '".sql_real_escape_string((string)$data)."',
         bl_datetime = '".date('Y-m-d H:i:s', G5_SERVER_TIME)."' ", true);
+}
+
+// 취소·환불 — 돈이 실제로 나가는 유일한 자리. 관리자의 취소 승인과 직권 취소가 모두 여기로 온다.
+// 반환은 array('ok' => bool, 'msg' => 안내문, 'refund_price' => 실제 환불액).
+//
+// 되돌릴 수 없는 호출이라 순서를 이렇게 잡는다:
+//   1) 예약 행을 잠그고(for update) 상태를 다시 읽는다. 이미 cancelled 면 여기서 끝난다 —
+//      잠금을 API 응답까지 쥐고 있으므로, 두 관리자가 같은 예약의 승인을 동시에 눌러도
+//      뒤엣것은 앞엣것이 끝난 뒤에 상태를 읽고 거부된다 (같은 돈을 두 번 환불하지 않는다)
+//   2) 이니시스 취소 API 호출 (0원 이하면 부르지 않는다 — 나갈 돈이 없다)
+//   3) 성공했을 때만 상태를 옮기고 커밋한다. 실패하면 되돌려 상태를 그대로 둔다(재시도 가능)
+//   4) 어느 갈래로 끝나든 거래 로그를 한 줄 남긴다. 트랜잭션 밖에서 남기므로 되돌려도 기록은 남는다
+function booking_refund($bk, $refund_price, $memo)
+{
+    global $g5;
+
+    if (!$bk || !isset($bk['bk_id'])) return array('ok' => false, 'msg' => '예약 정보를 찾을 수 없습니다.', 'refund_price' => 0);
+    $bk_id = (int)$bk['bk_id'];
+
+    // 사유는 이니시스 전문(msg)과 예약 행에 함께 들어간다. 줄바꿈은 전문에서 다루기 어려우므로 편다
+    $memo = trim(preg_replace('/\s+/u', ' ', (string)$memo));
+    if ($memo === '') $memo = '예약 취소';
+
+    $now = date('Y-m-d H:i:s', G5_SERVER_TIME);
+    $refund_price = (int)$refund_price;
+
+    $error = '';        // 비어 있지 않으면 실패다
+    $called = false;    // 이니시스에 실제로 전문을 보냈는가
+    $is_part = false;
+    $response = '';
+    $result_code = '';
+    $total = (int)$bk['bk_total_price'];
+
+    sql_query(" set autocommit = 0 ", true);
+    sql_query(" start transaction ", true);
+
+    $cur = sql_fetch(" select * from `{$g5['booking_table']}` where bk_id = '$bk_id' for update ");
+
+    if (!$cur) {
+        $error = '예약 정보를 찾을 수 없습니다.';
+    } else if ($cur['bk_status'] === 'cancelled') {
+        // 중복 승인. API 를 부르기 전에 끊는다
+        $error = '이미 취소·환불이 끝난 예약입니다.';
+    } else if ($cur['bk_status'] !== 'confirmed' && $cur['bk_status'] !== 'cancel_req') {
+        $error = '취소할 수 있는 상태가 아닙니다. (현재 상태: '.$cur['bk_status'].')';
+    }
+
+    if (!$error) {
+        // 금액은 잠근 행의 값으로 다시 본다 — 화면에서 읽어 온 총액은 낡았을 수 있다
+        $total = (int)$cur['bk_total_price'];
+        if ($refund_price < 0) $refund_price = 0;
+        if ($refund_price > $total) $refund_price = $total;
+    }
+
+    if (!$error && $refund_price > 0) {
+        $conf = booking_inicis_conf();
+        if (trim($cur['bk_tid']) === '') {
+            $error = '결제 거래번호(tid)가 없어 환불할 수 없습니다. 이니시스 관리자에서 직접 취소하십시오.';
+        } else if ($conf['mid'] === '' || $conf['iniapi_key'] === '') {
+            $error = '상점아이디 또는 INIAPI Key 가 설정되지 않아 환불할 수 없습니다.';
+        } else {
+            // 영카트 취소 함수를 그대로 쓴다. 다만 그 함수는 값이 없으면 $default(쇼핑몰 설정)를
+            // 보므로, 상점아이디·키·주소를 모두 예약 설정으로 덮어 $default 를 아예 타지 않게 한다.
+            // audit=false 로 영카트 감사 로그도 끈다 — 예약 거래는 booking_inicis_log 에만 남는다
+            //
+            // function_exists 로 감싼다 — 회귀 테스트가 이 함수를 대신 올려 두는 경우를
+            // include_once 는 막지 못한다 (return.php 의 class_exists 와 같은 방식)
+            if (!function_exists('inicis_tid_cancel'))
+                include_once(G5_SHOP_PATH.'/inicis/libs/inicis_youngcart_fn.php');
+
+            $is_part = ($refund_price < $total);
+            $args = array(
+                'paymethod' => 'Card',
+                'tid'       => trim($cur['bk_tid']),
+                'mid'       => $conf['mid'],
+                'key'       => $conf['iniapi_key'],
+                'url'       => $conf['refund_url'],
+                // 해시에 들어가는 값이다. CLI 처럼 SERVER_ADDR 이 없거나 빈 자리에서도 비지 않게 한다
+                // (있는지만 보면 안 된다 — 순정 common.php 가 빈 문자열로 채워 두는 경우가 있다)
+                'clientIp'  => (isset($_SERVER['SERVER_ADDR']) && $_SERVER['SERVER_ADDR'] !== '')
+                               ? $_SERVER['SERVER_ADDR'] : '127.0.0.1',
+                'audit'     => false,
+                'msg'       => mb_substr($memo, 0, 50, 'UTF-8'),
+            );
+            if ($is_part) {
+                $args['price'] = $refund_price;              // 이번에 돌려줄 돈
+                $args['confirmPrice'] = $total - $refund_price;  // 취소 뒤 남는 승인액
+            }
+
+            $called = true;
+            $response = (string)inicis_tid_cancel($args, $is_part);
+
+            if (!function_exists('json_decode')) require_once(G5_SHOP_PATH.'/inicis/libs/json_lib.php');
+            $res = json_decode($response, true);
+            $result_code = (is_array($res) && isset($res['resultCode']) && !is_array($res['resultCode']))
+                ? (string)$res['resultCode'] : '';
+            $result_msg = (is_array($res) && isset($res['resultMsg']) && !is_array($res['resultMsg']))
+                ? clean_xss_tags((string)$res['resultMsg']) : '';
+
+            // 취소 성공은 '00' 이다. 승인(return.php)의 '0000' 과는 다른 코드계다 —
+            // 여기서 '0000' 을 성공으로 보면 나가지 않은 돈을 나갔다고 적는다
+            if (strcmp('00', $result_code) !== 0) {
+                if ($result_code === '') {
+                    $result_code = 'parse';
+                    $error = '이니시스 취소 응답을 해석할 수 없습니다. 거래 로그를 확인하십시오.';
+                } else {
+                    $error = '이니시스 취소에 실패했습니다. ('.$result_code
+                           . ($result_msg !== '' ? ' '.$result_msg : '').')';
+                }
+            }
+        }
+    }
+
+    if (!$error) {
+        $set = " bk_status = 'cancelled',
+            bk_refund_price = '".(int)$refund_price."',
+            bk_refund_time = '$now' ";
+        // 직권 취소는 취소 신청을 거치지 않는다 — 취소 시각이 비어 있으면 여기서 찍는다
+        if ($cur['bk_cancel_time'] <= '1970-01-02') $set .= " , bk_cancel_time = '$now' ";
+        // 손님이 적어 둔 사유가 있으면 남긴다. 비어 있을 때만 처리 사유를 적는다
+        if (trim($cur['bk_cancel_memo']) === '')
+            $set .= " , bk_cancel_memo = '".sql_real_escape_string(mb_substr($memo, 0, 255, 'UTF-8'))."' ";
+        // 잠근 행이지만 where 에 기대 상태를 한 번 더 건다 — 상태가 옮겨 갔다면 한 줄도 바뀌지 않는다
+        sql_query(" update `{$g5['booking_table']}` set $set
+            where bk_id = '$bk_id' and bk_status = '".sql_real_escape_string($cur['bk_status'])."' ", true);
+        if (get_sql_affected_rows() < 1) {
+            $result_code = 'update';
+            $error = $called
+                ? '이니시스 환불은 처리되었으나 예약 상태를 바꾸지 못했습니다. 거래 로그를 확인하고 손으로 맞춰 주십시오.'
+                : '예약 상태가 바뀌어 취소를 마치지 못했습니다.';
+        }
+    }
+
+    if ($error) sql_query(" rollback ", true);
+    else        sql_query(" commit ", true);
+    sql_query(" set autocommit = 1 ", true);   // 어느 갈래로 가든 원래대로 돌려 놓는다
+
+    // 로그는 트랜잭션 밖이다. 되돌린 시도도, 부르지 않은 이유도 남아야 대사(對査)가 된다
+    booking_inicis_log(
+        $cur ? $cur['bk_oid'] : $bk['bk_oid'],
+        $cur ? $cur['bk_tid'] : (isset($bk['bk_tid']) ? $bk['bk_tid'] : ''),
+        'refund', $refund_price,
+        $called ? $result_code : ($error ? 'reject' : 'skip'),
+        json_encode(array(
+            'bk_no'    => $cur ? $cur['bk_no'] : $bk['bk_no'],
+            'status'   => $cur ? $cur['bk_status'] : '',
+            'total'    => $total,
+            'refund'   => $refund_price,
+            'part'     => $is_part ? 1 : 0,
+            'memo'     => $memo,
+            'error'    => $error,
+            'response' => $response,
+        ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+
+    if ($error) return array('ok' => false, 'msg' => $error, 'refund_price' => 0);
+
+    booking_send_mail($bk_id, 'cancelled');
+    return array('ok' => true, 'refund_price' => $refund_price,
+        'msg' => '취소 처리되었습니다. 환불액 '.number_format($refund_price).'원');
 }
 
 // 예약 안내 메일. 발송 실패는 무시한다 (예약 처리 흐름을 막지 않는다)

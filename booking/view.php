@@ -43,8 +43,9 @@ $days_before = (int)floor((strtotime($bk['bk_checkin'].' 00:00:00') - strtotime(
 // 당일을 빼면 그 규칙이 영영 쓰이지 않는다
 $can_cancel = ($bk['bk_status'] === 'confirmed' && $days_before >= 0);
 $refund_rate = booking_refund_rate($bc['bc_cancel_policy'], $days_before);
-// 미리 보여 주는 예상액이다. 실제 환불액은 취소 처리 시점에 다시 계산한다
-$refund_price = (int)floor((int)$bk['bk_total_price'] * $refund_rate / 100);
+// 미리 보여 주는 예상액이다. 실제 환불액은 취소 처리 시점에 다시 계산한다 —
+// 그 계산도 같은 booking_refund_amount() 를 타야 화면 금액과 나가는 돈이 어긋나지 않는다
+$refund_price = booking_refund_amount($bk['bk_total_price'], $refund_rate);
 
 // 결제 전 기본값(1970-01-01)은 날짜가 아니라 "아직 없음"이다. 화면에 흘리지 않는다
 $pay_time = ($bk['bk_pay_time'] > '1970-01-02') ? $bk['bk_pay_time'] : '';
