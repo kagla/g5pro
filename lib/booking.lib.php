@@ -485,6 +485,92 @@ function booking_inicis_log($oid, $tid, $type, $price, $result_code, $data)
         bl_datetime = '".date('Y-m-d H:i:s', G5_SERVER_TIME)."' ", true);
 }
 
+// 결제대사(adm/booking/recon.php)의 첫 걸음 — 승인된 결제를 예약 행에 붙인다(claim).
+// 승인 로그의 거래번호를 bk_tid 에 적고 상태를 confirmed 로 옮긴다. 확정도 환불도 여기를 지난다:
+//   1) 환불은 booking_refund() 하나로만 나가야 하는데 그 함수는 confirmed·cancel_req 만 받는다.
+//      상태를 옮겨 두면 잠금·중복 방어·거래 로그가 전부 그 함수의 것을 그대로 쓴다
+//   2) hold 행에는 tid 가 없다 (확정할 때 적히는 값이다). 로그에서 옮겨 오지 않으면 환불할 수 없다
+//
+// $check_room 이 참이면 확정용이다 — 자리가 남아 있어야 통과한다.
+// 반환은 array('ok' => bool, 'msg' => 안내문).
+function booking_recon_claim($bk, $log, $check_room)
+{
+    global $g5;
+
+    if (!$bk || !isset($bk['bk_id'])) return array('ok' => false, 'msg' => '예약 정보를 찾을 수 없습니다.');
+    // 근거는 승인 성공 로그뿐이다. 로그 없이 확정하면 돈을 받지 않은 예약이 확정된다
+    if (!$log || !isset($log['bl_oid']) || (string)$log['bl_type'] !== 'auth_res'
+        || (string)$log['bl_result_code'] !== '0000')
+        return array('ok' => false, 'msg' => '승인 성공 기록을 찾을 수 없습니다.');
+    if ($log['bl_oid'] === '' || $log['bl_oid'] !== $bk['bk_oid'])
+        return array('ok' => false, 'msg' => '승인 기록과 예약의 주문번호가 서로 다릅니다.');
+    if (trim($log['bl_tid']) === '')
+        return array('ok' => false, 'msg' => '승인 기록에 거래번호(tid)가 없습니다. 이니시스 관리자에서 직접 처리하십시오.');
+    // 승인된 금액과 청구액이 다르면 사람이 봐야 한다 — 전액이 얼마인지 우리가 정할 수 없다
+    if ((int)$log['bl_price'] !== (int)$bk['bk_total_price'])
+        return array('ok' => false, 'msg' => '승인 금액('.number_format((int)$log['bl_price']).'원)과 예약 청구액('
+            .number_format((int)$bk['bk_total_price']).'원)이 다릅니다. 이니시스 관리자에서 직접 확인하십시오.');
+
+    $bk_id = (int)$bk['bk_id'];
+    $oid = sql_real_escape_string($log['bl_oid']);
+    $now = date('Y-m-d H:i:s', G5_SERVER_TIME);
+    // 결제 시각은 승인 로그가 남은 시각이 가장 가깝다
+    $pay_time = ($log['bl_datetime'] > '1970-01-02') ? $log['bl_datetime'] : $now;
+
+    sql_query(" set autocommit = 0 ", true);
+    sql_query(" start transaction ", true);
+    // 잠금 순서는 booking_create_hold()·return.php 와 같게 객실 → 예약이다 (교착 방지)
+    $room = sql_fetch(" select * from `{$g5['booking_room_table']}` where br_id = '".(int)$bk['br_id']."' for update ");
+    $cur  = sql_fetch(" select * from `{$g5['booking_table']}` where bk_id = '$bk_id' for update ");
+
+    // 되돌린 기록 재확인 — 화면 목록이 건 것과 같은 조건을 잠근 뒤 한 번 더 본다.
+    // return.php 는 승인 검증에 실패하면 트랜잭션을 롤백한 뒤 잠금 없이 망취소를 쏘므로,
+    // auth_res 는 남았는데 netcancel 은 아직 안 남은 몇 초의 창이 있다. 그 창에서 관리자가
+    // "확정"을 누르면 곧 취소될 결제로 예약이 확정된다 — 목록에서 걸러 낸 것으로는 부족하다.
+    // for update 로 읽어 판정하는 동안 끼어드는 기록까지 이 트랜잭션 뒤로 세운다
+    $undone = sql_fetch(" select bl_id from `{$g5['booking_inicis_log_table']}`
+        where bl_oid = '$oid' and bl_type in ('netcancel', 'refund') limit 1 for update ");
+
+    $err = '';
+    if (!$cur)                                   $err = '예약 정보를 찾을 수 없습니다.';
+    else if ($undone)                            $err = '이미 취소·환불된 결제입니다. 거래 기록을 확인하십시오.';
+    else if ($cur['bk_status'] === 'confirmed')  $err = '이미 확정된 예약입니다. 예약 상세에서 처리하십시오.';
+    else if ($cur['bk_status'] !== 'hold' && $cur['bk_status'] !== 'expired')
+        $err = '결제대기 상태인 예약만 이 화면에서 처리할 수 있습니다. (현재 상태: '.$cur['bk_status'].')';
+    else if ($cur['bk_oid'] !== $log['bl_oid'])  $err = '예약의 주문번호가 그 사이 바뀌었습니다.';
+    else if ((int)$cur['bk_total_price'] !== (int)$log['bl_price'])
+        $err = '예약 청구액이 그 사이 바뀌었습니다.';
+    else if ($check_room) {
+        // 확정은 자리가 있어야 한다. 아직 살아 있는 점유는 booking_booked_count() 가 이미
+        // 제 몫으로 세고 있으므로, 만료된 건에 대해서만 잔여를 본다 (return.php 와 같은 판정)
+        if (!$room) $err = '객실 정보가 없습니다.';
+        else if (strtotime($cur['bk_hold_expire']) < G5_SERVER_TIME) {
+            foreach (booking_nights($cur['bk_checkin'], $cur['bk_checkout']) as $date) {
+                if (booking_remain_count($room, $date) < 1) {
+                    $err = $date.' 은(는) 다른 예약이 차 있어 확정할 수 없습니다. 환불로 처리하십시오.'; break;
+                }
+            }
+        }
+    }
+
+    if (!$err) {
+        // 잠근 행이지만 where 에 상태를 한 번 더 건다 — 두 관리자가 같은 줄의 버튼을 동시에
+        // 눌러도 한쪽만 한 줄을 바꾼다 (이중 확정·이중 환불이 여기서 끊긴다)
+        sql_query(" update `{$g5['booking_table']}` set bk_status = 'confirmed',
+            bk_tid = '".sql_real_escape_string(trim($log['bl_tid']))."',
+            bk_pay_time = '".sql_real_escape_string($pay_time)."'
+            where bk_id = '$bk_id' and bk_status = '".sql_real_escape_string($cur['bk_status'])."' ", true);
+        if (get_sql_affected_rows() < 1) $err = '예약 상태가 그 사이 바뀌어 처리하지 못했습니다.';
+    }
+
+    if ($err) sql_query(" rollback ", true);
+    else      sql_query(" commit ", true);
+    sql_query(" set autocommit = 1 ", true);   // 어느 갈래로 가든 원래대로 돌려 놓는다
+
+    if ($err) return array('ok' => false, 'msg' => $err);
+    return array('ok' => true, 'msg' => '');
+}
+
 // 취소·환불 — 돈이 실제로 나가는 유일한 자리. 관리자의 취소 승인과 직권 취소가 모두 여기로 온다.
 // 반환은 array('ok' => bool, 'msg' => 안내문, 'refund_price' => 실제 환불액).
 //
