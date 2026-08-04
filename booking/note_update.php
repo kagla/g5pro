@@ -21,6 +21,17 @@ $view_url = G5_URL.'/booking/view.php?bk_no='.$bk['bk_no'];
 $content = (isset($_POST['bn_content']) && !is_array($_POST['bn_content'])) ? trim($_POST['bn_content']) : '';
 $content = clean_xss_tags($content, 0, 0, 0, 0);
 if (trim($content) === '') alert('요청 내용을 입력해 주세요.', $view_url);
+// 글자 수 상한. bn_content 는 text 지만 여기서 먼저 자른다 — 메일 본문이 그대로 실려 나가는
+// 자리라 길이를 열어 두면 발송량이 통째로 커진다. 바이트가 아니라 글자로 센다
+$content = mb_substr($content, 0, 2000, 'UTF-8');
+
+// 같은 예약에 잇달아 남기는 것을 막는다. 메모 한 줄마다 업주에게 메일이 한 통 나가므로
+// 폼을 연타하면 그대로 메일 폭주가 된다. 인가를 통과한 사람도 이 문은 함께 지난다
+$last = sql_fetch(" select bn_datetime from `{$g5['booking_note_table']}`
+    where bk_id = '".(int)$bk['bk_id']."' and bn_writer = 'guest'
+    order by bn_id desc limit 1 ");
+if ($last && (G5_SERVER_TIME - strtotime($last['bn_datetime'])) < 60)
+    alert('요청은 1분에 한 번만 남길 수 있습니다. 잠시 후 다시 시도해 주세요.', $view_url);
 
 sql_query(" insert into `{$g5['booking_note_table']}` set
     bk_id = '".(int)$bk['bk_id']."',

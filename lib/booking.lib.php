@@ -485,6 +485,12 @@ function booking_send_mail($bk_id, $kind)
         .'<li>결제금액: '.number_format((int)$bk['bk_total_price']).'원</li>'
         .'<li>상태: '.(isset($status[$bk['bk_status']]) ? $status[$bk['bk_status']] : $bk['bk_status']).'</li>'
         .'</ul>';
+    // 확정 메일에는 조회 화면으로 가는 길을 함께 넣는다. 비회원에게는 이 메일이
+    // 사실상 유일한 입구다 — 예약번호와 확인 비밀번호로 상세를 열고 추가 요청·취소를 한다
+    if ($kind === 'confirm') {
+        $lookup_url = G5_URL.'/booking/lookup.php';
+        $content .= '<p>예약 확인·변경·취소: <a href="'.$lookup_url.'">'.$lookup_url.'</a></p>';
+    }
     if ($bk['bk_email']) @mailer($config['cf_title'], $config['cf_admin_email'], $bk['bk_email'], $subject, $content, 1);
     if ($bc['bc_admin_email']) @mailer($config['cf_title'], $config['cf_admin_email'], $bc['bc_admin_email'], $subject, $content, 1);
 }

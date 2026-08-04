@@ -87,6 +87,7 @@
             예약 내용을 조회하고 취소를 요청할 수 있습니다.</p>
         <p class="bk-note">비밀번호는 다시 알려 드릴 수 없습니다. 잊으셨다면 연락처로 문의해 주세요.</p>
         @endif
+        <p class="bk-note"><a href="{{ G5_URL }}/booking/lookup.php">예약 조회하기</a></p>
     </section>
 
     @if (trim($conf['refund_terms']) !== '')
