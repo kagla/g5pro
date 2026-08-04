@@ -35,7 +35,9 @@ $bc_max_nights   = max($bc_min_nights, (int)booking_post_raw('bc_max_nights'));
 // 취소 수수료 단계 — 한 줄당 "남은일수:환불율". 한 줄이라도 어긋나면 통째로 되돌린다
 // (반만 저장되면 어떤 규정이 적용되는지 관리자가 알 수 없다)
 $policy_lines = array();
-$raw_lines = explode("\n", str_replace("\r\n", "\n", str_replace("\r", "\n", booking_post_raw('bc_cancel_policy'))));
+// 배열 치환은 한 번에 훑는다 — CRLF 를 먼저 CR 로 바꾸면 빈 줄이 하나씩 늘어 오류 줄 번호가 어긋난다
+// (브라우저 textarea 는 CRLF 로 보내므로 실사용 경로다)
+$raw_lines = explode("\n", str_replace(array("\r\n", "\r"), "\n", booking_post_raw('bc_cancel_policy')));
 foreach ($raw_lines as $no => $line) {
     $line = trim($line);
     if ($line === '') continue;
@@ -51,15 +53,16 @@ $bc_cancel_policy = addslashes(implode("\n", $policy_lines));
 
 $bc_refund_terms = addslashes(clean_xss_tags(booking_post_raw('bc_refund_terms')));
 
-// 이니시스 키는 영문·숫자와 몇 가지 기호뿐이다 — 붙여 넣을 때 딸려 오는 공백·줄바꿈만 털어 낸다
-$bc_inicis_mid        = addslashes(trim(strip_tags(booking_post_raw('bc_inicis_mid'))));
-$bc_inicis_sign_key   = addslashes(trim(strip_tags(booking_post_raw('bc_inicis_sign_key'))));
-$bc_inicis_iniapi_key = addslashes(trim(strip_tags(booking_post_raw('bc_inicis_iniapi_key'))));
-$bc_inicis_iniapi_iv  = addslashes(trim(strip_tags(booking_post_raw('bc_inicis_iniapi_iv'))));
-$bc_card_test         = (isset($_POST['bc_card_test']) && (int)$_POST['bc_card_test']) ? 1 : 0;
+// 이니시스 키는 영문·숫자와 몇 가지 기호뿐이다 — 붙여 넣을 때 딸려 오는 공백·줄바꿈만 털어 낸다.
+// 길이는 컬럼 크기에 맞춰 여기서 자른다 (MySQL 에 맡기면 strict 모드에서 저장 자체가 실패한다)
+$bc_inicis_mid        = addslashes(mb_substr(trim(strip_tags(booking_post_raw('bc_inicis_mid'))), 0, 20));
+$bc_inicis_sign_key   = addslashes(mb_substr(trim(strip_tags(booking_post_raw('bc_inicis_sign_key'))), 0, 64));
+$bc_inicis_iniapi_key = addslashes(mb_substr(trim(strip_tags(booking_post_raw('bc_inicis_iniapi_key'))), 0, 64));
+$bc_inicis_iniapi_iv  = addslashes(mb_substr(trim(strip_tags(booking_post_raw('bc_inicis_iniapi_iv'))), 0, 64));
+$bc_card_test         = (int)booking_post_raw('bc_card_test') ? 1 : 0;
 
 // 빈 값은 "업주 알림을 끈다"는 뜻이라 허용한다
-$bc_admin_email = trim(booking_post_raw('bc_admin_email'));
+$bc_admin_email = mb_substr(trim(booking_post_raw('bc_admin_email')), 0, 255);
 if ($bc_admin_email !== '' && !filter_var($bc_admin_email, FILTER_VALIDATE_EMAIL)) {
     alert('업주 알림 이메일 형식이 올바르지 않습니다. 알림을 받지 않으려면 비워 두십시오.');
 }
