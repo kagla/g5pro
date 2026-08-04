@@ -290,23 +290,43 @@ $front_js = array(
     'ajax_url' => G5_URL.'/booking/ajax.calendar.php', 'reserve_url' => G5_URL.'/booking/reserve.php',
 );
 
+// 목록 화면의 관리자 바로가기 — booking/index.php 가 만드는 모양 그대로.
+// 관리자가 아니어도 rooms 키는 객실마다 채워진다(뷰가 isset 없이 읽는다).
+$front_rooms = array(
+    $sample_room + array('image' => G5_DATA_URL.'/booking/aaaa.jpg'),
+    array('br_id' => 4, 'br_subject' => '스탠다드', 'br_base_person' => 2,
+        'br_max_person' => 2, 'br_weekday_price' => 80000, 'image' => ''),  // 이미지 없는 분기
+);
+function front_admin_links($rooms, $is_super)
+{
+    $links = array('booking' => $is_super ? G5_ADMIN_URL.'/booking/booking_list.php' : '',
+        'rooms' => array());
+    foreach ($rooms as $r) {
+        $links['rooms'][$r['br_id']] = $is_super
+            ? G5_ADMIN_URL.'/booking/room_form.php?w=u&br_id='.(int)$r['br_id'] : '';
+    }
+    return $links;
+}
+
 $front_samples = array(
     'index' => array(
-        array('rooms' => array(
-            $sample_room + array('image' => G5_DATA_URL.'/booking/aaaa.jpg'),
-            array('br_id' => 4, 'br_subject' => '스탠다드', 'br_base_person' => 2,
-                'br_max_person' => 2, 'br_weekday_price' => 80000, 'image' => ''),  // 이미지 없는 분기
-        )),
-        array('rooms' => array()),   // 빈 목록 분기
+        // 손님 — 관리자 링크가 모두 빈 문자열이라 톱니·예약관리 칸이 안 나가야 한다
+        array('rooms' => $front_rooms, 'admin_links' => front_admin_links($front_rooms, false)),
+        // 최고관리자 — 같은 목록에 톱니와 예약관리 바로가기가 붙는 분기
+        array('rooms' => $front_rooms, 'admin_links' => front_admin_links($front_rooms, true)),
+        // 빈 목록 분기 (객실이 없어도 관리자에게는 예약관리 칸이 남는다)
+        array('rooms' => array(), 'admin_links' => front_admin_links(array(), true)),
     ),
     'room' => array(
         array('room' => $sample_room, 'conf' => $front_conf, 'js' => $front_js,
             'images' => array(G5_DATA_URL.'/booking/aaaa.jpg', G5_DATA_URL.'/booking/bbbb.png'),
-            'addons' => array(array('ba_id' => 1, 'ba_subject' => '조식 2인', 'ba_price' => 20000))),
-        // 사진·부가상품·취소규정·설명이 하나도 없는 분기
+            'addons' => array(array('ba_id' => 1, 'ba_subject' => '조식 2인', 'ba_price' => 20000)),
+            'admin_edit_url' => ''),   // 손님 — 톱니가 안 나가야 한다
+        // 사진·부가상품·취소규정·설명이 하나도 없고, 대신 최고관리자라 톱니가 붙는 분기
         array('room' => array('br_content' => '', 'br_person_price' => 0) + $sample_room,
             'conf' => array('cancel_rules' => array(), 'refund_terms' => '') + $front_conf,
-            'js' => $front_js, 'images' => array(), 'addons' => array()),
+            'js' => $front_js, 'images' => array(), 'addons' => array(),
+            'admin_edit_url' => G5_ADMIN_URL.'/booking/room_form.php?w=u&br_id=3'),
     ),
     'reserve' => array(
         // 비회원 — 비밀번호 칸이 나오고 부가상품·환불약관이 다 있는 분기

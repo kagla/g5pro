@@ -54,8 +54,16 @@ $js = array(
     'reserve_url'   => G5_URL.'/booking/reserve.php',
 );
 
+// 관리자 수정 바로가기 — 최고관리자에게만 채운다. adm/booking/_common.php 가 'super' 만
+// 들여보내므로 같은 기준으로 판정한다(그보다 넓게 보여 주면 눌러도 알림만 뜬다).
+// 판정은 여기서 끝내고 뷰에는 URL 만 넘긴다 — 뷰가 $is_admin 같은 전역을 들여다보지 않게.
+// '&' 는 그대로 둔다. 뷰의 {{ }} 가 이스케이프하므로 여기서 &amp; 로 적으면 두 번 먹는다.
+$is_super = ($is_admin === 'super');
+$admin_edit_url = $is_super
+    ? G5_ADMIN_URL.'/booking/room_form.php?w=u&br_id='.(int)$room['br_id'] : '';
+
 $g5['title'] = $room['br_subject'];
 g5_view('booking.room', array(
     'room' => $room, 'images' => $images, 'addons' => $addons,
-    'conf' => $conf, 'js' => $js,
+    'conf' => $conf, 'js' => $js, 'admin_edit_url' => $admin_edit_url,
 ));

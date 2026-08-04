@@ -62,12 +62,29 @@
 .bk-list li { display: flex; justify-content: space-between; gap: var(--s3);
     padding: 6px 0; font-size: var(--t-md); border-bottom: 1px solid var(--line); }
 .bk-list li:last-child { border-bottom: 0; }
+
+/* 관리자 수정 바로가기 — 게시판·상품의 .icon-btn.bbs-admin-link 와 같은 모양이지만
+   그 규칙은 standard 의 style.css 에 있다. 이 화면은 폴백으로 다른 템플릿에도 뜨므로
+   기대지 않고 제 규칙을 지고 다닌다 (이 파일 머리말 참고) */
+.bk-gear { display: inline-flex; align-items: center; justify-content: center; flex: none;
+    width: 32px; height: 32px; border-radius: var(--r-md); color: var(--muted);
+    transition: color .15s, background .15s; }
+.bk-gear:hover { color: var(--accent); background: var(--accent-soft); }
+.bk-gear svg { width: 17px; height: 17px; fill: none;
+    stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 </style>
 @endsection
 
 @section('content')
 <div class="bbs-head">
-    <h2>{{ $room['br_subject'] }}</h2>
+    {{-- 최고관리자에게만 채워진다 (booking/room.php). 아니면 톱니 자체가 안 나간다 --}}
+    <h2>{{ $room['br_subject'] }}
+        @if ($admin_edit_url)
+        <a class="bk-gear" href="{{ $admin_edit_url }}" title="객실 수정" aria-label="객실 수정">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.1 14.6a1.5 1.5 0 0 0 .3 1.7l.1.1a1.9 1.9 0 1 1-2.7 2.7l-.1-.1a1.5 1.5 0 0 0-1.7-.3 1.5 1.5 0 0 0-.9 1.4v.2a1.9 1.9 0 1 1-3.8 0v-.1a1.5 1.5 0 0 0-1-1.4 1.5 1.5 0 0 0-1.7.3l-.1.1a1.9 1.9 0 1 1-2.7-2.7l.1-.1a1.5 1.5 0 0 0 .3-1.7 1.5 1.5 0 0 0-1.4-.9h-.2a1.9 1.9 0 1 1 0-3.8h.1a1.5 1.5 0 0 0 1.4-1 1.5 1.5 0 0 0-.3-1.7l-.1-.1a1.9 1.9 0 1 1 2.7-2.7l.1.1a1.5 1.5 0 0 0 1.7.3h.1a1.5 1.5 0 0 0 .9-1.4v-.2a1.9 1.9 0 1 1 3.8 0v.1a1.5 1.5 0 0 0 .9 1.4 1.5 1.5 0 0 0 1.7-.3l.1-.1a1.9 1.9 0 1 1 2.7 2.7l-.1.1a1.5 1.5 0 0 0-.3 1.7v.1a1.5 1.5 0 0 0 1.4.9h.2a1.9 1.9 0 1 1 0 3.8h-.1a1.5 1.5 0 0 0-1.4.9Z"/></svg>
+        </a>
+        @endif
+    </h2>
     <div class="bbs-head-right"><a class="btn" href="{{ G5_URL }}/booking/">객실 목록</a></div>
 </div>
 
