@@ -6,6 +6,18 @@
      예약 규칙이 있으리라 기대할 수 없다. 색·여백은 어느 템플릿에나 있는 토큰만 쓴다 --}}
 @section('head')
 <style>
+/* 예약 화면 사이의 미니 내비. 사이트 전역 GNB 는 관리자 메뉴관리 소관이라, 예약 모듈 안에서
+   객실 안내 ↔ 예약 조회를 오갈 길은 이 두 화면(index·lookup)이 스스로 지고 있어야 한다.
+   현재 화면은 aria-current 로 표시하고 색으로도 같이 알린다 — 색만으로 알리지 않는다 */
+.bk-nav { display: flex; flex-wrap: wrap; gap: var(--s2); margin-bottom: var(--s5); }
+.bk-nav a { display: inline-flex; align-items: center; padding: var(--s2) var(--s4);
+    border: 1px solid var(--btn-line); border-radius: var(--r-full);
+    background: var(--card); color: var(--fg); font-size: var(--t-md); text-decoration: none; }
+.bk-nav a:hover { border-color: var(--accent); color: var(--accent); }
+.bk-nav a[aria-current="page"] { background: var(--accent); border-color: var(--accent);
+    color: var(--accent-fg); font-weight: 700; }
+.bk-nav a[aria-current="page"]:hover { color: var(--accent-fg); }
+
 .bk-price { margin-top: var(--s2); font-size: var(--t-md); color: var(--fg); }
 .bk-price b { font-size: var(--t-lg); color: var(--accent); font-variant-numeric: tabular-nums; }
 .bk-card-btn { margin-top: var(--s3); }
@@ -13,6 +25,11 @@
 @endsection
 
 @section('content')
+<nav class="bk-nav" aria-label="예약 메뉴">
+    <a href="{{ G5_URL }}/booking/" aria-current="page">객실 안내</a>
+    <a href="{{ G5_URL }}/booking/lookup.php">예약 조회</a>
+</nav>
+
 <section class="hero">
     <h2>객실 예약</h2>
     <p>객실을 고르고 달력에서 묵으실 날짜를 선택하세요.</p>

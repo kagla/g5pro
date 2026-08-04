@@ -6,6 +6,17 @@
      예약 규칙이 있으리라 기대할 수 없다. 색·여백은 어느 템플릿에나 있는 토큰만 쓴다 --}}
 @section('head')
 <style>
+/* index.blade.php 와 같은 미니 내비. 두 화면이 서로를 가리켜야 왕복이 된다 —
+   스타일을 뷰가 지고 다니는 이 모듈의 방식대로, 규칙도 화면마다 따로 둔다 */
+.bk-nav { display: flex; flex-wrap: wrap; gap: var(--s2); margin-bottom: var(--s5); }
+.bk-nav a { display: inline-flex; align-items: center; padding: var(--s2) var(--s4);
+    border: 1px solid var(--btn-line); border-radius: var(--r-full);
+    background: var(--card); color: var(--fg); font-size: var(--t-md); text-decoration: none; }
+.bk-nav a:hover { border-color: var(--accent); color: var(--accent); }
+.bk-nav a[aria-current="page"] { background: var(--accent); border-color: var(--accent);
+    color: var(--accent-fg); font-weight: 700; }
+.bk-nav a[aria-current="page"]:hover { color: var(--accent-fg); }
+
 .bk-find { max-width: 420px; margin: 0 auto; }
 .bk-find .field + .field { margin-top: var(--s4); }
 .bk-find button { margin-top: var(--s4); }
@@ -26,9 +37,14 @@
 @endsection
 
 @section('content')
+<nav class="bk-nav" aria-label="예약 메뉴">
+    <a href="{{ G5_URL }}/booking/">객실 안내</a>
+    <a href="{{ G5_URL }}/booking/lookup.php" aria-current="page">예약 조회</a>
+</nav>
+
+{{-- 머리글 오른쪽에 있던 '객실 목록' 버튼은 위 내비가 대신한다 — 같은 링크를 두 번 두지 않는다 --}}
 <div class="bbs-head">
     <h2>예약 조회</h2>
-    <div class="bbs-head-right"><a class="btn" href="{{ G5_URL }}/booking/">객실 목록</a></div>
 </div>
 
 @if ($is_member)
