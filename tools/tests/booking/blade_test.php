@@ -232,6 +232,60 @@ $front_samples = array(
             'sign_url'   => G5_URL.'/booking/inicis/makesignature.php',
             'checkin_time' => '15:00', 'checkout_time' => '11:00'),
     ),
+    'lookup' => array(
+        // 회원 — 상태가 서로 다른 예약이 목록에 있는 분기
+        array('is_member' => true, 'token' => '1754000000.abc', 'bookings' => array(
+            array('bk_no' => 'ABCD123456', 'br_subject' => '디럭스 더블',
+                'bk_checkin' => '2026-08-14', 'bk_checkout' => '2026-08-16', 'nights' => 2,
+                'bk_person' => 3, 'bk_total_price' => 360000,
+                'bk_status' => 'confirmed', 'status_text' => '예약확정',
+                'bk_datetime' => '2026-08-04 12:45:00'),
+            // 객실이 지워진 예약 — br_subject 가 빈 문자열로 온다
+            array('bk_no' => 'ZZZZ999999', 'br_subject' => '',
+                'bk_checkin' => '2026-07-01', 'bk_checkout' => '2026-07-02', 'nights' => 1,
+                'bk_person' => 2, 'bk_total_price' => 120000,
+                'bk_status' => 'cancelled', 'status_text' => '취소완료',
+                'bk_datetime' => '2026-06-20 09:00:00'),
+        )),
+        array('is_member' => true, 'token' => '1754000000.abc', 'bookings' => array()),  // 빈 목록 분기
+        array('is_member' => false, 'token' => '1754000000.abc', 'bookings' => array()), // 비회원 폼 분기
+    ),
+    'view' => array(
+        // 확정 — 취소 가능·부가상품·요청사항·메모가 모두 있는 분기
+        array('bk' => $sample_bk, 'room' => array('br_subject' => '디럭스 더블'),
+            'addon_items' => $sample_addon_items, 'nights' => 2,
+            'notes' => array(
+                array('bn_writer' => 'guest', 'writer_text' => '고객',
+                    'bn_content' => "수건 두 장만 더 부탁드립니다.\n감사합니다.",
+                    'bn_datetime' => '2026-08-05 09:10:00'),
+                array('bn_writer' => 'admin', 'writer_text' => '업주',
+                    'bn_content' => '네, 준비해 두겠습니다.', 'bn_datetime' => '2026-08-05 10:00:00'),
+            ),
+            'pay_time' => '2026-08-04 13:05:00',
+            'status_text' => '예약확정', 'can_cancel' => true, 'days_before' => 10,
+            'refund_rate' => 100, 'refund_price' => 360000, 'token' => '1754000000.abc',
+            'conf' => array('checkin_time' => '15:00', 'checkout_time' => '11:00',
+                'refund_terms' => "체크인 7일 전까지 전액 환불합니다.")),
+        // 취소완료 — 취소 폼·부가상품·요청사항·메모·결제일시·환불약관이 하나도 없는 분기
+        array('bk' => array('bk_status' => 'cancelled', 'bk_request' => '',
+                'bk_addon_price' => 0, 'bk_total_price' => 300000,
+                'bk_pay_time' => '1970-01-01 00:00:00') + $sample_bk,
+            'room' => array('br_subject' => ''),
+            'addon_items' => array(), 'nights' => 2, 'notes' => array(), 'pay_time' => '',
+            'status_text' => '취소완료', 'can_cancel' => false, 'days_before' => -3,
+            'refund_rate' => 0, 'refund_price' => 0, 'token' => '1754000000.abc',
+            'conf' => array('checkin_time' => '15:00', 'checkout_time' => '11:00',
+                'refund_terms' => '')),
+        // 취소요청 — 상태 칩의 세 번째 갈래
+        array('bk' => array('bk_status' => 'cancel_req') + $sample_bk,
+            'room' => array('br_subject' => '디럭스 더블'),
+            'addon_items' => $sample_addon_items, 'nights' => 2, 'notes' => array(),
+            'pay_time' => '2026-08-04 13:05:00',
+            'status_text' => '취소요청', 'can_cancel' => false, 'days_before' => 10,
+            'refund_rate' => 100, 'refund_price' => 360000, 'token' => '1754000000.abc',
+            'conf' => array('checkin_time' => '15:00', 'checkout_time' => '11:00',
+                'refund_terms' => '')),
+    ),
     'complete' => array(
         // 비회원 — 메일·요청사항·부가상품·환불약관이 모두 있는 분기
         array('bk' => $sample_bk, 'room' => $sample_room, 'nights' => 2,

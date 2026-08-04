@@ -380,6 +380,24 @@ function booking_get_by_no($bk_no)
     return $row ? $row : null;
 }
 
+// 예약 열람·조작 권한. 조회(view)·추가 요청(note)·취소 신청이 모두 이 하나만 본다.
+//
+// 두 갈래뿐이다:
+//   1) 비회원 — booking/lookup.php 에서 예약번호+비밀번호를 맞춘 뒤 심은 인가 세션
+//   2) 회원   — 로그인한 계정이 예약 행의 mb_id 와 같을 때
+// 주소창의 예약번호만으로는 어느 쪽도 열리지 않는다.
+//
+// mb_id 빈 값끼리 맞아떨어지는 일이 없도록 회원 갈래는 양쪽이 비어 있지 않을 때만 본다 —
+// 비로그인 상태의 $member['mb_id'] 는 '' 이고 비회원 예약의 mb_id 도 '' 이다.
+function booking_owner_check($bk)
+{
+    global $member, $is_member;
+    if (!$bk || !isset($bk['bk_id'])) return false;
+    if (get_session('ss_booking_view_'.(int)$bk['bk_id'])) return true;
+    if ($is_member && $bk['mb_id'] !== '' && $member['mb_id'] === $bk['mb_id']) return true;
+    return false;
+}
+
 function booking_get_by_oid($oid)
 {
     global $g5;
