@@ -153,6 +153,22 @@ $front_js = array(
     'ajax_url' => G5_URL.'/booking/ajax.calendar.php', 'reserve_url' => G5_URL.'/booking/reserve.php',
 );
 
+// 확정된 예약 한 건 — 결제·완료 화면이 쓰는 예약 행 모양 그대로
+$sample_bk = array(
+    'bk_id' => 7, 'bk_no' => 'ABCD123456', 'br_id' => 3,
+    'bk_checkin' => '2026-08-14', 'bk_checkout' => '2026-08-16', 'bk_person' => 3,
+    'bk_name' => '홍길동', 'bk_hp' => '010-1234-5678', 'bk_email' => 'a@example.com',
+    'bk_request' => "늦게 도착합니다.\n조용한 방으로 부탁드립니다.",
+    'mb_id' => '', 'bk_room_price' => 300000, 'bk_person_price' => 20000,
+    'bk_addon_price' => 40000, 'bk_total_price' => 360000,
+    'bk_status' => 'confirmed', 'bk_hold_expire' => '2026-08-04 13:20:00',
+    'bk_oid' => 'ABCD123456T175400000042', 'bk_tid' => 'StdpayCARDINIpayTest20260804132000',
+    'bk_pay_time' => '2026-08-04 13:05:00', 'bk_datetime' => '2026-08-04 12:45:00',
+);
+$sample_addon_items = array(
+    array('bt_subject' => '조식 2인', 'bt_price' => 20000, 'bt_qty' => 2, 'bt_amount' => 40000),
+);
+
 $front_samples = array(
     'index' => array(
         array('rooms' => array(
@@ -192,6 +208,42 @@ $front_samples = array(
             'addons' => array(),
             'price' => array('room' => 120000, 'person' => 0, 'addon' => 0,
                 'total' => 120000, 'addon_items' => array())),
+    ),
+    'pay' => array(
+        // 부가상품이 붙은 결제 — 남은 시간이 넉넉한 분기
+        array('bk' => $sample_bk, 'room' => $sample_room, 'nights' => 2,
+            'addon_items' => $sample_addon_items,
+            'oid' => 'ABCD123456T175400000042', 'left' => 1140,
+            'conf' => array('mid' => 'INIpayTest',
+                'js_url' => 'https://stgstdpay.inicis.com/stdjs/INIStdPay.js'),
+            'return_url' => G5_URL.'/booking/inicis/return.php',
+            'close_url'  => G5_URL.'/shop/inicis/close.php',
+            'sign_url'   => G5_URL.'/booking/inicis/makesignature.php',
+            'checkin_time' => '15:00', 'checkout_time' => '11:00'),
+        // 부가상품·이메일이 없고 남은 시간이 1초뿐인 분기
+        array('bk' => array('bk_email' => '', 'bk_addon_price' => 0,
+                'bk_total_price' => 300000, 'bk_request' => '') + $sample_bk,
+            'room' => $sample_room, 'nights' => 2, 'addon_items' => array(),
+            'oid' => 'ABCD123456T175400000042', 'left' => 1,
+            'conf' => array('mid' => 'INIpayTest',
+                'js_url' => 'https://stgstdpay.inicis.com/stdjs/INIStdPay.js'),
+            'return_url' => G5_URL.'/booking/inicis/return.php',
+            'close_url'  => G5_URL.'/shop/inicis/close.php',
+            'sign_url'   => G5_URL.'/booking/inicis/makesignature.php',
+            'checkin_time' => '15:00', 'checkout_time' => '11:00'),
+    ),
+    'complete' => array(
+        // 비회원 — 메일·요청사항·부가상품·환불약관이 모두 있는 분기
+        array('bk' => $sample_bk, 'room' => $sample_room, 'nights' => 2,
+            'addon_items' => $sample_addon_items, 'is_member' => false,
+            'conf' => array('checkin_time' => '15:00', 'checkout_time' => '11:00',
+                'refund_terms' => "체크인 7일 전까지 전액 환불합니다.")),
+        // 회원 — 메일·요청사항·부가상품·환불약관이 하나도 없는 분기
+        array('bk' => array('bk_email' => '', 'bk_request' => '', 'bk_addon_price' => 0,
+                'bk_total_price' => 300000) + $sample_bk,
+            'room' => $sample_room, 'nights' => 2, 'addon_items' => array(), 'is_member' => true,
+            'conf' => array('checkin_time' => '15:00', 'checkout_time' => '11:00',
+                'refund_terms' => '')),
     ),
 );
 

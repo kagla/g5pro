@@ -333,6 +333,7 @@ if( !function_exists('shop_check_is_pay_page') ){
             $shop_dir.'/kakaopay/inicis_kk_return.php',     // 이니시스 카카오페이 (SIRK 로 시작하는 아이디 전용)
             $plugin_dir."/inicert/ini_result.php", // 이니시스 간편인증 모듈 2021-09-10 http <-> https 간 세션 공유 문제로 인해 추가
             $plugin_dir."/inicert/ini_find_result.php", // 이니시스 간편인증 모듈 2021-09-10 http <-> https 간 세션 공유 문제로 인해 추가
+            'booking/inicis/return.php', // 예약 모듈 이니시스 승인 리턴 — 결제창에서 돌아올 때 세션 유지
         );
 
         $server_script_name = str_replace('\\', '/', $_SERVER['SCRIPT_NAME']);

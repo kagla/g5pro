@@ -388,6 +388,60 @@ function booking_get_by_oid($oid)
     return $row ? $row : null;
 }
 
+// 이니시스 상점 설정. 결제 화면·승인·환불이 모두 여기 한 곳만 본다.
+//
+// shop/settle_inicis.inc.php 를 include 하지 않는다 — 그 파일은 $default(쇼핑몰 설정)를
+// 제자리에서 덮어쓴다(실 결제일 때 de_inicis_mid 에 'SIR' 을 붙이는 등). 예약이 그것을 타면
+// 같은 요청 안의 쇼핑몰 코드가 오염된 설정을 보게 된다. 예약은 제 설정으로만 간다.
+//
+// 상점아이디는 관리자가 넣은 값을 그대로 쓴다(접두사를 붙이지 않는다) — 예약 환경설정의
+// 상점아이디 칸은 이니시스가 발급한 MID 전체를 적는 자리다.
+function booking_inicis_conf()
+{
+    $bc = booking_config();
+    // 테스트 결제는 이니시스가 공개한 테스트 상점으로 고정한다. 관리자가 실 키를 넣기 전에도
+    // 결제 흐름 전체를 그대로 밟아 볼 수 있어야 한다
+    if ((int)$bc['bc_card_test']) {
+        return array(
+            'mid'        => 'INIpayTest',
+            'sign_key'   => 'SU5JTElURV9UUklQTEVERVNfS0VZU1RS',
+            'iniapi_key' => '',
+            'iniapi_iv'  => '',
+            'js_url'     => 'https://stgstdpay.inicis.com/stdjs/INIStdPay.js',
+            'refund_url' => 'https://stginiapi.inicis.com/api/v1/refund',
+            'test'       => 1,
+        );
+    }
+    return array(
+        'mid'        => trim($bc['bc_inicis_mid']),
+        'sign_key'   => trim($bc['bc_inicis_sign_key']),
+        'iniapi_key' => trim($bc['bc_inicis_iniapi_key']),
+        'iniapi_iv'  => trim($bc['bc_inicis_iniapi_iv']),
+        'js_url'     => 'https://stdpay.inicis.com/stdjs/INIStdPay.js',
+        'refund_url' => 'https://iniapi.inicis.com/api/v1/refund',
+        'test'       => 0,
+    );
+}
+
+// PG 거래 기록. 승인 요청·응답·망취소·환불이 모두 여기에 한 줄씩 남는다.
+// $type ∈ auth_req | auth_res | netcancel | refund
+//
+// 대사(對査)의 근거라서 실패해도 흐름을 멈추지 않고 남기는 쪽으로만 움직인다.
+// bl_result_code 는 varchar(10) 이므로 넘치는 값은 자른다 — 여기서 자르지 않으면
+// strict 모드에서 insert 자체가 실패해 기록이 통째로 사라진다. 원문은 $data 에 담는다.
+function booking_inicis_log($oid, $tid, $type, $price, $result_code, $data)
+{
+    global $g5;
+    sql_query(" insert into `{$g5['booking_inicis_log_table']}` set
+        bl_oid = '".sql_real_escape_string(substr((string)$oid, 0, 64))."',
+        bl_tid = '".sql_real_escape_string(substr((string)$tid, 0, 64))."',
+        bl_type = '".sql_real_escape_string(substr((string)$type, 0, 20))."',
+        bl_price = '".(int)$price."',
+        bl_result_code = '".sql_real_escape_string(substr((string)$result_code, 0, 10))."',
+        bl_data = '".sql_real_escape_string((string)$data)."',
+        bl_datetime = '".date('Y-m-d H:i:s', G5_SERVER_TIME)."' ", true);
+}
+
 // 예약 안내 메일. 발송 실패는 무시한다 (예약 처리 흐름을 막지 않는다)
 function booking_send_mail($bk_id, $kind)
 {
