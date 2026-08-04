@@ -40,6 +40,15 @@ $samples = array(
         )),
         array('admin_url' => G5_ADMIN_URL, 'rooms' => array()),   // 빈 목록 분기
     ),
+    'addon_list' => array(
+        array('admin_url' => G5_ADMIN_URL, 'addons' => array(
+            array('ba_id' => 1, 'ba_subject' => '조식 2인', 'ba_price' => 20000,
+                'ba_max_qty' => 4, 'ba_use' => 1, 'ba_order' => 0),
+            array('ba_id' => 2, 'ba_subject' => '바비큐 세트', 'ba_price' => 50000,
+                'ba_max_qty' => 2, 'ba_use' => 0, 'ba_order' => 10),
+        )),
+        array('admin_url' => G5_ADMIN_URL, 'addons' => array()),   // 빈 목록 분기
+    ),
     'room_form' => array(
         array('w' => '', 'admin_url' => G5_ADMIN_URL,
             'room' => $empty_room, 'images' => array(), 'booking_cnt' => 0),
