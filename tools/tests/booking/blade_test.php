@@ -29,6 +29,17 @@ $empty_room = array(
     'br_use' => 1, 'br_order' => 0, 'br_datetime' => '',
 );
 
+$sample_config = array(
+    'bc_id' => 1, 'bc_checkin_time' => '15:00', 'bc_checkout_time' => '11:00',
+    'bc_hold_minutes' => 20, 'bc_open_months' => 6, 'bc_sameday_deadline' => '18:00',
+    'bc_min_nights' => 1, 'bc_max_nights' => 7,
+    'bc_cancel_policy' => "7:100\n3:50\n1:30\n0:0",
+    'bc_refund_terms' => "체크인 7일 전까지 전액 환불합니다.\n이후에는 단계별 수수료가 붙습니다.",
+    'bc_inicis_mid' => '', 'bc_inicis_sign_key' => '',
+    'bc_inicis_iniapi_key' => '', 'bc_inicis_iniapi_iv' => '',
+    'bc_card_test' => 1, 'bc_admin_email' => '',
+);
+
 // 캘린더 한 달치 샘플 — 한 칸씩 손으로 적는 대신 만들고, 특이 케이스만 몇 날에 심는다
 // (15일=요금 지정, 20일=실수 0 인데 예약 1 → 초과, 21일=실수 1 에 예약 3 → 초과)
 function sample_cal_days($ym, $last_day)
@@ -97,6 +108,13 @@ $samples = array(
                 array('bi_id' => 11, 'br_id' => 3, 'bi_file' => 'aaaa.jpg', 'bi_order' => 0, 'bi_main' => 1),
                 array('bi_id' => 12, 'br_id' => 3, 'bi_file' => 'bbbb.png', 'bi_order' => 1, 'bi_main' => 0),
             )),
+    ),
+    'config_form' => array(
+        array('admin_url' => G5_ADMIN_URL, 'bc' => $sample_config),                       // 테스트 결제 켠 상태
+        array('admin_url' => G5_ADMIN_URL, 'bc' => array('bc_card_test' => 0,
+            'bc_inicis_mid' => 'realmid01', 'bc_inicis_sign_key' => 'SIGNKEY',
+            'bc_inicis_iniapi_key' => 'APIKEY', 'bc_inicis_iniapi_iv' => 'APIIV',
+            'bc_admin_email' => 'owner@example.com') + $sample_config),                   // 실 결제 분기
     ),
     'calendar' => array(
         sample_cal_case('2026-08', $sample_room),   // 토요일 시작 — 앞칸 6개
