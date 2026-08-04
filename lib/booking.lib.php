@@ -176,3 +176,241 @@ function booking_table_ddl()
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
     );
 }
+
+// 예약 설정 — 없으면 기본 행을 만들고 반환한다 (요청 단위 static 캐시)
+function booking_config()
+{
+    global $g5;
+    static $config = null;
+    if ($config !== null) return $config;
+    $config = sql_fetch(" select * from `{$g5['booking_config_table']}` where bc_id = 1 ");
+    if (!$config) {
+        sql_query(" insert into `{$g5['booking_config_table']}` set bc_id = 1,
+            bc_cancel_policy = '7:100\n3:50\n1:30\n0:0', bc_refund_terms = '' ", true);
+        $config = sql_fetch(" select * from `{$g5['booking_config_table']}` where bc_id = 1 ");
+    }
+    return $config;
+}
+
+// 숙박일(밤) 목록. 체크아웃 당일은 재고를 쓰지 않으므로 제외한다
+function booking_nights($checkin, $checkout)
+{
+    $list = array();
+    $t = strtotime($checkin); $end = strtotime($checkout);
+    while ($t !== false && $t < $end) { $list[] = date('Y-m-d', $t); $t = strtotime('+1 day', $t); }
+    return $list;
+}
+
+function booking_calendar_row($br_id, $date)
+{
+    global $g5;
+    $br_id = (int)$br_id; $date = sql_real_escape_string($date);
+    $row = sql_fetch(" select * from `{$g5['booking_calendar_table']}` where br_id = '$br_id' and bd_date = '$date' ");
+    return $row ? $row : null;
+}
+
+// 하룻밤 요금. 캘린더 개별요금이 있으면 우선, 없으면 금·토 밤은 주말요금
+function booking_night_price($room, $date, $cal_row = false)
+{
+    if ($cal_row === false) $cal_row = booking_calendar_row($room['br_id'], $date);
+    if ($cal_row && (int)$cal_row['bd_price'] >= 0) return (int)$cal_row['bd_price'];
+    $w = (int)date('w', strtotime($date));
+    return ($w === 5 || $w === 6) ? (int)$room['br_weekend_price'] : (int)$room['br_weekday_price'];
+}
+
+// 그 날짜에 팔 수 있는 객실 실수. 캘린더 값이 있으면 우선
+function booking_sellable_count($room, $date, $cal_row = false)
+{
+    if ($cal_row === false) $cal_row = booking_calendar_row($room['br_id'], $date);
+    if ($cal_row && (int)$cal_row['bd_room_count'] >= 0) return (int)$cal_row['bd_room_count'];
+    return (int)$room['br_room_count'];
+}
+
+// 그 날짜의 유효 예약 수 = 확정·취소요청 + 아직 만료되지 않은 hold
+function booking_booked_count($br_id, $date)
+{
+    global $g5;
+    $br_id = (int)$br_id; $date = sql_real_escape_string($date);
+    $now = date('Y-m-d H:i:s', G5_SERVER_TIME);
+    $row = sql_fetch(" select count(*) as cnt from `{$g5['booking_table']}`
+        where br_id = '$br_id' and bk_checkin <= '$date' and bk_checkout > '$date'
+          and ( bk_status in ('confirmed', 'cancel_req')
+                or (bk_status = 'hold' and bk_hold_expire > '$now') ) ");
+    return (int)$row['cnt'];
+}
+
+function booking_remain_count($room, $date)
+{
+    return booking_sellable_count($room, $date) - booking_booked_count($room['br_id'], $date);
+}
+
+// 취소 정책 "남은일수:환불율" 줄 목록에서 환불율(0~100)을 고른다
+function booking_refund_rate($policy_text, $days_before)
+{
+    $rules = array();
+    foreach (preg_split('/[\r\n]+/', trim((string)$policy_text)) as $line) {
+        if (preg_match('/^\s*(\d+)\s*:\s*(\d+)\s*$/', $line, $m)) $rules[(int)$m[1]] = min(100, (int)$m[2]);
+    }
+    krsort($rules);
+    foreach ($rules as $n => $rate) { if ($days_before >= $n) return $rate; }
+    return 0;
+}
+
+// 유일한 예약번호(대문자 영숫자 10자)
+function booking_new_no()
+{
+    global $g5;
+    for ($i = 0; $i < 10; $i++) {
+        $no = strtoupper(substr(str_replace(array('.', '/'), '', base64_encode(md5(uniqid(mt_rand(), true), true))), 0, 10));
+        $no = preg_replace('/[^A-Z0-9]/', strval(mt_rand(0, 9)), $no);
+        if (strlen($no) < 10) continue;
+        if (!sql_fetch(" select bk_id from `{$g5['booking_table']}` where bk_no = '$no' ")) return $no;
+    }
+    return strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 10));
+}
+
+// 객실료 + 인원추가 + 부가상품. $addons 는 array(ba_id => qty)
+function booking_calc_price($room, $checkin, $checkout, $person, $addons)
+{
+    global $g5;
+    $nights = booking_nights($checkin, $checkout);
+    $room_price = 0;
+    foreach ($nights as $date) $room_price += booking_night_price($room, $date);
+    $extra = max(0, (int)$person - (int)$room['br_base_person']);
+    $person_price = $extra * count($nights) * (int)$room['br_person_price'];
+    $addon_price = 0; $addon_items = array();
+    if (is_array($addons)) {
+        foreach ($addons as $ba_id => $qty) {
+            $ba_id = (int)$ba_id; $qty = (int)$qty;
+            if ($qty < 1) continue;
+            $ba = sql_fetch(" select * from `{$g5['booking_addon_table']}` where ba_id = '$ba_id' and ba_use = 1 ");
+            if (!$ba) continue;
+            $qty = min($qty, (int)$ba['ba_max_qty']);
+            $amount = (int)$ba['ba_price'] * $qty;
+            $addon_price += $amount;
+            $addon_items[] = array('ba_id' => $ba_id, 'subject' => $ba['ba_subject'],
+                'price' => (int)$ba['ba_price'], 'qty' => $qty, 'amount' => $amount);
+        }
+    }
+    return array('room' => $room_price, 'person' => $person_price, 'addon' => $addon_price,
+        'total' => $room_price + $person_price + $addon_price, 'addon_items' => $addon_items);
+}
+
+// 숙박 조건 검증. 통과하면 빈 문자열, 아니면 오류 메시지
+function booking_validate_stay($room, $checkin, $checkout, $person)
+{
+    $config = booking_config();
+    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $checkin) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $checkout))
+        return '날짜 형식이 올바르지 않습니다.';
+    $today = date('Y-m-d', G5_SERVER_TIME);
+    if ($checkin < $today) return '지난 날짜는 예약할 수 없습니다.';
+    if ($checkin == $today && date('H:i', G5_SERVER_TIME) > $config['bc_sameday_deadline'])
+        return '당일 예약은 '.$config['bc_sameday_deadline'].' 까지만 가능합니다.';
+    $limit = date('Y-m-d', strtotime('+'.(int)$config['bc_open_months'].' month', G5_SERVER_TIME));
+    if ($checkout > $limit) return '예약은 '.(int)$config['bc_open_months'].'개월 이내 날짜만 가능합니다.';
+    $nights = count(booking_nights($checkin, $checkout));
+    if ($nights < (int)$config['bc_min_nights']) return '최소 '.(int)$config['bc_min_nights'].'박부터 예약 가능합니다.';
+    if ($nights > (int)$config['bc_max_nights']) return '최대 '.(int)$config['bc_max_nights'].'박까지 예약 가능합니다.';
+    if ((int)$person < 1 || (int)$person > (int)$room['br_max_person'])
+        return '인원은 1~'.(int)$room['br_max_person'].'명까지 가능합니다.';
+    return '';
+}
+
+// 결제 전 임시 점유(hold) 생성. 성공하면 array('ok'=>true,'bk_id','bk_no')
+function booking_create_hold($br_id, $checkin, $checkout, $person, $addons, $guest)
+{
+    global $g5;
+    $config = booking_config();
+    $br_id = (int)$br_id;
+    sql_query(" set autocommit = 0 ", true);
+    sql_query(" start transaction ", true);
+    // 객실 행 잠금 = 객실별 뮤텍스. 같은 객실의 동시 hold 시도를 직렬화한다
+    $room = sql_fetch(" select * from `{$g5['booking_room_table']}` where br_id = '$br_id' and br_use = 1 for update ");
+    if (!$room) { sql_query(" rollback ", false); sql_query(" set autocommit = 1 ", false); return array('ok' => false, 'error' => '객실 정보가 없습니다.'); }
+    $error = booking_validate_stay($room, $checkin, $checkout, $person);
+    if (!$error) {
+        foreach (booking_nights($checkin, $checkout) as $date) {
+            if (booking_remain_count($room, $date) < 1) { $error = $date.' 은(는) 예약이 마감되었습니다.'; break; }
+        }
+    }
+    if ($error) { sql_query(" rollback ", false); sql_query(" set autocommit = 1 ", false); return array('ok' => false, 'error' => $error); }
+
+    $price = booking_calc_price($room, $checkin, $checkout, $person, $addons);
+    $bk_no = booking_new_no();
+    $expire = date('Y-m-d H:i:s', G5_SERVER_TIME + (int)$config['bc_hold_minutes'] * 60);
+    $now = date('Y-m-d H:i:s', G5_SERVER_TIME);
+    sql_query(" insert into `{$g5['booking_table']}` set
+        bk_no = '$bk_no', br_id = '$br_id',
+        bk_checkin = '".sql_real_escape_string($checkin)."', bk_checkout = '".sql_real_escape_string($checkout)."',
+        bk_person = '".(int)$person."',
+        bk_name = '".sql_real_escape_string($guest['name'])."',
+        bk_hp = '".sql_real_escape_string($guest['hp'])."',
+        bk_email = '".sql_real_escape_string($guest['email'])."',
+        bk_request = '".sql_real_escape_string($guest['request'])."',
+        mb_id = '".sql_real_escape_string($guest['mb_id'])."',
+        bk_password = '".sql_real_escape_string($guest['password'])."',
+        bk_room_price = '{$price['room']}', bk_person_price = '{$price['person']}',
+        bk_addon_price = '{$price['addon']}', bk_total_price = '{$price['total']}',
+        bk_status = 'hold', bk_hold_expire = '$expire',
+        bk_datetime = '$now', bk_ip = '".sql_real_escape_string($_SERVER['REMOTE_ADDR'])."' ", true);
+    $bk_id = sql_insert_id();
+    foreach ($price['addon_items'] as $item) {
+        sql_query(" insert into `{$g5['booking_addon_item_table']}` set bk_id = '$bk_id',
+            bt_subject = '".sql_real_escape_string($item['subject'])."',
+            bt_price = '{$item['price']}', bt_qty = '{$item['qty']}', bt_amount = '{$item['amount']}' ", true);
+    }
+    sql_query(" commit ", true);
+    sql_query(" set autocommit = 1 ", true);
+    return array('ok' => true, 'bk_id' => $bk_id, 'bk_no' => $bk_no);
+}
+
+function booking_get($bk_id)
+{
+    global $g5;
+    $bk_id = (int)$bk_id;
+    $row = sql_fetch(" select * from `{$g5['booking_table']}` where bk_id = '$bk_id' ");
+    return $row ? $row : null;
+}
+
+function booking_get_by_no($bk_no)
+{
+    global $g5;
+    $bk_no = sql_real_escape_string($bk_no);
+    $row = sql_fetch(" select * from `{$g5['booking_table']}` where bk_no = '$bk_no' ");
+    return $row ? $row : null;
+}
+
+function booking_get_by_oid($oid)
+{
+    global $g5;
+    $oid = sql_real_escape_string($oid);
+    $row = sql_fetch(" select * from `{$g5['booking_table']}` where bk_oid = '$oid' ");
+    return $row ? $row : null;
+}
+
+// 예약 안내 메일. 발송 실패는 무시한다 (예약 처리 흐름을 막지 않는다)
+function booking_send_mail($bk_id, $kind)
+{
+    global $g5, $config;
+    $titles = array('confirm' => '예약이 확정되었습니다', 'cancel_req' => '예약 취소 요청이 접수되었습니다',
+        'cancelled' => '예약이 취소되었습니다');
+    if (!isset($titles[$kind])) return;
+    $bk = booking_get($bk_id);
+    if (!$bk) return;
+    $bc = booking_config();
+    $br_id = (int)$bk['br_id'];
+    $room = sql_fetch(" select br_subject from `{$g5['booking_room_table']}` where br_id = '$br_id' ");
+    $status = array('hold' => '결제대기', 'confirmed' => '예약확정', 'cancel_req' => '취소요청',
+        'cancelled' => '취소완료', 'expired' => '만료');
+    $subject = '['.$config['cf_title'].'] '.$titles[$kind].' ('.$bk['bk_no'].')';
+    $content = '<p>'.get_text($bk['bk_name']).'님, '.$titles[$kind].'.</p><ul>'
+        .'<li>예약번호: '.get_text($bk['bk_no']).'</li>'
+        .'<li>객실: '.get_text($room ? $room['br_subject'] : '').'</li>'
+        .'<li>기간: '.$bk['bk_checkin'].' ~ '.$bk['bk_checkout'].' ('.count(booking_nights($bk['bk_checkin'], $bk['bk_checkout'])).'박)</li>'
+        .'<li>인원: '.(int)$bk['bk_person'].'명</li>'
+        .'<li>결제금액: '.number_format((int)$bk['bk_total_price']).'원</li>'
+        .'<li>상태: '.(isset($status[$bk['bk_status']]) ? $status[$bk['bk_status']] : $bk['bk_status']).'</li>'
+        .'</ul>';
+    if ($bk['bk_email']) @mailer($config['cf_title'], $config['cf_admin_email'], $bk['bk_email'], $subject, $content, 1);
+    if ($bc['bc_admin_email']) @mailer($config['cf_title'], $config['cf_admin_email'], $bc['bc_admin_email'], $subject, $content, 1);
+}
