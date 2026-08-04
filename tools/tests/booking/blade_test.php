@@ -6,15 +6,22 @@ $_SERVER['SERVER_PORT'] = '80'; $_SERVER['SCRIPT_NAME'] = '/index.php';
 if (file_exists('/run/mysqld/mysqld.sock')) ini_set('mysqli.default_socket', '/run/mysqld/mysqld.sock');
 include_once __DIR__.'/../../../common.php';
 
-// 관리자 뷰 컴파일 스모크 — adm/booking/views 의 모든 .blade.php 를 대표 데이터로 렌더한다.
-// 뷰가 늘면 $samples 에 케이스를 추가한다. 샘플이 없는 뷰는 FAIL 이므로 빠뜨릴 수 없다.
+// 뷰 컴파일 스모크 — 관리자(adm/booking/views)와 프론트(template/standard/booking)의
+// 모든 .blade.php 를 대표 데이터로 렌더한다.
+// 뷰가 늘면 $samples·$front_samples 에 케이스를 추가한다. 샘플이 없는 뷰는 FAIL 이므로 빠뜨릴 수 없다.
 $views_dir = G5_ADMIN_PATH.'/booking/views';
-// 운영 캐시(data/cache/pro/badm)는 웹서버 소유라 CLI 로 못 쓴다. 테스트는 제 캐시를 쓴다 —
+// 운영 캐시(data/cache/pro/*)는 웹서버 소유라 CLI 로 못 쓴다. 테스트는 제 캐시를 쓴다 —
 // 매번 비우고 시작하므로 옛 컴파일 결과가 남아 실패를 가리는 일도 없다.
-$cache_dir = sys_get_temp_dir().'/g5pro_badm_test';
-if (!is_dir($cache_dir)) { @mkdir($cache_dir, 0777, true); }
-foreach (glob($cache_dir.'/*') as $old) @unlink($old);
-if (!is_dir($cache_dir) || !is_writable($cache_dir)) { echo "FAIL: 캐시 디렉터리를 못 만든다 ($cache_dir)\n"; exit(1); }
+function fresh_cache_dir($name)
+{
+    $dir = sys_get_temp_dir().'/'.$name;
+    if (!is_dir($dir)) { @mkdir($dir, 0777, true); }
+    foreach (glob($dir.'/*') as $old) @unlink($old);
+    if (!is_dir($dir) || !is_writable($dir)) { echo "FAIL: 캐시 디렉터리를 못 만든다 ($dir)\n"; exit(1); }
+    return $dir;
+}
+$cache_dir = fresh_cache_dir('g5pro_badm_test');
+$front_cache_dir = fresh_cache_dir('g5pro_bfront_test');
 
 $sample_room = array(
     'br_id' => 3, 'br_subject' => '디럭스 더블', 'br_content' => "바다가 보이는 방\n2층",
@@ -123,40 +130,93 @@ $samples = array(
     ),
 );
 
-$fail = 0;
-$files = glob($views_dir.'/*.blade.php');
-sort($files);
-if (!$files) { echo "FAIL: $views_dir 에 뷰가 없다\n"; $fail++; }
+// ── 프론트 뷰 샘플 — template/standard/booking
+// 뷰 루트는 template/booking 이 아니라 template/standard 다. 프론트 뷰는 layout.default 를
+// 상속하고 partials 를 include 하므로 그 둘이 보이는 자리에서 그려야 운영과 같은 경로가 된다
+// (운영은 g5_pro() 가 같은 루트를 쓴다 — extend/pro.10.extend.php).
+$front_dir  = G5_PATH.'/template/standard/booking';
+$front_root = G5_PATH.'/template/standard';
 
-foreach ($files as $file) {
-    $view = basename($file, '.blade.php');
-    if (!isset($samples[$view])) {
-        echo "FAIL: $view 뷰의 샘플 데이터가 blade_test.php 에 없다\n"; $fail++; continue;
-    }
-    foreach ($samples[$view] as $case => $data) {
-        // MODE_DEBUG — 캐시된 옛 컴파일 결과가 실패를 가리지 않게 매번 다시 컴파일한다
-        $blade = new \eftec\bladeone\BladeOne($views_dir, $cache_dir, \eftec\bladeone\BladeOne::MODE_DEBUG);
-        $notices = array();
-        set_error_handler(function ($no, $msg, $f, $l) use (&$notices) { $notices[] = "$msg ($f:$l)"; return true; });
-        try {
-            $out = $blade->run($view, $data);
-        } catch (\Throwable $e) {
+// 레이아웃이 요구하는 공통 키(site·menu·seo·jsonld …)는 실제 함수에서 받는다.
+// 렌더 밖에서 한 번만 부른다 — 이 함수가 내는 경고까지 뷰 탓으로 세면 안 된다.
+$common = g5_pro_common();
+
+$front_conf = array(
+    'checkin_time' => '15:00', 'checkout_time' => '11:00',
+    'min_nights' => 1, 'max_nights' => 7, 'open_months' => 6,
+    'refund_terms' => "체크인 7일 전까지 전액 환불합니다.\n이후에는 단계별 수수료가 붙습니다.",
+    'cancel_rules' => array(7 => 100, 3 => 50, 1 => 30, 0 => 0),
+);
+$front_js = array(
+    'br_id' => 3, 'ym' => '2026-08', 'limit_ym' => '2027-02', 'today' => '2026-08-04',
+    'min_nights' => 1, 'max_nights' => 7, 'checkin_time' => '15:00', 'checkout_time' => '11:00',
+    'ajax_url' => G5_URL.'/booking/ajax.calendar.php', 'reserve_url' => G5_URL.'/booking/reserve.php',
+);
+
+$front_samples = array(
+    'index' => array(
+        array('rooms' => array(
+            $sample_room + array('image' => G5_DATA_URL.'/booking/aaaa.jpg'),
+            array('br_id' => 4, 'br_subject' => '스탠다드', 'br_base_person' => 2,
+                'br_max_person' => 2, 'br_weekday_price' => 80000, 'image' => ''),  // 이미지 없는 분기
+        )),
+        array('rooms' => array()),   // 빈 목록 분기
+    ),
+    'room' => array(
+        array('room' => $sample_room, 'conf' => $front_conf, 'js' => $front_js,
+            'images' => array(G5_DATA_URL.'/booking/aaaa.jpg', G5_DATA_URL.'/booking/bbbb.png'),
+            'addons' => array(array('ba_id' => 1, 'ba_subject' => '조식 2인', 'ba_price' => 20000))),
+        // 사진·부가상품·취소규정·설명이 하나도 없는 분기
+        array('room' => array('br_content' => '', 'br_person_price' => 0) + $sample_room,
+            'conf' => array('cancel_rules' => array(), 'refund_terms' => '') + $front_conf,
+            'js' => $front_js, 'images' => array(), 'addons' => array()),
+    ),
+);
+
+// 뷰 한 묶음을 대표 데이터로 렌더해 본다. $root 는 BladeOne 뷰 루트,
+// $dir 는 글롭할 디렉터리(루트보다 아래일 수 있다), $prefix 는 그때 붙는 뷰 이름 접두사.
+function blade_smoke($dir, $root, $cache_dir, $samples, $prefix, $extra)
+{
+    $fail = 0;
+    $files = glob($dir.'/*.blade.php');
+    sort($files);
+    if (!$files) { echo "FAIL: $dir 에 뷰가 없다\n"; return 1; }
+
+    foreach ($files as $file) {
+        $view = basename($file, '.blade.php');
+        if (!isset($samples[$view])) {
+            echo "FAIL: {$prefix}{$view} 뷰의 샘플 데이터가 blade_test.php 에 없다\n"; $fail++; continue;
+        }
+        foreach ($samples[$view] as $case => $data) {
+            $name = "{$prefix}{$view}[{$case}]";
+            // MODE_DEBUG — 캐시된 옛 컴파일 결과가 실패를 가리지 않게 매번 다시 컴파일한다
+            $blade = new \eftec\bladeone\BladeOne($root, $cache_dir, \eftec\bladeone\BladeOne::MODE_DEBUG);
+            $notices = array();
+            set_error_handler(function ($no, $msg, $f, $l) use (&$notices) { $notices[] = "$msg ($f:$l)"; return true; });
+            try {
+                $out = $blade->run($prefix.$view, array_merge($extra, $data));
+            } catch (\Throwable $e) {
+                restore_error_handler();
+                echo "FAIL: $name 렌더 예외 — ".get_class($e).': '.$e->getMessage()."\n"; $fail++; continue;
+            }
             restore_error_handler();
-            echo "FAIL: {$view}[{$case}] 렌더 예외 — ".get_class($e).': '.$e->getMessage()."\n"; $fail++; continue;
-        }
-        restore_error_handler();
 
-        if ($notices) { echo "FAIL: {$view}[{$case}] 렌더 중 경고 — ".implode(' | ', $notices)."\n"; $fail++; }
-        if (trim($out) === '') { echo "FAIL: {$view}[{$case}] 출력이 비었다\n"; $fail++; continue; }
-        // 붙어 쓴 디렉티브는 컴파일되지 않고 그대로 새어 나온다 (BladeOne 함정)
-        if (preg_match('/@(if|else|elseif|endif|foreach|endforeach|for|endfor|include|php|endphp|isset|empty|unset|json)\b/', $out, $m)) {
-            echo "FAIL: {$view}[{$case}] 출력에 미컴파일 디렉티브 {$m[0]} 가 남았다\n"; $fail++;
-        }
-        if (strpos($out, '{{') !== false || strpos($out, '{!!') !== false) {
-            echo "FAIL: {$view}[{$case}] 출력에 미컴파일 echo 태그가 남았다\n"; $fail++;
+            if ($notices) { echo "FAIL: $name 렌더 중 경고 — ".implode(' | ', $notices)."\n"; $fail++; }
+            if (trim($out) === '') { echo "FAIL: $name 출력이 비었다\n"; $fail++; continue; }
+            // 붙어 쓴 디렉티브는 컴파일되지 않고 그대로 새어 나온다 (BladeOne 함정)
+            if (preg_match('/@(if|else|elseif|endif|foreach|endforeach|for|endfor|include|php|endphp|isset|empty|unset|json)\b/', $out, $m)) {
+                echo "FAIL: $name 출력에 미컴파일 디렉티브 {$m[0]} 가 남았다\n"; $fail++;
+            }
+            if (strpos($out, '{{') !== false || strpos($out, '{!!') !== false) {
+                echo "FAIL: $name 출력에 미컴파일 echo 태그가 남았다\n"; $fail++;
+            }
         }
     }
+    return $fail;
 }
+
+$fail  = blade_smoke($views_dir, $views_dir, $cache_dir, $samples, '', array());
+$fail += blade_smoke($front_dir, $front_root, $front_cache_dir, $front_samples, 'booking.', $common);
 
 echo $fail ? "blade_test: $fail FAIL\n" : "blade_test: OK\n";
 exit($fail ? 1 : 0);

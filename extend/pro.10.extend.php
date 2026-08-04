@@ -64,7 +64,16 @@ function g5_pro()
 {
     static $blade = null;
     if ($blade === null) {
-        $views = G5_PATH.'/template/'.G5_TEMPLATE;
+        // 뷰는 현재 템플릿에서 먼저 찾고, 없으면 template/standard 로 떨어진다.
+        // BladeOne 은 생성자 $templatePath 에 배열을 받으면 적힌 순서대로 훑는다
+        // (BladeOne.php:271 배열 정규화, locateTemplate():1512 순차 탐색).
+        //
+        // 있어야 하는 이유: 예약처럼 나중에 붙는 화면을 standard 에만 만들어도
+        // 모든 템플릿에서 뜬다. 없으면 화면 하나 늘 때마다 템플릿 수만큼 파일을 복사해야 하고,
+        // 복사를 빠뜨린 템플릿은 "뷰가 없다" 예외로 죽는다.
+        // 폴백으로 그려지는 뷰는 그 템플릿의 style.css 를 기대할 수 없으므로
+        // 제 스타일을 @section('head') 에 지고 다닌다 (booking/*.blade.php 참고).
+        $views = array(G5_PATH.'/template/'.G5_TEMPLATE, G5_PATH.'/template/standard');
         $cache = G5_DATA_PATH.'/cache/pro/'.G5_TEMPLATE;
         if (!is_dir($cache)) {
             @mkdir($cache, G5_DIR_PERMISSION, true);
