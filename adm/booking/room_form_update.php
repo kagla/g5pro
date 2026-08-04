@@ -96,24 +96,55 @@ foreach ($bi_del as $bi_id => $on) {
     sql_query(" delete from `{$g5['booking_room_image_table']}` where bi_id = '$bi_id' ", true);
 }
 
+// 실패한 파일은 사유와 함께 모아 마지막에 알린다 — 조용히 버리면 관리자가 왜 안 올라갔는지 알 수 없다
+$upload_fail = array();
+
+$has_upload = false;
 if (isset($_FILES['bi_files']) && isset($_FILES['bi_files']['name']) && is_array($_FILES['bi_files']['name'])) {
-    if (!is_dir($image_dir)) { @mkdir($image_dir, G5_DIR_PERMISSION, true); @chmod($image_dir, G5_DIR_PERMISSION); }
+    // 파일칸을 비워 둬도 UPLOAD_ERR_NO_FILE 항목이 하나 오므로, 실제로 고른 파일이 있을 때만 디렉터리를 손댄다
+    foreach ($_FILES['bi_files']['error'] as $err) { if ($err !== UPLOAD_ERR_NO_FILE) { $has_upload = true; break; } }
+}
+
+if ($has_upload) {
+    if (!is_dir($image_dir)) {
+        @mkdir($image_dir, G5_DIR_PERMISSION, true);
+        @chmod($image_dir, G5_DIR_PERMISSION);
+    }
+    if (!is_dir($image_dir) || !is_writable($image_dir)) {
+        alert('업로드 디렉터리를 만들 수 없습니다. '.$image_dir.' 의 권한을 확인하십시오. (객실 정보는 저장되었습니다)', './room_list.php');
+    }
 
     $row = sql_fetch(" select max(bi_order) as mx from `{$g5['booking_room_image_table']}` where br_id = '$br_id' ");
     $next_order = (int)$row['mx'] + 1;
 
     foreach (array_keys($_FILES['bi_files']['name']) as $i) {
-        if ($_FILES['bi_files']['error'][$i] !== UPLOAD_ERR_OK) continue;
+        // 파일명은 사유 안내용으로만 쓴다 — 저장에는 쓰지 않는다
+        $name = basename((string)$_FILES['bi_files']['name'][$i]);
+        $name = preg_replace('/[^0-9A-Za-z가-힣 ._\-]/u', '', $name);
+        $name = ($name === '') ? '(이름 없음)' : mb_substr($name, 0, 40);
+
+        $error = $_FILES['bi_files']['error'][$i];
+        if ($error === UPLOAD_ERR_NO_FILE) continue;   // 빈 파일칸 — 실패가 아니다
+        if ($error !== UPLOAD_ERR_OK) {
+            $upload_fail[] = ($error === UPLOAD_ERR_INI_SIZE || $error === UPLOAD_ERR_FORM_SIZE)
+                ? "$name (용량 초과)" : "$name (전송 오류 $error)";
+            continue;
+        }
+
         $tmp = $_FILES['bi_files']['tmp_name'][$i];
-        if (!is_uploaded_file($tmp)) continue;
+        if (!is_uploaded_file($tmp)) { $upload_fail[] = "$name (업로드된 파일이 아님)"; continue; }
 
         // 원본 파일명은 믿지 않는다 — 확장자만 화이트리스트로 받고, 실제 이미지인지 한 번 더 확인한다
         $ext = strtolower((string)pathinfo($_FILES['bi_files']['name'][$i], PATHINFO_EXTENSION));
-        if (!in_array($ext, $allow_ext, true)) continue;
-        if (!@getimagesize($tmp)) continue;
+        if (!in_array($ext, $allow_ext, true)) {
+            $upload_fail[] = "$name (허용하지 않는 확장자 — ".implode(', ', $allow_ext).' 만 가능)'; continue;
+        }
+        if (!@getimagesize($tmp)) { $upload_fail[] = "$name (이미지 파일이 아님)"; continue; }
 
         $file = md5(uniqid(mt_rand(), true)).'.'.$ext;
-        if (!@move_uploaded_file($tmp, $image_dir.'/'.$file)) continue;
+        if (!@move_uploaded_file($tmp, $image_dir.'/'.$file)) {
+            $upload_fail[] = "$name (저장 실패 — 디렉터리 권한 확인)"; continue;
+        }
         @chmod($image_dir.'/'.$file, G5_FILE_PERMISSION);
 
         sql_query(" insert into `{$g5['booking_room_image_table']}` set br_id = '$br_id',
@@ -132,6 +163,11 @@ if ($bi_main && sql_fetch(" select bi_id from `{$g5['booking_room_image_table']}
         where br_id = '$br_id' order by bi_order, bi_id limit 1 ");
     if ($row) sql_query(" update `{$g5['booking_room_image_table']}` set bi_main = 1
         where bi_id = '{$row['bi_id']}' ", true);
+}
+
+// 성공한 파일은 이미 저장됐다 — 실패분만 사유와 함께 알리고 목록으로 보낸다
+if ($upload_fail) {
+    alert(count($upload_fail).'건의 이미지를 올리지 못했습니다.\\n\\n'.implode('\\n', $upload_fail), './room_list.php');
 }
 
 goto_url('./room_list.php');
