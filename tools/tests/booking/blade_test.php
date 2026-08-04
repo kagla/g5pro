@@ -29,6 +29,46 @@ $empty_room = array(
     'br_use' => 1, 'br_order' => 0, 'br_datetime' => '',
 );
 
+// 캘린더 한 달치 샘플 — 한 칸씩 손으로 적는 대신 만들고, 특이 케이스만 몇 날에 심는다
+// (15일=요금 지정, 20일=실수 0 인데 예약 1 → 초과, 21일=실수 1 에 예약 3 → 초과)
+function sample_cal_days($ym, $last_day)
+{
+    $days = array();
+    for ($d = 1; $d <= $last_day; $d++) {
+        $date = $ym.'-'.sprintf('%02d', $d);
+        $w = (int)date('w', strtotime($date));
+        $sellable = ($d == 20) ? 0 : (($d == 21) ? 1 : 5);
+        $booked = ($d == 21) ? 3 : 1;
+        $days[] = array(
+            'date' => $date, 'day' => $d, 'w' => $w,
+            'price' => ($d == 15) ? 250000 : (($w === 5 || $w === 6) ? 180000 : 120000),
+            'price_override' => ($d == 15),
+            'sellable' => $sellable, 'count_override' => ($d == 20 || $d == 21),
+            'booked' => $booked, 'remain' => $sellable - $booked,
+            'oversold' => ($booked > $sellable),
+        );
+    }
+    return $days;
+}
+
+function sample_cal_case($ym, $room)
+{
+    $last_day = (int)date('t', strtotime($ym.'-01'));
+    $lead = (int)date('w', strtotime($ym.'-01'));
+    return array(
+        'admin_url' => G5_ADMIN_URL,
+        'rooms' => $room ? array($room) : array(),
+        'room' => $room,
+        'ym' => $ym,
+        'days' => $room ? sample_cal_days($ym, $last_day) : array(),
+        'lead_blank' => $room ? $lead : 0,
+        'tail_blank' => $room ? ((7 - ($lead + $last_day) % 7) % 7) : 0,
+        'first_date' => $ym.'-01', 'last_date' => $ym.'-'.sprintf('%02d', $last_day),
+        'prev_ym' => date('Y-m', strtotime($ym.'-01 -1 month')),
+        'next_ym' => date('Y-m', strtotime($ym.'-01 +1 month')),
+    );
+}
+
 // 뷰 이름 => 케이스 목록(각 케이스는 run() 에 넘길 데이터 배열)
 $samples = array(
     'room_list' => array(
@@ -57,6 +97,11 @@ $samples = array(
                 array('bi_id' => 11, 'br_id' => 3, 'bi_file' => 'aaaa.jpg', 'bi_order' => 0, 'bi_main' => 1),
                 array('bi_id' => 12, 'br_id' => 3, 'bi_file' => 'bbbb.png', 'bi_order' => 1, 'bi_main' => 0),
             )),
+    ),
+    'calendar' => array(
+        sample_cal_case('2026-08', $sample_room),   // 토요일 시작 — 앞칸 6개
+        sample_cal_case('2026-02', $sample_room),   // 일요일 시작·28일 — 앞뒤 빈칸 0개
+        sample_cal_case('2026-08', null),           // 객실이 하나도 없는 분기
     ),
 );
 
