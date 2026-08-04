@@ -28,7 +28,7 @@
                 <a href="{{ $admin_url }}/booking/room_form.php?w=u&amp;br_id={{ $r['br_id'] }}" class="btn btn_03">수정</a>
                 {{-- 숨김 객실은 room.php 가 열어 주지 않으므로 링크를 내지 않는다 --}}
                 @if ($r['br_use'])
-                <a href="{{ $g5_url }}/booking/room.php?br_id={{ $r['br_id'] }}" class="btn btn_02" target="_blank">사용자 보기</a>
+                <a href="{{ $g5_url }}/booking/room.php?br_id={{ $r['br_id'] }}" class="btn btn_02" target="_blank">보기</a>
                 @endif
             </td>
         </tr>
