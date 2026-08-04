@@ -91,6 +91,58 @@
 </div>
 @endif
 
+<style>
+.bra_wrap { display:flex; gap:12px; margin:15px 0 }
+.bra_col { flex:1; min-width:0; border:1px solid #d0d3db; border-radius:4px; background:#fff }
+.bra_col h3 { margin:0; padding:8px 12px; border-bottom:1px solid #e6e8ee; background:#f5f6fa; font-size:1em }
+.bra_col h3 .bra_hint { font-weight:normal; color:#888; font-size:0.9em }
+.bra_list { list-style:none; margin:0; padding:6px; min-height:120px }
+.bra_list li { display:flex; align-items:center; gap:8px; margin:4px 0; padding:6px 10px;
+    border:1px solid #dfe2ea; border-radius:4px; background:#fafbfd; cursor:grab }
+.bra_list li.bra_dragging { opacity:0.4 }
+.bra_list li .bra_name { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.bra_list li .bra_price { color:#777; font-size:0.92em }
+.bra_list li .bra_hidden { color:#b35c00; font-size:0.88em }
+.bra_list li button { flex:none }
+.bra_list:empty { display:flex; align-items:center; justify-content:center }
+.bra_list:empty::after { content:attr(data-empty); color:#aaa; font-size:0.92em }
+</style>
+
+<div class="local_desc02 local_desc">
+    <p>이 객실에서 판매할 <strong>부가상품</strong>을 고릅니다. 끌어다 놓거나 담기/빼기 버튼을 누르십시오.
+        오른쪽 목록의 위에서부터 노출되며, 순서도 끌어서 바꿀 수 있습니다. 저장은 아래 확인 버튼으로 함께 됩니다.</p>
+</div>
+
+<div class="bra_wrap">
+    <div class="bra_col">
+        <h3>전체 부가상품 <span class="bra_hint">— 아직 안 담긴 상품</span></h3>
+        <ul id="bra_pool" class="bra_list" data-empty="담을 수 있는 상품이 없습니다">
+            @foreach ($addon_pool as $a)
+        <li draggable="true" data-id="{{ $a['ba_id'] }}"><span class="bra_name">{{ $a['ba_subject'] }}</span>
+            @if (!$a['ba_use'])
+            <span class="bra_hidden">(숨김)</span>
+            @endif
+            <span class="bra_price">{{ number_format($a['ba_price']) }}원</span>
+            <button type="button" class="btn btn_02">담기</button></li>
+            @endforeach
+        </ul>
+    </div>
+    <div class="bra_col">
+        <h3>이 객실 부가상품 <span class="bra_hint">— 위에서부터 노출 순</span></h3>
+        <ul id="bra_sel" class="bra_list" data-empty="여기로 끌어다 놓으세요">
+            @foreach ($addon_sel as $a)
+        <li draggable="true" data-id="{{ $a['ba_id'] }}"><span class="bra_name">{{ $a['ba_subject'] }}</span>
+            @if (!$a['ba_use'])
+            <span class="bra_hidden">(숨김)</span>
+            @endif
+            <span class="bra_price">{{ number_format($a['ba_price']) }}원</span>
+            <button type="button" class="btn btn_02">빼기</button></li>
+            @endforeach
+        </ul>
+    </div>
+</div>
+<input type="hidden" name="addon_ids" id="addon_ids" value="{{ implode(',', array_column($addon_sel, 'ba_id')) }}">
+
 <div class="btn_confirm01 btn_confirm">
     <a href="./room_list.php" class="btn btn_02">목록</a>
     <input type="submit" value="확인" class="btn_submit btn">
@@ -100,6 +152,74 @@
     @endif
 </div>
 </form>
+
+<script>
+(function() {
+    var pool = document.getElementById("bra_pool"),
+        sel = document.getElementById("bra_sel"),
+        hidden = document.getElementById("addon_ids"),
+        lists = [pool, sel],
+        dragging = null;
+
+    // 제출값과 버튼 라벨은 늘 "지금 어느 목록에 있나"에서 다시 계산한다 —
+    // 이동 경로(드래그였나 버튼이었나)마다 따로 맞추면 하나는 반드시 어긋난다
+    function sync() {
+        var ids = [];
+        Array.prototype.forEach.call(sel.children, function(li) { ids.push(li.dataset.id); });
+        hidden.value = ids.join(",");
+        lists.forEach(function(list) {
+            Array.prototype.forEach.call(list.children, function(li) {
+                li.querySelector("button").textContent = (list === sel) ? "빼기" : "담기";
+            });
+        });
+    }
+
+    // 세로 좌표로 끼워 넣을 자리를 찾는다 — 커서보다 아래에 있는 첫 항목 앞
+    function afterAt(list, y) {
+        var items = list.querySelectorAll("li:not(.bra_dragging)");
+        for (var i = 0; i < items.length; i++) {
+            var box = items[i].getBoundingClientRect();
+            if (y < box.top + box.height / 2) return items[i];
+        }
+        return null;
+    }
+
+    document.querySelector(".bra_wrap").addEventListener("dragstart", function(e) {
+        var li = e.target.closest ? e.target.closest("li") : null;
+        if (!li) return;
+        dragging = li;
+        li.classList.add("bra_dragging");
+        e.dataTransfer.effectAllowed = "move";
+        // Firefox 는 데이터가 있어야 드래그가 시작된다
+        e.dataTransfer.setData("text/plain", li.dataset.id);
+    });
+    document.querySelector(".bra_wrap").addEventListener("dragend", function() {
+        if (dragging) dragging.classList.remove("bra_dragging");
+        dragging = null;
+        sync();
+    });
+
+    lists.forEach(function(list) {
+        list.addEventListener("dragover", function(e) {
+            if (!dragging) return;
+            e.preventDefault();
+            var after = afterAt(list, e.clientY);
+            if (after) list.insertBefore(dragging, after);
+            else list.appendChild(dragging);
+        });
+        list.addEventListener("drop", function(e) { e.preventDefault(); sync(); });
+        // 터치·키보드용 — 버튼 하나로 반대쪽 목록 맨 아래로 옮긴다
+        list.addEventListener("click", function(e) {
+            if (e.target.tagName !== "BUTTON") return;
+            var li = e.target.closest("li");
+            ((list === sel) ? pool : sel).appendChild(li);
+            sync();
+        });
+    });
+
+    sync();
+})();
+</script>
 
 @if ($w == 'u')
 <script>

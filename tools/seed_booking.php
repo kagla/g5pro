@@ -152,6 +152,7 @@ function seed_wipe()
         sql_query(" delete from `{$g5['booking_room_image_table']}` where br_id in ($in) ", true);
         $stat['image'] = get_sql_affected_rows();
 
+        sql_query(" delete from `{$g5['booking_room_addon_table']}` where br_id in ($in) ", true);
         sql_query(" delete from `{$g5['booking_room_table']}` where br_id in ($in) ", true);
         $stat['room'] = get_sql_affected_rows();
     }
@@ -329,7 +330,17 @@ foreach ($SEED_ADDONS as $i => $a) {
         ba_use = 1, ba_order = '".(SEED_ADDON_ORDER + $i + 1)."' ", true);
     $addon_ids[] = sql_insert_id();
 }
-echo "부가상품 ".count($addon_ids)."개 등록\n";
+
+// 상품은 담긴 객실에서만 팔린다 — 시드에서는 전 객실에 전 상품을 담는다
+$map_cnt = 0;
+foreach (array_keys($rooms) as $br_id) {
+    foreach ($addon_ids as $i => $ba_id) {
+        sql_query(" insert ignore into `{$g5['booking_room_addon_table']}` set
+            br_id = '$br_id', ba_id = '$ba_id', bra_order = '$i' ", true);
+        $map_cnt++;
+    }
+}
+echo "부가상품 ".count($addon_ids)."개 등록 (객실 매핑 {$map_cnt}건)\n";
 
 /* ================================================================== 4. 캘린더 오버라이드 */
 

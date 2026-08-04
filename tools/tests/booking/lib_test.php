@@ -23,6 +23,10 @@ function chk($cond, $msg)
 function lib_test_cleanup()
 {
     global $g5, $test_subject, $test_addon;
+    // 매핑은 상품 행이 살아 있는 동안 조인으로 지운다 (상품을 먼저 지우면 고아 행이 남는다)
+    sql_query(" delete m from `{$g5['booking_room_addon_table']}` m
+        inner join `{$g5['booking_addon_table']}` a on a.ba_id = m.ba_id
+        where a.ba_subject = '".sql_real_escape_string($test_addon)."' ", false);
     sql_query(" delete from `{$g5['booking_addon_table']}`
         where ba_subject = '".sql_real_escape_string($test_addon)."' ", false);
     $sub = sql_real_escape_string($test_subject);
@@ -37,6 +41,7 @@ function lib_test_cleanup()
         }
         sql_query(" delete from `{$g5['booking_table']}` where br_id = '$br_id' ", false);
         sql_query(" delete from `{$g5['booking_calendar_table']}` where br_id = '$br_id' ", false);
+        sql_query(" delete from `{$g5['booking_room_addon_table']}` where br_id = '$br_id' ", false);
         sql_query(" delete from `{$g5['booking_room_table']}` where br_id = '$br_id' ", false);
     }
 }
@@ -151,6 +156,13 @@ sql_query(" insert into `{$g5['booking_addon_table']}` set
     ba_subject = '".sql_real_escape_string($test_addon)."', ba_price = 30000,
     ba_max_qty = 2, ba_use = 1, ba_order = 0 ", true);
 $ba_id = sql_insert_id();
+
+// 객실에 담기 전에는 요금 계산이 상품을 무시해야 한다 (매핑이 최종 방어선)
+$unmapped = booking_calc_price($room, $a_in, $a_out, 2, array($ba_id => 1));
+chk($unmapped['addon'] === 0, '객실에 안 담긴 부가상품이 요금에 들어감');
+
+sql_query(" insert into `{$g5['booking_room_addon_table']}` set
+    br_id = '$br_id', ba_id = '$ba_id', bra_order = 0 ", true);
 $ap = booking_calc_price($room, $a_in, $a_out, 2, array($ba_id => 5));
 chk(count($ap['addon_items']) === 1, '부가상품 항목이 1건이 아님');
 chk($ap['addon_items'][0]['qty'] === 2, '부가상품 수량이 최대 2 로 잘리지 않음');

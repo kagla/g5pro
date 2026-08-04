@@ -27,10 +27,8 @@ foreach ($nights as $date) {
         alert($date.' 은(는) 예약이 마감되었습니다.', $room_url);
 }
 
-$addons = array();
-$result = sql_query(" select ba_id, ba_subject, ba_price, ba_max_qty
-    from `{$g5['booking_addon_table']}` where ba_use = 1 order by ba_order, ba_id ");
-while ($r = sql_fetch_array($result)) $addons[] = $r;
+// 이 객실에 담긴 상품만. 최종 방어는 booking_calc_price() 의 매핑 조건이다
+$addons = booking_room_addons($br_id);
 
 // 기준 인원·부가상품 0개일 때의 금액. 인원·수량을 바꾸면 화면 JS 가 같은 식으로 다시 센다.
 // 제출 뒤 실제 청구액은 booking_create_hold() 안의 booking_calc_price() 가 다시 계산한 값이다

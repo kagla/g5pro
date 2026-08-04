@@ -15,10 +15,8 @@ $result = sql_query(" select bi_file from `{$g5['booking_room_image_table']}`
     where br_id = '$br_id' order by bi_main desc, bi_order, bi_id ");
 while ($r = sql_fetch_array($result)) $images[] = booking_image_url($r['bi_file']);
 
-$addons = array();
-$result = sql_query(" select ba_id, ba_subject, ba_price from `{$g5['booking_addon_table']}`
-    where ba_use = 1 order by ba_order, ba_id ");
-while ($r = sql_fetch_array($result)) $addons[] = $r;
+// 이 객실에 담긴 상품만 — 예약 폼·요금 계산과 같은 기준(booking_room_addons)
+$addons = booking_room_addons($br_id);
 
 // 설정은 화면에 쓰는 값만 골라 넘긴다. booking_config() 가 돌려주는 행에는
 // 이니시스 상점키·API 키가 들어 있어 통째로 뷰에 넘기면 안 된다.

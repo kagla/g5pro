@@ -125,13 +125,30 @@ $samples = array(
         array('admin_url' => G5_ADMIN_URL, 'addons' => array()),   // 빈 목록 분기
     ),
     'room_form' => array(
+        // 새 객실 — 담긴 상품 없음, 숨김 상품이 왼쪽 목록에 표시되는 분기
         array('w' => '', 'admin_url' => G5_ADMIN_URL,
-            'room' => $empty_room, 'images' => array(), 'booking_cnt' => 0),
+            'room' => $empty_room, 'images' => array(), 'booking_cnt' => 0,
+            'addon_pool' => array(
+                array('ba_id' => 1, 'ba_subject' => '조식 2인', 'ba_price' => 20000, 'ba_use' => 1),
+                array('ba_id' => 2, 'ba_subject' => '바비큐 세트', 'ba_price' => 50000, 'ba_use' => 0),
+            ),
+            'addon_sel' => array()),
+        // 수정 — 양쪽에 상품이 있는 분기
         array('w' => 'u', 'admin_url' => G5_ADMIN_URL,
             'room' => $sample_room, 'booking_cnt' => 4, 'images' => array(
                 array('bi_id' => 11, 'br_id' => 3, 'bi_file' => 'aaaa.jpg', 'bi_order' => 0, 'bi_main' => 1),
                 array('bi_id' => 12, 'br_id' => 3, 'bi_file' => 'bbbb.png', 'bi_order' => 1, 'bi_main' => 0),
+            ),
+            'addon_pool' => array(
+                array('ba_id' => 2, 'ba_subject' => '바비큐 세트', 'ba_price' => 50000, 'ba_use' => 1),
+            ),
+            'addon_sel' => array(
+                array('ba_id' => 1, 'ba_subject' => '조식 2인', 'ba_price' => 20000, 'ba_use' => 1),
             )),
+        // 상품이 하나도 없는 설치 — 두 목록 다 비는 분기
+        array('w' => '', 'admin_url' => G5_ADMIN_URL,
+            'room' => $empty_room, 'images' => array(), 'booking_cnt' => 0,
+            'addon_pool' => array(), 'addon_sel' => array()),
     ),
     'config_form' => array(
         array('admin_url' => G5_ADMIN_URL, 'bc' => $sample_config),                       // 테스트 결제 켠 상태

@@ -25,8 +25,8 @@ if (!is_array($again) || $again['created'] !== false) {
 }
 
 $keys = array('booking_table','booking_room_table','booking_room_image_table','booking_calendar_table',
-    'booking_addon_table','booking_addon_item_table','booking_note_table','booking_config_table',
-    'booking_inicis_log_table');
+    'booking_addon_table','booking_addon_item_table','booking_room_addon_table','booking_note_table',
+    'booking_config_table','booking_inicis_log_table');
 foreach ($keys as $key) {
     if (!isset($g5[$key])) { echo "FAIL: \$g5['$key'] 상수 없음\n"; $fail++; continue; }
     if (!sql_query(" DESC `{$g5[$key]}` ", false)) { echo "FAIL: {$g5[$key]} 테이블 없음\n"; $fail++; continue; }

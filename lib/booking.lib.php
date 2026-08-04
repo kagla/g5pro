@@ -12,6 +12,7 @@ function booking_table_defaults()
         'booking_calendar_table'   => 'booking_calendar',
         'booking_addon_table'      => 'booking_addon',
         'booking_addon_item_table' => 'booking_addon_item',
+        'booking_room_addon_table' => 'booking_room_addon',
         'booking_note_table'       => 'booking_note',
         'booking_config_table'     => 'booking_config',
         'booking_inicis_log_table' => 'booking_inicis_log',
@@ -25,8 +26,19 @@ booking_table_defaults();
 // 모듈 자체 설치/업그레이드 — 순정 설치·dbupgrade 와 무관하게 멱등 실행
 function booking_install()
 {
+    global $g5;
+    // 객실↔상품 매핑 테이블이 없던 설치인지 만들기 전에 기억해 둔다
+    $had_room_addon = (bool)sql_query(" DESC `{$g5['booking_room_addon_table']}` ", false);
     $created = booking_create_tables();
     // 향후 스키마 변경은 여기 누적한다: SHOW COLUMNS 판정 후 ALTER TABLE
+
+    // 상품이 전역이던 시절의 설치라면 현재 상품 전부를 전 객실에 매핑해
+    // 화면 노출을 그대로 유지한다. 새 설치는 두 테이블이 비어 있어 아무 것도 넣지 않는다
+    if (!$had_room_addon) {
+        sql_query(" insert into `{$g5['booking_room_addon_table']}` (br_id, ba_id, bra_order)
+            select r.br_id, a.ba_id, a.ba_order
+            from `{$g5['booking_room_table']}` r, `{$g5['booking_addon_table']}` a ", true);
+    }
     return array('created' => $created);
 }
 
@@ -92,6 +104,13 @@ function booking_table_ddl()
         `ba_use` tinyint(4) NOT NULL DEFAULT '1',
         `ba_order` int(11) NOT NULL DEFAULT '0',
         PRIMARY KEY (`ba_id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
+    // 객실↔부가상품 매핑. 매핑 없음 = 그 객실엔 부가상품 없음 (명시적 연결)
+    'booking_room_addon_table' => " CREATE TABLE IF NOT EXISTS `{$g5['booking_room_addon_table']}` (
+        `br_id` int(11) NOT NULL DEFAULT '0',
+        `ba_id` int(11) NOT NULL DEFAULT '0',
+        `bra_order` int(11) NOT NULL DEFAULT '0',
+        PRIMARY KEY (`br_id`, `ba_id`), KEY `ba_id` (`ba_id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
     'booking_addon_item_table' => " CREATE TABLE IF NOT EXISTS `{$g5['booking_addon_item_table']}` (
         `bt_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -290,6 +309,21 @@ function booking_new_no()
     return strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 10));
 }
 
+// 객실에 매핑된 노출 부가상품 목록. 객실 화면과 예약 폼이 같은 목록을 본다
+function booking_room_addons($br_id)
+{
+    global $g5;
+    $br_id = (int)$br_id;
+    $list = array();
+    $result = sql_query(" select a.ba_id, a.ba_subject, a.ba_price, a.ba_max_qty
+        from `{$g5['booking_addon_table']}` a
+        inner join `{$g5['booking_room_addon_table']}` m on m.ba_id = a.ba_id
+        where m.br_id = '$br_id' and a.ba_use = 1
+        order by m.bra_order, a.ba_order, a.ba_id ");
+    while ($r = sql_fetch_array($result)) $list[] = $r;
+    return $list;
+}
+
 // 객실료 + 인원추가 + 부가상품. $addons 는 array(ba_id => qty)
 function booking_calc_price($room, $checkin, $checkout, $person, $addons)
 {
@@ -304,7 +338,12 @@ function booking_calc_price($room, $checkin, $checkout, $person, $addons)
         foreach ($addons as $ba_id => $qty) {
             $ba_id = (int)$ba_id; $qty = (int)$qty;
             if ($qty < 1) continue;
-            $ba = sql_fetch(" select * from `{$g5['booking_addon_table']}` where ba_id = '$ba_id' and ba_use = 1 ");
+            // 이 객실에 매핑된 상품만 인정한다 — 화면은 매핑된 것만 보여 주지만,
+            // 최종 방어는 여기다 (URL 조작으로 안 붙은 상품을 담아 보내는 경우)
+            $ba = sql_fetch(" select a.* from `{$g5['booking_addon_table']}` a
+                inner join `{$g5['booking_room_addon_table']}` m
+                    on m.ba_id = a.ba_id and m.br_id = '".(int)$room['br_id']."'
+                where a.ba_id = '$ba_id' and a.ba_use = 1 ");
             if (!$ba) continue;
             $qty = min($qty, (int)$ba['ba_max_qty']);
             $amount = (int)$ba['ba_price'] * $qty;

@@ -34,6 +34,7 @@ if ($act == 'delete') {
     }
     sql_query(" delete from `{$g5['booking_room_image_table']}` where br_id = '$br_id' ", true);
     sql_query(" delete from `{$g5['booking_calendar_table']}` where br_id = '$br_id' ", true);
+    sql_query(" delete from `{$g5['booking_room_addon_table']}` where br_id = '$br_id' ", true);
     sql_query(" delete from `{$g5['booking_room_table']}` where br_id = '$br_id' ", true);
 
     goto_url('./room_list.php');
@@ -73,6 +74,22 @@ if ($w == '') {
         alert('등록된 객실이 아닙니다.', './room_list.php');
     }
     sql_query(" update `{$g5['booking_room_table']}` set $sql_common where br_id = '$br_id' ", true);
+}
+
+// ---------------------------------------------------------------- 부가상품 매핑
+// 폼 오른쪽 목록의 순서 그대로 온 콤마 목록. 지웠다 다시 넣는다 — 행이 몇 개 안 돼 단순함이 이긴다
+$addon_ids = (isset($_POST['addon_ids']) && !is_array($_POST['addon_ids'])) ? (string)$_POST['addon_ids'] : '';
+sql_query(" delete from `{$g5['booking_room_addon_table']}` where br_id = '$br_id' ", true);
+$bra_order = 0;
+$seen = array();
+foreach (explode(',', $addon_ids) as $val) {
+    $ba_id = (int)trim($val);
+    if ($ba_id < 1 || isset($seen[$ba_id])) continue;
+    $seen[$ba_id] = true;
+    // 지워진 상품 id 가 폼에 남아 있었을 수 있다 — 실재하는 상품만 넣는다
+    if (!sql_fetch(" select ba_id from `{$g5['booking_addon_table']}` where ba_id = '$ba_id' ")) continue;
+    sql_query(" insert into `{$g5['booking_room_addon_table']}` set
+        br_id = '$br_id', ba_id = '$ba_id', bra_order = '".($bra_order++)."' ", true);
 }
 
 // ---------------------------------------------------------------- 이미지

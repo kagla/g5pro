@@ -79,6 +79,10 @@ $test_addon   = '__parity_test_addon__';
 function parity_test_cleanup()
 {
     global $g5, $test_subject, $test_addon;
+    // 매핑은 상품 행이 살아 있는 동안 조인으로 지운다 (상품을 먼저 지우면 고아 행이 남는다)
+    sql_query(" delete m from `{$g5['booking_room_addon_table']}` m
+        inner join `{$g5['booking_addon_table']}` a on a.ba_id = m.ba_id
+        where a.ba_subject = '".sql_real_escape_string($test_addon)."' ", false);
     sql_query(" delete from `{$g5['booking_addon_table']}`
         where ba_subject = '".sql_real_escape_string($test_addon)."' ", false);
     sql_query(" delete from `{$g5['booking_room_table']}`
@@ -101,6 +105,10 @@ sql_query(" insert into `{$g5['booking_addon_table']}` set
     ba_price = 30000, ba_max_qty = 4, ba_use = 1, ba_order = 0 ", true);
 $ba_id = sql_insert_id();
 $ba_price = 30000;
+
+// booking_calc_price 가 매핑된 상품만 인정하므로 테스트 객실에 담아 둔다
+sql_query(" insert into `{$g5['booking_room_addon_table']}` set
+    br_id = '$br_id', ba_id = '$ba_id', bra_order = 0 ", true);
 
 // 요일이 아니라 요금 구간을 보므로 상대 날짜를 쓴다 (시간이 지나도 스위트가 안 깨진다)
 $mon = strtotime('next monday', strtotime('+30 day', G5_SERVER_TIME));

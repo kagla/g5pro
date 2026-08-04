@@ -48,6 +48,7 @@ foreach ($rows as $r) {
     if ($r['act'] == 'delete') {
         // 예약에 담긴 부가상품은 booking_addon_item 에 스냅샷으로 남으므로 지워도 지난 예약이 상하지 않는다
         sql_query(" delete from `{$g5['booking_addon_table']}` where ba_id = '{$r['ba_id']}' ", true);
+        sql_query(" delete from `{$g5['booking_room_addon_table']}` where ba_id = '{$r['ba_id']}' ", true);
         continue;
     }
 
@@ -61,6 +62,19 @@ foreach ($rows as $r) {
         sql_query(" update `{$g5['booking_addon_table']}` set $sql_common where ba_id = '{$r['ba_id']}' ", true);
     } else {
         sql_query(" insert into `{$g5['booking_addon_table']}` set $sql_common ", true);
+    }
+}
+
+// "전 객실에 추가" 버튼 — 위 저장을 마친 뒤 그 상품을 모든 객실에 매핑한다.
+// insert ignore 라 이미 붙은 객실의 순서는 그대로다. 필요 없는 객실에서는 객실 수정에서 빼면 된다
+$attach_all = (isset($_POST['attach_all']) && !is_array($_POST['attach_all'])) ? (int)$_POST['attach_all'] : 0;
+if ($attach_all) {
+    $ba = sql_fetch(" select ba_subject, ba_order from `{$g5['booking_addon_table']}` where ba_id = '$attach_all' ");
+    if ($ba) {
+        sql_query(" insert ignore into `{$g5['booking_room_addon_table']}` (br_id, ba_id, bra_order)
+            select br_id, '$attach_all', '".(int)$ba['ba_order']."' from `{$g5['booking_room_table']}` ", true);
+        $row = sql_fetch(" select count(*) as cnt from `{$g5['booking_room_addon_table']}` where ba_id = '$attach_all' ");
+        alert('저장했습니다. 이 상품은 이제 객실 '.(int)$row['cnt'].'곳에 담겨 있습니다.', './addon_list.php');
     }
 }
 
