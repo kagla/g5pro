@@ -1,8 +1,9 @@
 <?php
 include_once('./_common.php');
 
-// 순정 get_token()/check_token() 짝. 실패하면 check_token() 안에서 alert() 로 끝난다
-if (!check_token()) alert('올바른 방법으로 이용해 주십시오.');
+// 순정 get_token()/check_token() 짝. 실패하면 check_token() 이 제 안에서 alert() 로 끝내므로
+// 반환값을 볼 필요가 없다 (바깥에 alert 을 덧대면 도달하지 않는 죽은 줄이 된다)
+check_token();
 
 // 배열로 온 값은 통째로 버린다 (reserve.php 와 같은 방어)
 function booking_post($key)
