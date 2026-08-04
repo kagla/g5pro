@@ -106,13 +106,14 @@ $sample_addon_items = array(
 // 뷰 이름 => 케이스 목록(각 케이스는 run() 에 넘길 데이터 배열)
 $samples = array(
     'room_list' => array(
-        array('admin_url' => G5_ADMIN_URL, 'rooms' => array(
+        // 노출 객실(사용자 보기 있음)과 숨김 객실(없음)이 함께 있는 분기
+        array('admin_url' => G5_ADMIN_URL, 'g5_url' => G5_URL, 'rooms' => array(
             $sample_room + array('booking_cnt' => 4),
             array('br_id' => 4, 'br_subject' => '스탠다드', 'br_room_count' => 2,
                 'br_base_person' => 2, 'br_max_person' => 2, 'br_weekday_price' => 80000,
                 'br_weekend_price' => 100000, 'br_use' => 0, 'booking_cnt' => 0),
         )),
-        array('admin_url' => G5_ADMIN_URL, 'rooms' => array()),   // 빈 목록 분기
+        array('admin_url' => G5_ADMIN_URL, 'g5_url' => G5_URL, 'rooms' => array()),   // 빈 목록 분기
     ),
     'addon_list' => array(
         array('admin_url' => G5_ADMIN_URL, 'addons' => array(
@@ -146,7 +147,11 @@ $samples = array(
     ),
     'booking_list' => array(
         array('admin_url' => G5_ADMIN_URL, 'total_count' => 3,
-            'status' => '', 'sdate' => '', 'edate' => '', 'stx' => '',
+            'status' => '', 'br_id' => 0, 'sdate' => '', 'edate' => '', 'stx' => '',
+            'room_opts' => array(
+                array('br_id' => 3, 'br_subject' => '디럭스 더블', 'br_use' => 1),
+                array('br_id' => 4, 'br_subject' => '스탠다드', 'br_use' => 0),   // 숨김 표시 분기
+            ),
             'list' => array(
                 // 미확인 요청 배지가 붙은 확정 건
                 array('bk_id' => 7, 'bk_no' => 'ABCD123456', 'br_subject' => '디럭스 더블',
@@ -167,9 +172,11 @@ $samples = array(
                     'bk_total_price' => 0, 'bk_status' => 'hold', 'status_text' => '결제대기',
                     'new_note_cnt' => 0, 'bk_datetime' => '2026-06-20 09:00:00'),
             )),
-        // 빈 목록 + 필터가 걸린 분기 (검색어·기간·상태가 폼에 되비쳐야 한다)
+        // 빈 목록 + 필터가 걸린 분기 (검색어·기간·상태·객실이 폼에 되비쳐야 한다)
         array('admin_url' => G5_ADMIN_URL, 'total_count' => 0, 'list' => array(),
-            'status' => 'cancelled', 'sdate' => '2026-08-01', 'edate' => '2026-08-31', 'stx' => '홍길동'),
+            'status' => 'cancelled', 'br_id' => 3,
+            'room_opts' => array(array('br_id' => 3, 'br_subject' => '디럭스 더블', 'br_use' => 1)),
+            'sdate' => '2026-08-01', 'edate' => '2026-08-31', 'stx' => '홍길동'),
     ),
     'booking_view' => array(
         // 취소요청 — 승인·직권취소 버튼, 부가상품, 미확인 고객 요청, 환불 기록이 모두 있는 분기

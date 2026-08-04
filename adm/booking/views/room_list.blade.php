@@ -21,9 +21,16 @@
             <td>{{ $r['br_room_count'] }}</td>
             <td>{{ $r['br_base_person'] }} / {{ $r['br_max_person'] }}</td>
             <td>{{ number_format($r['br_weekday_price']) }} / {{ number_format($r['br_weekend_price']) }}</td>
-            <td>{{ $r['booking_cnt'] }}</td>
+            {{-- status=active(확정+취소요청) — 예약수가 세는 범위 그대로 열어야 누른 숫자와 건수가 맞는다 --}}
+            <td><a href="{{ $admin_url }}/booking/booking_list.php?br_id={{ $r['br_id'] }}&amp;status=active">{{ $r['booking_cnt'] }}</a></td>
             <td>{{ $r['br_use'] ? '노출' : '숨김' }}</td>
-            <td><a href="{{ $admin_url }}/booking/room_form.php?w=u&amp;br_id={{ $r['br_id'] }}" class="btn btn_03">수정</a></td>
+            <td>
+                <a href="{{ $admin_url }}/booking/room_form.php?w=u&amp;br_id={{ $r['br_id'] }}" class="btn btn_03">수정</a>
+                {{-- 숨김 객실은 room.php 가 열어 주지 않으므로 링크를 내지 않는다 --}}
+                @if ($r['br_use'])
+                <a href="{{ $g5_url }}/booking/room.php?br_id={{ $r['br_id'] }}" class="btn btn_02" target="_blank">사용자 보기</a>
+                @endif
+            </td>
         </tr>
         @endforeach
 

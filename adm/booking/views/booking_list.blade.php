@@ -21,10 +21,19 @@
     <select name="status" id="status">
         <option value="" {{ $status == '' ? 'selected' : '' }}>결제대기 제외</option>
         <option value="all" {{ $status == 'all' ? 'selected' : '' }}>전체(결제대기 포함)</option>
+        <option value="active" {{ $status == 'active' ? 'selected' : '' }}>확정+취소요청</option>
         <option value="confirmed" {{ $status == 'confirmed' ? 'selected' : '' }}>예약확정</option>
         <option value="cancel_req" {{ $status == 'cancel_req' ? 'selected' : '' }}>취소요청</option>
         <option value="cancelled" {{ $status == 'cancelled' ? 'selected' : '' }}>취소완료</option>
         <option value="hold" {{ $status == 'hold' ? 'selected' : '' }}>결제대기</option>
+    </select>
+
+    <label for="br_id">객실</label>
+    <select name="br_id" id="br_id">
+        <option value="0">전체 객실</option>
+        @foreach ($room_opts as $o)
+        <option value="{{ $o['br_id'] }}" {{ $br_id == $o['br_id'] ? 'selected' : '' }}>{{ $o['br_subject'] }}{{ $o['br_use'] ? '' : ' (숨김)' }}</option>
+        @endforeach
     </select>
 
     <label for="sdate">체크인 기간</label>

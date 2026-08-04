@@ -13,9 +13,15 @@ function bl_get($key)
 // 상태 필터. 빈 값은 "결제대기 제외"가 기본이다 —
 // hold 는 결제를 마치지 못한 자리이고 유효시간이 지나면 저절로 풀린다. 목록에 늘 섞이면
 // 실제 예약과 구분이 어렵다. 'all' 을 고르면 그것까지 보여 준다
+// 'active' 는 확정+취소요청 묶음 — 객실관리의 예약수가 세는 범위와 같다.
+// 예약수를 눌러 온 화면의 건수가 누른 숫자와 어긋나지 않게 하려고 있다
 $status = bl_get('status');
-$status_list = array('hold', 'confirmed', 'cancel_req', 'cancelled');
+$status_list = array('hold', 'confirmed', 'cancel_req', 'cancelled', 'active');
 if ($status !== '' && $status !== 'all' && !in_array($status, $status_list, true)) $status = '';
+
+// 객실 필터 — 객실관리의 예약수를 눌러 들어오는 길이기도 하다
+$br_id = (int)bl_get('br_id');
+if ($br_id < 0) $br_id = 0;
 
 // 기간은 체크인 날짜 기준이다 (예약일이 아니다 — 업주가 찾는 것은 "언제 오는 손님"이다)
 $sdate = preg_match('/^\d{4}-\d{2}-\d{2}$/', bl_get('sdate')) ? bl_get('sdate') : '';
@@ -26,8 +32,10 @@ $edate = preg_match('/^\d{4}-\d{2}-\d{2}$/', bl_get('edate')) ? bl_get('edate') 
 $stx = stripslashes(bl_get('stx'));
 
 $where = " where (1) ";
-if ($status === '')          $where .= " and b.bk_status <> 'hold' ";
-else if ($status !== 'all')  $where .= " and b.bk_status = '".sql_real_escape_string($status)."' ";
+if ($status === '')            $where .= " and b.bk_status <> 'hold' ";
+else if ($status === 'active') $where .= " and b.bk_status in ('confirmed','cancel_req') ";
+else if ($status !== 'all')    $where .= " and b.bk_status = '".sql_real_escape_string($status)."' ";
+if ($br_id) $where .= " and b.br_id = '$br_id' ";
 if ($sdate) $where .= " and b.bk_checkin >= '".sql_real_escape_string($sdate)."' ";
 if ($edate) $where .= " and b.bk_checkin <= '".sql_real_escape_string($edate)."' ";
 if ($stx !== '') {
@@ -75,8 +83,14 @@ while ($r = sql_fetch_array($result)) {
     );
 }
 
+// 검색폼의 객실 선택지 — 숨김 객실도 넣는다. 지난 예약은 숨긴 객실에도 남아 있다
+$room_opts = array();
+$result = sql_query(" select br_id, br_subject, br_use from `{$g5['booking_room_table']}`
+    order by br_order, br_id ");
+while ($r = sql_fetch_array($result)) $room_opts[] = $r;
+
 // 페이징 링크에 지금 건 필터를 그대로 달고 간다
-$qstr = 'status='.urlencode($status).'&amp;sdate='.urlencode($sdate)
+$qstr = 'status='.urlencode($status).'&amp;br_id='.$br_id.'&amp;sdate='.urlencode($sdate)
       . '&amp;edate='.urlencode($edate).'&amp;stx='.urlencode($stx);
 
 $g5['title'] = '예약목록';
@@ -84,7 +98,8 @@ include_once(G5_ADMIN_PATH.'/admin.head.php');
 
 badm_view('booking_list', array(
     'list' => $list, 'total_count' => $total_count,
-    'status' => $status, 'sdate' => $sdate, 'edate' => $edate, 'stx' => $stx,
+    'status' => $status, 'br_id' => $br_id, 'room_opts' => $room_opts,
+    'sdate' => $sdate, 'edate' => $edate, 'stx' => $stx,
     'admin_url' => G5_ADMIN_URL,
 ));
 
