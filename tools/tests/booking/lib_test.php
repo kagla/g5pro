@@ -54,6 +54,14 @@ sql_query(" insert into `{$g5['booking_room_table']}` set
 $br_id = sql_insert_id();
 $room = sql_fetch(" select * from `{$g5['booking_room_table']}` where br_id = '$br_id' ");
 
+// 검증·hold 구간은 요일이 아니라 재고 로직을 보므로 상대 날짜를 쓴다 (시간이 지나도 스위트가 안 깨진다).
+// 30일 뒤 이후 첫 월요일 기준이라 숙박일이 항상 월·화 밤 = 주중요금 10만으로 고정된다.
+$mon   = strtotime('next monday', strtotime('+30 day', G5_SERVER_TIME));
+$s_in  = date('Y-m-d', $mon);                        // 월
+$s_out = date('Y-m-d', strtotime('+2 day', $mon));   // 수 → 월·화 2박
+$a_in  = date('Y-m-d', strtotime('+7 day', $mon));   // 다음 주 월
+$a_out = date('Y-m-d', strtotime('+8 day', $mon));   // 화 → 1박
+
 // ---- booking_nights: 체크아웃일은 제외 ----
 chk(booking_nights('2026-09-04', '2026-09-06') === array('2026-09-04', '2026-09-05'),
     "booking_nights 결과 불일치: ".var_export(booking_nights('2026-09-04','2026-09-06'), true));
@@ -94,21 +102,21 @@ chk($price['total'] === 240000, "합계가 240000 이 아님 (".var_export($pric
 chk(is_array($price['addon_items']) && count($price['addon_items']) === 0, '부가상품 목록이 빈 배열이 아님');
 
 // ---- booking_validate_stay ----
-chk(booking_validate_stay($room, '2026-09-07', '2026-09-09', 3) === '', '정상 예약인데 검증 오류가 났음');
+chk(booking_validate_stay($room, $s_in, $s_out, 3) === '', '정상 예약인데 검증 오류가 났음');
 chk(booking_validate_stay($room, '2020-01-01', '2020-01-02', 2) !== '', '지난 날짜인데 검증을 통과했음');
-chk(booking_validate_stay($room, '2026-09-07', '2026-09-09', 9) !== '', '최대 인원 초과인데 검증을 통과했음');
-chk(booking_validate_stay($room, '2026/09/07', '2026-09-09', 2) !== '', '날짜 형식 오류인데 검증을 통과했음');
+chk(booking_validate_stay($room, $s_in, $s_out, 9) !== '', '최대 인원 초과인데 검증을 통과했음');
+chk(booking_validate_stay($room, str_replace('-', '/', $s_in), $s_out, 2) !== '', '날짜 형식 오류인데 검증을 통과했음');
 
 // ---- booking_create_hold: 판매 실수 2 를 넘으면 마감 ----
 sql_query(" update `{$g5['booking_room_table']}` set br_use = 1 where br_id = '$br_id' ", true);
 $guest = array('name' => '홍길동', 'hp' => '010-0000-0000', 'email' => 'lib_test@example.com',
     'request' => '', 'mb_id' => '', 'password' => '1234');
 
-$h1 = booking_create_hold($br_id, '2026-09-07', '2026-09-09', 3, array(), $guest);
+$h1 = booking_create_hold($br_id, $s_in, $s_out, 3, array(), $guest);
 chk(!empty($h1['ok']), '첫 번째 hold 가 실패함 ('.(isset($h1['error']) ? $h1['error'] : '').')');
-$h2 = booking_create_hold($br_id, '2026-09-07', '2026-09-09', 2, array(), $guest);
+$h2 = booking_create_hold($br_id, $s_in, $s_out, 2, array(), $guest);
 chk(!empty($h2['ok']), '두 번째 hold 가 실패함 ('.(isset($h2['error']) ? $h2['error'] : '').')');
-$h3 = booking_create_hold($br_id, '2026-09-07', '2026-09-09', 2, array(), $guest);
+$h3 = booking_create_hold($br_id, $s_in, $s_out, 2, array(), $guest);
 chk(isset($h3['ok']) && $h3['ok'] === false, '판매 실수 2 를 넘은 세 번째 hold 가 성공함');
 chk(!empty($h3['error']) && strpos($h3['error'], '마감') !== false,
     "세 번째 hold 오류가 마감 메시지가 아님 (".(isset($h3['error']) ? $h3['error'] : '').")");
@@ -125,16 +133,16 @@ if (!empty($h1['ok'])) {
 }
 chk(booking_get(0) === null, '없는 예약에 booking_get 이 null 을 반환하지 않음');
 
-chk(booking_booked_count($br_id, '2026-09-07') === 2, '유효 hold 2건이 예약 수로 집계되지 않음');
-chk(booking_remain_count($room, '2026-09-07') === 0, '잔여 객실이 0 이 아님');
-chk(booking_booked_count($br_id, '2026-09-09') === 0, '체크아웃 당일이 예약 수에 잡힘');
+chk(booking_booked_count($br_id, $s_in) === 2, '유효 hold 2건이 예약 수로 집계되지 않음');
+chk(booking_remain_count($room, $s_in) === 0, '잔여 객실이 0 이 아님');
+chk(booking_booked_count($br_id, $s_out) === 0, '체크아웃 당일이 예약 수에 잡힘');
 
 // 만료된 hold 는 재고에서 빠진다
 if (!empty($h2['ok'])) {
     sql_query(" update `{$g5['booking_table']}` set bk_hold_expire = '2000-01-01 00:00:00'
         where bk_id = '".(int)$h2['bk_id']."' ", true);
-    chk(booking_booked_count($br_id, '2026-09-07') === 1, '만료된 hold 가 예약 수에서 빠지지 않음');
-    $h4 = booking_create_hold($br_id, '2026-09-07', '2026-09-09', 2, array(), $guest);
+    chk(booking_booked_count($br_id, $s_in) === 1, '만료된 hold 가 예약 수에서 빠지지 않음');
+    $h4 = booking_create_hold($br_id, $s_in, $s_out, 2, array(), $guest);
     chk(!empty($h4['ok']), '만료 hold 자리에 다시 hold 하지 못함 ('.(isset($h4['error']) ? $h4['error'] : '').')');
 }
 
@@ -143,13 +151,13 @@ sql_query(" insert into `{$g5['booking_addon_table']}` set
     ba_subject = '".sql_real_escape_string($test_addon)."', ba_price = 30000,
     ba_max_qty = 2, ba_use = 1, ba_order = 0 ", true);
 $ba_id = sql_insert_id();
-$ap = booking_calc_price($room, '2026-09-20', '2026-09-21', 2, array($ba_id => 5));
+$ap = booking_calc_price($room, $a_in, $a_out, 2, array($ba_id => 5));
 chk(count($ap['addon_items']) === 1, '부가상품 항목이 1건이 아님');
 chk($ap['addon_items'][0]['qty'] === 2, '부가상품 수량이 최대 2 로 잘리지 않음');
 chk($ap['addon'] === 60000, "부가상품 금액이 60000 이 아님 (".var_export($ap['addon'], true).")");
 chk($ap['total'] === 160000, "부가상품 포함 합계가 160000 이 아님 (".var_export($ap['total'], true).")");
 
-$h5 = booking_create_hold($br_id, '2026-09-20', '2026-09-21', 2, array($ba_id => 5), $guest);
+$h5 = booking_create_hold($br_id, $a_in, $a_out, 2, array($ba_id => 5), $guest);
 chk(!empty($h5['ok']), '부가상품 hold 가 실패함 ('.(isset($h5['error']) ? $h5['error'] : '').')');
 if (!empty($h5['ok'])) {
     $cnt = sql_fetch(" select count(*) as c from `{$g5['booking_addon_item_table']}`
@@ -162,6 +170,21 @@ $no1 = booking_new_no();
 $no2 = booking_new_no();
 chk(preg_match('/^[A-Z0-9]{10}$/', $no1) === 1, "예약번호 형식이 대문자 영숫자 10자가 아님 ($no1)");
 chk($no1 !== $no2, '연속 호출한 예약번호가 같음');
+
+// ---- booking_send_mail 스모크: mailer.lib.php include 경로를 태운다 ----
+// common.php 는 mailer.lib.php 를 로드하지 않으므로, include 가 빠지면 여기서 Error 로 죽는다.
+// 수신자(bk_email·bc_admin_email)를 비워 실제 발송은 일어나지 않게 한다.
+chk(!function_exists('mailer'), '테스트 시작 시점에 mailer() 가 이미 정의돼 있어 include 단언이 무의미함');
+booking_send_mail(0, 'confirm'); // 없는 예약 — include 후 즉시 return
+chk(function_exists('mailer'), 'booking_send_mail 이 mailer.lib.php 를 include 하지 않음 (호출 시 fatal 위험)');
+$bconfig = booking_config();
+if (!empty($h1['ok']) && (string)$bconfig['bc_admin_email'] === '') {
+    sql_query(" update `{$g5['booking_table']}` set bk_email = ''
+        where bk_id = '".(int)$h1['bk_id']."' ", true);
+    booking_send_mail($h1['bk_id'], 'confirm'); // 수신자 없음 → 본문만 만들고 발송 없음
+}
+$mail_ok = true; // 위에서 fatal 이 났다면 이 줄에 도달하지 못한다
+chk($mail_ok, 'booking_send_mail 이 fatal 없이 끝나지 않음');
 
 // ---- booking_config ----
 $config = booking_config();

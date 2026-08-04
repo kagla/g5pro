@@ -392,6 +392,8 @@ function booking_get_by_oid($oid)
 function booking_send_mail($bk_id, $kind)
 {
     global $g5, $config;
+    // common.php 는 mailer.lib.php 를 로드하지 않는다 (순정 호출부가 각자 include 한다)
+    include_once(G5_LIB_PATH.'/mailer.lib.php');
     $titles = array('confirm' => '예약이 확정되었습니다', 'cancel_req' => '예약 취소 요청이 접수되었습니다',
         'cancelled' => '예약이 취소되었습니다');
     if (!isset($titles[$kind])) return;
