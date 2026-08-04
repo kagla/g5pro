@@ -171,6 +171,28 @@ $front_samples = array(
             'conf' => array('cancel_rules' => array(), 'refund_terms' => '') + $front_conf,
             'js' => $front_js, 'images' => array(), 'addons' => array()),
     ),
+    'reserve' => array(
+        // 비회원 — 비밀번호 칸이 나오고 부가상품·환불약관이 다 있는 분기
+        array('room' => $sample_room, 'checkin' => '2026-08-14', 'checkout' => '2026-08-16',
+            'nights' => 2, 'person' => 2, 'is_member' => false, 'token' => '1754000000.abc',
+            'conf' => array('hold_minutes' => 20) + $front_conf,
+            'guest' => array('name' => '', 'hp' => '', 'email' => ''),
+            'addons' => array(
+                array('ba_id' => 1, 'ba_subject' => '조식 2인', 'ba_price' => 20000, 'ba_max_qty' => 4),
+                array('ba_id' => 2, 'ba_subject' => '바비큐 세트', 'ba_price' => 50000, 'ba_max_qty' => 2),
+            ),
+            'price' => array('room' => 300000, 'person' => 0, 'addon' => 0,
+                'total' => 300000, 'addon_items' => array())),
+        // 회원 — 비밀번호 칸이 없고 부가상품·인원추가요금·환불약관이 없는 분기
+        array('room' => array('br_person_price' => 0) + $sample_room,
+            'checkin' => '2026-08-14', 'checkout' => '2026-08-15',
+            'nights' => 1, 'person' => 2, 'is_member' => true, 'token' => '1754000000.abc',
+            'conf' => array('hold_minutes' => 20, 'refund_terms' => '') + $front_conf,
+            'guest' => array('name' => '홍길동', 'hp' => '010-1234-5678', 'email' => 'a@example.com'),
+            'addons' => array(),
+            'price' => array('room' => 120000, 'person' => 0, 'addon' => 0,
+                'total' => 120000, 'addon_items' => array())),
+    ),
 );
 
 // 뷰 한 묶음을 대표 데이터로 렌더해 본다. $root 는 BladeOne 뷰 루트,
