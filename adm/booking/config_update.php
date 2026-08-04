@@ -49,6 +49,11 @@ foreach ($raw_lines as $no => $line) {
     }
     $policy_lines[] = (int)$m[1].':'.(int)$m[2];
 }
+// 빈 정책은 저장하지 않는다 — 저장되면 모든 취소가 환불 0% 로 굳고,
+// 예약 화면의 취소 규정 고지도 통째로 사라진다 (고지 의무가 걸린 항목이다)
+if (!count($policy_lines)) {
+    alert('취소 수수료 단계를 최소 한 줄 입력하세요. 예: 7:100');
+}
 $bc_cancel_policy = addslashes(implode("\n", $policy_lines));
 
 $bc_refund_terms = addslashes(clean_xss_tags(booking_post_raw('bc_refund_terms')));
