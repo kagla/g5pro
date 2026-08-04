@@ -29,9 +29,7 @@ while ($r = sql_fetch_array($result)) {
     $notes[] = $r;
 }
 
-$status_label = array('hold' => '결제대기', 'confirmed' => '예약확정',
-    'cancel_req' => '취소요청', 'cancelled' => '취소완료');
-$status_text = isset($status_label[$bk['bk_status']]) ? $status_label[$bk['bk_status']] : $bk['bk_status'];
+$status_text = booking_status_label($bk['bk_status']);
 
 $bc = booking_config();
 

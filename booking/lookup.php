@@ -40,9 +40,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     goto_url(G5_URL.'/booking/view.php?bk_no='.$bk['bk_no']);
 }
 
-$status_label = array('hold' => '결제대기', 'confirmed' => '예약확정',
-    'cancel_req' => '취소요청', 'cancelled' => '취소완료');
-
 // 회원 목록. 결제를 마치지 못한 hold 는 예약이 아니므로 뺀다 —
 // 유효시간이 지나면 저절로 사라지는 자리라 목록에 남기면 없는 예약을 있다고 보여 준다
 $bookings = array();
@@ -57,8 +54,7 @@ if ($is_member) {
     while ($row = sql_fetch_array($result)) {
         $row['br_subject'] = (string)$row['br_subject'];
         $row['nights'] = count(booking_nights($row['bk_checkin'], $row['bk_checkout']));
-        $row['status_text'] = isset($status_label[$row['bk_status']])
-            ? $status_label[$row['bk_status']] : $row['bk_status'];
+        $row['status_text'] = booking_status_label($row['bk_status']);
         $bookings[] = $row;
     }
 }

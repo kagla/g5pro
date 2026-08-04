@@ -87,6 +87,22 @@ function sample_cal_case($ym, $room)
     );
 }
 
+// 확정된 예약 한 건 — 관리자 상세와 프론트 결제·완료 화면이 쓰는 예약 행 모양 그대로
+$sample_bk = array(
+    'bk_id' => 7, 'bk_no' => 'ABCD123456', 'br_id' => 3,
+    'bk_checkin' => '2026-08-14', 'bk_checkout' => '2026-08-16', 'bk_person' => 3,
+    'bk_name' => '홍길동', 'bk_hp' => '010-1234-5678', 'bk_email' => 'a@example.com',
+    'bk_request' => "늦게 도착합니다.\n조용한 방으로 부탁드립니다.",
+    'mb_id' => '', 'bk_room_price' => 300000, 'bk_person_price' => 20000,
+    'bk_addon_price' => 40000, 'bk_total_price' => 360000,
+    'bk_status' => 'confirmed', 'bk_hold_expire' => '2026-08-04 13:20:00',
+    'bk_oid' => 'ABCD123456T175400000042', 'bk_tid' => 'StdpayCARDINIpayTest20260804132000',
+    'bk_pay_time' => '2026-08-04 13:05:00', 'bk_datetime' => '2026-08-04 12:45:00',
+);
+$sample_addon_items = array(
+    array('bt_subject' => '조식 2인', 'bt_price' => 20000, 'bt_qty' => 2, 'bt_amount' => 40000),
+);
+
 // 뷰 이름 => 케이스 목록(각 케이스는 run() 에 넘길 데이터 배열)
 $samples = array(
     'room_list' => array(
@@ -128,6 +144,127 @@ $samples = array(
         sample_cal_case('2026-02', $sample_room),   // 일요일 시작·28일 — 앞뒤 빈칸 0개
         sample_cal_case('2026-08', null),           // 객실이 하나도 없는 분기
     ),
+    'booking_list' => array(
+        array('admin_url' => G5_ADMIN_URL, 'total_count' => 3,
+            'status' => '', 'sdate' => '', 'edate' => '', 'stx' => '',
+            'list' => array(
+                // 미확인 요청 배지가 붙은 확정 건
+                array('bk_id' => 7, 'bk_no' => 'ABCD123456', 'br_subject' => '디럭스 더블',
+                    'bk_checkin' => '2026-08-14', 'bk_checkout' => '2026-08-16', 'nights' => 2,
+                    'bk_name' => '홍길동', 'bk_hp' => '010-1234-5678', 'bk_person' => 3,
+                    'bk_total_price' => 360000, 'bk_status' => 'confirmed', 'status_text' => '예약확정',
+                    'new_note_cnt' => 2, 'bk_datetime' => '2026-08-04 12:45:00'),
+                // 취소요청 — 배지 없음
+                array('bk_id' => 8, 'bk_no' => 'EFGH789012', 'br_subject' => '스탠다드',
+                    'bk_checkin' => '2026-09-01', 'bk_checkout' => '2026-09-02', 'nights' => 1,
+                    'bk_name' => '김철수', 'bk_hp' => '010-9999-8888', 'bk_person' => 2,
+                    'bk_total_price' => 120000, 'bk_status' => 'cancel_req', 'status_text' => '취소요청',
+                    'new_note_cnt' => 0, 'bk_datetime' => '2026-08-01 09:00:00'),
+                // 객실이 지워진 결제대기 건 (전체 필터에서만 보인다)
+                array('bk_id' => 9, 'bk_no' => 'ZZZZ999999', 'br_subject' => '',
+                    'bk_checkin' => '2026-07-01', 'bk_checkout' => '2026-07-02', 'nights' => 1,
+                    'bk_name' => '이영희', 'bk_hp' => '', 'bk_person' => 1,
+                    'bk_total_price' => 0, 'bk_status' => 'hold', 'status_text' => '결제대기',
+                    'new_note_cnt' => 0, 'bk_datetime' => '2026-06-20 09:00:00'),
+            )),
+        // 빈 목록 + 필터가 걸린 분기 (검색어·기간·상태가 폼에 되비쳐야 한다)
+        array('admin_url' => G5_ADMIN_URL, 'total_count' => 0, 'list' => array(),
+            'status' => 'cancelled', 'sdate' => '2026-08-01', 'edate' => '2026-08-31', 'stx' => '홍길동'),
+    ),
+    'booking_view' => array(
+        // 취소요청 — 승인·직권취소 버튼, 부가상품, 미확인 고객 요청, 환불 기록이 모두 있는 분기
+        array('admin_url' => G5_ADMIN_URL,
+            'bk' => array('bk_refund_plan_price' => 324000, 'bk_status' => 'cancel_req',
+                'bk_cancel_memo' => '일정이 바뀌었습니다', 'bk_refund_price' => 0,
+                'bk_ip' => '127.0.0.1', 'mb_id' => '') + $sample_bk,
+            'br_subject' => '디럭스 더블', 'nights' => 2, 'status_text' => '취소요청',
+            'addon_items' => $sample_addon_items,
+            'notes' => array(
+                array('bn_id' => 1, 'is_guest' => true, 'writer_text' => '고객',
+                    'bn_content' => "수건 두 장만 더 부탁드립니다.\n감사합니다.",
+                    'bn_checked' => 0, 'bn_datetime' => '2026-08-05 09:10:00'),
+                array('bn_id' => 2, 'is_guest' => false, 'writer_text' => '업주(고객에게 보임)',
+                    'bn_content' => '네, 준비해 두겠습니다.', 'bn_checked' => 1,
+                    'bn_datetime' => '2026-08-05 10:00:00'),
+            ),
+            'refund_logs' => array(
+                array('bl_type' => 'refund', 'type_text' => '환불', 'bl_price' => 324000,
+                    'bl_result_code' => '01', 'ok' => false, 'bl_tid' => 'StdpayCARDINIpayTest0001',
+                    'bl_datetime' => '2026-08-05 11:00:00'),
+            ),
+            'pay_time' => '2026-08-04 13:05:00', 'cancel_time' => '2026-08-05 08:00:00',
+            'refund_time' => '', 'hold_expire' => '2026-08-04 13:20:00',
+            'can_approve' => true, 'can_force' => true),
+        // 결제대기 — 액션 없음, 메모·부가상품·거래기록 없음, 객실 삭제, 결제 정보 비어 있음
+        array('admin_url' => G5_ADMIN_URL,
+            'bk' => array('bk_status' => 'hold', 'bk_oid' => '', 'bk_tid' => '',
+                'bk_request' => '', 'bk_email' => '', 'bk_person_price' => 0,
+                'bk_addon_price' => 0, 'bk_total_price' => 300000, 'bk_refund_plan_price' => 0,
+                'bk_refund_price' => 0, 'bk_cancel_memo' => '', 'bk_ip' => '', 'mb_id' => '') + $sample_bk,
+            'br_subject' => '', 'nights' => 2, 'status_text' => '결제대기',
+            'addon_items' => array(), 'notes' => array(), 'refund_logs' => array(),
+            'pay_time' => '', 'cancel_time' => '', 'refund_time' => '',
+            'hold_expire' => '2026-08-04 13:20:00',
+            'can_approve' => false, 'can_force' => false),
+        // 취소완료 — 환불액이 찍힌 분기 (회원 예약)
+        array('admin_url' => G5_ADMIN_URL,
+            'bk' => array('bk_status' => 'cancelled', 'mb_id' => 'testuser',
+                'bk_refund_plan_price' => 360000, 'bk_refund_price' => 360000,
+                'bk_cancel_memo' => '관리자 직권 취소', 'bk_ip' => '127.0.0.1') + $sample_bk,
+            'br_subject' => '디럭스 더블', 'nights' => 2, 'status_text' => '취소완료',
+            'addon_items' => $sample_addon_items, 'notes' => array(),
+            'refund_logs' => array(
+                array('bl_type' => 'netcancel', 'type_text' => '망취소', 'bl_price' => 360000,
+                    'bl_result_code' => 'amount', 'ok' => false, 'bl_tid' => '',
+                    'bl_datetime' => '2026-08-05 11:00:00'),
+                array('bl_type' => 'refund', 'type_text' => '환불', 'bl_price' => 360000,
+                    'bl_result_code' => '00', 'ok' => true, 'bl_tid' => 'StdpayCARDINIpayTest0001',
+                    'bl_datetime' => '2026-08-05 11:05:00'),
+            ),
+            'pay_time' => '2026-08-04 13:05:00', 'cancel_time' => '2026-08-05 11:00:00',
+            'refund_time' => '2026-08-05 11:05:00', 'hold_expire' => '',
+            'can_approve' => false, 'can_force' => false),
+        // 확정인데 거래번호가 없는 분기 — 결제대사로 안내하는 경고가 떠야 한다
+        array('admin_url' => G5_ADMIN_URL,
+            'bk' => array('bk_tid' => '', 'bk_refund_plan_price' => 0, 'bk_refund_price' => 0,
+                'bk_cancel_memo' => '', 'bk_ip' => '127.0.0.1', 'mb_id' => '') + $sample_bk,
+            'br_subject' => '디럭스 더블', 'nights' => 2, 'status_text' => '예약확정',
+            'addon_items' => array(), 'notes' => array(), 'refund_logs' => array(),
+            'pay_time' => '2026-08-04 13:05:00', 'cancel_time' => '', 'refund_time' => '',
+            'hold_expire' => '', 'can_approve' => false, 'can_force' => true),
+    ),
+    'recon' => array(
+        array('admin_url' => G5_ADMIN_URL,
+            'unmatched' => array(
+                // 조치할 수 있는 건 — 확정·환불 버튼이 둘 다 나온다
+                array('bl_id' => 51, 'bl_oid' => 'ABCD123456T175400000042',
+                    'bl_tid' => 'StdpayCARDINIpayTest0001', 'bl_price' => 360000,
+                    'bl_datetime' => '2026-08-04 13:05:00', 'bk_id' => 7, 'bk_no' => 'ABCD123456',
+                    'bk_status' => 'hold', 'status_text' => '결제대기', 'bk_name' => '홍길동',
+                    'bk_hp' => '010-1234-5678', 'bk_total_price' => 360000,
+                    'stay' => '2026-08-14 ~ 2026-08-16', 'br_subject' => '디럭스 더블', 'blocked' => ''),
+                // 예약 행이 없는 건 — 버튼 없이 이유만
+                array('bl_id' => 52, 'bl_oid' => 'NOSUCHOID0001', 'bl_tid' => 'StdpayCARDINIpayTest0002',
+                    'bl_price' => 120000, 'bl_datetime' => '2026-08-03 10:00:00', 'bk_id' => 0,
+                    'bk_no' => '', 'bk_status' => '', 'status_text' => '예약 없음', 'bk_name' => '',
+                    'bk_hp' => '', 'bk_total_price' => 0, 'stay' => '', 'br_subject' => '',
+                    'blocked' => '이 주문번호의 예약이 없습니다.'),
+                // 금액이 어긋난 건 — 청구액을 함께 보여 주고 버튼은 막는다
+                array('bl_id' => 53, 'bl_oid' => 'EFGH789012T175400000043', 'bl_tid' => 'StdpayCARDINIpayTest0003',
+                    'bl_price' => 100000, 'bl_datetime' => '2026-08-02 10:00:00', 'bk_id' => 8,
+                    'bk_no' => 'EFGH789012', 'bk_status' => 'hold', 'status_text' => '결제대기',
+                    'bk_name' => '김철수', 'bk_hp' => '010-9999-8888', 'bk_total_price' => 120000,
+                    'stay' => '2026-09-01 ~ 2026-09-02', 'br_subject' => '스탠다드',
+                    'blocked' => '승인 금액과 예약 청구액이 다릅니다.'),
+            ),
+            'notid' => array(
+                array('bk_id' => 11, 'bk_no' => 'IJKL345678', 'bk_oid' => '',
+                    'bk_name' => '박영수', 'bk_hp' => '010-2222-3333', 'bk_total_price' => 200000,
+                    'stay' => '2026-10-01 ~ 2026-10-03', 'br_subject' => '디럭스 더블', 'pay_time' => ''),
+            )),
+        // 대사할 건이 하나도 없는 분기
+        array('admin_url' => G5_ADMIN_URL, 'unmatched' => array(), 'notid' => array()),
+    ),
 );
 
 // ── 프론트 뷰 샘플 — template/standard/booking
@@ -151,22 +288,6 @@ $front_js = array(
     'br_id' => 3, 'ym' => '2026-08', 'limit_ym' => '2027-02', 'today' => '2026-08-04',
     'min_nights' => 1, 'max_nights' => 7, 'checkin_time' => '15:00', 'checkout_time' => '11:00',
     'ajax_url' => G5_URL.'/booking/ajax.calendar.php', 'reserve_url' => G5_URL.'/booking/reserve.php',
-);
-
-// 확정된 예약 한 건 — 결제·완료 화면이 쓰는 예약 행 모양 그대로
-$sample_bk = array(
-    'bk_id' => 7, 'bk_no' => 'ABCD123456', 'br_id' => 3,
-    'bk_checkin' => '2026-08-14', 'bk_checkout' => '2026-08-16', 'bk_person' => 3,
-    'bk_name' => '홍길동', 'bk_hp' => '010-1234-5678', 'bk_email' => 'a@example.com',
-    'bk_request' => "늦게 도착합니다.\n조용한 방으로 부탁드립니다.",
-    'mb_id' => '', 'bk_room_price' => 300000, 'bk_person_price' => 20000,
-    'bk_addon_price' => 40000, 'bk_total_price' => 360000,
-    'bk_status' => 'confirmed', 'bk_hold_expire' => '2026-08-04 13:20:00',
-    'bk_oid' => 'ABCD123456T175400000042', 'bk_tid' => 'StdpayCARDINIpayTest20260804132000',
-    'bk_pay_time' => '2026-08-04 13:05:00', 'bk_datetime' => '2026-08-04 12:45:00',
-);
-$sample_addon_items = array(
-    array('bt_subject' => '조식 2인', 'bt_price' => 20000, 'bt_qty' => 2, 'bt_amount' => 40000),
 );
 
 $front_samples = array(

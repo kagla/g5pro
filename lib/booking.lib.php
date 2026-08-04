@@ -376,6 +376,16 @@ function booking_create_hold($br_id, $checkin, $checkout, $person, $addons, $gue
     return array('ok' => true, 'bk_id' => $bk_id, 'bk_no' => $bk_no);
 }
 
+// 예약 상태의 한글 이름. 고객 화면·관리자 화면·안내 메일이 모두 이 하나만 본다 —
+// 같은 목록을 여러 곳에 베껴 두면 상태가 하나 늘 때 어느 화면은 영문 코드를 그대로 내보낸다.
+// 모르는 값은 코드 그대로 돌려준다 (숨기는 것보다 보이는 편이 고치기 쉽다)
+function booking_status_label($status)
+{
+    $labels = array('hold' => '결제대기', 'confirmed' => '예약확정',
+        'cancel_req' => '취소요청', 'cancelled' => '취소완료', 'expired' => '만료');
+    return isset($labels[$status]) ? $labels[$status] : (string)$status;
+}
+
 function booking_get($bk_id)
 {
     global $g5;
@@ -648,8 +658,6 @@ function booking_send_mail($bk_id, $kind)
     $bc = booking_config();
     $br_id = (int)$bk['br_id'];
     $room = sql_fetch(" select br_subject from `{$g5['booking_room_table']}` where br_id = '$br_id' ");
-    $status = array('hold' => '결제대기', 'confirmed' => '예약확정', 'cancel_req' => '취소요청',
-        'cancelled' => '취소완료', 'expired' => '만료');
     $subject = '['.$config['cf_title'].'] '.$titles[$kind].' ('.$bk['bk_no'].')';
     $content = '<p>'.get_text($bk['bk_name']).'님, '.$titles[$kind].'.</p><ul>'
         .'<li>예약번호: '.get_text($bk['bk_no']).'</li>'
@@ -657,7 +665,7 @@ function booking_send_mail($bk_id, $kind)
         .'<li>기간: '.$bk['bk_checkin'].' ~ '.$bk['bk_checkout'].' ('.count(booking_nights($bk['bk_checkin'], $bk['bk_checkout'])).'박)</li>'
         .'<li>인원: '.(int)$bk['bk_person'].'명</li>'
         .'<li>결제금액: '.number_format((int)$bk['bk_total_price']).'원</li>'
-        .'<li>상태: '.(isset($status[$bk['bk_status']]) ? $status[$bk['bk_status']] : $bk['bk_status']).'</li>'
+        .'<li>상태: '.booking_status_label($bk['bk_status']).'</li>'
         .'</ul>';
     // 확정 메일에는 조회 화면으로 가는 길을 함께 넣는다. 비회원에게는 이 메일이
     // 사실상 유일한 입구다 — 예약번호와 확인 비밀번호로 상세를 열고 추가 요청·취소를 한다
