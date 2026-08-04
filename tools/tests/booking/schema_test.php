@@ -7,12 +7,26 @@ if (file_exists('/run/mysqld/mysqld.sock')) ini_set('mysqli.default_socket', '/r
 include_once __DIR__.'/../../../common.php';
 include_once G5_LIB_PATH.'/booking.lib.php';
 
-booking_install();
+$fail = 0;
+
+// 설치 계약: array('created' => bool) 반환
+$ret = booking_install();
+if (!is_array($ret) || !array_key_exists('created', $ret) || !is_bool($ret['created'])) {
+    echo "FAIL: booking_install() 반환이 array('created'=>bool) 아님 (".var_export($ret, true).")\n"; $fail++;
+}
+
+// 설치 후 booking_installed() 는 true
+if (booking_installed() !== true) { echo "FAIL: booking_installed() 가 true 아님\n"; $fail++; }
+
+// 멱등성: 두 번째 호출은 새로 만든 테이블이 없으므로 created=false
+$again = booking_install();
+if (!is_array($again) || $again['created'] !== false) {
+    echo "FAIL: booking_install() 재호출이 멱등하지 않음 (created=".var_export($again['created'], true).")\n"; $fail++;
+}
 
 $keys = array('booking_table','booking_room_table','booking_room_image_table','booking_calendar_table',
     'booking_addon_table','booking_addon_item_table','booking_note_table','booking_config_table',
     'booking_inicis_log_table');
-$fail = 0;
 foreach ($keys as $key) {
     if (!isset($g5[$key])) { echo "FAIL: \$g5['$key'] 상수 없음\n"; $fail++; continue; }
     if (!sql_query(" DESC `{$g5[$key]}` ", false)) { echo "FAIL: {$g5[$key]} 테이블 없음\n"; $fail++; continue; }
