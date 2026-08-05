@@ -51,7 +51,7 @@ h2{font-size: 1.083em;font-weight: bold;margin:10px 0}
 .popup-title { font-size: 18px; font-weight: 600; }
 .popup-body { padding: 20px; max-height: 400px; overflow-y: auto; color: #333; }
 .popup-footer button { background: #3d70ff; color: white; border: 1px solid #3d70ff; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s ease, border-color 0.2s ease; }
-.popup-footer button:hover { background: #2b3d9f; border-color: #2b3d9f; }
+.popup-footer button:hover { background: #1747A5; border-color: #1747A5; }
 
 /* 공통 - tab */
 .tab-container { display: flex; flex-direction: column; width: 100%; }
@@ -63,28 +63,31 @@ h2{font-size: 1.083em;font-weight: bold;margin:10px 0}
 
 /* 레이아웃 */
 #hd h1 {position:absolute;font-size:0;line-height:0;overflow:hidden}
-#hd_top{position:fixed;top:0;left:0;width:100%;height:50px;background:#3f51b5;z-index:1000}
+/* 그누보드5 프로 — 상단은 standard 템플릿의 브랜드 파랑(#2E7CF6/#1D5FD1) 계열을 쓴다 */
+#hd_top{position:fixed;top:0;left:0;width:100%;height:50px;background:#1D5FD1;z-index:1000}
 #hd_top:after{display:block;visibility:hidden;clear:both;content:""}
-#logo{background:#2f409f;height:100%;float:left;width:220px;padding:15px 0 15px 50px;text-align:center}
-#btn_gnb{background:url(../img/menu-cl.png) 50% 50% no-repeat #223390;width:50px;height:50px;border:0;position:absolute;top:0;left:0;text-indent:-999px;overflow:hidden}
-#btn_gnb.btn_gnb_open{background:url(../img/menu-op.png) 50% 50% no-repeat #223390;width:50px;height:50px;border:0;position:absolute;top:0;left:0;text-indent:-999px;overflow:hidden}
+#logo{background:#1747A5;height:100%;float:left;width:220px;padding:0 0 0 50px;text-align:center}
+#logo a{display:block;line-height:50px;color:#fff;font-size:17px;font-weight:700;letter-spacing:-0.5px}
+#logo .logo_pro{display:inline-block;margin-left:6px;padding:2px 6px;border-radius:4px;background:#2E7CF6;color:#fff;font-size:11px;font-weight:800;line-height:1;letter-spacing:1px;vertical-align:2px}
+#btn_gnb{background:url(../img/menu-cl.png) 50% 50% no-repeat #123A8C;width:50px;height:50px;border:0;position:absolute;top:0;left:0;text-indent:-999px;overflow:hidden}
+#btn_gnb.btn_gnb_open{background:url(../img/menu-op.png) 50% 50% no-repeat #123A8C;width:50px;height:50px;border:0;position:absolute;top:0;left:0;text-indent:-999px;overflow:hidden}
 
 #tnb{float:right;padding:10px}
 #tnb ul:after{display:block;visibility:hidden;clear:both;content:""}
 #tnb li{float:left;position:relative;margin-left:3px}
 #tnb a{color:#fff;padding:0 10px;display:block;line-height:30px;}
-#tnb .tnb_service{border-radius:3px;background:#4e5eb7;color:#fff;padding:0 10px;text-align:left;height:30px;line-height:30px;}
-#tnb .tnb_service:hover{background:#5969c3}
-#tnb button{width:100px;border:0;border-radius:3px;background:#4e5eb7;color:#fff;padding:0 30px 0 10px;text-align:left;height:30px;position:relative;text-overflow: ellipsis;overflow: hidden;white-space: nowrap;}
-#tnb button span{display:block;text-indent:-999px;overflow:hidden;width:30px;border-radius:3px;height:30px;position:absolute;top:0;right:0;background:url(../img/op_btn.png) 50% 50% no-repeat #5969c3}
-#tnb button:hover {background:#5969c3}
-#tnb .tnb_mb_area{display:none;background:#5e6dc2;width:100px;position:absolute;padding:5px;margin-top:1px;}
+#tnb .tnb_service{border-radius:3px;background:#2E7CF6;color:#fff;padding:0 10px;text-align:left;height:30px;line-height:30px;}
+#tnb .tnb_service:hover{background:#4A90FF}
+#tnb button{width:100px;border:0;border-radius:3px;background:#2E7CF6;color:#fff;padding:0 30px 0 10px;text-align:left;height:30px;position:relative;text-overflow: ellipsis;overflow: hidden;white-space: nowrap;}
+#tnb button span{display:block;text-indent:-999px;overflow:hidden;width:30px;border-radius:3px;height:30px;position:absolute;top:0;right:0;background:url(../img/op_btn.png) 50% 50% no-repeat #4A90FF}
+#tnb button:hover {background:#4A90FF}
+#tnb .tnb_mb_area{display:none;background:#1747A5;width:100px;position:absolute;padding:5px;margin-top:1px;}
 #tnb .tnb_mb_area a{padding:0}
 #tnb .tnb_mb_area li{float:none;}
 #tnb .tnb_community{background:url(../img/home_icon.png) no-repeat 50% 50%;width:30px;height:30px;overflow:hidden;text-indent:-999px;border-radius:5px}
-#tnb .tnb_community:hover{background-color:#2b3d9f}
+#tnb .tnb_community:hover{background-color:#1747A5}
 #tnb .tnb_shop{background:url(../img/shop_icon.png) no-repeat 50% 50%;width:30px;height:30px;overflow:hidden;text-indent:-999px;border-radius:5px}
-#tnb .tnb_shop:hover{background-color:#2b3d9f}
+#tnb .tnb_shop:hover{background-color:#1747A5}
 
 /*gnb*/
 #gnb{position:fixed;top:0;left:0;max-width:220px;height:100%;padding-top:50px;z-index:999}
@@ -230,7 +233,7 @@ a.btn_submit{background:#ff4081;color:#fff}
 .btn_01:hover,a.btn_01:hover{background:#ff1464}
 
 .btn_02,a.btn_02{background:#9eacc6;color:#fff;}
-.btn_03,a.btn_03{background:#3f51b5;color:#fff;}
+.btn_03,a.btn_03{background:#1D5FD1;color:#fff;}
 
 .btn_frmline{display:inline-block;background:#9eacc6;color:#fff;height:35px;border:0;border-radius:5px;padding:0 10px}
 a.btn_frmline{display:inline-block;background:#9eacc6;color:#fff;height:35px;line-height:33px;border-radius:5px;padding:0 10px;text-decoration:none !important}
@@ -239,7 +242,7 @@ a.btn_frmline{display:inline-block;background:#9eacc6;color:#fff;height:35px;lin
 .btn_ov01 .ov_txt{float:left;background:#9eacc6;color:#fff;border-radius:5px 0 0 5px;padding:0 5px}
 .btn_ov01 .ov_num{float:left;background:#ededed;color:#666;border-radius:0 5px 5px 0;padding:0 5px}
 a.btn_ov02,a.ov_listall{display:inline-block;line-height:30px;height:30px;font-size:0.92em;background:#565e8c;color:#fff;vertical-align:top;border-radius:5px;padding:0 7px }
-a.btn_ov02:hover,a.ov_listall:hover{background:#3f51b5}
+a.btn_ov02:hover,a.ov_listall:hover{background:#1D5FD1}
 
 /*form*/
 .sound_only {display:inline-block !important;position:absolute;top:0;left:0;margin:0 !important;padding:0 !important;width:1px !important;height:1px !important;font-size:0;line-height:0;border:0 !important;overflow:hidden !important}
@@ -280,7 +283,7 @@ legend {position:absolute;width:0;height:0;font-size:0;line-height:0;text-indent
 .anchor:after {display:block;visibility:hidden;clear:both;content:""}
 .anchor li{float:left;margin-left:-1px;list-style:none}
 .anchor a {display:inline-block;padding:5px 10px;border:1px solid #c8ced1;background:#d6dde1;text-decoration:none}
-.anchor .selected{background:#3f51b5}
+.anchor .selected{background:#1D5FD1}
 
 #sort_mb {width:800px}
 
@@ -442,7 +445,7 @@ tfoot th {}
 .tbl_frm01 textarea {height:150px}
 .tbl_frm01 #captcha {margin:0;padding:0;border:0;background:transparent}
 .tbl_frm01 #captcha input {margin-left:5px;text-align:center}
-.h2_frm{text-align:left;color:#3f51b5;font-size:1.09em;font-weight:bold;margin:20px 0 10px}
+.h2_frm{text-align:left;color:#1D5FD1;font-size:1.09em;font-weight:bold;margin:20px 0 10px}
 
 /* 테이블 그리드 */
 .grid_1 {width:50px}
@@ -496,7 +499,7 @@ tfoot th {}
 /* 접속자집계 목록 */
 .tbl_visit_list td {text-align:center}
 .visit_bar {position:relative}
-.visit_bar span {position:absolute;top:-8px;left:0;height:15px;background:#3f51b5}
+.visit_bar span {position:absolute;top:-8px;left:0;height:15px;background:#1D5FD1}
 
 /*접속자로그삭제*/
 .visit_del_bt{margin:5px 0;border-top:1px solid #eee;padding:5px 0}
@@ -1032,7 +1035,7 @@ box-shadow: 2px 2px 3px 0px rgba(0,0,0,0.2);}
 .pg_prev {background:url(../img/page_2.png) 50% 50% no-repeat;width:32px;text-indent:-999px;overflow:hidden}
 .pg_next {background:url(../img/page_3.png) 50% 50% no-repeat;width:32px;text-indent:-999px;overflow:hidden}
 .pg_end {background:url(../img/page_4.png) 50% 50% no-repeat;width:32px;text-indent:-999px;overflow:hidden}
-.pg_current {display:inline-block;background:#3f51b5;color:#fff;font-weight:normal}
+.pg_current {display:inline-block;background:#1D5FD1;color:#fff;font-weight:normal}
 
 .social_config_explain p{padding-bottom:10px}
 
@@ -1151,7 +1154,7 @@ box-shadow: 1px 2px 5px rgba(150,150,150,0.5);z-index:1000}
 .theme_dt_img img{border:1px solid #aaa;max-width:600px;max-height:460px}
 .theme_dt_if{float:left;width:235px;padding:20px 0}
 .theme_dt_if table{width:100%;border-collapse:collapse;margin:15px 0 0 ;font-size:0.92em}
-.theme_dt_if table th{padding:5px;background:#fff;border-bottom:1px solid #f3f3f3;vertical-align:top;color:#3f51b5}
+.theme_dt_if table th{padding:5px;background:#fff;border-bottom:1px solid #f3f3f3;vertical-align:top;color:#1D5FD1}
 .theme_dt_if table td{padding:5px;background:#fff;border-bottom:1px solid #f3f3f3;line-height:1.56em}
 .theme_dt_if table td a{text-decoration:underline}
 .theme_dt_if p{line-height:1.5em}

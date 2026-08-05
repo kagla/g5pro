@@ -115,7 +115,8 @@ if (!empty($_COOKIE['g5_admin_btn_gnb'])) {
     <h1><?php echo $config['cf_title'] ?></h1>
     <div id="hd_top">
         <button type="button" id="btn_gnb" class="btn_gnb_close <?php echo $adm_menu_cookie['btn_gnb']; ?>">메뉴</button>
-        <div id="logo"><a href="<?php echo correct_goto_url(G5_ADMIN_URL); ?>"><img src="<?php echo G5_ADMIN_URL ?>/img/logo.png" alt="<?php echo get_text($config['cf_title']); ?> 관리자"></a></div>
+        <?php // 그누보드5 프로 텍스트 로고 — 이미지(logo.png) 대신 글자로 그려 배포판 이름을 드러낸다 ?>
+        <div id="logo"><a href="<?php echo correct_goto_url(G5_ADMIN_URL); ?>" title="<?php echo get_text($config['cf_title']); ?> 관리자">그누보드5<span class="logo_pro">PRO</span></a></div>
 
         <div id="tnb">
             <ul>
