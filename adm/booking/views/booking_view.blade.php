@@ -118,7 +118,7 @@
             <td>
                 {{ $bk['bk_tid'] == '' ? '-' : $bk['bk_tid'] }}
                 @if ($bk['bk_tid'] == '' && $bk['bk_status'] == 'confirmed')
-                <span class="bkv_warn">확정된 예약인데 거래번호가 없습니다. 결제 점검 화면에서 확인하십시오.</span>
+                <span class="bkv_warn">확정된 예약인데 거래번호가 없습니다. 결제점검 화면에서 확인하십시오.</span>
                 @endif
             </td>
         </tr>
