@@ -93,6 +93,24 @@ while ($r = sql_fetch_array($result)) $room_opts[] = $r;
 $qstr = 'status='.urlencode($status).'&amp;br_id='.$br_id.'&amp;sdate='.urlencode($sdate)
       . '&amp;edate='.urlencode($edate).'&amp;stx='.urlencode($stx);
 
+// 빠른 기간 버튼 — 날짜 계산은 서버 시간으로 여기서 끝낸다 (브라우저 시계·시간대에 흔들리지 않는다).
+// 주는 관리자 캘린더 표기와 같게 일요일에 시작한다
+$today = date('Y-m-d', G5_SERVER_TIME);
+$week_start = date('Y-m-d', G5_SERVER_TIME - (int)date('w', G5_SERVER_TIME) * 86400);
+$quick_ranges = array(
+    array('label' => '오늘',   's' => $today, 'e' => $today),
+    array('label' => '어제',   's' => date('Y-m-d', strtotime($today.' -1 day')),
+                               'e' => date('Y-m-d', strtotime($today.' -1 day'))),
+    array('label' => '이번주', 's' => $week_start,
+                               'e' => date('Y-m-d', strtotime($week_start.' +6 day'))),
+    array('label' => '지난주', 's' => date('Y-m-d', strtotime($week_start.' -7 day')),
+                               'e' => date('Y-m-d', strtotime($week_start.' -1 day'))),
+    array('label' => '이번달', 's' => date('Y-m-01', G5_SERVER_TIME),
+                               'e' => date('Y-m-t', G5_SERVER_TIME)),
+    array('label' => '지난달', 's' => date('Y-m-01', strtotime($today.' first day of last month')),
+                               'e' => date('Y-m-t', strtotime($today.' first day of last month'))),
+);
+
 $g5['title'] = '예약목록';
 include_once(G5_ADMIN_PATH.'/admin.head.php');
 
@@ -100,6 +118,7 @@ badm_view('booking_list', array(
     'list' => $list, 'total_count' => $total_count,
     'status' => $status, 'br_id' => $br_id, 'room_opts' => $room_opts,
     'sdate' => $sdate, 'edate' => $edate, 'stx' => $stx,
+    'quick_ranges' => $quick_ranges,
     'admin_url' => G5_ADMIN_URL,
 ));
 

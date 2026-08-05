@@ -13,6 +13,8 @@
 .bkl_sub { color:#777; font-size:0.92em }
 .bkl_total { text-align:right }
 .local_sch01 .bkl_date { width:9.5em }
+.bkl_quick { margin-left:8px }
+.bkl_quick .bkl_quick_btn { margin-left:2px }
 </style>
 
 <form name="fbookingsearch" id="fbookingsearch" method="get" action="./booking_list.php">
@@ -47,8 +49,25 @@
 
     <input type="submit" value="검색" class="btn_submit">
     <a href="./booking_list.php" class="btn btn_02">전체목록</a>
+
+    <span class="bkl_quick">
+        {{-- 체크인 기간을 채우고 바로 검색한다. 상태·객실·검색어는 걸어 둔 그대로 간다 --}}
+        @foreach ($quick_ranges as $q)
+        <button type="button" class="btn btn_02 bkl_quick_btn" data-s="{{ $q['s'] }}" data-e="{{ $q['e'] }}">{{ $q['label'] }}</button>
+        @endforeach
+    </span>
 </div>
 </form>
+
+<script>
+jQuery(function($) {
+    $(".bkl_quick_btn").on("click", function() {
+        $("#sdate").val($(this).data("s"));
+        $("#edate").val($(this).data("e"));
+        $("#fbookingsearch").submit();
+    });
+});
+</script>
 
 <div class="local_ov01 local_ov">검색된 예약 <b>{{ number_format($total_count) }}</b>건</div>
 

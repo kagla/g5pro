@@ -170,6 +170,10 @@ $samples = array(
     'booking_list' => array(
         array('admin_url' => G5_ADMIN_URL, 'total_count' => 3,
             'status' => '', 'br_id' => 0, 'sdate' => '', 'edate' => '', 'stx' => '',
+            'quick_ranges' => array(
+                array('label' => '오늘', 's' => '2026-08-05', 'e' => '2026-08-05'),
+                array('label' => '이번달', 's' => '2026-08-01', 'e' => '2026-08-31'),
+            ),
             'room_opts' => array(
                 array('br_id' => 3, 'br_subject' => '디럭스 더블', 'br_use' => 1),
                 array('br_id' => 4, 'br_subject' => '스탠다드', 'br_use' => 0),   // 숨김 표시 분기
@@ -198,6 +202,7 @@ $samples = array(
         array('admin_url' => G5_ADMIN_URL, 'total_count' => 0, 'list' => array(),
             'status' => 'cancelled', 'br_id' => 3,
             'room_opts' => array(array('br_id' => 3, 'br_subject' => '디럭스 더블', 'br_use' => 1)),
+            'quick_ranges' => array(array('label' => '오늘', 's' => '2026-08-05', 'e' => '2026-08-05')),
             'sdate' => '2026-08-01', 'edate' => '2026-08-31', 'stx' => '홍길동'),
     ),
     'booking_view' => array(
