@@ -147,7 +147,82 @@ if ( ! function_exists('is_ie')) {
  * 접속, 발송, URL발송, 결과등의 실질적으로 쓰이는 모든 부분이 포함되어 있다.
  */
 
-if($config['cf_sms_type'] == 'LMS') {
+if (isset($config['cf_sms_use']) && $config['cf_sms_use'] === 'ppurio') {
+    include_once(G5_LIB_PATH.'/ppurio.sms.lib.php');
+
+    /**
+     * 뿌리오용 SMS5 — 아이코드 소켓 클래스와 같은 껍데기(SMS_con/Add/Add2/Send/Init/Result/Log)라
+     * 발송(sms_write_send)·재전송(history_send) 호출부가 그대로 동작한다.
+     * SMS/LMS 구분은 라이브러리가 바이트 수로 자동 판정하므로 cf_sms_type 과 무관하다.
+     */
+    class SMS5 {
+        public $Data = array();
+        public $Result = array();   // "번호:코드" — 아이코드와 같은 모양이라 호출부 파서가 그대로 읽는다
+        public $Log = array();      // 호출부가 euc-kr → utf-8 변환해 이력에 남기므로 euc-kr 로 담는다
+        // 아이코드 호환 속성 — 호출부가 값을 넣지만 쓰지 않는다
+        public $ID; public $PWD; public $icode_id; public $icode_pw; public $icode_key;
+        public $socket_host; public $socket_port; public $SMS_Server; public $SMS_Port;
+
+        function SMS_con($sms_server, $sms_id, $sms_pw, $port) { return true; }   // 접속 설정 불필요
+
+        function Init() { $this->Data = array(); $this->Result = array(); $this->Log = array(); }
+
+        function queue($to, $msg, $from, $date12) {
+            $this->Data[] = array(
+                'to' => preg_replace('/[^0-9]/', '', (string)$to),
+                'msg' => $msg, 'from' => preg_replace('/[^0-9]/', '', (string)$from),
+                'date' => preg_replace('/[^0-9]/', '', (string)$date12),
+            );
+        }
+
+        // 호출부 두 곳의 인자 모양이 다르다:
+        //  - LMS 모드 화면: Add(번호배열, 회신, 발신자, 제목, URL, 내용, 예약일시, 건수)
+        //  - 재전송 화면:   Add(회원행배열, 회신, '', '', 내용, 예약일시, 건수) — Add2 와 같은 모양
+        // 행 배열(bk_hp 포함)인지로 갈라 받는다
+        function Add($a1, $a2 = '', $a3 = '', $a4 = '', $a5 = '', $a6 = '', $a7 = '', $a8 = 0) {
+            if (is_array($a1) && isset($a1[0]) && is_array($a1[0]))
+                return $this->Add2($a1, $a2, $a3, $a4, $a5, $a6, (int)$a7);
+            foreach ((array)$a1 as $to) $this->queue($to, $a6, $a2, $a7);
+            return true;
+        }
+
+        function Add2($list, $reply, $strCaller, $strURL, $message, $date = '', $count = 0) {
+            foreach ($list as $row) {
+                $msg = $message;
+                if (!empty($row['bk_name'])) $msg = str_replace('{이름}', $row['bk_name'], $msg);
+                $this->queue(isset($row['bk_hp']) ? $row['bk_hp'] : '', $msg, $reply, $date);
+            }
+            return true;
+        }
+
+        function Send() {
+            foreach ($this->Data as $item) {
+                $opt = array();
+                if ($item['from'] !== '') $opt['from'] = $item['from'];
+                // 예약일시는 아이코드 형식(yyyymmddhhii) 그대로 온다 — 유닉스타임으로 바꿔 넘긴다
+                if (strlen($item['date']) === 12) {
+                    $ts = strtotime(substr($item['date'], 0, 4).'-'.substr($item['date'], 4, 2).'-'.substr($item['date'], 6, 2)
+                        .' '.substr($item['date'], 8, 2).':'.substr($item['date'], 10, 2).':00');
+                    if ($ts > time()) $opt['sendtime'] = $ts;
+                }
+
+                $r = ppurio_send_sms($item['to'], $item['msg'], $opt);
+                if ($r['ok']) {
+                    // 성공 코드는 messagekey 앞 15자리(발송 고유번호) — 이력의 코드 칸에 들어간다
+                    $code = ($r['key'] !== '') ? substr(strtok($r['key'], '#'), 0, 15) : 'OK';
+                    $this->Result[] = $item['to'].':'.$code;
+                    $detail = '뿌리오 접수 '.$r['key'].(isset($opt['sendtime']) ? ' (예약 '.date('Y-m-d H:i', $opt['sendtime']).')' : '');
+                } else {
+                    $this->Result[] = $item['to'].':Error(PP)';
+                    $detail = $r['msg'];
+                }
+                $this->Log[] = iconv('UTF-8', 'EUC-KR//IGNORE', $detail.' / '.$item['msg']);
+            }
+            $this->Data = array();
+            return true;
+        }
+    }
+} else if($config['cf_sms_type'] == 'LMS') {
     include_once(G5_LIB_PATH.'/icode.lms.lib.php');
 
     class SMS5 extends LMS {

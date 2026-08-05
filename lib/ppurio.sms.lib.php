@@ -72,19 +72,22 @@ function ppurio_token($force = false)
 }
 
 // 문자 한 건 발송. 90바이트(EUC-KR) 이하는 SMS, 넘으면 LMS 로 자동 승격.
-// 반환: array('ok' => bool, 'msg' => 사유)
-function ppurio_send_sms($to, $message)
+// $opt: 'from' => 발신번호(설정값 대신 쓸 때, 뿌리오에 등록된 번호여야 한다)
+//       'sendtime' => 예약 발송 유닉스타임 (최대 30일 이내, 과거면 즉시 발송)
+// 반환: array('ok' => bool, 'msg' => 사유, 'key' => 뿌리오 messagekey)
+function ppurio_send_sms($to, $message, $opt = array())
 {
     global $config;
     if (empty($config['cf_ppurio_id']) || empty($config['cf_ppurio_pw']))
-        return array('ok' => false, 'msg' => '뿌리오 연동 계정이 설정되지 않았습니다.');
-    $from = preg_replace('/[^0-9]/', '', (string)$config['cf_ppurio_from']);
-    if ($from === '') return array('ok' => false, 'msg' => '뿌리오 발신번호가 설정되지 않았습니다.');
+        return array('ok' => false, 'msg' => '뿌리오 연동 계정이 설정되지 않았습니다.', 'key' => '');
+    $from = preg_replace('/[^0-9]/', '', isset($opt['from']) ? (string)$opt['from'] : '');
+    if ($from === '') $from = preg_replace('/[^0-9]/', '', (string)$config['cf_ppurio_from']);
+    if ($from === '') return array('ok' => false, 'msg' => '뿌리오 발신번호가 설정되지 않았습니다.', 'key' => '');
     $to = preg_replace('/[^0-9]/', '', (string)$to);
-    if ($to === '') return array('ok' => false, 'msg' => '수신번호가 없습니다.');
+    if ($to === '') return array('ok' => false, 'msg' => '수신번호가 없습니다.', 'key' => '');
 
     $token = ppurio_token();
-    if ($token === '') return array('ok' => false, 'msg' => '뿌리오 토큰 발급에 실패했습니다. 연동 계정·비밀번호를 확인하세요.');
+    if ($token === '') return array('ok' => false, 'msg' => '뿌리오 토큰 발급에 실패했습니다. 연동 계정·비밀번호를 확인하세요.', 'key' => '');
 
     if (ppurio_byte_len($message) <= 90) {
         $type = 'sms';
@@ -93,11 +96,14 @@ function ppurio_send_sms($to, $message)
         $type = 'lms';
         $content = array('lms' => array('message' => $message, 'subject' => mb_substr($message, 0, 20, 'UTF-8')));
     }
-    $body = json_encode(array(
+    $req = array(
         'account' => $config['cf_ppurio_id'],
         'type' => $type, 'from' => $from, 'to' => $to,
         'content' => $content,
-    ), JSON_UNESCAPED_UNICODE);
+    );
+    if (!empty($opt['sendtime']) && (int)$opt['sendtime'] > time())
+        $req['sendtime'] = (int)$opt['sendtime'];
+    $body = json_encode($req, JSON_UNESCAPED_UNICODE);
 
     $r = ppurio_http(ppurio_api_host().'/v3/message',
         array('Authorization: Bearer '.$token, 'Content-Type: application/json'), $body);
@@ -112,9 +118,10 @@ function ppurio_send_sms($to, $message)
     }
 
     if ($r['status'] === 200 && isset($r['body']['code']) && (int)$r['body']['code'] === 1000)
-        return array('ok' => true, 'msg' => 'ok');
+        return array('ok' => true, 'msg' => 'ok',
+            'key' => isset($r['body']['messagekey']) ? (string)$r['body']['messagekey'] : '');
 
     $desc = isset($r['body']['description']) ? $r['body']['description'] : $r['error'];
     $code = isset($r['body']['code']) ? $r['body']['code'] : $r['status'];
-    return array('ok' => false, 'msg' => '뿌리오 발송 거절 ('.$code.' '.$desc.')');
+    return array('ok' => false, 'msg' => '뿌리오 발송 거절 ('.$code.' '.$desc.')', 'key' => '');
 }

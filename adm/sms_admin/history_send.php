@@ -60,7 +60,8 @@ include_once(G5_ADMIN_PATH.'/admin.head.php');
 
 $SMS = new SMS5;
 
-if($config['cf_sms_type'] == 'LMS') {
+// 뿌리오는 SMS/LMS 를 바이트 수로 자동 판정하므로 아이코드 LMS 분기(요금제 원격 조회)를 타지 않는다
+if($config['cf_sms_type'] == 'LMS' && $config['cf_sms_use'] !== 'ppurio') {
     $port_setting = get_icode_port_type($config['cf_icode_id'], $config['cf_icode_pw']);
 
     if($port_setting !== false) {

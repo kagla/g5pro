@@ -34,7 +34,7 @@ if (! (isset($sms5['cf_skin']) && $sms5['cf_skin']))
 include_once(G5_ADMIN_PATH.'/admin.head.php');
 
 ?>
-<?php if (!($config['cf_icode_pw'] || $config['cf_icode_token_key'])) { ?>
+<?php if (!($config['cf_icode_pw'] || $config['cf_icode_token_key']) && $config['cf_sms_use'] !== 'ppurio') { ?>
 <div class="local_desc01 local_desc">
     <p>
         SMS 기능을 사용하시려면 먼저 아이코드에 서비스 신청을 하셔야 합니다.<br>
@@ -132,6 +132,42 @@ if ($config['cf_sms_use'] == 'icode') { // 아이코드 사용
 </div>
 </form>
 
+<?php } else if ($config['cf_sms_use'] == 'ppurio') { // 뿌리오 사용 ?>
+
+<div class="local_desc01 local_desc">
+    <p><strong>뿌리오(비즈뿌리오)</strong>로 문자를 발송합니다. 연동 계정·발신번호는
+        <a href="../config_form.php#anc_cf_sms" class="btn_frmline">환경설정 &gt; 기본환경설정 &gt; SMS설정</a> 에서 관리합니다.</p>
+    <p>SMS/LMS 는 문자 길이(90바이트 기준)에 따라 자동으로 구분되어 발송됩니다. 회신번호는 뿌리오에 <strong>발신번호로 사전 등록된 번호</strong>여야 합니다.</p>
+</div>
+
+<form name="fconfig" method="post" action="./config_update.php">
+<input type="hidden" name="token" value="">
+<input type="hidden" name="cf_sms_use" value="ppurio">
+<input type="hidden" name="cf_sms_type" value="<?php echo get_sanitize_input($config['cf_sms_type']); ?>">
+<div class="tbl_frm01 tbl_wrap">
+    <table>
+    <caption><?php echo $g5['title']; ?></caption>
+    <colgroup>
+        <col class="grid_4">
+        <col>
+    </colgroup>
+    <tbody>
+    <tr>
+        <th scope="row"><label for="cf_phone">회신번호<strong class="sound_only"> 필수</strong></label></th>
+        <td>
+            <?php echo help("문자 보내기 화면의 기본 회신번호입니다. 뿌리오에 발신번호로 사전 등록된 번호와 동일해야 합니다.<br>예) 010-123-4567"); ?>
+            <input type="text" name="cf_phone" value="<?php echo isset($sms5['cf_phone']) ? get_sanitize_input($sms5['cf_phone']) : ''; ?>" id="cf_phone" required class="frm_input required" size="13">
+        </td>
+    </tr>
+    </tbody>
+    </table>
+</div>
+
+<div class="btn_fixed_top">
+    <input type="submit" value="확인" class="btn_submit btn" accesskey="s">
+</div>
+</form>
+
 <?php } else { ?>
 
 <section>
@@ -139,7 +175,7 @@ if ($config['cf_sms_use'] == 'icode') { // 아이코드 사용
     <div class="local_desc01 local_desc">
         <p>
             SMS 를 사용하지 않고 있기 때문에, 문자 전송을 할 수 없습니다.<br>
-            SMS 사용 설정은 <a href="../config_form.php#anc_cf_sms" class="btn_frmline">환경설정 &gt; 기본환경설정 &gt; SMS설정</a> 에서 SMS 사용을 아이코드로 변경해 주셔야 사용하실수 있습니다.
+            SMS 사용 설정은 <a href="../config_form.php#anc_cf_sms" class="btn_frmline">환경설정 &gt; 기본환경설정 &gt; SMS설정</a> 에서 SMS 사용을 아이코드 또는 뿌리오로 변경해 주셔야 사용하실수 있습니다.
         </p>
     </div>
 </section>
