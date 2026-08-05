@@ -7,7 +7,7 @@ check_admin_token();
 // $_POST 는 common.php 에서 이미 escape 되어 있다 — 가공할 때만 stripslashes/addslashes 를 짝지어 쓴다
 // 배열로 오지 않은 입력은 통째로 버린다 — 문자열에 [$key] 를 하면 엉뚱한 글자가 값이 된다
 $in = array();
-foreach (array('ba_id', 'ba_subject', 'ba_price', 'ba_max_qty', 'ba_use', 'ba_order', 'del') as $name) {
+foreach (array('ba_id', 'ba_subject', 'ba_price', 'ba_unit', 'ba_max_qty', 'ba_use', 'ba_order', 'del') as $name) {
     $in[$name] = (isset($_POST[$name]) && is_array($_POST[$name])) ? $_POST[$name] : array();
 }
 
@@ -37,6 +37,8 @@ foreach ($in['ba_id'] as $key => $val) {
         'ba_id'      => $ba_id,
         'ba_subject' => $ba_subject,
         'ba_price'   => max(0, isset($in['ba_price'][$key]) ? (int)$in['ba_price'][$key] : 0),
+        // once(1회)/night(1박당) 둘뿐 — 모르는 값은 기존과 같은 once 로
+        'ba_unit'    => (isset($in['ba_unit'][$key]) && $in['ba_unit'][$key] === 'night') ? 'night' : 'once',
         'ba_max_qty' => max(1, isset($in['ba_max_qty'][$key]) ? (int)$in['ba_max_qty'][$key] : 1),
         'ba_use'     => (isset($in['ba_use'][$key]) && (int)$in['ba_use'][$key]) ? 1 : 0,
         'ba_order'   => isset($in['ba_order'][$key]) ? (int)$in['ba_order'][$key] : 0,
@@ -54,6 +56,7 @@ foreach ($rows as $r) {
 
     $sql_common = " ba_subject = '{$r['ba_subject']}',
         ba_price = '{$r['ba_price']}',
+        ba_unit = '{$r['ba_unit']}',
         ba_max_qty = '{$r['ba_max_qty']}',
         ba_use = '{$r['ba_use']}',
         ba_order = '{$r['ba_order']}' ";

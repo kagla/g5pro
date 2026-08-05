@@ -168,6 +168,14 @@ chk(count($ap['addon_items']) === 1, '부가상품 항목이 1건이 아님');
 chk($ap['addon_items'][0]['qty'] === 2, '부가상품 수량이 최대 2 로 잘리지 않음');
 chk($ap['addon'] === 60000, "부가상품 금액이 60000 이 아님 (".var_export($ap['addon'], true).")");
 chk($ap['total'] === 160000, "부가상품 포함 합계가 160000 이 아님 (".var_export($ap['total'], true).")");
+chk($ap['addon_items'][0]['unit'] === 'once', '1회 상품의 unit 이 once 가 아님');
+
+// ---- 1박당 상품: 수량에 박수가 곱해진다 (30000원 × 2개 × 2박) ----
+sql_query(" update `{$g5['booking_addon_table']}` set ba_unit = 'night' where ba_id = '$ba_id' ", true);
+$np = booking_calc_price($room, $s_in, $s_out, 2, array($ba_id => 2));
+chk($np['addon'] === 120000, "1박당 상품 금액이 120000 이 아님 (".var_export($np['addon'], true).")");
+chk($np['addon_items'][0]['unit'] === 'night', '1박당 상품의 unit 이 night 가 아님');
+sql_query(" update `{$g5['booking_addon_table']}` set ba_unit = 'once' where ba_id = '$ba_id' ", true);
 
 $h5 = booking_create_hold($br_id, $a_in, $a_out, 2, array($ba_id => 5), $guest);
 chk(!empty($h5['ok']), '부가상품 hold 가 실패함 ('.(isset($h5['error']) ? $h5['error'] : '').')');
@@ -175,6 +183,9 @@ if (!empty($h5['ok'])) {
     $cnt = sql_fetch(" select count(*) as c from `{$g5['booking_addon_item_table']}`
         where bk_id = '".(int)$h5['bk_id']."' ");
     chk((int)$cnt['c'] === 1, 'hold 가 부가상품 항목을 저장하지 않음');
+    $it = sql_fetch(" select bt_unit from `{$g5['booking_addon_item_table']}`
+        where bk_id = '".(int)$h5['bk_id']."' ");
+    chk($it && $it['bt_unit'] === 'once', 'hold 스냅샷에 과금 단위가 저장되지 않음');
 }
 
 // ---- booking_new_no ----

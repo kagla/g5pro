@@ -87,19 +87,20 @@ $SEED_ROOMS = array(
 );
 
 // 부가상품 12개 — 이름, 가격(100~500원), 최대수량 (기존 ba_id=36 '조식' 과 이름이 겹치지 않게 한다)
+// 이름, 가격, 최대수량, 과금단위(once=1회 / night=1박당 — 조식·침구처럼 아침·밤마다 쓰는 것)
 $SEED_ADDONS = array(
-    array('바베큐 세트',        400, 5),
-    array('숯+그릴 대여',       200, 4),
-    array('조식 세트(2인)',     300, 8),
-    array('침구 추가',          100, 6),
-    array('픽업 서비스(편도)',  300, 2),
-    array('불멍 세트',          400, 3),
-    array('와인 웰컴 세트',     500, 4),
-    array('케이크 서프라이즈',  400, 2),
-    array('반려동물 동반',      300, 2),
-    array('수영장 이용권',      200, 10),
-    array('조식 도시락',        100, 8),
-    array('낚시대 대여',        100, 6),
+    array('바베큐 세트',        400, 5,  'once'),
+    array('숯+그릴 대여',       200, 4,  'once'),
+    array('조식 세트(2인)',     300, 8,  'night'),
+    array('침구 추가',          100, 6,  'night'),
+    array('픽업 서비스(편도)',  300, 2,  'once'),
+    array('불멍 세트',          400, 3,  'once'),
+    array('와인 웰컴 세트',     500, 4,  'once'),
+    array('케이크 서프라이즈',  400, 2,  'once'),
+    array('반려동물 동반',      300, 2,  'night'),
+    array('수영장 이용권',      200, 10, 'night'),
+    array('조식 도시락',        100, 8,  'night'),
+    array('낚시대 대여',        100, 6,  'once'),
 );
 
 $SEED_NAMES = array('홍길동', '김철수', '이영희', '박민수', '최지우', '정다은', '강태호', '윤서연',
@@ -327,6 +328,7 @@ foreach ($SEED_ADDONS as $i => $a) {
     sql_query(" insert into `{$g5['booking_addon_table']}` set
         ba_subject = '".sql_real_escape_string($a[0])."',
         ba_price = '".(int)$a[1]."', ba_max_qty = '".(int)$a[2]."',
+        ba_unit = '".($a[3] === 'night' ? 'night' : 'once')."',
         ba_use = 1, ba_order = '".(SEED_ADDON_ORDER + $i + 1)."' ", true);
     $addon_ids[] = sql_insert_id();
 }

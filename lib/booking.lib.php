@@ -32,6 +32,17 @@ function booking_install()
     $created = booking_create_tables();
     // 향후 스키마 변경은 여기 누적한다: SHOW COLUMNS 판정 후 ALTER TABLE
 
+    // 2026-08-05 부가상품 과금 단위 — once(1회, 기존과 동일)/night(1박당).
+    // 스냅샷(bt_unit)에도 같이 둔다: 지난 예약의 "× n박" 표기가 상품 수정에 흔들리면 안 된다
+    if (!sql_fetch(" SHOW COLUMNS FROM `{$g5['booking_addon_table']}` LIKE 'ba_unit' ")) {
+        sql_query(" ALTER TABLE `{$g5['booking_addon_table']}`
+            ADD `ba_unit` varchar(10) NOT NULL DEFAULT 'once' AFTER `ba_price` ", true);
+    }
+    if (!sql_fetch(" SHOW COLUMNS FROM `{$g5['booking_addon_item_table']}` LIKE 'bt_unit' ")) {
+        sql_query(" ALTER TABLE `{$g5['booking_addon_item_table']}`
+            ADD `bt_unit` varchar(10) NOT NULL DEFAULT 'once' AFTER `bt_price` ", true);
+    }
+
     // 상품이 전역이던 시절의 설치라면 현재 상품 전부를 전 객실에 매핑해
     // 화면 노출을 그대로 유지한다. 새 설치는 두 테이블이 비어 있어 아무 것도 넣지 않는다
     if (!$had_room_addon) {
@@ -100,6 +111,7 @@ function booking_table_ddl()
         `ba_id` int(11) NOT NULL AUTO_INCREMENT,
         `ba_subject` varchar(255) NOT NULL DEFAULT '',
         `ba_price` int(11) NOT NULL DEFAULT '0',
+        `ba_unit` varchar(10) NOT NULL DEFAULT 'once',
         `ba_max_qty` int(11) NOT NULL DEFAULT '10',
         `ba_use` tinyint(4) NOT NULL DEFAULT '1',
         `ba_order` int(11) NOT NULL DEFAULT '0',
@@ -117,6 +129,7 @@ function booking_table_ddl()
         `bk_id` int(11) NOT NULL DEFAULT '0',
         `bt_subject` varchar(255) NOT NULL DEFAULT '',
         `bt_price` int(11) NOT NULL DEFAULT '0',
+        `bt_unit` varchar(10) NOT NULL DEFAULT 'once',
         `bt_qty` int(11) NOT NULL DEFAULT '0',
         `bt_amount` int(11) NOT NULL DEFAULT '0',
         PRIMARY KEY (`bt_id`), KEY `bk_id` (`bk_id`)
@@ -315,7 +328,7 @@ function booking_room_addons($br_id)
     global $g5;
     $br_id = (int)$br_id;
     $list = array();
-    $result = sql_query(" select a.ba_id, a.ba_subject, a.ba_price, a.ba_max_qty
+    $result = sql_query(" select a.ba_id, a.ba_subject, a.ba_price, a.ba_unit, a.ba_max_qty
         from `{$g5['booking_addon_table']}` a
         inner join `{$g5['booking_room_addon_table']}` m on m.ba_id = a.ba_id
         where m.br_id = '$br_id' and a.ba_use = 1
@@ -346,10 +359,12 @@ function booking_calc_price($room, $checkin, $checkout, $person, $addons)
                 where a.ba_id = '$ba_id' and a.ba_use = 1 ");
             if (!$ba) continue;
             $qty = min($qty, (int)$ba['ba_max_qty']);
-            $amount = (int)$ba['ba_price'] * $qty;
+            // 1박당(night) 상품은 박수를 곱한다 — 조식 4인분 × 3박. 1회(once)는 기존 그대로
+            $unit = ($ba['ba_unit'] === 'night') ? 'night' : 'once';
+            $amount = (int)$ba['ba_price'] * $qty * ($unit === 'night' ? count($nights) : 1);
             $addon_price += $amount;
             $addon_items[] = array('ba_id' => $ba_id, 'subject' => $ba['ba_subject'],
-                'price' => (int)$ba['ba_price'], 'qty' => $qty, 'amount' => $amount);
+                'price' => (int)$ba['ba_price'], 'unit' => $unit, 'qty' => $qty, 'amount' => $amount);
         }
     }
     return array('room' => $room_price, 'person' => $person_price, 'addon' => $addon_price,
@@ -417,7 +432,8 @@ function booking_create_hold($br_id, $checkin, $checkout, $person, $addons, $gue
     foreach ($price['addon_items'] as $item) {
         sql_query(" insert into `{$g5['booking_addon_item_table']}` set bk_id = '$bk_id',
             bt_subject = '".sql_real_escape_string($item['subject'])."',
-            bt_price = '{$item['price']}', bt_qty = '{$item['qty']}', bt_amount = '{$item['amount']}' ", true);
+            bt_price = '{$item['price']}', bt_unit = '{$item['unit']}',
+            bt_qty = '{$item['qty']}', bt_amount = '{$item['amount']}' ", true);
     }
     sql_query(" commit ", true);
     sql_query(" set autocommit = 1 ", true);

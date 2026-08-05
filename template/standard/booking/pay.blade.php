@@ -56,7 +56,7 @@
             <div><dt>객실 요금 ({{ $nights }}박)</dt><dd>{{ number_format($bk['bk_room_price']) }}원</dd></div>
             <div><dt>인원 추가</dt><dd>{{ number_format($bk['bk_person_price']) }}원</dd></div>
             @foreach ($addon_items as $item)
-            <div><dt>{{ $item['bt_subject'] }} × {{ $item['bt_qty'] }}</dt><dd>{{ number_format($item['bt_amount']) }}원</dd></div>
+            <div><dt>{{ $item['bt_subject'] }} × {{ $item['bt_qty'] }}{{ $item['bt_unit'] == 'night' ? ' × '.$nights.'박' : '' }}</dt><dd>{{ number_format($item['bt_amount']) }}원</dd></div>
             @endforeach
             <div class="bk-total"><dt>합계</dt><dd><b>{{ number_format($bk['bk_total_price']) }}</b>원</dd></div>
         </dl>

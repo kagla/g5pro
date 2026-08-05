@@ -91,8 +91,8 @@
         @foreach ($addon_items as $it)
         <tr>
             <td>{{ $it['bt_subject'] }}</td>
-            <td class="bkv_right">{{ number_format($it['bt_price']) }}원</td>
-            <td class="bkv_right">{{ $it['bt_qty'] }}</td>
+            <td class="bkv_right">{{ number_format($it['bt_price']) }}원{{ $it['bt_unit'] == 'night' ? ' /1박' : '' }}</td>
+            <td class="bkv_right">{{ $it['bt_qty'] }}{{ $it['bt_unit'] == 'night' ? ' × '.$nights.'박' : '' }}</td>
             <td class="bkv_right">{{ number_format($it['bt_amount']) }}원</td>
         </tr>
         @endforeach

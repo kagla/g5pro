@@ -19,7 +19,7 @@ $room = sql_fetch(" select br_subject from `{$g5['booking_room_table']}` where b
 $br_subject = $room ? $room['br_subject'] : '';
 
 $addon_items = array();
-$result = sql_query(" select bt_subject, bt_price, bt_qty, bt_amount
+$result = sql_query(" select bt_subject, bt_price, bt_unit, bt_qty, bt_amount
     from `{$g5['booking_addon_item_table']}` where bk_id = '$bk_id' order by bt_id ");
 while ($r = sql_fetch_array($result)) $addon_items[] = $r;
 

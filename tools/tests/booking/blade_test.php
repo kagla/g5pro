@@ -99,8 +99,10 @@ $sample_bk = array(
     'bk_oid' => 'ABCD123456T175400000042', 'bk_tid' => 'StdpayCARDINIpayTest20260804132000',
     'bk_pay_time' => '2026-08-04 13:05:00', 'bk_datetime' => '2026-08-04 12:45:00',
 );
+// 1박당(× n박 표기)과 1회 상품을 하나씩 — 표기 분기가 그려지는지 본다 (금액 정합은 lib_test 몫)
 $sample_addon_items = array(
-    array('bt_subject' => '조식 2인', 'bt_price' => 20000, 'bt_qty' => 2, 'bt_amount' => 40000),
+    array('bt_subject' => '조식 2인', 'bt_price' => 10000, 'bt_unit' => 'night', 'bt_qty' => 2, 'bt_amount' => 40000),
+    array('bt_subject' => '픽업 서비스', 'bt_price' => 30000, 'bt_unit' => 'once', 'bt_qty' => 1, 'bt_amount' => 30000),
 );
 
 // 뷰 이름 => 케이스 목록(각 케이스는 run() 에 넘길 데이터 배열)
@@ -116,11 +118,12 @@ $samples = array(
         array('admin_url' => G5_ADMIN_URL, 'g5_url' => G5_URL, 'rooms' => array()),   // 빈 목록 분기
     ),
     'addon_list' => array(
+        // 1박당 상품과 1회 상품이 함께 있는 분기
         array('admin_url' => G5_ADMIN_URL, 'addons' => array(
             array('ba_id' => 1, 'ba_subject' => '조식 2인', 'ba_price' => 20000,
-                'ba_max_qty' => 4, 'ba_use' => 1, 'ba_order' => 0),
+                'ba_unit' => 'night', 'ba_max_qty' => 4, 'ba_use' => 1, 'ba_order' => 0),
             array('ba_id' => 2, 'ba_subject' => '바비큐 세트', 'ba_price' => 50000,
-                'ba_max_qty' => 2, 'ba_use' => 0, 'ba_order' => 10),
+                'ba_unit' => 'once', 'ba_max_qty' => 2, 'ba_use' => 0, 'ba_order' => 10),
         )),
         array('admin_url' => G5_ADMIN_URL, 'addons' => array()),   // 빈 목록 분기
     ),
@@ -346,7 +349,10 @@ $front_samples = array(
     'room' => array(
         array('room' => $sample_room, 'conf' => $front_conf, 'js' => $front_js,
             'images' => array(G5_DATA_URL.'/booking/aaaa.jpg', G5_DATA_URL.'/booking/bbbb.png'),
-            'addons' => array(array('ba_id' => 1, 'ba_subject' => '조식 2인', 'ba_price' => 20000)),
+            'addons' => array(
+                array('ba_id' => 1, 'ba_subject' => '조식 2인', 'ba_price' => 20000, 'ba_unit' => 'night'),
+                array('ba_id' => 2, 'ba_subject' => '픽업 서비스', 'ba_price' => 30000, 'ba_unit' => 'once'),
+            ),
             'admin_edit_url' => ''),   // 손님 — 톱니가 안 나가야 한다
         // 사진·부가상품·취소규정·설명이 하나도 없고, 대신 최고관리자라 톱니가 붙는 분기
         array('room' => array('br_content' => '', 'br_person_price' => 0) + $sample_room,
@@ -361,8 +367,9 @@ $front_samples = array(
             'conf' => array('hold_minutes' => 20) + $front_conf,
             'guest' => array('name' => '', 'hp' => '', 'email' => ''),
             'addons' => array(
-                array('ba_id' => 1, 'ba_subject' => '조식 2인', 'ba_price' => 20000, 'ba_max_qty' => 4),
-                array('ba_id' => 2, 'ba_subject' => '바비큐 세트', 'ba_price' => 50000, 'ba_max_qty' => 2),
+                // 1박당 상품 — data-price 에 박수가 곱해지는 분기
+                array('ba_id' => 1, 'ba_subject' => '조식 2인', 'ba_price' => 20000, 'ba_unit' => 'night', 'ba_max_qty' => 4),
+                array('ba_id' => 2, 'ba_subject' => '바비큐 세트', 'ba_price' => 50000, 'ba_unit' => 'once', 'ba_max_qty' => 2),
             ),
             'price' => array('room' => 300000, 'person' => 0, 'addon' => 0,
                 'total' => 300000, 'addon_items' => array())),

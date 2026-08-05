@@ -151,7 +151,7 @@
             <h3>부가상품</h3>
             <ul class="bk-list">
                 @foreach ($addons as $addon)
-                <li><span>{{ $addon['ba_subject'] }}</span><span>{{ number_format($addon['ba_price']) }}원</span></li>
+                <li><span>{{ $addon['ba_subject'] }}</span><span>{{ number_format($addon['ba_price']) }}원{{ $addon['ba_unit'] == 'night' ? ' /1박당' : '' }}</span></li>
                 @endforeach
             </ul>
             <p class="bk-note">예약 단계에서 선택할 수 있습니다.</p>

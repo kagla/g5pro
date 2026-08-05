@@ -28,7 +28,7 @@ if ($conf['mid'] === '' || $conf['sign_key'] === '')
     alert('결제 설정이 아직 등록되지 않았습니다. 관리자에게 문의해 주세요.', G5_URL.'/booking/');
 
 $addon_items = array();
-$result = sql_query(" select bt_subject, bt_price, bt_qty, bt_amount
+$result = sql_query(" select bt_subject, bt_price, bt_unit, bt_qty, bt_amount
     from `{$g5['booking_addon_item_table']}` where bk_id = '".(int)$bk['bk_id']."' order by bt_id ");
 while ($r = sql_fetch_array($result)) $addon_items[] = $r;
 

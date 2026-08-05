@@ -106,9 +106,18 @@ sql_query(" insert into `{$g5['booking_addon_table']}` set
 $ba_id = sql_insert_id();
 $ba_price = 30000;
 
+// 1박당 상품 — 화면은 data-price 에 박수를 곱해 내보내므로 그 모양 그대로 재현해야 패리티다
+sql_query(" insert into `{$g5['booking_addon_table']}` set
+    ba_subject = '".sql_real_escape_string($test_addon)."',
+    ba_price = 20000, ba_unit = 'night', ba_max_qty = 4, ba_use = 1, ba_order = 1 ", true);
+$ba2_id = sql_insert_id();
+$ba2_price = 20000;
+
 // booking_calc_price 가 매핑된 상품만 인정하므로 테스트 객실에 담아 둔다
 sql_query(" insert into `{$g5['booking_room_addon_table']}` set
     br_id = '$br_id', ba_id = '$ba_id', bra_order = 0 ", true);
+sql_query(" insert into `{$g5['booking_room_addon_table']}` set
+    br_id = '$br_id', ba_id = '$ba2_id', bra_order = 1 ", true);
 
 // 요일이 아니라 요금 구간을 보므로 상대 날짜를 쓴다 (시간이 지나도 스위트가 안 깨진다)
 $mon = strtotime('next monday', strtotime('+30 day', G5_SERVER_TIME));
@@ -127,12 +136,14 @@ foreach ($spans as $span) {
     $base = booking_calc_price($room, $checkin, $checkout, (int)$room['br_base_person'], array());
     for ($person = 1; $person <= (int)$room['br_max_person']; $person++) {
         foreach (array(0, 1, (int)4) as $qty) {
-            $p = booking_calc_price($room, $checkin, $checkout, $person, array($ba_id => $qty));
+            $p = booking_calc_price($room, $checkin, $checkout, $person, array($ba_id => $qty, $ba2_id => $qty));
             $cases[] = array(
                 'nights' => $nights, 'room_price' => (int)$base['room'],
                 'base_person' => (int)$room['br_base_person'],
                 'person_price' => (int)$room['br_person_price'],
-                'person' => $person, 'addons' => array(array($ba_price, $qty)),
+                'person' => $person,
+                // 1박당 상품의 data-price 는 reserve 뷰처럼 박수를 곱한 값이다
+                'addons' => array(array($ba_price, $qty), array($ba2_price * $nights, $qty)),
             );
             $expect[] = array(
                 'person' => number_format($p['person']).'원',

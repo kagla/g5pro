@@ -101,9 +101,16 @@
                 <div class="bk-addon">
                     <span>
                         {{ $addon['ba_subject'] }}
+                        {{-- 1박당 상품은 총액 기준을 함께 보여 준다 — 수량 × 여기 적힌 값 = 청구액 --}}
+                        @if ($addon['ba_unit'] == 'night')
+                        <b class="bk-addon-price">{{ number_format($addon['ba_price']) }}원 /1박당 · {{ $nights }}박 = 개당 {{ number_format($addon['ba_price'] * $nights) }}원</b>
+                        @else
                         <b class="bk-addon-price">{{ number_format($addon['ba_price']) }}원</b>
+                        @endif
                     </span>
-                    <select name="addon[{{ $addon['ba_id'] }}]" class="bk-addon-qty" data-price="{{ $addon['ba_price'] }}">
+                    {{-- data-price 는 "수량 1개당 총액"이다 — 1박당 상품은 박수를 곱해 두어
+                         화면 JS 합산이 서버 계산(booking_calc_price)과 같은 답을 낸다 --}}
+                    <select name="addon[{{ $addon['ba_id'] }}]" class="bk-addon-qty" data-price="{{ $addon['ba_unit'] == 'night' ? $addon['ba_price'] * $nights : $addon['ba_price'] }}">
                         @for ($q = 0; $q <= (int)$addon['ba_max_qty']; $q++)
                         <option value="{{ $q }}">{{ $q }}</option>
                         @endfor
