@@ -33,3 +33,13 @@ pma/
 # 작업 계획·설계 문서 — 서버 정보와 자격증명이 적혀 있어 저장소에 올리지 않는다.
 # 로컬에는 그대로 두고 참고한다.
 docs/superpowers/
+
+# 예약 모듈 — 별도 저장소(kagla/g5pro-module-booking)로 배포한다.
+# 이 서버에는 그 저장소에서 복사해 설치돼 있으므로 본체 저장소는 추적하지 않는다.
+/booking/
+/adm/booking/
+/adm/admin.menu950.php
+/lib/booking.lib.php
+/template/standard/booking/
+/tools/seed_booking.php
+/tools/tests/booking/
