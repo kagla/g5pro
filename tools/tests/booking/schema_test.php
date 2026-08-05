@@ -9,19 +9,31 @@ include_once G5_LIB_PATH.'/booking.lib.php';
 
 $fail = 0;
 
-// 설치 계약: array('created' => bool) 반환
+// 설치 계약: array('created' => bool, 'altered' => array) 반환
 $ret = booking_install();
-if (!is_array($ret) || !array_key_exists('created', $ret) || !is_bool($ret['created'])) {
-    echo "FAIL: booking_install() 반환이 array('created'=>bool) 아님 (".var_export($ret, true).")\n"; $fail++;
+if (!is_array($ret) || !array_key_exists('created', $ret) || !is_bool($ret['created'])
+        || !array_key_exists('altered', $ret) || !is_array($ret['altered'])) {
+    echo "FAIL: booking_install() 반환이 array('created'=>bool,'altered'=>array) 아님 (".var_export($ret, true).")\n"; $fail++;
 }
 
 // 설치 후 booking_installed() 는 true
 if (booking_installed() !== true) { echo "FAIL: booking_installed() 가 true 아님\n"; $fail++; }
 
-// 멱등성: 두 번째 호출은 새로 만든 테이블이 없으므로 created=false
+// 멱등성: 두 번째 호출은 만들 테이블도 추가할 컬럼도 없어야 한다
 $again = booking_install();
 if (!is_array($again) || $again['created'] !== false) {
     echo "FAIL: booking_install() 재호출이 멱등하지 않음 (created=".var_export($again['created'], true).")\n"; $fail++;
+}
+if (!empty($again['altered'])) {
+    echo "FAIL: booking_install() 재호출이 컬럼을 또 추가함 (".implode(', ', $again['altered']).")\n"; $fail++;
+}
+
+// 버전 업그레이드 컬럼이 모두 반영돼 있어야 한다
+foreach (booking_column_upgrades() as $up) {
+    list($table_key, $column) = $up;
+    if (!sql_fetch(" SHOW COLUMNS FROM `{$g5[$table_key]}` LIKE '$column' ")) {
+        echo "FAIL: {$g5[$table_key]}.$column 컬럼 없음\n"; $fail++;
+    }
 }
 
 $keys = array('booking_table','booking_room_table','booking_room_image_table','booking_calendar_table',

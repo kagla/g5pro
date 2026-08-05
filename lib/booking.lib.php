@@ -23,30 +23,39 @@ function booking_table_defaults()
 }
 booking_table_defaults();
 
-// 모듈 자체 설치/업그레이드 — 순정 설치·dbupgrade 와 무관하게 멱등 실행
+// 버전을 거치며 늘어난 컬럼 목록 — booking_install() 이 없는 것만 추가하고,
+// 설치/업그레이드 화면(upgrade.php)이 반영 여부를 이 목록으로 보여 준다.
+// 새 컬럼은 CREATE DDL 과 여기 두 곳에 같이 적는다 (새 설치는 CREATE 가, 기존 설치는 여기가 맡는다)
+function booking_column_upgrades()
+{
+    return array(
+        // 2026-08-05 부가상품 과금 단위 — once(1회)/night(1박당).
+        // 스냅샷(bt_unit)에도 같이 둔다: 지난 예약의 "× n박" 표기가 상품 수정에 흔들리면 안 된다
+        array('booking_addon_table', 'ba_unit',
+            " ADD `ba_unit` varchar(10) NOT NULL DEFAULT 'once' AFTER `ba_price` "),
+        array('booking_addon_item_table', 'bt_unit',
+            " ADD `bt_unit` varchar(10) NOT NULL DEFAULT 'once' AFTER `bt_price` "),
+        // 2026-08-05 업주 알림 휴대폰 — 예약·취소 문자를 받을 번호 (비면 업주 문자 없음)
+        array('booking_config_table', 'bc_admin_hp',
+            " ADD `bc_admin_hp` varchar(20) NOT NULL DEFAULT '' AFTER `bc_admin_email` "),
+    );
+}
+
+// 모듈 자체 설치/업그레이드 — 순정 설치·dbupgrade 와 무관하게 멱등 실행.
+// 반환: created(새 테이블 여부), altered(이번에 추가한 "테이블명.컬럼명" 목록)
 function booking_install()
 {
     global $g5;
     // 객실↔상품 매핑 테이블이 없던 설치인지 만들기 전에 기억해 둔다
     $had_room_addon = (bool)sql_query(" DESC `{$g5['booking_room_addon_table']}` ", false);
     $created = booking_create_tables();
-    // 향후 스키마 변경은 여기 누적한다: SHOW COLUMNS 판정 후 ALTER TABLE
 
-    // 2026-08-05 부가상품 과금 단위 — once(1회, 기존과 동일)/night(1박당).
-    // 스냅샷(bt_unit)에도 같이 둔다: 지난 예약의 "× n박" 표기가 상품 수정에 흔들리면 안 된다
-    if (!sql_fetch(" SHOW COLUMNS FROM `{$g5['booking_addon_table']}` LIKE 'ba_unit' ")) {
-        sql_query(" ALTER TABLE `{$g5['booking_addon_table']}`
-            ADD `ba_unit` varchar(10) NOT NULL DEFAULT 'once' AFTER `ba_price` ", true);
-    }
-    if (!sql_fetch(" SHOW COLUMNS FROM `{$g5['booking_addon_item_table']}` LIKE 'bt_unit' ")) {
-        sql_query(" ALTER TABLE `{$g5['booking_addon_item_table']}`
-            ADD `bt_unit` varchar(10) NOT NULL DEFAULT 'once' AFTER `bt_price` ", true);
-    }
-
-    // 2026-08-05 업주 알림 휴대폰 — 예약·취소 문자를 받을 번호 (비면 업주 문자 없음)
-    if (!sql_fetch(" SHOW COLUMNS FROM `{$g5['booking_config_table']}` LIKE 'bc_admin_hp' ")) {
-        sql_query(" ALTER TABLE `{$g5['booking_config_table']}`
-            ADD `bc_admin_hp` varchar(20) NOT NULL DEFAULT '' AFTER `bc_admin_email` ", true);
+    $altered = array();
+    foreach (booking_column_upgrades() as $up) {
+        list($table_key, $column, $add) = $up;
+        if (sql_fetch(" SHOW COLUMNS FROM `{$g5[$table_key]}` LIKE '$column' ")) continue;
+        sql_query(" ALTER TABLE `{$g5[$table_key]}` $add ", true);
+        $altered[] = $g5[$table_key].'.'.$column;
     }
 
     // 상품이 전역이던 시절의 설치라면 현재 상품 전부를 전 객실에 매핑해
@@ -56,7 +65,7 @@ function booking_install()
             select r.br_id, a.ba_id, a.ba_order
             from `{$g5['booking_room_table']}` r, `{$g5['booking_addon_table']}` a ", true);
     }
-    return array('created' => $created);
+    return array('created' => $created, 'altered' => $altered);
 }
 
 function booking_installed()
