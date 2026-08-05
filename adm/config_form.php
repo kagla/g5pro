@@ -1567,8 +1567,7 @@ if ($config['cf_sms_use'] && $config['cf_icode_id'] && $config['cf_icode_pw']) {
                         <th scope="row"><label for="cf_icode_pw">아이코드 비밀번호<br>(구버전)</label></th>
                         <td>
                             <?php echo help("아이코드에서 사용하시는 비밀번호를 입력합니다."); ?>
-                            <input type="password" name="cf_icode_pw" value="<?php echo get_sanitize_input($config['cf_icode_pw']); ?>" id="cf_icode_pw" class="frm_input">
-                            <button type="button" class="btn_frmline pw_toggle" data-target="cf_icode_pw">👁 보기</button>
+                            <span class="pw_wrap"><input type="password" name="cf_icode_pw" value="<?php echo get_sanitize_input($config['cf_icode_pw']); ?>" id="cf_icode_pw" class="frm_input"><button type="button" class="pw_toggle" data-target="cf_icode_pw" title="비밀번호 보기">👁</button></span>
                         </td>
                     </tr>
                     <tr class="icode_old_version <?php if (!(isset($userinfo['payment']) && $userinfo['payment'])) { echo 'cf_tr_hide'; } ?>">
@@ -1625,8 +1624,7 @@ if ($config['cf_sms_use'] && $config['cf_icode_id'] && $config['cf_icode_pw']) {
                         <th scope="row"><label for="cf_ppurio_pw">뿌리오 연동 비밀번호</label></th>
                         <td>
                             <?php echo help("API 연동용 비밀번호(모듈 비밀번호)입니다. 사이트 로그인 비밀번호가 아닙니다 — 뿌리오 담당자 또는 연동 관리 화면에서 확인하세요."); ?>
-                            <input type="password" name="cf_ppurio_pw" value="<?php echo isset($config['cf_ppurio_pw']) ? get_sanitize_input($config['cf_ppurio_pw']) : ''; ?>" id="cf_ppurio_pw" class="frm_input" size="30">
-                            <button type="button" class="btn_frmline pw_toggle" data-target="cf_ppurio_pw">👁 보기</button>
+                            <span class="pw_wrap"><input type="password" name="cf_ppurio_pw" value="<?php echo isset($config['cf_ppurio_pw']) ? get_sanitize_input($config['cf_ppurio_pw']) : ''; ?>" id="cf_ppurio_pw" class="frm_input" size="30"><button type="button" class="pw_toggle" data-target="cf_ppurio_pw" title="비밀번호 보기">👁</button></span>
                         </td>
                     </tr>
                     <tr>
@@ -1658,6 +1656,13 @@ if ($config['cf_sms_use'] && $config['cf_icode_id'] && $config['cf_icode_pw']) {
         </div>
     </section>
 
+    <style>
+    /* 비밀번호 칸 눈 아이콘 — 입력 박스 우측 안쪽에 겹쳐 둔다 */
+    .pw_wrap { position:relative; display:inline-block }
+    .pw_wrap .frm_input { padding-right:28px }
+    .pw_wrap .pw_toggle { position:absolute; right:6px; top:50%; transform:translateY(-50%);
+        border:0; background:none; padding:0; cursor:pointer; font-size:14px; line-height:1 }
+    </style>
     <script>
     // 비밀번호 칸 눈 아이콘 — 입력한 값을 확인할 수 있게 잠깐 평문으로 보여 준다
     jQuery(function($) {
@@ -1665,7 +1670,7 @@ if ($config['cf_sms_use'] && $config['cf_icode_id'] && $config['cf_icode_pw']) {
             var $inp = $('#' + $(this).data('target'));
             var show = $inp.attr('type') === 'password';
             $inp.attr('type', show ? 'text' : 'password');
-            $(this).text(show ? '가리기' : '👁 보기');
+            $(this).text(show ? '🙈' : '👁').attr('title', show ? '비밀번호 가리기' : '비밀번호 보기');
         });
     });
     </script>
