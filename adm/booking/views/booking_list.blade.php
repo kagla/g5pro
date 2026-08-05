@@ -13,8 +13,10 @@
 .bkl_sub { color:#777; font-size:0.92em }
 .bkl_total { text-align:right }
 .local_sch01 .bkl_date { width:9.5em }
-.bkl_quick { margin-left:8px }
-.bkl_quick .bkl_quick_btn { margin-left:2px }
+/* 빠른 기간 버튼 — 검색칸 사이에 끼우면 줄바꿈이 흐트러진다. 전용 줄로 뗀다 */
+.bkl_quick { margin-top:10px; padding-top:10px; border-top:1px solid #e2e5eb }
+.bkl_quick_label { color:#777; font-size:0.92em; margin-right:6px }
+.bkl_quick .bkl_quick_btn { margin-right:3px }
 </style>
 
 <form name="fbookingsearch" id="fbookingsearch" method="get" action="./booking_list.php">
@@ -50,12 +52,13 @@
     <input type="submit" value="검색" class="btn_submit">
     <a href="./booking_list.php" class="btn btn_02">전체목록</a>
 
-    <span class="bkl_quick">
+    <div class="bkl_quick">
         {{-- 체크인 기간을 채우고 바로 검색한다. 상태·객실·검색어는 걸어 둔 그대로 간다 --}}
+        <span class="bkl_quick_label">체크인 기간 바로 선택</span>
         @foreach ($quick_ranges as $q)
         <button type="button" class="btn btn_02 bkl_quick_btn" data-s="{{ $q['s'] }}" data-e="{{ $q['e'] }}">{{ $q['label'] }}</button>
         @endforeach
-    </span>
+    </div>
 </div>
 </form>
 
