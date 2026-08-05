@@ -53,8 +53,8 @@ while ($res = sql_fetch_array($sql))
 $wr_total = count($list);
 $reply = str_replace('-', '', trim($write['wr_reply']));
 
-if ($config['cf_sms_use'] != 'icode') {
-    alert('기본환경설정에서 icode sms 사용이 비활성화 되어 있습니다.');
+if ($config['cf_sms_use'] != 'icode' && $config['cf_sms_use'] != 'ppurio') {
+    alert('기본환경설정에서 SMS 사용이 설정되지 않았습니다.');
 }
 include_once(G5_ADMIN_PATH.'/admin.head.php');
 

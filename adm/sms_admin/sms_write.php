@@ -18,7 +18,7 @@ include_once(G5_ADMIN_PATH.'/admin.head.php');
 </div>
 
 <?php
-if ($config['cf_sms_use'] == 'icode') { // 아이코드 사용
+if ($config['cf_sms_use'] == 'icode' || $config['cf_sms_use'] == 'ppurio') { // 발송 업체가 설정돼 있으면
 ?>
 <div id="sms5_send">
 
@@ -827,7 +827,7 @@ var sms_obj={
     <div class="local_desc01 local_desc">
         <p>
             SMS 를 사용하지 않고 있기 때문에, 문자 전송을 할 수 없습니다.<br>
-            SMS 사용 설정은 <a href="../config_form.php#anc_cf_sms" class="btn_frmline">환경설정 &gt; 기본환경설정 &gt; SMS설정</a> 에서 SMS 사용을 아이코드로 변경해 주셔야 사용하실수 있습니다.
+            SMS 사용 설정은 <a href="../config_form.php#anc_cf_sms" class="btn_frmline">환경설정 &gt; 기본환경설정 &gt; SMS설정</a> 에서 SMS 사용을 아이코드 또는 뿌리오로 변경해 주셔야 사용하실수 있습니다.
         </p>
     </div>
 </section>

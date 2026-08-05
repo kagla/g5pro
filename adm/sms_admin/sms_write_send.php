@@ -16,12 +16,18 @@ while ($row = sql_fetch_array($result)){
 
 $g5['title'] = "문자전송중";
 
-if ($config['cf_sms_use'] != 'icode') {
-    alert('기본환경설정에서 icode sms 사용이 비활성화 되어 있습니다.');
+if ($config['cf_sms_use'] != 'icode' && $config['cf_sms_use'] != 'ppurio') {
+    alert('기본환경설정에서 SMS 사용이 설정되지 않았습니다.');
 }
 
-if ( ! (($config['cf_icode_id'] && $config['cf_icode_pw']) || $config['cf_icode_token_key']) ) {
+// 업체별 연동 정보 확인 — 없는 채로 보내면 전 건이 이유 없이 실패한다
+if ($config['cf_sms_use'] == 'icode'
+        && ! (($config['cf_icode_id'] && $config['cf_icode_pw']) || $config['cf_icode_token_key']) ) {
     alert('아이코드 설정값이 존재하지 않습니다.');
+}
+if ($config['cf_sms_use'] == 'ppurio'
+        && ! (isset($config['cf_ppurio_id']) && $config['cf_ppurio_id'] && $config['cf_ppurio_pw']) ) {
+    alert('뿌리오 연동 계정이 설정되지 않았습니다. 기본환경설정 > SMS설정을 확인하세요.');
 }
 
 $wr_reply   = isset($_REQUEST['wr_reply']) ? preg_replace('#[^0-9\-]#', '', trim($_REQUEST['wr_reply'])) : '';
