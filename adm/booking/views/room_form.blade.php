@@ -22,9 +22,9 @@
             <td><textarea name="br_content" id="br_content" rows="6" class="frm_input" style="width:100%">{{ $room['br_content'] }}</textarea></td>
         </tr>
         <tr>
-            <th scope="row"><label for="br_room_count">객실 실수</label></th>
+            <th scope="row"><label for="br_room_count">객실 수</label></th>
             <td><input type="number" name="br_room_count" value="{{ $room['br_room_count'] }}" id="br_room_count" class="frm_input" size="5" min="0"> 개
-                <span class="frm_info">같은 타입의 방이 몇 개인지 — 날짜별 재고의 기본값입니다.</span></td>
+                <span class="frm_info">같은 타입의 방이 몇 개인지 — 날짜별 판매 개수의 기본값이며, 캘린더에서 날짜별로 줄일 수 있습니다.</span></td>
         </tr>
         <tr>
             <th scope="row"><label for="br_base_person">기준 인원</label></th>

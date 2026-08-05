@@ -1,8 +1,8 @@
 <div class="local_desc01 local_desc">
-    <p>날짜별 요금과 판매 실수를 관리합니다. 지정하지 않은 날은 객실에 등록한 기본 요금·기본 실수를 그대로 씁니다.</p>
-    <p>파랗게 강조된 값이 이 캘린더에서 따로 지정한 값입니다.</p>
-    <p><strong>성수기·비수기</strong>는 아래 기간 일괄 적용에서 요금 비율(성수기 150%, 비수기 80% 등)을 넣고
-        <strong>전체 객실</strong>을 체크하면 한 번에 잡힙니다. 되돌릴 때는 같은 기간에 요금 -1 을 적용하십시오.</p>
+    <p>날짜별 요금과 판매 객실 수를 관리합니다. 지정하지 않은 날은 객실에 등록한 기본 요금과 방 개수를 그대로 씁니다. 파랗게 강조된 값이 이 캘린더에서 따로 지정한 값입니다.</p>
+    <p>달력 칸의 <strong>판매 5 / 예약 2 / 잔여 3</strong>은 "그날 이 타입의 방을 5개 파는데 2개가 예약되어 3개 남았다"는 뜻입니다. 예약이 판매 개수에 차면 그날은 마감됩니다.</p>
+    <p><strong>성수기·비수기</strong>는 아래 첫 번째 폼에서 기간과 비율만 정하면 전체 객실에 한 번에 적용됩니다.
+        수리 등으로 특정 객실의 판매 개수를 줄이는 일은 두 번째 폼에서 합니다.</p>
 </div>
 
 @if (!$room)
@@ -82,15 +82,62 @@
     </table>
 </div>
 
-<form name="fcalendarform" id="fcalendarform" action="./calendar_update.php" method="post" autocomplete="off">
+{{-- 성수기·비수기 — 전체 객실에 비율로만 적용한다. 방마다 요금이 달라도 각자 제 기본요금 기준이라 한 번이면 된다 --}}
+<form name="fseasonform" id="fseasonform" action="./calendar_update.php" method="post" autocomplete="off">
 {{-- 토큰 값은 admin.js 가 제출 순간 ajax.token.php 에서 받아 채운다 (관리자 폼 공통 관례) --}}
+<input type="hidden" name="token" value="">
+<input type="hidden" name="act" value="season">
+<input type="hidden" name="br_id" value="{{ $room['br_id'] }}">
+<input type="hidden" name="ym" value="{{ $ym }}">
+
+<div class="tbl_frm01 tbl_wrap">
+    <table>
+        <caption>성수기·비수기 (전체 객실)</caption>
+        <colgroup><col class="grid_4"><col></colgroup>
+        <tbody>
+        <tr>
+            <th scope="row"><label for="season_start">기간</label></th>
+            <td>
+                <input type="date" name="start_date" value="{{ $first_date }}" id="season_start" required class="frm_input required">
+                ~
+                <label for="season_end" class="sound_only">종료일</label>
+                <input type="date" name="end_date" value="{{ $last_date }}" id="season_end" required class="frm_input required">
+                <span class="frm_info">종료일 당일까지, 한 번에 366일까지. <strong>전체 객실 {{ count($rooms) }}개</strong>에 적용됩니다.</span>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">구분</th>
+            <td>
+                <label><input type="radio" name="season" value="peak" required> 성수기 — 기본요금의</label>
+                <label for="peak_percent" class="sound_only">성수기 요금 비율</label>
+                <input type="number" name="peak_percent" value="150" id="peak_percent" class="frm_input" size="4" min="1" max="999"> %
+                <br>
+                <label><input type="radio" name="season" value="off"> 비수기 — 기본요금의</label>
+                <label for="off_percent" class="sound_only">비수기 요금 비율</label>
+                <input type="number" name="off_percent" value="80" id="off_percent" class="frm_input" size="4" min="1" max="999"> %
+                <br>
+                <label><input type="radio" name="season" value="reset"> 기본요금으로 되돌리기</label>
+                <span class="frm_info">방마다 요금이 달라도 각 객실의 주중/주말 기본요금을 기준으로 계산하므로 한 번에 적용할 수 있습니다. 100원 단위로 반올림됩니다.</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="btn_confirm01 btn_confirm">
+    <input type="submit" value="전체 객실에 적용" id="btn_season_apply" class="btn_submit btn">
+</div>
+</form>
+
+{{-- 객실 하나를 콕 집어 만지는 자리 — 수리로 판매 개수를 줄이거나, 특정일 요금을 액수로 지정 --}}
+<form name="fcalendarform" id="fcalendarform" action="./calendar_update.php" method="post" autocomplete="off">
 <input type="hidden" name="token" value="">
 <input type="hidden" name="br_id" value="{{ $room['br_id'] }}">
 <input type="hidden" name="ym" value="{{ $ym }}">
 
 <div class="tbl_frm01 tbl_wrap">
     <table>
-        <caption>기간 일괄 적용</caption>
+        <caption>이 객실만 조정 — {{ $room['br_subject'] }}</caption>
         <colgroup><col class="grid_4"><col></colgroup>
         <tbody>
         <tr>
@@ -100,36 +147,26 @@
                 ~
                 <label for="end_date" class="sound_only">종료일</label>
                 <input type="date" name="end_date" value="{{ $last_date }}" id="end_date" required class="frm_input required">
-                <span class="frm_info">종료일 당일까지 적용됩니다. 한 번에 366일까지.</span>
+                <span class="frm_info">종료일 당일까지 적용됩니다. 한 번에 366일까지. <strong>{{ $room['br_subject'] }}</strong> 에만 적용됩니다.</span>
             </td>
-        </tr>
-        <tr>
-            <th scope="row">적용 대상</th>
-            <td><label><input type="checkbox" name="all_rooms" value="1" id="all_rooms"> 전체 객실({{ count($rooms) }}개)에 적용</label>
-                <span class="frm_info">체크하지 않으면 위에서 고른 객실에만 적용됩니다.</span></td>
         </tr>
         <tr>
             <th scope="row"><label for="set_price">요금</label></th>
             <td><input type="number" name="set_price" value="" id="set_price" class="frm_input" size="10" min="-1"> 원
-                또는 기본요금의
-                <label for="set_percent" class="sound_only">요금 비율</label>
-                <input type="number" name="set_percent" value="" id="set_percent" class="frm_input" size="5" min="1" max="999"> %
-                <span class="frm_info">비워 두면 요금은 건드리지 않습니다. 액수와 비율은 둘 중 하나만 넣으십시오.</span>
-                <span class="frm_info">비율은 각 객실의 기본 요금(주중/주말) 기준이라 전체 객실 적용과 함께 쓰기 좋습니다. 100원 단위로 반올림됩니다.</span>
-                <span class="frm_info">-1 을 넣으면 지정을 해제해 객실 기본 요금(주중/주말)으로 되돌립니다.</span></td>
+                <span class="frm_info">비워 두면 요금은 건드리지 않습니다. -1 을 넣으면 지정을 해제해 객실 기본 요금(주중/주말)으로 되돌립니다.</span></td>
         </tr>
         <tr>
-            <th scope="row"><label for="set_count">판매 실수</label></th>
+            <th scope="row"><label for="set_count">판매 객실 수</label></th>
             <td><input type="number" name="set_count" value="" id="set_count" class="frm_input" size="5" min="-1"> 개
-                <span class="frm_info">비워 두면 실수는 건드리지 않습니다. -1 을 넣으면 지정을 해제해 객실 기본 실수({{ $room['br_room_count'] }}개)로 되돌립니다.</span>
-                <span class="frm_info">수리 중인 객실은 해당 기간의 판매 실수를 줄이세요. 0 = 판매 중지</span></td>
+                <span class="frm_info">그 날짜에 파는 이 타입의 방 개수입니다. 평소에는 객실 등록의 {{ $room['br_room_count'] }}개가 그대로 쓰입니다.</span>
+                <span class="frm_info">일부가 수리 중이면 그 기간만 줄이고, 0 을 넣으면 판매 중지입니다. 비워 두면 건드리지 않고, -1 은 기본값({{ $room['br_room_count'] }}개)으로 되돌립니다.</span></td>
         </tr>
         </tbody>
     </table>
 </div>
 
 <div class="btn_confirm01 btn_confirm">
-    <input type="submit" value="적용" id="btn_calendar_apply" class="btn_submit btn">
+    <input type="submit" value="이 객실에 적용" class="btn_submit btn">
 </div>
 </form>
 
@@ -137,10 +174,15 @@
 jQuery(function($) {
     // 요소에 직접 건 핸들러라 admin.js 의 document 위임 핸들러(토큰 채우기)보다 먼저 돈다.
     // 취소하면 false 를 돌려 전파까지 끊어 제출 자체를 막는다.
-    $("#btn_calendar_apply").on("click", function() {
-        if ($("#all_rooms").is(":checked")
-            && !confirm("전체 객실 {{ count($rooms) }}개에 적용할까요?")) return false;
+    $("#btn_season_apply").on("click", function() {
+        var season = $("input[name=season]:checked").val();
+        var msg = { peak: "성수기 요금을", off: "비수기 요금을", reset: "요금 지정을 해제해 기본요금을" }[season];
+        if (msg && !confirm("전체 객실 {{ count($rooms) }}개에 " + msg + " 적용할까요?")) return false;
     });
+
+    // 비율 칸을 만지면 그 줄의 구분이 저절로 선택된다 — 라디오 따로 비율 따로 누르는 수고를 던다
+    $("#peak_percent").on("focus input", function() { $("input[name=season][value=peak]").prop("checked", true); });
+    $("#off_percent").on("focus input", function() { $("input[name=season][value=off]").prop("checked", true); });
 });
 </script>
 @endif

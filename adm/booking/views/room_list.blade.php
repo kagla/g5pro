@@ -10,7 +10,7 @@
     <table>
         <caption>객실 목록</caption>
         <thead><tr>
-            <th scope="col">번호</th><th scope="col">객실명</th><th scope="col">실수</th><th scope="col">기준/최대 인원</th>
+            <th scope="col">번호</th><th scope="col">객실명</th><th scope="col">객실 수</th><th scope="col">기준/최대 인원</th>
             <th scope="col">주중/주말 요금</th><th scope="col">예약수</th><th scope="col">노출</th><th scope="col">관리</th>
         </tr></thead>
         <tbody>
