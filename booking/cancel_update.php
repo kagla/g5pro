@@ -53,7 +53,7 @@ sql_query(" update `{$g5['booking_table']}` set
 if (get_sql_affected_rows() < 1)
     alert('예약 상태가 바뀌었습니다. 예약 내용을 다시 확인해 주세요.', $view_url);
 
-booking_send_mail($bk['bk_id'], 'cancel_req');
+booking_notify($bk['bk_id'], 'cancel_req');
 
 alert('취소 신청이 접수되었습니다. 환불 예정액은 '.number_format($plan).'원이며, '
     . '업주 확인 뒤 환불됩니다.', $view_url);

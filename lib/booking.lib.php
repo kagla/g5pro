@@ -789,12 +789,19 @@ function booking_refund($bk, $refund_price, $memo)
 
     if ($error) return array('ok' => false, 'msg' => $error, 'refund_price' => 0);
 
-    booking_send_mail($bk_id, 'cancelled');
+    booking_notify($bk_id, 'cancelled');
     return array('ok' => true, 'refund_price' => $refund_price,
         'msg' => '취소 처리되었습니다. 환불액 '.number_format($refund_price).'원');
 }
 
 // 예약 안내 메일. 발송 실패는 무시한다 (예약 처리 흐름을 막지 않는다)
+// 예약 이벤트 알림의 단일 입구 — 호출부는 "무슨 일이 있었나"만 알린다.
+// 지금은 메일뿐이지만 SMS 같은 채널이 늘면 여기서만 갈라진다 (호출부 4곳은 그대로)
+function booking_notify($bk_id, $kind)
+{
+    booking_send_mail($bk_id, $kind);
+}
+
 function booking_send_mail($bk_id, $kind)
 {
     global $g5, $config;

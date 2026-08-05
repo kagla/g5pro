@@ -228,6 +228,6 @@ if ($fail_reason) {
 
 // 이 oid 로는 다시 서명을 받을 수 없어야 한다
 set_session('ss_booking_inicis_oid', '');
-booking_send_mail($bk['bk_id'], 'confirm');
+booking_notify($bk['bk_id'], 'confirm');
 set_session('ss_booking_bk_no', $bk['bk_no']);
 goto_url($complete_url);

@@ -114,7 +114,7 @@ case 'recon_confirm':
 
     if ($act === 'recon_confirm') {
         // 손님은 결제를 마치고도 확정 안내를 받지 못한 상태다. 지금 보낸다
-        booking_send_mail($bk_id, 'confirm');
+        booking_notify($bk_id, 'confirm');
         alert('예약을 확정했습니다. ('.$bk['bk_no'].')', $recon_url, false);
     }
 

@@ -31,6 +31,13 @@ function mailer($fname, $fmail, $to, $subject, $content, $type=0, $file="", $cc=
             $mail->Host = G5_SMTP; // SMTP server
             if(defined('G5_SMTP_PORT') && G5_SMTP_PORT)
                 $mail->Port = G5_SMTP_PORT;
+            // 릴레이가 STARTTLS 를 광고하면 PHPMailer 가 자동으로 TLS 를 시도하는데(SMTPAutoTLS),
+            // 로컬 Postfix 의 자가서명 인증서는 검증에 실패해 발송 전체가 조용히 죽는다.
+            // 암호화가 필요한 원격 SMTP 는 G5_SMTP_SECURE ('tls' 또는 'ssl') 로 명시해 켠다
+            if (defined('G5_SMTP_SECURE') && G5_SMTP_SECURE)
+                $mail->SMTPSecure = G5_SMTP_SECURE;
+            else
+                $mail->SMTPAutoTLS = false;
         }
         $mail->CharSet = 'UTF-8';
         $mail->From = $fmail;
