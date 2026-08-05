@@ -10,40 +10,13 @@ check_admin_token();
 
 $g5['title'] = "SMS 기본설정";
 
+// 업체 선택·연동 계정은 기본환경설정 > SMS설정이 맡는다 (config_form_update.php).
+// 여기는 SMS 관리 고유 설정인 회신번호만 저장한다 — 같은 설정을 두 화면이 쓰면 관리가 어렵다
 $cf_phone = isset($_REQUEST['cf_phone']) ? addslashes(clean_xss_tags(stripslashes($_REQUEST['cf_phone']), 1, 1)) : '';
-$cf_sms_use = isset($_REQUEST['cf_sms_use']) ? addslashes(clean_xss_tags(stripslashes($_REQUEST['cf_sms_use']), 1, 1)) : '';
-$cf_sms_type = isset($_REQUEST['cf_sms_type']) ? addslashes(clean_xss_tags(stripslashes($_REQUEST['cf_sms_type']), 1, 1)) : '';
-$cf_icode_id = isset($_REQUEST['cf_icode_id']) ? addslashes(clean_xss_tags(stripslashes($_REQUEST['cf_icode_id']), 1, 1)) : '';
-$cf_icode_pw = isset($_REQUEST['cf_icode_pw']) ? addslashes(clean_xss_tags(stripslashes($_REQUEST['cf_icode_pw']), 1, 1)) : '';
-$cf_icode_server_ip = isset($_REQUEST['cf_icode_server_ip']) ? addslashes(clean_xss_tags(stripslashes($_REQUEST['cf_icode_server_ip']), 1, 1)) : '';
-$cf_icode_server_port = isset($_REQUEST['cf_icode_server_port']) ? clean_xss_tags($_REQUEST['cf_icode_server_port'], 1, 1) : '';
-$cf_icode_token_key = isset($_REQUEST['cf_icode_token_key']) ? addslashes(clean_xss_tags(stripslashes($_REQUEST['cf_icode_token_key']), 1, 1)) : '';
 
-// 회신번호 체크 — 사용안함으로 끌 때는 비워 둘 수 있다
-if($cf_sms_use !== '' && !check_vaild_callback($cf_phone))
+// 회신번호 체크
+if(!check_vaild_callback($cf_phone))
     alert('회신번호가 올바르지 않습니다.');
-
-// 뿌리오·사용안함 — 아이코드 계정 검증·필드 갱신을 건너뛴다.
-// 뿌리오 연동 계정·발신번호는 기본환경설정(cf_ppurio_*)이 관리하고, 여기서는 업체·회신번호·전송유형만 저장한다
-if ($cf_sms_use === 'ppurio' || $cf_sms_use === '') {
-    if ($cf_phone !== '') {
-        $res = sql_fetch("select * from ".$g5['sms5_config_table']." limit 1");
-        $sql = (!$res ? "insert into " : "update ").$g5['sms5_config_table']." set cf_phone='$cf_phone' ";
-        sql_query($sql);
-    }
-
-    sql_query(" update {$g5['config_table']}
-                set cf_sms_use = '$cf_sms_use',
-                    cf_sms_type = '$cf_sms_type' ");
-
-    goto_url("./config.php");
-}
-
-$userinfo = get_icode_userinfo($cf_icode_id, $cf_icode_pw);
-$cf_icode_server_port = isset($cf_icode_server_port) ? preg_replace('/[^0-9]/', '', $cf_icode_server_port) : '7295';
-
-if ($userinfo['code'] == '202')
-    alert('아이코드 아이디와 패스워드가 맞지 않습니다.');
 
 $res = sql_fetch("select * from ".$g5['sms5_config_table']." limit 1");
 
@@ -54,17 +27,6 @@ else
 
 $sql .= $g5['sms5_config_table']." set cf_phone='$cf_phone' ";
 
-sql_query($sql);
-
-// 아이코드 설정
-$sql = " update {$g5['config_table']}
-            set cf_sms_use              = '$cf_sms_use',
-                cf_sms_type             = '$cf_sms_type',
-                cf_icode_id             = '$cf_icode_id',
-                cf_icode_pw             = '$cf_icode_pw',
-                cf_icode_server_ip      = '$cf_icode_server_ip',
-                cf_icode_server_port    = '$cf_icode_server_port',
-                cf_icode_token_key      = '$cf_icode_token_key'";
 sql_query($sql);
 
 goto_url("./config.php");
