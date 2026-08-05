@@ -161,6 +161,8 @@ $samples = array(
         sample_cal_case('2026-08', $sample_room),   // 토요일 시작 — 앞칸 6개
         sample_cal_case('2026-02', $sample_room),   // 일요일 시작·28일 — 앞뒤 빈칸 0개
         sample_cal_case('2026-08', null),           // 객실이 하나도 없는 분기
+        // 1실짜리 객실 — "일부만 판매" 라디오가 나가지 않는 분기
+        sample_cal_case('2026-08', array('br_room_count' => 1) + $sample_room),
     ),
     'booking_list' => array(
         array('admin_url' => G5_ADMIN_URL, 'total_count' => 3,

@@ -1,8 +1,8 @@
 <div class="local_desc01 local_desc">
     <p>날짜별 요금과 판매 객실 수를 관리합니다. 지정하지 않은 날은 객실에 등록한 기본 요금과 방 개수를 그대로 씁니다. 파랗게 강조된 값이 이 캘린더에서 따로 지정한 값입니다.</p>
     <p>달력 칸의 <strong>판매 5 / 예약 2 / 잔여 3</strong>은 "그날 이 타입의 방을 5개 파는데 2개가 예약되어 3개 남았다"는 뜻입니다. 예약이 판매 개수에 차면 그날은 마감됩니다.</p>
-    <p><strong>성수기·비수기</strong>는 아래 첫 번째 폼에서 기간과 비율만 정하면 전체 객실에 한 번에 적용됩니다.
-        수리 등으로 특정 객실의 판매 개수를 줄이는 일은 두 번째 폼에서 합니다.</p>
+    <p>아래 폼은 하나가 한 가지 일만 합니다 — <strong>성수기·비수기</strong>(전체 객실 요금),
+        <strong>판매 중지·재개</strong>(이 객실 수리·휴업), <strong>날짜별 요금 지정</strong>(이 객실 특정일 요금).</p>
 </div>
 
 @if (!$room)
@@ -129,15 +129,61 @@
 </div>
 </form>
 
-{{-- 객실 하나를 콕 집어 만지는 자리 — 수리로 판매 개수를 줄이거나, 특정일 요금을 액수로 지정 --}}
-<form name="fcalendarform" id="fcalendarform" action="./calendar_update.php" method="post" autocomplete="off">
+{{-- 수리·휴업은 여기서 동작으로 고른다 — 업주가 개수를 계산해 넣지 않게 한다 --}}
+<form name="fstockform" id="fstockform" action="./calendar_update.php" method="post" autocomplete="off">
+<input type="hidden" name="token" value="">
+<input type="hidden" name="act" value="stock">
+<input type="hidden" name="br_id" value="{{ $room['br_id'] }}">
+<input type="hidden" name="ym" value="{{ $ym }}">
+
+<div class="tbl_frm01 tbl_wrap">
+    <table>
+        <caption>판매 중지·재개 — {{ $room['br_subject'] }}</caption>
+        <colgroup><col class="grid_4"><col></colgroup>
+        <tbody>
+        <tr>
+            <th scope="row"><label for="stock_start">기간</label></th>
+            <td>
+                <input type="date" name="start_date" value="{{ $first_date }}" id="stock_start" required class="frm_input required">
+                ~
+                <label for="stock_end" class="sound_only">종료일</label>
+                <input type="date" name="end_date" value="{{ $last_date }}" id="stock_end" required class="frm_input required">
+                <span class="frm_info">종료일 당일까지, <strong>{{ $room['br_subject'] }}</strong> 에만 적용됩니다.</span>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">처리</th>
+            <td>
+                <label><input type="radio" name="stock_mode" value="stop" required> <strong>판매 중지</strong> — 이 기간에는 이 객실을 팔지 않습니다 (수리·휴업)</label>
+                <br>
+                <label><input type="radio" name="stock_mode" value="resume"> <strong>판매 재개</strong> — 중지·조정을 풀고 평소대로 팝니다</label>
+                @if ($room['br_room_count'] > 1)
+                <br>
+                <label><input type="radio" name="stock_mode" value="partial"> 일부만 판매 — 보유 {{ $room['br_room_count'] }}개 중</label>
+                <label for="partial_count" class="sound_only">판매할 방 개수</label>
+                <input type="number" name="partial_count" value="" id="partial_count" class="frm_input" size="4" min="1" max="{{ $room['br_room_count'] - 1 }}"> 개만
+                <span class="frm_info">같은 타입 여러 방 중 일부만 수리할 때 씁니다.</span>
+                @endif
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="btn_confirm01 btn_confirm">
+    <input type="submit" value="적용" id="btn_stock_apply" class="btn_submit btn">
+</div>
+</form>
+
+{{-- 특정 날짜 요금을 액수로 고정하는 자리 — 성수기 비율과 같은 칸에 저장되므로 나중에 적용한 값이 남는다 --}}
+<form name="fpriceform" id="fpriceform" action="./calendar_update.php" method="post" autocomplete="off">
 <input type="hidden" name="token" value="">
 <input type="hidden" name="br_id" value="{{ $room['br_id'] }}">
 <input type="hidden" name="ym" value="{{ $ym }}">
 
 <div class="tbl_frm01 tbl_wrap">
     <table>
-        <caption>이 객실만 조정 — {{ $room['br_subject'] }}</caption>
+        <caption>날짜별 요금 지정 — {{ $room['br_subject'] }}</caption>
         <colgroup><col class="grid_4"><col></colgroup>
         <tbody>
         <tr>
@@ -147,26 +193,20 @@
                 ~
                 <label for="end_date" class="sound_only">종료일</label>
                 <input type="date" name="end_date" value="{{ $last_date }}" id="end_date" required class="frm_input required">
-                <span class="frm_info">종료일 당일까지 적용됩니다. 한 번에 366일까지. <strong>{{ $room['br_subject'] }}</strong> 에만 적용됩니다.</span>
+                <span class="frm_info">종료일 당일까지, <strong>{{ $room['br_subject'] }}</strong> 에만 적용됩니다.</span>
             </td>
         </tr>
         <tr>
-            <th scope="row"><label for="set_price">요금</label></th>
-            <td><input type="number" name="set_price" value="" id="set_price" class="frm_input" size="10" min="-1"> 원
-                <span class="frm_info">비워 두면 요금은 건드리지 않습니다. -1 을 넣으면 지정을 해제해 객실 기본 요금(주중/주말)으로 되돌립니다.</span></td>
-        </tr>
-        <tr>
-            <th scope="row"><label for="set_count">판매 객실 수</label></th>
-            <td><input type="number" name="set_count" value="" id="set_count" class="frm_input" size="5" min="-1"> 개
-                <span class="frm_info">그 날짜에 파는 이 타입의 방 개수입니다. 평소에는 객실 등록의 {{ $room['br_room_count'] }}개가 그대로 쓰입니다.</span>
-                <span class="frm_info">일부가 수리 중이면 그 기간만 줄이고, 0 을 넣으면 판매 중지입니다. 비워 두면 건드리지 않고, -1 은 기본값({{ $room['br_room_count'] }}개)으로 되돌립니다.</span></td>
+            <th scope="row"><label for="set_price">1박 요금</label></th>
+            <td><input type="number" name="set_price" value="" id="set_price" required class="frm_input required" size="10" min="-1"> 원
+                <span class="frm_info">이 기간의 1박 요금을 이 액수로 고정합니다. -1 을 넣으면 지정을 해제해 객실 기본 요금(주중/주말)으로 되돌립니다.</span></td>
         </tr>
         </tbody>
     </table>
 </div>
 
 <div class="btn_confirm01 btn_confirm">
-    <input type="submit" value="이 객실에 적용" class="btn_submit btn">
+    <input type="submit" value="요금 적용" class="btn_submit btn">
 </div>
 </form>
 
@@ -183,6 +223,14 @@ jQuery(function($) {
     // 비율 칸을 만지면 그 줄의 구분이 저절로 선택된다 — 라디오 따로 비율 따로 누르는 수고를 던다
     $("#peak_percent").on("focus input", function() { $("input[name=season][value=peak]").prop("checked", true); });
     $("#off_percent").on("focus input", function() { $("input[name=season][value=off]").prop("checked", true); });
+    $("#partial_count").on("focus input", function() { $("input[name=stock_mode][value=partial]").prop("checked", true); });
+
+    // 판매 중지는 예약이 막히는 일이다 — 기간을 되짚어 준다
+    $("#btn_stock_apply").on("click", function() {
+        if ($("input[name=stock_mode]:checked").val() !== "stop") return;
+        var s = $("#stock_start").val(), e = $("#stock_end").val();
+        if (!confirm(s + " ~ " + e + " 동안 이 객실 판매를 중지할까요?")) return false;
+    });
 });
 </script>
 @endif

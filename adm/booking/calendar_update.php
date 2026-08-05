@@ -11,7 +11,7 @@ $br_id = (isset($_POST['br_id']) && !is_array($_POST['br_id'])) ? (int)$_POST['b
 // 따옴표가 낄 자리가 없다 — 검증을 통과한 문자열만 SQL 로 내려간다
 $in = array();
 foreach (array('act', 'start_date', 'end_date', 'season', 'peak_percent', 'off_percent',
-        'set_price', 'set_count', 'ym') as $name) {
+        'stock_mode', 'partial_count', 'set_price', 'ym') as $name) {
     $in[$name] = (isset($_POST[$name]) && !is_array($_POST[$name])) ? trim((string)$_POST[$name]) : '';
 }
 
@@ -84,32 +84,67 @@ if ($in['act'] === 'season') {
     goto_url($list_url);
 }
 
-// ---------------------------------------------------------------- 이 객실만: 요금·판매 객실 수
-foreach (array('set_price', 'set_count') as $name) {
-    if ($in[$name] !== '' && !preg_match('/^-?\d+$/', $in[$name])) {
-        alert('요금과 판매 객실 수는 숫자로 입력하세요. (기본값으로 되돌리려면 -1)', $list_url);
+// ---------------------------------------------------------------- 판매 중지·재개 (이 객실)
+// 업주는 "이 방, 이 기간, 판매 중지"로 생각한다 — 숫자 계산 없이 동작을 고르게 한다.
+// 중지=0, 재개=지정 해제(기본 개수로), 일부만 판매=고른 개수
+if ($in['act'] === 'stock') {
+    $mode = in_array($in['stock_mode'], array('stop', 'resume', 'partial'), true) ? $in['stock_mode'] : '';
+    if ($mode === '') alert('판매 중지·재개·일부만 판매 중 하나를 고르세요.', $list_url);
+
+    $count = 0;
+    if ($mode === 'resume') $count = -1;
+    if ($mode === 'partial') {
+        if (!preg_match('/^\d+$/', $in['partial_count']) || (int)$in['partial_count'] < 1) {
+            alert('일부만 판매할 방 개수를 1 이상 숫자로 입력하세요.', $list_url);
+        }
+        $count = (int)$in['partial_count'];
+        if ($count >= (int)$room['br_room_count']) {
+            alert('보유 객실 수('.(int)$room['br_room_count'].'개)보다 적어야 일부 판매입니다. 전부 팔려면 판매 재개를 고르세요.', $list_url);
+        }
     }
-}
-if ($in['set_price'] === '' && $in['set_count'] === '') {
-    alert('요금과 판매 객실 수 중 최소 하나는 입력하세요.', $list_url);
+
+    for ($t = $start; $t <= $end; $t = strtotime('+1 day', $t)) {
+        $date = date('Y-m-d', $t);
+        $row = booking_calendar_row($br_id, $date);
+        // 그 날의 요금 지정은 그대로 둔다
+        $price = $row ? (int)$row['bd_price'] : -1;
+
+        if ($price < 0 && $count < 0) {
+            // 둘 다 미지정이면 남길 게 없다 — 행을 지워 캘린더를 기본값 상태로 되돌린다
+            if ($row) sql_query(" delete from `{$g5['booking_calendar_table']}` where bd_id = '{$row['bd_id']}' ", true);
+        } else if ($row) {
+            sql_query(" update `{$g5['booking_calendar_table']}`
+                set bd_price = '$price', bd_room_count = '$count' where bd_id = '{$row['bd_id']}' ", true);
+        } else {
+            sql_query(" insert into `{$g5['booking_calendar_table']}`
+                set br_id = '$br_id', bd_date = '$date', bd_price = '$price', bd_room_count = '$count' ", true);
+        }
+    }
+
+    goto_url($list_url);
 }
 
-// 빈칸이면 그 날의 기존 값을 그대로 두고, 음수는 모두 -1(미지정)로 모은다
+// ---------------------------------------------------------------- 날짜별 요금 지정 (이 객실)
+if (!preg_match('/^-?\d+$/', $in['set_price'])) {
+    alert('요금을 숫자로 입력하세요. (지정을 해제하려면 -1)', $list_url);
+}
+$set_price = max(-1, (int)$in['set_price']);
+
 for ($t = $start; $t <= $end; $t = strtotime('+1 day', $t)) {
     $date = date('Y-m-d', $t);
     $row = booking_calendar_row($br_id, $date);
-    $price = ($in['set_price'] === '') ? ($row ? (int)$row['bd_price'] : -1) : max(-1, (int)$in['set_price']);
-    $count = ($in['set_count'] === '') ? ($row ? (int)$row['bd_room_count'] : -1) : max(-1, (int)$in['set_count']);
+    // 그 날의 판매 객실 수 지정은 그대로 둔다
+    $count = $row ? (int)$row['bd_room_count'] : -1;
 
-    if ($price < 0 && $count < 0) {
+    if ($set_price < 0 && $count < 0) {
         // 둘 다 미지정이면 남길 게 없다 — 행을 지워 캘린더를 기본값 상태로 되돌린다
         if ($row) sql_query(" delete from `{$g5['booking_calendar_table']}` where bd_id = '{$row['bd_id']}' ", true);
     } else if ($row) {
         sql_query(" update `{$g5['booking_calendar_table']}`
-            set bd_price = '$price', bd_room_count = '$count' where bd_id = '{$row['bd_id']}' ", true);
+            set bd_price = '$set_price', bd_room_count = '$count' where bd_id = '{$row['bd_id']}' ", true);
     } else {
         sql_query(" insert into `{$g5['booking_calendar_table']}`
-            set br_id = '$br_id', bd_date = '$date', bd_price = '$price', bd_room_count = '$count' ", true);
+            set br_id = '$br_id', bd_date = '$date', bd_price = '$set_price', bd_room_count = '$count' ", true);
     }
 }
 
