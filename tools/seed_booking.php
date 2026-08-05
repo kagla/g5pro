@@ -91,7 +91,6 @@ $SEED_ROOMS = array(
 $SEED_ADDONS = array(
     array('바베큐 세트',        400, 5,  'once'),
     array('숯+그릴 대여',       200, 4,  'once'),
-    array('조식 세트(2인)',     300, 8,  'night'),
     array('침구 추가',          100, 6,  'night'),
     array('픽업 서비스(편도)',  300, 2,  'once'),
     array('불멍 세트',          400, 3,  'once'),
