@@ -169,6 +169,8 @@ if ($wr_by && $wr_bm && $wr_bd && $wr_bh && $wr_bi) {
     $wr_booking = '';
     $booking = '';
 }
+// 즉시 발송은 예약시각이 없다 — 빈 문자열을 datetime 에 넣으면 제로데이트로 굳으므로 NULL 로
+$wr_booking_sql = $wr_booking ? "'".$wr_booking."'" : "NULL";
 
 include_once(G5_ADMIN_PATH.'/admin.head.php');
 
@@ -269,7 +271,7 @@ if($config['cf_sms_type'] == 'LMS' && $config['cf_sms_use'] !== 'ppurio') {
             }
         }
 
-        sql_query("insert into {$g5['sms5_write_table']} set wr_no='$wr_no', wr_renum=0, wr_reply='$wr_reply', wr_message='$db_wr_message', wr_success='$wr_success', wr_failure='$wr_failure', wr_memo='$str_serialize', wr_booking='$wr_booking', wr_total='$wr_total', wr_datetime='".G5_TIME_YMDHIS."'");
+        sql_query("insert into {$g5['sms5_write_table']} set wr_no='$wr_no', wr_renum=0, wr_reply='$wr_reply', wr_message='$db_wr_message', wr_success='$wr_success', wr_failure='$wr_failure', wr_memo='$str_serialize', wr_booking=$wr_booking_sql, wr_total='$wr_total', wr_datetime='".G5_TIME_YMDHIS."'");
     }
 } else {
     $SMS->SMS_con($config['cf_icode_server_ip'], $config['cf_icode_id'], $config['cf_icode_pw'], $config['cf_icode_server_port']);
@@ -287,7 +289,7 @@ if($config['cf_sms_type'] == 'LMS' && $config['cf_sms_use'] !== 'ppurio') {
             else
                 $wr_no = 1;
 
-            sql_query("insert into {$g5['sms5_write_table']} set wr_no='$wr_no', wr_renum=0, wr_reply='$wr_reply', wr_message='$db_wr_message', wr_booking='$wr_booking', wr_total='$wr_total', wr_datetime='".G5_TIME_YMDHIS."'");
+            sql_query("insert into {$g5['sms5_write_table']} set wr_no='$wr_no', wr_renum=0, wr_reply='$wr_reply', wr_message='$db_wr_message', wr_booking=$wr_booking_sql, wr_total='$wr_total', wr_datetime='".G5_TIME_YMDHIS."'");
 
             $wr_success = 0;
             $wr_failure = 0;

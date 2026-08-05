@@ -742,7 +742,9 @@ CREATE TABLE IF NOT EXISTS `g5_visit` (
 
 DROP TABLE IF EXISTS `g5_visit_sum`;
 CREATE TABLE IF NOT EXISTS `g5_visit_sum` (
-  `vs_date` date NULL DEFAULT NULL,
+  -- PRIMARY KEY 라 NULL 을 허용할 수 없다 (제로데이트 정리 때 함께 NULL 로 바꿨다가 설치가 1171 로 죽었다).
+  -- 기본값 없는 NOT NULL — 넣는 곳(bbs/visit_insert.inc.php)이 항상 날짜를 공급한다
+  `vs_date` date NOT NULL,
   `vs_count` int(11) NOT NULL default '0',
   PRIMARY KEY  (`vs_date`),
   KEY `index1` (`vs_count`)
