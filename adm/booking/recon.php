@@ -66,7 +66,7 @@ while ($r = sql_fetch_array($result)) {
     );
 }
 
-$g5['title'] = '결제대사';
+$g5['title'] = '결제 점검';
 include_once(G5_ADMIN_PATH.'/admin.head.php');
 
 badm_view('recon', array(

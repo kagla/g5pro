@@ -122,7 +122,7 @@ case 'recon_confirm':
     // (잠금·상태 재검증·중복 방어·거래 로그가 모두 그 안에 있다)
     $claimed = booking_get($bk_id);
     if (!$claimed) alert('예약 정보를 찾을 수 없습니다.', $recon_url);
-    $r = booking_refund($claimed, (int)$claimed['bk_total_price'], '결제대사 환불');
+    $r = booking_refund($claimed, (int)$claimed['bk_total_price'], '결제 점검 화면에서 환불');
     if (!$r['ok'])
         alert('결제를 예약에 연결했으나 환불에 실패했습니다. '.$r['msg']
             ."\\n예약이 확정 상태로 남았습니다. 예약 상세에서 직권 취소로 다시 시도하십시오.", $view_url);

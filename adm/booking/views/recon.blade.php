@@ -1,5 +1,5 @@
 <div class="local_desc01 local_desc">
-    <p>카드 승인 기록과 예약 상태가 어긋난 건을 찾아 보여 줍니다. 하루 한 번은 열어 보십시오 — 여기 걸린 건은 <strong>돈은 나갔는데 예약이 잡히지 않은</strong> 경우가 대부분입니다.</p>
+    <p>카드 결제와 예약이 서로 맞는지 점검합니다. <strong>손님 카드에서 돈은 빠져나갔는데 예약이 잡히지 않은 건</strong>처럼 어긋난 것만 골라 보여 줍니다. 하루 한 번은 열어 보십시오 — 아무것도 없으면 정상입니다.</p>
     <p>망취소·환불 기록이 남은 건은 이미 되돌리려 손을 댄 것으로 보고 제외합니다.</p>
 </div>
 
@@ -71,7 +71,7 @@
         @endforeach
 
         @if (count($unmatched) == 0)
-        <tr><td colspan="6" class="empty_table">대사할 건이 없습니다.</td></tr>
+        <tr><td colspan="6" class="empty_table">어긋난 결제가 없습니다. 정상입니다.</td></tr>
         @endif
         </tbody>
     </table>
@@ -103,7 +103,7 @@
         @endforeach
 
         @if (count($notid) == 0)
-        <tr><td colspan="6" class="empty_table">대사할 건이 없습니다.</td></tr>
+        <tr><td colspan="6" class="empty_table">어긋난 결제가 없습니다. 정상입니다.</td></tr>
         @endif
         </tbody>
     </table>
