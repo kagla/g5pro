@@ -38,6 +38,18 @@ if(!isset($config['cf_kakao_client_secret'])) {
     $is_check = true;
 }
 
+// 뿌리오(비즈뿌리오) SMS 연동 필드 추가
+if(!isset($config['cf_ppurio_id'])) {
+    sql_query("ALTER TABLE `{$g5['config_table']}`
+                ADD `cf_ppurio_id` varchar(100) NOT NULL DEFAULT '' AFTER `cf_icode_token_key`,
+                ADD `cf_ppurio_pw` varchar(100) NOT NULL DEFAULT '' AFTER `cf_ppurio_id`,
+                ADD `cf_ppurio_from` varchar(20) NOT NULL DEFAULT '' AFTER `cf_ppurio_pw`,
+                ADD `cf_ppurio_dev` tinyint(4) NOT NULL DEFAULT '0' AFTER `cf_ppurio_from`
+    ", true);
+
+    $is_check = true;
+}
+
 // 회원 이미지 관련 필드 추가
 if(!isset($config['cf_member_img_size'])) {
     sql_query("ALTER TABLE `{$g5['config_table']}`
