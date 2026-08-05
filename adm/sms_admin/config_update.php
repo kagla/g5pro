@@ -19,19 +19,21 @@ $cf_icode_server_ip = isset($_REQUEST['cf_icode_server_ip']) ? addslashes(clean_
 $cf_icode_server_port = isset($_REQUEST['cf_icode_server_port']) ? clean_xss_tags($_REQUEST['cf_icode_server_port'], 1, 1) : '';
 $cf_icode_token_key = isset($_REQUEST['cf_icode_token_key']) ? addslashes(clean_xss_tags(stripslashes($_REQUEST['cf_icode_token_key']), 1, 1)) : '';
 
-// 회신번호 체크
-if(!check_vaild_callback($cf_phone))
+// 회신번호 체크 — 사용안함으로 끌 때는 비워 둘 수 있다
+if($cf_sms_use !== '' && !check_vaild_callback($cf_phone))
     alert('회신번호가 올바르지 않습니다.');
 
-// 뿌리오 모드 — 아이코드 계정 검증·필드 갱신을 건너뛴다.
-// 연동 계정·발신번호는 기본환경설정(cf_ppurio_*)이 관리하고, 여기서는 회신번호와 전송유형만 저장한다
-if ($cf_sms_use === 'ppurio') {
-    $res = sql_fetch("select * from ".$g5['sms5_config_table']." limit 1");
-    $sql = (!$res ? "insert into " : "update ").$g5['sms5_config_table']." set cf_phone='$cf_phone' ";
-    sql_query($sql);
+// 뿌리오·사용안함 — 아이코드 계정 검증·필드 갱신을 건너뛴다.
+// 뿌리오 연동 계정·발신번호는 기본환경설정(cf_ppurio_*)이 관리하고, 여기서는 업체·회신번호·전송유형만 저장한다
+if ($cf_sms_use === 'ppurio' || $cf_sms_use === '') {
+    if ($cf_phone !== '') {
+        $res = sql_fetch("select * from ".$g5['sms5_config_table']." limit 1");
+        $sql = (!$res ? "insert into " : "update ").$g5['sms5_config_table']." set cf_phone='$cf_phone' ";
+        sql_query($sql);
+    }
 
     sql_query(" update {$g5['config_table']}
-                set cf_sms_use = 'ppurio',
+                set cf_sms_use = '$cf_sms_use',
                     cf_sms_type = '$cf_sms_type' ");
 
     goto_url("./config.php");
