@@ -119,6 +119,11 @@
             <td><input type="text" name="bc_admin_email" value="{{ $bc['bc_admin_email'] }}" id="bc_admin_email" class="frm_input" size="40" maxlength="255">
                 <span class="frm_info">예약·취소 안내를 함께 받을 주소입니다. 비워 두면 업주 알림을 보내지 않습니다.</span></td>
         </tr>
+        <tr>
+            <th scope="row"><label for="bc_admin_hp">업주 알림 휴대폰</label></th>
+            <td><input type="text" name="bc_admin_hp" value="{{ $bc['bc_admin_hp'] }}" id="bc_admin_hp" class="frm_input" size="20" maxlength="20">
+                <span class="frm_info">예약·취소 문자를 받을 번호입니다. 기본환경설정에서 SMS 업체가 설정돼 있어야 하며, 비워 두면 업주 문자를 보내지 않습니다.</span></td>
+        </tr>
         </tbody>
     </table>
 </div>

@@ -43,6 +43,12 @@ function booking_install()
             ADD `bt_unit` varchar(10) NOT NULL DEFAULT 'once' AFTER `bt_price` ", true);
     }
 
+    // 2026-08-05 업주 알림 휴대폰 — 예약·취소 문자를 받을 번호 (비면 업주 문자 없음)
+    if (!sql_fetch(" SHOW COLUMNS FROM `{$g5['booking_config_table']}` LIKE 'bc_admin_hp' ")) {
+        sql_query(" ALTER TABLE `{$g5['booking_config_table']}`
+            ADD `bc_admin_hp` varchar(20) NOT NULL DEFAULT '' AFTER `bc_admin_email` ", true);
+    }
+
     // 상품이 전역이던 시절의 설치라면 현재 상품 전부를 전 객실에 매핑해
     // 화면 노출을 그대로 유지한다. 새 설치는 두 테이블이 비어 있어 아무 것도 넣지 않는다
     if (!$had_room_addon) {
@@ -193,6 +199,7 @@ function booking_table_ddl()
         `bc_inicis_iniapi_iv` varchar(64) NOT NULL DEFAULT '',
         `bc_card_test` tinyint(4) NOT NULL DEFAULT '1',
         `bc_admin_email` varchar(255) NOT NULL DEFAULT '',
+        `bc_admin_hp` varchar(20) NOT NULL DEFAULT '',
         PRIMARY KEY (`bc_id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
     'booking_inicis_log_table' => " CREATE TABLE IF NOT EXISTS `{$g5['booking_inicis_log_table']}` (
@@ -796,10 +803,36 @@ function booking_refund($bk, $refund_price, $memo)
 
 // 예약 안내 메일. 발송 실패는 무시한다 (예약 처리 흐름을 막지 않는다)
 // 예약 이벤트 알림의 단일 입구 — 호출부는 "무슨 일이 있었나"만 알린다.
-// 지금은 메일뿐이지만 SMS 같은 채널이 늘면 여기서만 갈라진다 (호출부 4곳은 그대로)
+// 채널(메일·문자)이 늘어도 여기서만 갈라진다 (호출부 4곳은 그대로)
 function booking_notify($bk_id, $kind)
 {
     booking_send_mail($bk_id, $kind);
+    booking_send_sms($bk_id, $kind);
+}
+
+// 예약 이벤트 문자. 손님(예약 연락처)과 업주(bc_admin_hp)에게 보낸다.
+// 발송 실패는 흐름을 멈추지 않는다 — 문자는 안내이지 예약의 일부가 아니다
+function booking_send_sms($bk_id, $kind)
+{
+    global $g5, $config;
+    if (empty($config['cf_sms_use'])) return;
+    $titles = array('confirm' => '예약이 확정되었습니다', 'cancel_req' => '취소 요청이 접수되었습니다',
+        'cancelled' => '예약이 취소되었습니다');
+    if (!isset($titles[$kind])) return;
+    $bk = booking_get($bk_id);
+    if (!$bk) return;
+    $room = sql_fetch(" select br_subject from `{$g5['booking_room_table']}` where br_id = '".(int)$bk['br_id']."' ");
+
+    include_once(G5_LIB_PATH.'/sms.lib.php');
+    // 90바이트를 넘으면 g5_sms_send 가 LMS 로 승격하므로 길이는 여기서 걱정하지 않는다
+    $msg = '['.$config['cf_title'].'] '.$titles[$kind]."\n"
+        .'예약번호 '.$bk['bk_no']."\n"
+        .($room ? $room['br_subject']."\n" : '')
+        .$bk['bk_checkin'].' ~ '.$bk['bk_checkout'].' '.(int)$bk['bk_person'].'명';
+
+    if ($bk['bk_hp']) g5_sms_send($bk['bk_hp'], $msg);
+    $bc = booking_config();
+    if (!empty($bc['bc_admin_hp'])) g5_sms_send($bc['bc_admin_hp'], $msg.' ('.$bk['bk_name'].')');
 }
 
 function booking_send_mail($bk_id, $kind)

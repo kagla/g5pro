@@ -73,6 +73,10 @@ if ($bc_admin_email !== '' && !filter_var($bc_admin_email, FILTER_VALIDATE_EMAIL
 }
 $bc_admin_email = addslashes($bc_admin_email);
 
+// 업주 알림 휴대폰 — 숫자만 남긴다. 빈 값은 "업주 문자를 끈다"는 뜻이라 허용한다
+$bc_admin_hp = preg_replace('/[^0-9]/', '', booking_post_raw('bc_admin_hp'));
+$bc_admin_hp = addslashes(mb_substr($bc_admin_hp, 0, 20));
+
 // 행이 없으면 만들어 두고 갱신한다 (첫 저장이 조용히 사라지지 않게)
 booking_config();
 
@@ -91,7 +95,8 @@ sql_query(" update `{$g5['booking_config_table']}` set
     bc_inicis_iniapi_key = '$bc_inicis_iniapi_key',
     bc_inicis_iniapi_iv = '$bc_inicis_iniapi_iv',
     bc_card_test = '$bc_card_test',
-    bc_admin_email = '$bc_admin_email'
+    bc_admin_email = '$bc_admin_email',
+    bc_admin_hp = '$bc_admin_hp'
     where bc_id = 1 ", true);
 
 // booking_config() 는 요청 단위 static 캐시라 지금 다시 읽어도 낡은 값이다 — 리다이렉트해 새 요청에서 읽는다

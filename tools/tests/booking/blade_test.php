@@ -44,7 +44,7 @@ $sample_config = array(
     'bc_refund_terms' => "체크인 7일 전까지 전액 환불합니다.\n이후에는 단계별 수수료가 붙습니다.",
     'bc_inicis_mid' => '', 'bc_inicis_sign_key' => '',
     'bc_inicis_iniapi_key' => '', 'bc_inicis_iniapi_iv' => '',
-    'bc_card_test' => 1, 'bc_admin_email' => '',
+    'bc_card_test' => 1, 'bc_admin_email' => '', 'bc_admin_hp' => '',
 );
 
 // 캘린더 한 달치 샘플 — 한 칸씩 손으로 적는 대신 만들고, 특이 케이스만 몇 날에 심는다

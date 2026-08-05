@@ -389,6 +389,15 @@ if (!isset($config['cf_icode_token_key'])) {
             ADD COLUMN `cf_icode_token_key` VARCHAR(100) NOT NULL DEFAULT '' AFTER `cf_icode_server_port`; ";
     sql_query($sql, false);
 }
+// 뿌리오(비즈뿌리오) SMS 연동 필드 추가
+if (!isset($config['cf_ppurio_id'])) {
+    $sql = "ALTER TABLE `{$g5['config_table']}`
+            ADD COLUMN `cf_ppurio_id` VARCHAR(100) NOT NULL DEFAULT '' AFTER `cf_icode_token_key`,
+            ADD COLUMN `cf_ppurio_pw` VARCHAR(100) NOT NULL DEFAULT '' AFTER `cf_ppurio_id`,
+            ADD COLUMN `cf_ppurio_from` VARCHAR(20) NOT NULL DEFAULT '' AFTER `cf_ppurio_pw`,
+            ADD COLUMN `cf_ppurio_dev` TINYINT(4) NOT NULL DEFAULT '0' AFTER `cf_ppurio_from`; ";
+    sql_query($sql, false);
+}
 // 아이디/비밀번호 찾기에 본인확인 사용 여부 필드 추가
 if (!isset($config['cf_cert_find'])) {
     $sql = "ALTER TABLE `{$g5['config_table']}` 
@@ -1533,6 +1542,7 @@ if ($config['cf_sms_use'] && $config['cf_icode_id'] && $config['cf_icode_pw']) {
                             <select id="cf_sms_use" name="cf_sms_use">
                                 <option value="" <?php echo get_selected($config['cf_sms_use'], ''); ?>>사용안함</option>
                                 <option value="icode" <?php echo get_selected($config['cf_sms_use'], 'icode'); ?>>아이코드</option>
+                                <option value="ppurio" <?php echo get_selected($config['cf_sms_use'], 'ppurio'); ?>>뿌리오(비즈뿌리오)</option>
                             </select>
                         </td>
                     </tr>
@@ -1601,6 +1611,37 @@ if ($config['cf_sms_use'] && $config['cf_icode_id'] && $config['cf_icode_pw']) {
                         <th scope="row">아이코드 SMS 신청<br>회원가입</th>
                         <td>
                             <a href="http://icodekorea.com/res/join_company_fix_a.php?sellid=sir2" target="_blank" class="btn_frmline">아이코드 회원가입</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="cf_ppurio_id">뿌리오 연동 계정</label></th>
+                        <td>
+                            <?php echo help("비즈뿌리오 API 연동 계정입니다. 사이트 로그인 아이디와 다를 수 있습니다."); ?>
+                            <input type="text" name="cf_ppurio_id" value="<?php echo isset($config['cf_ppurio_id']) ? get_sanitize_input($config['cf_ppurio_id']) : ''; ?>" id="cf_ppurio_id" class="frm_input" size="20">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="cf_ppurio_pw">뿌리오 연동 비밀번호</label></th>
+                        <td>
+                            <?php echo help("API 연동용 비밀번호입니다. 사이트 로그인 비밀번호가 아닙니다 — 뿌리오 담당자 또는 연동 관리 화면에서 확인하세요."); ?>
+                            <input type="password" name="cf_ppurio_pw" value="<?php echo isset($config['cf_ppurio_pw']) ? get_sanitize_input($config['cf_ppurio_pw']) : ''; ?>" id="cf_ppurio_pw" class="frm_input" size="30">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="cf_ppurio_from">뿌리오 발신번호</label></th>
+                        <td>
+                            <?php echo help("뿌리오에 사전 등록·승인된 발신번호만 발송됩니다. 숫자만 입력하세요."); ?>
+                            <input type="text" name="cf_ppurio_from" value="<?php echo isset($config['cf_ppurio_from']) ? get_sanitize_input($config['cf_ppurio_from']) : ''; ?>" id="cf_ppurio_from" class="frm_input" size="15">
+                            <br>
+                            서버아이피 : <?php echo $_SERVER['SERVER_ADDR']; ?> <?php echo help("연동 IP 등록이 필요한 경우 이 아이피를 등록하세요."); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="cf_ppurio_dev">뿌리오 검수 서버</label></th>
+                        <td>
+                            <?php echo help("체크하면 검수(dev-api) 서버로 발송합니다. 실운영에서는 체크를 해제하세요."); ?>
+                            <input type="checkbox" name="cf_ppurio_dev" value="1" id="cf_ppurio_dev" <?php echo (!empty($config['cf_ppurio_dev'])) ? 'checked' : ''; ?>>
+                            <label for="cf_ppurio_dev">검수 서버 사용</label>
                         </td>
                     </tr>
                 </tbody>
