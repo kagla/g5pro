@@ -100,6 +100,8 @@ function ppurio_send_sms($to, $message, $opt = array())
         'account' => $config['cf_ppurio_id'],
         'type' => $type, 'from' => $from, 'to' => $to,
         'content' => $content,
+        // 요청 식별자 — 서버가 필수로 요구한다 (UTF-8 최대 32바이트). 응답에 그대로 되돌아온다
+        'refkey' => 'g5'.substr(md5(uniqid(mt_rand(), true)), 0, 24),
     );
     if (!empty($opt['sendtime']) && (int)$opt['sendtime'] > time())
         $req['sendtime'] = (int)$opt['sendtime'];
