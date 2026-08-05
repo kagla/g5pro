@@ -51,7 +51,7 @@ h2{font-size: 1.083em;font-weight: bold;margin:10px 0}
 .popup-title { font-size: 18px; font-weight: 600; }
 .popup-body { padding: 20px; max-height: 400px; overflow-y: auto; color: #333; }
 .popup-footer button { background: #3d70ff; color: white; border: 1px solid #3d70ff; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s ease, border-color 0.2s ease; }
-.popup-footer button:hover { background: #1747A5; border-color: #1747A5; }
+.popup-footer button:hover { background: #113A92; border-color: #113A92; }
 
 /* 공통 - tab */
 .tab-container { display: flex; flex-direction: column; width: 100%; }
@@ -63,14 +63,14 @@ h2{font-size: 1.083em;font-weight: bold;margin:10px 0}
 
 /* 레이아웃 */
 #hd h1 {position:absolute;font-size:0;line-height:0;overflow:hidden}
-/* 그누보드5 프로 — 상단은 standard 템플릿의 브랜드 파랑(#2E7CF6/#1D5FD1) 계열을 쓴다 */
-#hd_top{position:fixed;top:0;left:0;width:100%;height:50px;background:#1D5FD1;z-index:1000}
+/* 그누보드5 프로 — 상단은 브랜드 파랑을 한 톤 내린 차분한 남색, 포인트만 밝은 파랑(#2E7CF6) */
+#hd_top{position:fixed;top:0;left:0;width:100%;height:50px;background:#174BB4;z-index:1000}
 #hd_top:after{display:block;visibility:hidden;clear:both;content:""}
-#logo{background:#1747A5;height:100%;float:left;width:220px;padding:0 0 0 50px;text-align:center}
-#logo a{display:block;line-height:50px;color:#fff;font-size:17px;font-weight:700;letter-spacing:-0.5px}
-#logo .logo_pro{display:inline-block;margin-left:6px;padding:2px 6px;border-radius:4px;background:#2E7CF6;color:#fff;font-size:11px;font-weight:800;line-height:1;letter-spacing:1px;vertical-align:2px}
-#btn_gnb{background:url(../img/menu-cl.png) 50% 50% no-repeat #123A8C;width:50px;height:50px;border:0;position:absolute;top:0;left:0;text-indent:-999px;overflow:hidden}
-#btn_gnb.btn_gnb_open{background:url(../img/menu-op.png) 50% 50% no-repeat #123A8C;width:50px;height:50px;border:0;position:absolute;top:0;left:0;text-indent:-999px;overflow:hidden}
+#logo{background:#113A92;height:100%;float:left;width:220px;padding:0 0 0 50px;text-align:center}
+#logo a{display:block;line-height:50px;color:#fff;font-size:18px;font-weight:800;letter-spacing:-0.3px}
+#logo .logo_pro{display:inline-block;margin-left:7px;padding:3px 8px;border-radius:999px;background:#2E7CF6;color:#fff;font-size:11px;font-weight:800;line-height:1;letter-spacing:1.5px;vertical-align:3px}
+#btn_gnb{background:url(../img/menu-cl.png) 50% 50% no-repeat #0E3078;width:50px;height:50px;border:0;position:absolute;top:0;left:0;text-indent:-999px;overflow:hidden}
+#btn_gnb.btn_gnb_open{background:url(../img/menu-op.png) 50% 50% no-repeat #0E3078;width:50px;height:50px;border:0;position:absolute;top:0;left:0;text-indent:-999px;overflow:hidden}
 
 #tnb{float:right;padding:10px}
 #tnb ul:after{display:block;visibility:hidden;clear:both;content:""}
@@ -81,13 +81,13 @@ h2{font-size: 1.083em;font-weight: bold;margin:10px 0}
 #tnb button{width:100px;border:0;border-radius:3px;background:#2E7CF6;color:#fff;padding:0 30px 0 10px;text-align:left;height:30px;position:relative;text-overflow: ellipsis;overflow: hidden;white-space: nowrap;}
 #tnb button span{display:block;text-indent:-999px;overflow:hidden;width:30px;border-radius:3px;height:30px;position:absolute;top:0;right:0;background:url(../img/op_btn.png) 50% 50% no-repeat #4A90FF}
 #tnb button:hover {background:#4A90FF}
-#tnb .tnb_mb_area{display:none;background:#1747A5;width:100px;position:absolute;padding:5px;margin-top:1px;}
+#tnb .tnb_mb_area{display:none;background:#113A92;width:100px;position:absolute;padding:5px;margin-top:1px;}
 #tnb .tnb_mb_area a{padding:0}
 #tnb .tnb_mb_area li{float:none;}
 #tnb .tnb_community{background:url(../img/home_icon.png) no-repeat 50% 50%;width:30px;height:30px;overflow:hidden;text-indent:-999px;border-radius:5px}
-#tnb .tnb_community:hover{background-color:#1747A5}
+#tnb .tnb_community:hover{background-color:#113A92}
 #tnb .tnb_shop{background:url(../img/shop_icon.png) no-repeat 50% 50%;width:30px;height:30px;overflow:hidden;text-indent:-999px;border-radius:5px}
-#tnb .tnb_shop:hover{background-color:#1747A5}
+#tnb .tnb_shop:hover{background-color:#113A92}
 
 /*gnb*/
 #gnb{position:fixed;top:0;left:0;max-width:220px;height:100%;padding-top:50px;z-index:999}
