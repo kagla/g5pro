@@ -123,6 +123,40 @@ function cart_category_descendant_ids($ca_id, $only_show = false)
     return $ids;
 }
 
+// 캐스케이드로 숨김 상태인 분류 id 전부(숨긴 노드 자신 + 그 모든 후손) — "숨긴 분류의 서브트리
+// 상품은 프론트 어디서도 안 보인다"는 의미론을 목록·검색·상세·자식 분류 직접 URL 네 갈래 전부에
+// 같은 기준으로 적용하기 위한 단일 진입점. 전체 분류를 한 번만 읽어 요청 안에서 static 캐시한다.
+function cart_hidden_category_ids()
+{
+    global $g5;
+    static $ids = null;
+    if ($ids !== null) return $ids;
+
+    $by_parent = array();
+    $show = array();
+    $result = sql_query(" select ca_id, ca_parent, ca_show from `{$g5['cart_category_table']}` ");
+    while ($r = sql_fetch_array($result)) {
+        $cid = (int)$r['ca_id'];
+        $by_parent[(int)$r['ca_parent']][] = $cid;
+        $show[$cid] = (bool)(int)$r['ca_show'];
+    }
+
+    $ids = array();
+    foreach ($show as $cid => $ok) {
+        if (!$ok) cart_hidden_category_collect($by_parent, $cid, $ids);
+    }
+    $ids = array_values(array_unique($ids));
+    return $ids;
+}
+
+// cart_hidden_category_ids() 내부 재귀 헬퍼 — $parent_id 자신과 그 모든 후손을 &$ids 에 채운다
+function cart_hidden_category_collect($by_parent, $parent_id, &$ids)
+{
+    $ids[] = $parent_id;
+    if (empty($by_parent[$parent_id])) return;
+    foreach ($by_parent[$parent_id] as $cid) cart_hidden_category_collect($by_parent, $cid, $ids);
+}
+
 // 빈 문자열이면 성공, 아니면 사용자에게 보여줄 거부 사유
 function cart_category_delete($ca_id)
 {
@@ -307,7 +341,12 @@ function cart_item_search_where($q)
     if (cart_ft_available()) {
         return " MATCH(it_name, it_keyword) AGAINST('$esc' IN BOOLEAN MODE) ";
     }
-    return " it_name LIKE '%$esc%' ";
+    // LIKE 폴백만 와일드카드를 이스케이프한다 — 검색어에 %·_ 가 그대로 들어가면 전체/단일문자
+    // 매치가 돼버리므로 리터럴 문자로 찾게 만든다. 순서 주의: sql_real_escape_string 로 먼저
+    // 따옴표·백슬래시를 이스케이프한 뒤에 addcslashes 로 %·_ 앞에 백슬래시를 붙여야
+    // (MySQL LIKE 의 기본 ESCAPE 문자가 백슬래시) 이스케이프 문자 자체가 깨지지 않는다.
+    $like = addcslashes($esc, '%_');
+    return " it_name LIKE '%$like%' ";
 }
 
 // ---------- 상품 이미지 ----------

@@ -8,13 +8,22 @@ $sort = (isset($_GET['sort']) && !is_array($_GET['sort'])) ? $_GET['sort'] : 'ne
 $page = (isset($_GET['page']) && !is_array($_GET['page'])) ? max(1, (int)$_GET['page']) : 1;
 $rows_per = 24;
 
+$hidden_ca_ids = cart_hidden_category_ids();
+
 $category = $ca_id ? cart_category_get($ca_id) : null;
-if ($ca_id && (!$category || !$category['ca_show'])) alert('없는 분류입니다.', cart_url('list.php'));
+// ca_show 뿐 아니라 캐스케이드-숨김(부모가 숨겨진 노출 자식)도 같이 막는다 —
+// 숨긴 부모 아래 노출 자식 분류로의 직접 URL 접근 차단
+if ($ca_id && (!$category || !$category['ca_show'] || in_array($ca_id, $hidden_ca_ids, true))) {
+    alert('없는 분류입니다.', cart_url('list.php'));
+}
 
 $where = array(" it_show = 1 ");
 if ($category) {
     $ids = cart_category_descendant_ids($ca_id, true);
     $where[] = " ca_id IN (".implode(',', $ids).") ";
+} elseif ($hidden_ca_ids) {
+    // 전체목록·검색(ca_id=0) 경로 — 숨긴 분류(캐스케이드 포함) 소속 상품은 제외
+    $where[] = " ca_id NOT IN (".implode(',', $hidden_ca_ids).") ";
 }
 if ($q !== '') $where[] = cart_item_search_where($q);
 $where_sql = implode(' AND ', $where);

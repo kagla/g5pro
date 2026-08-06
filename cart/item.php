@@ -4,7 +4,10 @@ define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 $it_id = (isset($_GET['it_id']) && !is_array($_GET['it_id'])) ? (int)$_GET['it_id'] : 0;
 $item = cart_item_get($it_id);
-if (!$item || !$item['it_show']) alert('없는 상품입니다.', cart_url('list.php'));
+// 상품 자신이 안 숨었어도 소속 분류가 캐스케이드-숨김이면 상세도 막는다(목록과 같은 의미론)
+if (!$item || !$item['it_show'] || in_array((int)$item['ca_id'], cart_hidden_category_ids(), true)) {
+    alert('없는 상품입니다.', cart_url('list.php'));
+}
 
 $images = array();
 foreach (cart_item_images($it_id) as $img) $images[] = cart_item_image_url($img['im_file']);
