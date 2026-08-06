@@ -2442,3 +2442,40 @@ input[type=checkbox], input[type=radio] {
 }
 .shop-item-note { font-size: var(--t-sm); color: var(--muted); }
 .shop-item-content { margin-top: var(--s6); line-height: 1.7; }
+
+/* ---------- 카트 메인(/cart/) — 오늘의집풍 스토어홈 ---------- */
+.cart-hero { text-align: center; margin: var(--s6) 0 var(--s6); }
+.cart-hero h2 { font-size: var(--t-2xl); margin-bottom: var(--s2); }
+.cart-hero-sub { color: var(--muted); font-size: var(--t-sm); margin-bottom: var(--s4); }
+.cart-hero .bbs-search { margin: 0 auto; }
+
+/* 카테고리 원형 칩 — 아이콘 이미지 없이 이니셜 원형으로. 좁은 화면에선 가로 스크롤 */
+.cart-cats {
+    display: flex; gap: var(--s5); justify-content: center;
+    overflow-x: auto; padding: var(--s2) var(--s2) var(--s4);
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.cart-cats::-webkit-scrollbar { display: none; }
+.cart-cats a { flex: none; display: flex; flex-direction: column; align-items: center; gap: var(--s2); }
+.cart-cat-circle {
+    width: 64px; height: 64px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg); border: 1px solid var(--line);
+    font-size: var(--t-lg); font-weight: 700; color: var(--fg);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+.cart-cats a:hover .cart-cat-circle { transform: translateY(-2px); box-shadow: var(--sh-btn); border-color: var(--accent); color: var(--accent); }
+.cart-cat-name { font-size: var(--t-sm); color: var(--muted); font-weight: 600; }
+
+.cart-sec { margin-bottom: var(--s7); }
+.cart-sec-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--s3); }
+.cart-sec-head h3 { font-size: var(--t-lg); }
+.cart-sec-head a { font-size: var(--t-sm); color: var(--muted); font-weight: 600; }
+.cart-sec-head a:hover { color: var(--accent); }
+
+/* 분류별 가로 스크롤 상품 행 — 카드는 .shop-card 를 그대로 쓰고 폭만 고정 */
+.shop-row {
+    display: flex; gap: var(--s4); overflow-x: auto; padding-bottom: var(--s2);
+    -webkit-overflow-scrolling: touch;
+}
+.shop-row .shop-card { flex: 0 0 180px; }
