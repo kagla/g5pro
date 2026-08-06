@@ -2,12 +2,12 @@
 if (!defined('_GNUBOARD_')) exit;
 
 // ---------- 장바구니 ----------
-// 소유자는 회원(mb_id) 또는 비회원 세션키(bk_sid) 둘 중 하나. 가격은 담지 않는다 —
+// 소유자는 회원(mb_id) 또는 비회원 세션키(ct_sid) 둘 중 하나. 가격은 담지 않는다 —
 // 표시는 현재가, 확정은 체크아웃 서버 재계산(스펙 원칙).
 
 // 현재 요청의 바구니 소유자. 회원 로그인 상태면 세션 바구니를 회원 것으로 이관(claim)한다.
 // $override 는 CLI 테스트용 — array('mb_id' => '', 'sid' => '') 꼴.
-function cart_basket_owner($override = null)
+function cart_cart_owner($override = null)
 {
     global $member;
     if (is_array($override)) return $override;
@@ -15,7 +15,7 @@ function cart_basket_owner($override = null)
     $mb_id = isset($member['mb_id']) ? trim($member['mb_id']) : '';
     if ($mb_id !== '') {
         if (!empty($_SESSION['ss_cart_sid'])) {
-            cart_basket_claim($mb_id, $_SESSION['ss_cart_sid']);
+            cart_cart_claim($mb_id, $_SESSION['ss_cart_sid']);
             unset($_SESSION['ss_cart_sid']);
         }
         return array('mb_id' => $mb_id, 'sid' => '');
@@ -26,17 +26,17 @@ function cart_basket_owner($override = null)
     return array('mb_id' => '', 'sid' => $_SESSION['ss_cart_sid']);
 }
 
-function cart_basket_where($owner)
+function cart_cart_where($owner)
 {
     return " mb_id = '".sql_real_escape_string($owner['mb_id'])."'
-        and bk_sid = '".sql_real_escape_string($owner['sid'])."' ";
+        and ct_sid = '".sql_real_escape_string($owner['sid'])."' ";
 }
 
 // 담기 — 같은 SKU 는 수량 합산(UNIQUE owner_sku + ON DUPLICATE KEY). 빈 문자열 반환=성공.
-function cart_basket_add($sk_id, $qty, $owner = null)
+function cart_cart_add($sk_id, $qty, $owner = null)
 {
     global $g5;
-    $owner = cart_basket_owner($owner);
+    $owner = cart_cart_owner($owner);
     $sk_id = (int)$sk_id;
     $qty = max(1, (int)$qty);
 
@@ -48,95 +48,95 @@ function cart_basket_add($sk_id, $qty, $owner = null)
     if (cart_item_is_hidden((int)$item['it_id'])) return '판매하지 않는 상품입니다.';
     if ((int)$sku['sk_qty'] <= 0) return '품절된 옵션입니다.';
 
-    sql_query(" insert into `{$g5['cart_basket_table']}`
-        (mb_id, bk_sid, sk_id, bk_qty, bk_datetime)
+    sql_query(" insert into `{$g5['ycart_cart_table']}`
+        (mb_id, ct_sid, sk_id, ct_qty, ct_datetime)
         values ('".sql_real_escape_string($owner['mb_id'])."',
                 '".sql_real_escape_string($owner['sid'])."',
                 '$sk_id', '$qty', '".G5_TIME_YMDHIS."')
-        on duplicate key update bk_qty = bk_qty + '$qty', bk_datetime = '".G5_TIME_YMDHIS."' ", true);
+        on duplicate key update ct_qty = ct_qty + '$qty', ct_datetime = '".G5_TIME_YMDHIS."' ", true);
     return '';
 }
 
 // 바구니 행 + 상품·SKU 현재 정보. 판매 중지/품절은 지우지 않고 avail=false 로 표시만 한다 —
 // 손님이 "왜 사라졌지" 하지 않게 화면이 사유를 보여 주고, 체크아웃이 최종 거른다.
-function cart_basket_items($owner = null)
+function cart_cart_items($owner = null)
 {
     global $g5;
-    $owner = cart_basket_owner($owner);
+    $owner = cart_cart_owner($owner);
     $rows = array();
-    $result = sql_query(" select b.bk_id, b.sk_id, b.bk_qty,
+    $result = sql_query(" select b.ct_id, b.sk_id, b.ct_qty,
             s.sk_option, s.sk_price, s.sk_qty, s.sk_use,
             i.it_id, i.it_name, i.it_show
-        from `{$g5['cart_basket_table']}` b
-        inner join `{$g5['cart_sku_table']}` s on s.sk_id = b.sk_id
-        inner join `{$g5['cart_item_table']}` i on i.it_id = s.it_id
-        where ".cart_basket_where($owner)."
-        order by b.bk_id desc ");
+        from `{$g5['ycart_cart_table']}` b
+        inner join `{$g5['ycart_sku_table']}` s on s.sk_id = b.sk_id
+        inner join `{$g5['ycart_item_table']}` i on i.it_id = s.it_id
+        where ".cart_cart_where($owner)."
+        order by b.ct_id desc ");
     while ($r = sql_fetch_array($result)) {
         $opt = json_decode($r['sk_option'], true);
         $r['opt_label'] = (is_array($opt) && count($opt)) ? implode(' / ', array_values($opt)) : '';
         // 바구니 행은 소수라 행마다 N:M 숨김 판정을 해도 무해하다
         $r['avail'] = ((int)$r['sk_use'] && (int)$r['it_show'] && (int)$r['sk_qty'] > 0
             && !cart_item_is_hidden((int)$r['it_id']));
-        $r['over_stock'] = ($r['avail'] && (int)$r['bk_qty'] > (int)$r['sk_qty']);
+        $r['over_stock'] = ($r['avail'] && (int)$r['ct_qty'] > (int)$r['sk_qty']);
         $rows[] = $r;
     }
     return $rows;
 }
 
-function cart_basket_set_qty($bk_id, $qty, $owner = null)
+function cart_cart_set_qty($ct_id, $qty, $owner = null)
 {
     global $g5;
-    $owner = cart_basket_owner($owner);
-    $bk_id = (int)$bk_id;
+    $owner = cart_cart_owner($owner);
+    $ct_id = (int)$ct_id;
     $qty = (int)$qty;
-    if ($qty <= 0) return cart_basket_remove($bk_id, $owner);
-    sql_query(" update `{$g5['cart_basket_table']}`
-        set bk_qty = '$qty', bk_datetime = '".G5_TIME_YMDHIS."'
-        where bk_id = '$bk_id' and ".cart_basket_where($owner), true);
+    if ($qty <= 0) return cart_cart_remove($ct_id, $owner);
+    sql_query(" update `{$g5['ycart_cart_table']}`
+        set ct_qty = '$qty', ct_datetime = '".G5_TIME_YMDHIS."'
+        where ct_id = '$ct_id' and ".cart_cart_where($owner), true);
     return '';
 }
 
-function cart_basket_remove($bk_id, $owner = null)
+function cart_cart_remove($ct_id, $owner = null)
 {
     global $g5;
-    $owner = cart_basket_owner($owner);
-    sql_query(" delete from `{$g5['cart_basket_table']}`
-        where bk_id = '".(int)$bk_id."' and ".cart_basket_where($owner), true);
+    $owner = cart_cart_owner($owner);
+    sql_query(" delete from `{$g5['ycart_cart_table']}`
+        where ct_id = '".(int)$ct_id."' and ".cart_cart_where($owner), true);
     return '';
 }
 
-function cart_basket_clear($owner = null)
+function cart_cart_clear($owner = null)
 {
     global $g5;
-    $owner = cart_basket_owner($owner);
-    sql_query(" delete from `{$g5['cart_basket_table']}` where ".cart_basket_where($owner), true);
+    $owner = cart_cart_owner($owner);
+    sql_query(" delete from `{$g5['ycart_cart_table']}` where ".cart_cart_where($owner), true);
 }
 
-function cart_basket_count($owner = null)
+function cart_cart_count($owner = null)
 {
     global $g5;
-    $owner = cart_basket_owner($owner);
-    $row = sql_fetch(" select count(*) as cnt from `{$g5['cart_basket_table']}`
-        where ".cart_basket_where($owner));
+    $owner = cart_cart_owner($owner);
+    $row = sql_fetch(" select count(*) as cnt from `{$g5['ycart_cart_table']}`
+        where ".cart_cart_where($owner));
     return (int)$row['cnt'];
 }
 
 // 로그인 시 비회원 바구니를 회원 바구니로 이관. 같은 SKU 가 양쪽에 있으면 수량을 합친다.
-function cart_basket_claim($mb_id, $sid)
+function cart_cart_claim($mb_id, $sid)
 {
     global $g5;
     $mb_id_esc = sql_real_escape_string($mb_id);
     $sid_esc = sql_real_escape_string($sid);
     if ($mb_id_esc === '' || $sid_esc === '') return;
 
-    $result = sql_query(" select bk_id, sk_id, bk_qty from `{$g5['cart_basket_table']}`
-        where mb_id = '' and bk_sid = '$sid_esc' ");
+    $result = sql_query(" select ct_id, sk_id, ct_qty from `{$g5['ycart_cart_table']}`
+        where mb_id = '' and ct_sid = '$sid_esc' ");
     while ($r = sql_fetch_array($result)) {
-        sql_query(" insert into `{$g5['cart_basket_table']}`
-            (mb_id, bk_sid, sk_id, bk_qty, bk_datetime)
-            values ('$mb_id_esc', '', '".(int)$r['sk_id']."', '".(int)$r['bk_qty']."', '".G5_TIME_YMDHIS."')
-            on duplicate key update bk_qty = bk_qty + '".(int)$r['bk_qty']."' ", true);
-        sql_query(" delete from `{$g5['cart_basket_table']}` where bk_id = '".(int)$r['bk_id']."' ", true);
+        sql_query(" insert into `{$g5['ycart_cart_table']}`
+            (mb_id, ct_sid, sk_id, ct_qty, ct_datetime)
+            values ('$mb_id_esc', '', '".(int)$r['sk_id']."', '".(int)$r['ct_qty']."', '".G5_TIME_YMDHIS."')
+            on duplicate key update ct_qty = ct_qty + '".(int)$r['ct_qty']."' ", true);
+        sql_query(" delete from `{$g5['ycart_cart_table']}` where ct_id = '".(int)$r['ct_id']."' ", true);
     }
 }
