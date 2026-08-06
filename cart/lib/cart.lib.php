@@ -10,6 +10,7 @@ function cart_table_defaults()
         'cart_category_table'   => 'cart_category',
         'cart_item_table'       => 'cart_item',
         'cart_item_image_table' => 'cart_item_image',
+        'cart_item_category_table' => 'cart_item_category',
         'cart_sku_table'        => 'cart_sku',
         'cart_stock_log_table'  => 'cart_stock_log',
         'cart_basket_table'     => 'cart_basket',
@@ -87,6 +88,10 @@ function cart_column_upgrades()
             " ADD `od_invoice` varchar(50) NOT NULL DEFAULT '' AFTER `od_delivery_company` "),
         array('cart_order_table', 'od_shipped_at',
             " ADD `od_shipped_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00' AFTER `od_invoice` "),
+        // 2026-08-07 분류코드 — 사람이 쓰는 식별자(프론트 URL·CSV). 내부 키·FK 는 ca_id 그대로.
+        // UNIQUE 는 여기 안 넣는다 — 기존 행이 전부 빈 값이라 채운 뒤 cart_install() 이 붙인다.
+        array('cart_category_table', 'ca_code',
+            " ADD `ca_code` varchar(20) NOT NULL DEFAULT '' AFTER `ca_parent` "),
     );
 }
 
@@ -109,6 +114,23 @@ function cart_install()
     if (!sql_fetch(" SHOW INDEX FROM `{$g5['cart_item_table']}` WHERE Key_name = 'ft_search' ")) {
         sql_query(" ALTER TABLE `{$g5['cart_item_table']}`
             ADD FULLTEXT KEY `ft_search` (`it_name`, `it_keyword`) WITH PARSER ngram ", false);
+    }
+
+    // 2026-08-07 상품-분류 다대다 — ① 빈 분류코드 채움 ② 그 뒤에야 UNIQUE 가능
+    // ③ 기존 단일 ca_id 소속을 연결 테이블로 이관(멱등). ca_id 컬럼 제거(수축)는 전 경로
+    // 전환이 끝난 뒤 별도 커밋에서 한다 — 그때까지 두 곳이 공존해도 읽기는 안 깨진다.
+    $result = sql_query(" select ca_id from `{$g5['cart_category_table']}` where ca_code = '' ", true);
+    while ($row = sql_fetch_array($result)) {
+        sql_query(" update `{$g5['cart_category_table']}`
+            set ca_code = '".cart_category_code_generate()."'
+            where ca_id = '".(int)$row['ca_id']."' ", true);
+    }
+    if (!sql_fetch(" SHOW INDEX FROM `{$g5['cart_category_table']}` WHERE Key_name = 'ca_code' ")) {
+        sql_query(" ALTER TABLE `{$g5['cart_category_table']}` ADD UNIQUE KEY `ca_code` (`ca_code`) ", true);
+    }
+    if (sql_fetch(" SHOW COLUMNS FROM `{$g5['cart_item_table']}` LIKE 'ca_id' ")) {
+        sql_query(" insert ignore into `{$g5['cart_item_category_table']}` (it_id, ca_id)
+            select it_id, ca_id from `{$g5['cart_item_table']}` where ca_id > 0 ", true);
     }
     return array('created' => $created, 'altered' => $altered);
 }
@@ -151,6 +173,7 @@ function cart_table_ddl()
     'cart_category_table' => " CREATE TABLE IF NOT EXISTS `{$g5['cart_category_table']}` (
         `ca_id` int(11) NOT NULL AUTO_INCREMENT,
         `ca_parent` int(11) NOT NULL DEFAULT '0',
+        `ca_code` varchar(20) NOT NULL DEFAULT '',
         `ca_name` varchar(100) NOT NULL DEFAULT '',
         `ca_img` varchar(255) NOT NULL DEFAULT '',
         `ca_desc` varchar(500) NOT NULL DEFAULT '',
@@ -159,7 +182,8 @@ function cart_table_ddl()
         `ca_depth` tinyint(4) NOT NULL DEFAULT '1',
         `ca_order` int(11) NOT NULL DEFAULT '0',
         `ca_show` tinyint(4) NOT NULL DEFAULT '1',
-        PRIMARY KEY (`ca_id`), KEY `ca_parent` (`ca_parent`), KEY `ca_path` (`ca_path`)
+        PRIMARY KEY (`ca_id`), UNIQUE KEY `ca_code` (`ca_code`),
+        KEY `ca_parent` (`ca_parent`), KEY `ca_path` (`ca_path`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
     'cart_item_table' => " CREATE TABLE IF NOT EXISTS `{$g5['cart_item_table']}` (
         `it_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -187,6 +211,12 @@ function cart_table_ddl()
         `im_order` int(11) NOT NULL DEFAULT '0',
         `im_main` tinyint(4) NOT NULL DEFAULT '0',
         PRIMARY KEY (`im_id`), KEY `it_id` (`it_id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
+    'cart_item_category_table' => " CREATE TABLE IF NOT EXISTS `{$g5['cart_item_category_table']}` (
+        `it_id` int(11) NOT NULL,
+        `ca_id` int(11) NOT NULL,
+        PRIMARY KEY (`it_id`, `ca_id`),
+        KEY `ca_id` (`ca_id`, `it_id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
     'cart_sku_table' => " CREATE TABLE IF NOT EXISTS `{$g5['cart_sku_table']}` (
         `sk_id` int(11) NOT NULL AUTO_INCREMENT,

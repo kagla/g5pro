@@ -14,6 +14,42 @@ function cart_category_get($ca_id)
     return $row ? $row : null;
 }
 
+// 자동 분류코드 — 영문 소문자+숫자 10자리, UNIQUE 충돌 시 재시도
+function cart_category_code_generate()
+{
+    global $g5;
+    $chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    while (true) {
+        $code = '';
+        for ($i = 0; $i < 10; $i++) $code .= $chars[mt_rand(0, 35)];
+        $dup = sql_fetch(" select ca_id from `{$g5['cart_category_table']}` where ca_code = '$code' ");
+        if (!$dup) return $code;
+    }
+}
+
+// 수동 입력 코드 검증 — 빈 문자열이면 통과, 아니면 사용자에게 보여줄 사유.
+// 형식 검사 뒤 중복 검사(자기 자신 제외). 최후 방어는 UNIQUE 인덱스가 맡는다.
+function cart_category_code_error($code, $except_ca_id = 0)
+{
+    global $g5;
+    if (!preg_match('/^[A-Za-z0-9_-]{1,20}$/', $code)) {
+        return '분류코드는 영문·숫자·하이픈·언더라인 1~20자입니다.';
+    }
+    $row = sql_fetch(" select ca_id from `{$g5['cart_category_table']}`
+        where ca_code = '".sql_real_escape_string($code)."' and ca_id <> '".(int)$except_ca_id."' ");
+    return $row ? '이미 쓰는 분류코드입니다: '.$code : '';
+}
+
+function cart_category_get_by_code($code)
+{
+    global $g5;
+    $code = trim($code);
+    if ($code === '') return null;
+    $row = sql_fetch(" select * from `{$g5['cart_category_table']}`
+        where ca_code = '".sql_real_escape_string($code)."' ");
+    return $row ? $row : null;
+}
+
 function cart_category_save($data, $ca_id = 0)
 {
     global $g5;
@@ -40,16 +76,19 @@ function cart_category_save($data, $ca_id = 0)
 
     if ($ca_id) {
         // 부모 변경은 여기서 안 한다 — 드래그 이동(cart_category_move)이 트리 재계산까지 책임진다
+        // 분류코드는 넘어온 경우에만 바꾼다(검증은 호출부가 cart_category_code_error 로 마친 뒤)
+        $code_set = isset($data['ca_code']) && $data['ca_code'] !== ''
+            ? ", ca_code = '".sql_real_escape_string($data['ca_code'])."'" : '';
         sql_query(" update `{$g5['cart_category_table']}`
             set ca_name = '$name', ca_order = '$order', ca_show = '$show',
-                ca_desc = '$desc', ca_sort = '$sort'
+                ca_desc = '$desc', ca_sort = '$sort' $code_set
             where ca_id = '".(int)$ca_id."' ", true);
         return (int)$ca_id;
     }
 
     sql_query(" insert into `{$g5['cart_category_table']}`
-        (ca_parent, ca_name, ca_path, ca_depth, ca_order, ca_show)
-        values ('$parent', '$name', '$ppath', '$depth', '$order', '$show') ", true);
+        (ca_parent, ca_code, ca_name, ca_path, ca_depth, ca_order, ca_show)
+        values ('$parent', '".cart_category_code_generate()."', '$name', '$ppath', '$depth', '$order', '$show') ", true);
     $new_id = sql_insert_id();
     sql_query(" update `{$g5['cart_category_table']}`
         set ca_path = '".sql_real_escape_string($ppath.$new_id.'/')."'
@@ -262,6 +301,95 @@ function cart_hidden_category_collect($by_parent, $parent_id, &$ids)
     foreach ($by_parent[$parent_id] as $cid) cart_hidden_category_collect($by_parent, $cid, $ids);
 }
 
+// ---------- 상품-분류 연결 (N:M) ----------
+// 소속 정보의 유일한 원천. 상품은 분류 0개(무분류 단독 노출)일 수 있다.
+
+function cart_item_ca_ids($it_id)
+{
+    global $g5;
+    $ids = array();
+    $result = sql_query(" select ca_id from `{$g5['cart_item_category_table']}`
+        where it_id = '".(int)$it_id."' ");
+    while ($r = sql_fetch_array($result)) $ids[] = (int)$r['ca_id'];
+    return $ids;
+}
+
+// 상품이 속한 분류 행 목록(ca_order, ca_id 순) — 첫 행이 상세 빵부스러기의 대표
+function cart_item_categories($it_id)
+{
+    global $g5;
+    $rows = array();
+    $result = sql_query(" select c.* from `{$g5['cart_item_category_table']}` x
+        inner join `{$g5['cart_category_table']}` c on c.ca_id = x.ca_id
+        where x.it_id = '".(int)$it_id."'
+        order by c.ca_order, c.ca_id ");
+    while ($r = sql_fetch_array($result)) $rows[] = $r;
+    return $rows;
+}
+
+function cart_item_category_add($it_id, $ca_id)
+{
+    global $g5;
+    if (!cart_category_get($ca_id)) return;
+    sql_query(" insert ignore into `{$g5['cart_item_category_table']}` (it_id, ca_id)
+        values ('".(int)$it_id."', '".(int)$ca_id."') ", true);
+}
+
+function cart_item_category_remove($it_id, $ca_id)
+{
+    global $g5;
+    sql_query(" delete from `{$g5['cart_item_category_table']}`
+        where it_id = '".(int)$it_id."' and ca_id = '".(int)$ca_id."' ", true);
+}
+
+// 소속 전체 교체 — 없는 분류 id 는 걸러낸다. 빈 배열이면 전부 해제(무분류).
+function cart_item_category_set($it_id, $ca_ids)
+{
+    global $g5;
+    $it_id = (int)$it_id;
+    $ids = array();
+    foreach ((array)$ca_ids as $cid) {
+        $cid = (int)$cid;
+        if ($cid && !isset($ids[$cid]) && cart_category_get($cid)) $ids[$cid] = $cid;
+    }
+    if ($ids) {
+        sql_query(" delete from `{$g5['cart_item_category_table']}`
+            where it_id = '$it_id' and ca_id not in (".implode(',', $ids).") ", true);
+        foreach ($ids as $cid) {
+            sql_query(" insert ignore into `{$g5['cart_item_category_table']}` (it_id, ca_id)
+                values ('$it_id', '$cid') ", true);
+        }
+    } else {
+        sql_query(" delete from `{$g5['cart_item_category_table']}` where it_id = '$it_id' ", true);
+    }
+}
+
+// N:M 숨김 판정(단건) — 연결 분류가 없으면 노출, 하나라도 비숨김이면 노출
+function cart_item_is_hidden($it_id)
+{
+    $ca_ids = cart_item_ca_ids($it_id);
+    if (!$ca_ids) return false;
+    $hidden = cart_hidden_category_ids();
+    foreach ($ca_ids as $cid) {
+        if (!in_array($cid, $hidden, true)) return false;
+    }
+    return true;
+}
+
+// N:M 숨김 판정(목록 WHERE 조각) — cart_item_is_hidden() 과 반드시 같은 의미.
+// $alias 는 cart_item 테이블 별칭('i' 등), 별칭 없는 쿼리는 빈 문자열.
+function cart_item_hidden_where($alias = '')
+{
+    global $g5;
+    $hidden = cart_hidden_category_ids();
+    if (!$hidden) return ' 1=1 ';
+    $col = ($alias !== '' ? $alias.'.' : '').'it_id';
+    $in = implode(',', $hidden);
+    return " ( not exists (select 1 from `{$g5['cart_item_category_table']}` hx where hx.it_id = $col)
+        or exists (select 1 from `{$g5['cart_item_category_table']}` vx
+                   where vx.it_id = $col and vx.ca_id not in ($in)) ) ";
+}
+
 // 빈 문자열이면 성공, 아니면 사용자에게 보여줄 거부 사유
 function cart_category_delete($ca_id)
 {
@@ -270,9 +398,9 @@ function cart_category_delete($ca_id)
     $child = sql_fetch(" select count(*) as cnt from `{$g5['cart_category_table']}`
         where ca_parent = '$ca_id' ");
     if ($child['cnt'] > 0) return '하위 분류가 있어 삭제할 수 없습니다. 하위 분류를 먼저 정리하세요.';
-    $item = sql_fetch(" select count(*) as cnt from `{$g5['cart_item_table']}`
+    $item = sql_fetch(" select count(*) as cnt from `{$g5['cart_item_category_table']}`
         where ca_id = '$ca_id' ");
-    if ($item['cnt'] > 0) return '이 분류에 상품 '.(int)$item['cnt'].'개가 있어 삭제할 수 없습니다. 상품의 분류를 먼저 옮기세요.';
+    if ($item['cnt'] > 0) return '이 분류에 연결된 상품 '.(int)$item['cnt'].'개가 있어 삭제할 수 없습니다. 연결을 먼저 해제하세요.';
     sql_query(" delete from `{$g5['cart_category_table']}` where ca_id = '$ca_id' ", true);
     return '';
 }
