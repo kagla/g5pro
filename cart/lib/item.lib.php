@@ -226,12 +226,29 @@ function cart_sku_save($data, $sk_id = 0)
     $new_id = sql_insert_id();
     if ($code === '') {
         // it_code-NN — 상품 안에서 몇 번째 SKU 인지로 붙인다(자릿수 2, 100개 넘으면 그대로 숫자)
+        // COUNT 로 NN 을 정하는 방식은 같은 상품에 SKU 가 동시에 생성되면 두 요청이 같은 NN 을
+        // 계산할 수 있다(sk_code 는 UNIQUE) — 확정 UPDATE 를 재시도해 충돌을 피한다.
         $item = cart_item_get($it_id);
         $cnt = sql_fetch(" select count(*) as cnt from `{$g5['cart_sku_table']}` where it_id = '$it_id' ");
         $n = (int)$cnt['cnt'];
-        $auto = $item['it_code'].'-'.($n < 100 ? sprintf('%02d', $n) : $n);
-        sql_query(" update `{$g5['cart_sku_table']}`
-            set sk_code = '".sql_real_escape_string($auto)."' where sk_id = '$new_id' ", true);
+        $confirmed = false;
+        for ($try = 0; $try < 5; $try++) {
+            $auto = $item['it_code'].'-'.($n < 100 ? sprintf('%02d', $n) : $n);
+            // 성공 판정은 affected_rows 가 아니라 "쿼리가 오류 없이 실행됐는가"로 한다 —
+            // 지금 확정하려는 행의 현재 값은 uniqid() placeholder 라 목표 코드와 절대 같을 수
+            // 없으므로(같은 값 재설정으로 인한 affected 0 은 원천적으로 없음) 오류 여부만 보면
+            // 충분하다. MariaDB 는 UNIQUE 충돌 시 쿼리 자체가 실패(false)로 돌아온다.
+            $ok = sql_query(" update `{$g5['cart_sku_table']}`
+                set sk_code = '".sql_real_escape_string($auto)."' where sk_id = '$new_id' ", false);
+            if ($ok) { $confirmed = true; break; }
+            $n++;
+        }
+        if (!$confirmed) {
+            // 5회 모두 충돌 — sk_id(PK) 기반 코드는 절대 겹치지 않으니 최종 폴백으로 확정한다
+            $auto = $item['it_code'].'-'.$new_id;
+            sql_query(" update `{$g5['cart_sku_table']}`
+                set sk_code = '".sql_real_escape_string($auto)."' where sk_id = '$new_id' ", true);
+        }
     }
     cart_item_cache_refresh($it_id);
     return (int)$new_id;
