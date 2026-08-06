@@ -272,7 +272,7 @@ function chk_captcha_js()
 function chk_captcha()
 {
     $captcha_count = (int)get_session('ss_captcha_count');
-    if ($captcha_count > 5) {
+    if ($captcha_count >= 10) { // result.php 와 동일한 임계값(세션당 오답 10회)으로 통일
         return false;
     }
 
@@ -288,5 +288,9 @@ function chk_captcha()
         $_SESSION['ss_captcha_count'] = $captcha_count + 1;
         return false;
     }
+
+    // 1회용 처리: 통과한 캡챠 키를 즉시 폐기해 같은 세션에서 리플레이(재사용)를 막는다.
+    set_session('ss_captcha_key', '');
+    set_session('ss_captcha_count', 0);
     return true;
 }
