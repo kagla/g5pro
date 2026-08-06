@@ -50,14 +50,13 @@
                 <img src="{{ $it['img'] }}" alt="{{ $it['it_name'] }}" loading="lazy">
                 @endif
 
+                @if ((int)$it['it_stock'] === 0)
+                <span class="shop-soldout">품절</span>
+                @endif
+
             </span>
             <span class="shop-name">{{ $it['it_name'] }}</span>
-            <span class="shop-price">{{ number_format($it['it_price']) }}원</span>
-
-            @if ((int)$it['it_stock'] === 0)
-            <span class="shop-soldout">품절</span>
-            @endif
-
+            <span class="shop-price">{{ number_format($it['it_price']) }}<em>원</em></span>
         </a>
     </li>
     @endforeach
