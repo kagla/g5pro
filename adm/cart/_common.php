@@ -30,7 +30,8 @@ if (!cart_installed()) {
     cart_install();
 }
 
-// adm/cart/views/ 를 루트로 하는 전용 BladeOne 렌더
+// adm/cart/views/ 를 루트로 하는 전용 BladeOne 렌더 — 화면은 순정 관리자 클래스
+// (tbl_head01·sidx 등)를 그대로 써서 기존 관리자와 같은 모습을 유지한다.
 function cadm_view($view, $data = array())
 {
     static $blade = null;

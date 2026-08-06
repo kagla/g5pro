@@ -44,7 +44,7 @@
             @php $imgs = cart_item_images((int)$it['it_id']); @endphp
 
             @if (count($imgs))
-            <img src="{{ G5_DATA_URL }}/cart/item/{{ $imgs[0]['im_file'] }}" alt="" style="max-height:44px">
+            <a href="{{ cart_url('item.php', array('it_id' => $it['it_id'])) }}" target="_blank"><img src="{{ G5_DATA_URL }}/cart/item/{{ $imgs[0]['im_file'] }}" alt="{{ $it['it_name'] }} 상품보기" style="max-height:44px"></a>
             @endif
 
         </td>
@@ -88,21 +88,19 @@
 // 저장 버튼이 type=button 이라 admin.js 의 클릭 위임(form input:submit, form button:submit)이
 // 걸리지 않는다 — delete_confirm() 과 같은 방식으로 get_ajax_token() 을 직접 불러 토큰을 채운다.
 function cartInlineSave(itId, skId, btn) {
-    var tr = btn.closest('tr');
+    var $tr = $(btn).closest('tr');
     var token = get_ajax_token();
     if (!token) {
         alert('토큰 정보가 올바르지 않습니다.');
         return;
     }
-    document.getElementById('f_token').value = token;
-    document.getElementById('f_it_id').value = itId;
-    document.getElementById('f_sk_id').value = skId;
-    var priceEl = tr.querySelector('[data-role="sk_price"]');
-    var qtyEl = tr.querySelector('[data-role="sk_qty"]');
-    document.getElementById('f_sk_price').value = priceEl ? priceEl.value : '';
-    document.getElementById('f_sk_qty').value = qtyEl ? qtyEl.value : '';
-    var showEl = tr.querySelector('[data-role="it_show"]');
-    document.getElementById('f_it_show').value = (showEl && showEl.checked) ? 1 : 0;
-    document.getElementById('cart_inline_form').submit();
+    $('#f_token').val(token);
+    $('#f_it_id').val(itId);
+    $('#f_sk_id').val(skId);
+    // 단일 SKU 행이 아니면 가격·재고 입력칸이 없다 — .val() 이 undefined 라 빈 값으로 채운다
+    $('#f_sk_price').val($tr.find('[data-role="sk_price"]').val() || '');
+    $('#f_sk_qty').val($tr.find('[data-role="sk_qty"]').val() || '');
+    $('#f_it_show').val($tr.find('[data-role="it_show"]').is(':checked') ? 1 : 0);
+    $('#cart_inline_form').trigger('submit');
 }
 </script>

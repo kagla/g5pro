@@ -53,6 +53,10 @@
         <th scope="row">사인키(signKey)</th>
         <td><input type="text" name="cc_inicis_signkey" value="{{ $cc['cc_inicis_signkey'] }}" size="50"></td>
     </tr>
+    <tr>
+        <th scope="row">INIAPI 키</th>
+        <td><input type="text" name="cc_inicis_apikey" value="{{ $cc['cc_inicis_apikey'] }}" size="50" placeholder="주문취소(환불)용 — 가맹점관리자 > INIAPI key. INIpayTest 는 비워두면 됩니다"></td>
+    </tr>
     </tbody>
 </table>
 </div>

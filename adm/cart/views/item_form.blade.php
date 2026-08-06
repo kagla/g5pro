@@ -118,20 +118,19 @@ var skRowIndex = {{ count($skus) }};
 
 function cartBuildSkus() {
     var sets = [];
-    [['opt_name1', 'opt_vals1'], ['opt_name2', 'opt_vals2']].forEach(function (pair) {
-        var name = document.getElementById(pair[0]).value.trim();
-        var vals = document.getElementById(pair[1]).value.split(',')
-            .map(function (v) { return v.trim(); }).filter(Boolean);
+    $.each([['#opt_name1', '#opt_vals1'], ['#opt_name2', '#opt_vals2']], function (i, pair) {
+        var name = $.trim($(pair[0]).val());
+        var vals = $.map($(pair[1]).val().split(','), function (v) { return $.trim(v) || null; });
         if (name && vals.length) sets.push({name: name, vals: vals});
     });
     if (!sets.length) { alert('옵션명과 값을 입력하세요.'); return; }
 
     var combos = [{}];
-    sets.forEach(function (set) {
+    $.each(sets, function (i, set) {
         var next = [];
-        combos.forEach(function (c) {
-            set.vals.forEach(function (v) {
-                var copy = Object.assign({}, c);
+        $.each(combos, function (j, c) {
+            $.each(set.vals, function (k, v) {
+                var copy = $.extend({}, c);
                 copy[set.name] = v;
                 next.push(copy);
             });
@@ -139,14 +138,12 @@ function cartBuildSkus() {
         combos = next;
     });
 
-    var tbody = document.querySelector('#sku_table tbody');
-    combos.forEach(function (c) {
-        var label = Object.keys(c).map(function (k) { return k + '=' + c[k]; }).join(' / ');
-        var json = JSON.stringify(c);
+    var $tbody = $('#sku_table tbody');
+    $.each(combos, function (i, c) {
+        var label = $.map(c, function (v, k) { return k + '=' + v; }).join(' / ');
         var idx = skRowIndex++;
-        var tr = document.createElement('tr');
-        tr.innerHTML =
-            '<td>' + label +
+        var $tr = $(
+            '<tr><td>' +
             '<input type="hidden" name="sk_id[]" value="0">' +
             '<input type="hidden" name="sk_option[]"></td>' +
             '<td><input type="text" name="sk_code[]" value="" size="16" placeholder="자동"></td>' +
@@ -154,9 +151,12 @@ function cartBuildSkus() {
             '<td><input type="text" name="sk_qty[]" value="0" size="8" style="text-align:right"></td>' +
             '<td><input type="text" name="sk_barcode[]" value="" size="14"></td>' +
             '<td><input type="checkbox" name="sk_use[' + idx + ']" value="1" checked></td>' +
-            '<td>신규</td>';
-        tr.querySelector('input[name="sk_option[]"]').value = json;
-        tbody.appendChild(tr);
+            '<td>신규</td></tr>'
+        );
+        // 옵션 라벨·JSON 은 사용자 입력이라 문자열 결합 대신 text()/val() 로 넣는다
+        $tr.find('td').first().prepend(document.createTextNode(label));
+        $tr.find('input[name="sk_option[]"]').val(JSON.stringify(c));
+        $tbody.append($tr);
     });
 }
 </script>

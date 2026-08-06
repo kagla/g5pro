@@ -19,6 +19,7 @@ $post_key = function ($key) {
 $bank = $post_key('cc_bank');
 $inicis_mid = $post_key('cc_inicis_mid');
 $inicis_signkey = $post_key('cc_inicis_signkey');
+$inicis_apikey = $post_key('cc_inicis_apikey');
 $toss_ckey = $post_key('cc_toss_ckey');
 $toss_skey = $post_key('cc_toss_skey');
 
@@ -27,6 +28,7 @@ sql_query(" update `{$g5['cart_config_table']}`
     set cc_ship_base = '$ship_base', cc_ship_free = '$ship_free',
         cc_ship_jeju = '$ship_jeju', cc_bank = '$bank',
         cc_inicis_mid = '$inicis_mid', cc_inicis_signkey = '$inicis_signkey',
+        cc_inicis_apikey = '$inicis_apikey',
         cc_toss_ckey = '$toss_ckey', cc_toss_skey = '$toss_skey'
     where cc_id = 1 ", true);
 
