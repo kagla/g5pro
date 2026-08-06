@@ -14,7 +14,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($order && $order['mb_id'] !== '') {
         alert('회원 주문입니다. 로그인 후 주문 내역에서 확인하세요.', cart_url('guest.php'));
     }
-    if (!$order || $order['od_guest_pw'] === '' || !validate_password($pw, $order['od_guest_pw'])) {
+    // 초안(draft)은 결제 전이라 아직 주문이 아니다 — 조회 대상에서 제외
+    if (!$order || $order['od_status'] === 'draft'
+        || $order['od_guest_pw'] === '' || !validate_password($pw, $order['od_guest_pw'])) {
         alert('주문번호 또는 비밀번호가 맞지 않습니다.', cart_url('guest.php'));
     }
 

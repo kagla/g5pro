@@ -16,7 +16,8 @@ if ($od_no !== '') {
         elseif (!empty($_SESSION['ss_cart_last_od_no']) && $_SESSION['ss_cart_last_od_no'] === $order['od_no']) $is_mine = true;
         elseif (!empty($_SESSION['ss_cart_guest_od_no']) && $_SESSION['ss_cart_guest_od_no'] === $order['od_no']) $is_mine = true;
     }
-    if (!$order || !$is_mine) alert('주문을 찾을 수 없습니다.', cart_url('guest.php'));
+    // 초안(draft)은 결제 전이라 아직 주문이 아니다 — 어디에도 보이지 않는다
+    if (!$order || !$is_mine || $order['od_status'] === 'draft') alert('주문을 찾을 수 없습니다.', cart_url('guest.php'));
 
     $cc = cart_config();
     $g5['title'] = '주문 상세';
@@ -25,8 +26,7 @@ if ($od_no !== '') {
         'items' => cart_order_items((int)$order['od_id']),
         'status_label' => cart_order_status_label($order['od_status'], $order['od_pay_method']),
         'bank' => trim($cc['cc_bank']),
-        'pay_href' => ($order['od_status'] === 'unpaid' && $order['od_pay_method'] !== 'bank')
-            ? cart_url('pay.php', array('od_no' => $order['od_no'])) : '',
+        'pay_href' => '',
         'list_href' => $is_member ? cart_url('order.php') : cart_url(''),
         'is_member' => $is_member,
     ));
@@ -42,7 +42,8 @@ $page = (isset($_GET['page']) && !is_array($_GET['page'])) ? max(1, (int)$_GET['
 $rows_per = 20;
 $mb_esc = sql_real_escape_string($member['mb_id']);
 
-$cnt = sql_fetch(" select count(*) as cnt from `{$g5['cart_order_table']}` where mb_id = '$mb_esc' ");
+$cnt = sql_fetch(" select count(*) as cnt from `{$g5['cart_order_table']}`
+    where mb_id = '$mb_esc' and od_status <> 'draft' ");
 $total = (int)$cnt['cnt'];
 $total_page = max(1, (int)ceil($total / $rows_per));
 if ($page > $total_page) $page = $total_page;
@@ -50,7 +51,7 @@ $offset = ($page - 1) * $rows_per;
 
 $orders = array();
 $result = sql_query(" select * from `{$g5['cart_order_table']}`
-    where mb_id = '$mb_esc' order by od_id desc limit $offset, $rows_per ");
+    where mb_id = '$mb_esc' and od_status <> 'draft' order by od_id desc limit $offset, $rows_per ");
 while ($r = sql_fetch_array($result)) {
     // min(oi_name): ONLY_FULL_GROUP_BY 모드에서도 안전한 대표 상품명
     $first = sql_fetch(" select min(oi_name) as oi_name, count(*) as cnt

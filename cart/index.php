@@ -100,6 +100,6 @@ g5_view('cart.index', array(
     'banner_url' => $banner_url,
     'search_url' => cart_url('list.php'),
     'all_href' => cart_url('list.php'),
-    'basket_href' => cart_url('basket.php'),
+    'basket_href' => cart_url('cart.php'),
     'orders_href' => $is_member ? cart_url('order.php') : cart_url('guest.php'),
 ));

@@ -6,6 +6,22 @@
         <p>주문번호 <strong>{{ $order['od_no'] }}</strong> · <span class="cart-status">{{ $status_label }}</span> · {{ substr($order['od_datetime'], 0, 10) }}</p>
     </header>
 
+    @if ($order['od_status'] === 'canceled')
+    <section class="cart-co-sec cart-complete-bank">
+        <h3>취소된 주문입니다</h3>
+        <p>관리자 직권으로 취소되었습니다{{ substr($order['od_canceled_at'], 0, 4) !== '1970' ? ' ('.substr($order['od_canceled_at'], 0, 16).')' : '' }}.</p>
+
+        @if ($order['od_cancel_reason'] !== '')
+        <p class="cart-co-note">취소 사유: {{ $order['od_cancel_reason'] }}</p>
+        @endif
+
+        @if ($order['od_pay_method'] !== 'bank' && substr($order['od_paid_at'], 0, 4) !== '1970')
+        <p class="cart-co-note">결제하신 금액은 카드 승인 취소로 환불되었습니다. 카드사에 따라 며칠 걸릴 수 있습니다.</p>
+        @endif
+
+    </section>
+    @endif
+
     @if ($pay_href !== '')
     <section class="cart-co-sec cart-complete-bank">
         <h3>결제 대기 중</h3>
@@ -49,7 +65,7 @@
 
     <section class="cart-co-sec">
         <h3>배송지</h3>
-        <p>{{ $order['od_name'] }} · {{ $order['od_hp'] }}</p>
+        <p>받는분 {{ $order['od_recv_name'] !== '' ? $order['od_recv_name'] : $order['od_name'] }} · {{ $order['od_recv_hp'] !== '' ? $order['od_recv_hp'] : $order['od_hp'] }}</p>
         <p>({{ $order['od_zip'] }}) {{ $order['od_addr1'] }} {{ $order['od_addr2'] }}</p>
 
         @if ($order['od_memo'] !== '')

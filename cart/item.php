@@ -49,5 +49,5 @@ g5_view('cart.item', array(
     'admin_edit_url' => $admin_edit_url,
     'token' => get_token(),
     'basket_action' => cart_url('basket_update.php'),
-    'basket_href' => cart_url('basket.php'),
+    'basket_href' => cart_url('cart.php'),
 ));

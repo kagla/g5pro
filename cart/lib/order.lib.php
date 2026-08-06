@@ -52,14 +52,17 @@ function cart_order_items($od_id)
     return $rows;
 }
 
-// 주문번호 — 날짜 + 난수 8자(대문자 hex). UNIQUE 제약과 짝을 이뤄 충돌 시 재생성.
+// 주문번호 — 전부 숫자, yymmdd-hhiiss-nnnn (예: 260806-211459-4831).
+// 날짜-시각-난수가 하이픈으로 나뉘어 한눈에 읽히고 전화로 불러주기도 쉽다.
+// 같은 초의 충돌은 난수 4자리(1/10000)가 가르고, UNIQUE 제약과 짝을 이뤄 충돌 시 재생성한다.
 function cart_order_no()
 {
-    for ($try = 0; $try < 5; $try++) {
-        $no = date('ymd', G5_SERVER_TIME).'-'.strtoupper(substr(md5(uniqid((string)mt_rand(), true)), 0, 8));
+    $no = '';
+    for ($try = 0; $try < 6; $try++) {
+        $no = date('ymd-His-', G5_SERVER_TIME).sprintf('%04d', mt_rand(0, 9999));
         if (!cart_order_get_by_no($no)) return $no;
     }
-    return date('ymd', G5_SERVER_TIME).'-'.strtoupper(substr(md5(uniqid((string)mt_rand(), true)), 0, 12));
+    return $no;
 }
 
 function cart_order_status_label($status, $pay_method = '')
@@ -78,11 +81,14 @@ function cart_order_status_label($status, $pay_method = '')
 
 // 체크아웃 대상 — 바구니에서 구매 가능한 행만. 화면(checkout.php)과 제출(checkout_update.php)이
 // 같은 함수를 쓰므로 두 화면이 서로 다른 목록을 보는 일이 없다.
-function cart_checkout_lines($owner = null)
+// $only_bk_ids — 바로구매 스코프: 이 bk_id 들만 주문 대상으로 본다(나머지 바구니 행은 없는 셈).
+// 주문서 화면과 주문 생성이 같은 스코프를 받아야 expect_bk_ids 대조가 어긋나지 않는다.
+function cart_checkout_lines($owner = null, $only_bk_ids = null)
 {
     $lines = array();
     $blocked = array();
     foreach (cart_basket_items($owner) as $r) {
+        if (is_array($only_bk_ids) && !in_array((int)$r['bk_id'], $only_bk_ids, true)) continue;
         if ($r['avail'] && !$r['over_stock']) $lines[] = $r;
         else $blocked[] = $r;
     }
@@ -93,11 +99,20 @@ function cart_checkout_lines($owner = null)
 // 재고가 하나라도 부족하면 전부 롤백하고 오류 문자열을 돌려준다. 성공 시 array(od_id, od_no).
 // $input: od_name, od_hp, od_email, od_zip, od_addr1, od_addr2, od_memo,
 //         od_pay_method('bank'), od_depositor, guest_pw(비회원 필수), mb_id('' = 비회원)
-function cart_order_create($input, $owner = null)
+//
+// $draft=true — PG 결제용 초안. 결제 전에는 주문이 "저장"되지 않는다는 사용자 요구의 구현:
+//   재고 미차감·바구니 유지, od_status='draft', 비울 bk_id 목록만 od_bk_ids 에 기록.
+//   초안은 모든 조회 화면에서 제외되고, 승인 확정(cart_order_confirm_paid)이 재고 차감과
+//   함께 paid 로 전이하며, 그때 cart_order_after_paid() 가 바구니를 비운다.
+//   같은 세션이 다시 제출하면 이전 초안을 지우고 새로 만든다(주문서 수정 반영).
+function cart_order_create($input, $owner = null, $draft = false)
 {
     global $g5;
 
-    $picked = cart_checkout_lines($owner);
+    // 바로구매 스코프 — 주문서가 보여준 것과 같은 행들만 대상으로 한다
+    $only = (isset($input['only_bk_ids']) && is_array($input['only_bk_ids']) && count($input['only_bk_ids']))
+        ? $input['only_bk_ids'] : null;
+    $picked = cart_checkout_lines($owner, $only);
     $lines = $picked['lines'];
     if (!count($lines)) return '주문할 수 있는 상품이 없습니다.';
 
@@ -131,11 +146,28 @@ function cart_order_create($input, $owner = null)
     $od_no = cart_order_no();
     $who = $mb_id !== '' ? $mb_id : 'guest';
 
+    // 이 세션의 이전 초안은 버린다 — 아직 draft 인 경우에만(결제가 끝났으면 건드리지 않는다)
+    if ($draft && !empty($_SESSION['ss_cart_draft_od_id'])) {
+        $old_id = (int)$_SESSION['ss_cart_draft_od_id'];
+        $old = cart_order_get($old_id);
+        if ($old && $old['od_status'] === 'draft') {
+            sql_query(" delete from `{$g5['cart_payment_table']}` where od_id = '$old_id' ", true);
+            sql_query(" delete from `{$g5['cart_order_item_table']}` where od_id = '$old_id' ", true);
+            sql_query(" delete from `{$g5['cart_order_table']}` where od_id = '$old_id' and od_status = 'draft' ", true);
+        }
+        unset($_SESSION['ss_cart_draft_od_id']);
+    }
+
     // 컬럼 길이 상한 — STRICT 모드 서버에서 초과 입력이 트랜잭션 중 DB 오류로 죽지 않게
     // 저장 전에 자른다(utf8 varchar 는 문자 수 기준이라 mb_substr)
     $cap = function ($v, $len) { return mb_substr(trim($v), 0, $len, 'utf-8'); };
     $input['od_name'] = $cap($input['od_name'], 50);
     $input['od_hp'] = $cap($input['od_hp'], 20);
+    // 수령인 — 비우면 주문자와 같다(화면의 "주문자와 동일" 체크가 기본)
+    if (!isset($input['od_recv_name']) || trim($input['od_recv_name']) === '') $input['od_recv_name'] = $input['od_name'];
+    if (!isset($input['od_recv_hp']) || trim($input['od_recv_hp']) === '') $input['od_recv_hp'] = $input['od_hp'];
+    $input['od_recv_name'] = $cap($input['od_recv_name'], 50);
+    $input['od_recv_hp'] = $cap($input['od_recv_hp'], 20);
     $input['od_email'] = $cap($input['od_email'], 100);
     $input['od_zip'] = $cap($input['od_zip'], 10);
     $input['od_addr1'] = $cap($input['od_addr1'], 255);
@@ -146,30 +178,34 @@ function cart_order_create($input, $owner = null)
     sql_query(" START TRANSACTION ", true);
 
     sql_query(" insert into `{$g5['cart_order_table']}`
-        (od_no, mb_id, od_name, od_hp, od_email, od_zip, od_addr1, od_addr2, od_memo,
+        (od_no, mb_id, od_name, od_hp, od_email, od_recv_name, od_recv_hp,
+         od_zip, od_addr1, od_addr2, od_memo,
          od_item_total, od_ship_fee, od_coupon, od_point, od_total,
-         od_status, od_pay_method, od_depositor, od_guest_pw, od_ip, od_datetime)
+         od_status, od_pay_method, od_depositor, od_guest_pw, od_bk_ids, od_ip, od_datetime)
         values ('".sql_real_escape_string($od_no)."',
                 '".sql_real_escape_string($mb_id)."',
                 '".sql_real_escape_string(strip_tags(trim($input['od_name'])))."',
                 '".sql_real_escape_string(strip_tags(trim($input['od_hp'])))."',
                 '".sql_real_escape_string(strip_tags(trim($input['od_email'])))."',
+                '".sql_real_escape_string(strip_tags(trim($input['od_recv_name'])))."',
+                '".sql_real_escape_string(strip_tags(trim($input['od_recv_hp'])))."',
                 '".sql_real_escape_string(strip_tags(trim($input['od_zip'])))."',
                 '".sql_real_escape_string(strip_tags(trim($input['od_addr1'])))."',
                 '".sql_real_escape_string(strip_tags(trim($input['od_addr2'])))."',
                 '".sql_real_escape_string(strip_tags(trim($input['od_memo'])))."',
                 '$item_total', '$ship_fee', 0, 0, '$total',
-                'unpaid',
+                '".($draft ? 'draft' : 'unpaid')."',
                 '".sql_real_escape_string($input['od_pay_method'])."',
                 '".sql_real_escape_string(strip_tags(trim($input['od_depositor'])))."',
                 '".sql_real_escape_string($mb_id === '' ? create_hash(trim($input['guest_pw'])) : '')."',
+                '".sql_real_escape_string($draft ? implode(',', array_map('intval', array_column($lines, 'bk_id'))) : '')."',
                 '".sql_real_escape_string($_SERVER['REMOTE_ADDR'])."',
                 '".G5_TIME_YMDHIS."') ", true);
     $od_id = (int)sql_insert_id();
 
     foreach ($lines as $l) {
-        // 원자 차감 — 실패(그 사이 품절)면 전부 되돌린다
-        if (!cart_stock_move((int)$l['sk_id'], -(int)$l['bk_qty'], 'order', $od_no, $who)) {
+        // 원자 차감 — 실패(그 사이 품절)면 전부 되돌린다. 초안은 차감하지 않는다(확정 때 차감).
+        if (!$draft && !cart_stock_move((int)$l['sk_id'], -(int)$l['bk_qty'], 'order', $od_no, $who)) {
             sql_query(" ROLLBACK ", true);
             return "'".addslashes($l['it_name'])."' 의 재고가 부족합니다. 장바구니 수량을 확인해 주세요.";
         }
@@ -182,9 +218,152 @@ function cart_order_create($input, $owner = null)
                     '".((int)$l['sk_price'] * (int)$l['bk_qty'])."', 'normal') ", true);
     }
 
-    // 주문된 행만 바구니에서 비운다 — 구매 불가로 남겨둔 행은 유지
-    foreach ($lines as $l) cart_basket_remove((int)$l['bk_id'], $owner);
+    // 주문된 행만 바구니에서 비운다 — 구매 불가로 남겨둔 행은 유지. 초안은 결제 확정 때 비운다.
+    if (!$draft) {
+        foreach ($lines as $l) cart_basket_remove((int)$l['bk_id'], $owner);
+    }
 
     sql_query(" COMMIT ", true);
+    if ($draft) $_SESSION['ss_cart_draft_od_id'] = $od_id;
+
+    // 배송지 자동 저장(회원) — 다음 주문서가 "저장된 배송지 불러오기"로 쓴다
+    cart_address_save($mb_id, $input['od_name'], $input['od_hp'],
+        $input['od_zip'], $input['od_addr1'], $input['od_addr2']);
+
     return array('od_id' => $od_id, 'od_no' => $od_no);
+}
+
+// ---------- 배송지 저장(주소록) ----------
+// 회원 주문 때마다 자동 저장 — 주문자(이름·연락처)까지 함께 담아 "불러오기"가 주문서를 한 번에
+// 채운다. 다섯 값이 전부 같으면 시간만 갱신하고, 최근 10개만 남긴다. 비회원은 대상이 아니다.
+function cart_address_save($mb_id, $name, $hp, $zip, $addr1, $addr2)
+{
+    global $g5;
+    $mb_id = trim($mb_id);
+    if ($mb_id === '' || trim($addr1) === '') return;
+
+    $nm_e = sql_real_escape_string(mb_substr(trim($name), 0, 50, 'utf-8'));
+    $hp_e = sql_real_escape_string(mb_substr(trim($hp), 0, 20, 'utf-8'));
+    $zip_e = sql_real_escape_string(mb_substr(trim($zip), 0, 10, 'utf-8'));
+    $a1_e = sql_real_escape_string(mb_substr(trim($addr1), 0, 255, 'utf-8'));
+    $a2_e = sql_real_escape_string(mb_substr(trim($addr2), 0, 255, 'utf-8'));
+    $mb_e = sql_real_escape_string($mb_id);
+
+    $dup = sql_fetch(" select ad_id from `{$g5['cart_address_table']}`
+        where mb_id = '$mb_e' and ad_name = '$nm_e' and ad_hp = '$hp_e'
+          and ad_zip = '$zip_e' and ad_addr1 = '$a1_e' and ad_addr2 = '$a2_e' ");
+    if ($dup) {
+        sql_query(" update `{$g5['cart_address_table']}`
+            set ad_datetime = '".G5_TIME_YMDHIS."' where ad_id = '".(int)$dup['ad_id']."' ", true);
+        return;
+    }
+    sql_query(" insert into `{$g5['cart_address_table']}` (mb_id, ad_name, ad_hp, ad_zip, ad_addr1, ad_addr2, ad_datetime)
+        values ('$mb_e', '$nm_e', '$hp_e', '$zip_e', '$a1_e', '$a2_e', '".G5_TIME_YMDHIS."') ", true);
+
+    // 오래된 것부터 정리 — 최근 10개 유지
+    $result = sql_query(" select ad_id from `{$g5['cart_address_table']}`
+        where mb_id = '$mb_e' order by ad_datetime desc, ad_id desc limit 10, 100 ");
+    while ($r = sql_fetch_array($result)) {
+        sql_query(" delete from `{$g5['cart_address_table']}` where ad_id = '".(int)$r['ad_id']."' ", true);
+    }
+}
+
+function cart_address_list($mb_id, $limit = 10)
+{
+    global $g5;
+    $mb_id = trim($mb_id);
+    if ($mb_id === '') return array();
+    $rows = array();
+    $result = sql_query(" select * from `{$g5['cart_address_table']}`
+        where mb_id = '".sql_real_escape_string($mb_id)."'
+        order by ad_datetime desc, ad_id desc limit ".(int)$limit." ");
+    while ($r = sql_fetch_array($result)) $rows[] = $r;
+    return $rows;
+}
+
+// ---------- 관리자 상태 전이 ----------
+// 허용 전이 화이트리스트 — 여기 없는 전이는 어떤 화면에서도 못 한다.
+//   deposit  : unpaid(무통장) → paid (입금확인)
+//   cancel   : unpaid·paid·preparing → canceled (+재고 복원. PG 환불은 별도 — 화면이 안내)
+//   preparing: paid → preparing / shipping: paid·preparing → shipping / delivered: shipping → delivered
+// 행을 잠그고 잠긴 상태로 재검증한다 — 결제 리턴(confirm_paid)과 같은 규율.
+// 성공 시 빈 문자열, 실패 시 사유 문자열 반환.
+function cart_order_transition($od_id, $action, $who = 'admin')
+{
+    global $g5;
+    $od_id = (int)$od_id;
+
+    $rules = array(
+        'deposit' => array('from' => array('unpaid'), 'to' => 'paid'),
+        'cancel' => array('from' => array('unpaid', 'paid', 'preparing'), 'to' => 'canceled'),
+        'preparing' => array('from' => array('paid'), 'to' => 'preparing'),
+        'shipping' => array('from' => array('paid', 'preparing'), 'to' => 'shipping'),
+        'delivered' => array('from' => array('shipping'), 'to' => 'delivered'),
+    );
+    if (!isset($rules[$action])) return '허용되지 않는 처리입니다.';
+    $rule = $rules[$action];
+
+    $fail = '';
+    sql_query(" set autocommit = 0 ", true);
+    sql_query(" start transaction ", true);
+
+    $cur = sql_fetch(" select * from `{$g5['cart_order_table']}` where od_id = '$od_id' for update ");
+    if (!$cur) {
+        $fail = '주문이 없습니다.';
+    } elseif (!in_array($cur['od_status'], $rule['from'], true)) {
+        $fail = '현재 상태('.cart_order_status_label($cur['od_status'], $cur['od_pay_method']).')에서는 할 수 없는 처리입니다.';
+    } elseif ($action === 'deposit' && $cur['od_pay_method'] !== 'bank') {
+        $fail = '무통장 주문만 입금확인 처리할 수 있습니다.';
+    }
+
+    // 취소는 재고를 원장에 남기며 되돌린다 — 주문 생성(차감)의 정확한 역연산
+    if ($fail === '' && $action === 'cancel') {
+        foreach (cart_order_items($od_id) as $it) {
+            if (!cart_stock_move((int)$it['sk_id'], (int)$it['oi_qty'], 'cancel', $cur['od_no'], $who)) {
+                $fail = '재고 복원에 실패했습니다.';
+                break;
+            }
+        }
+    }
+
+    if ($fail === '') {
+        $set = " od_status = '".$rule['to']."' ";
+        if ($action === 'deposit') $set .= ", od_paid_at = '".G5_TIME_YMDHIS."' ";
+        if ($action === 'shipping') $set .= ", od_shipped_at = '".G5_TIME_YMDHIS."' ";
+        sql_query(" update `{$g5['cart_order_table']}` set $set
+            where od_id = '$od_id' and od_status = '".sql_real_escape_string($cur['od_status'])."' ", true);
+        if (get_sql_affected_rows() < 1) $fail = '상태가 이미 바뀌었습니다. 다시 확인해 주세요.';
+    }
+
+    sql_query($fail === '' ? " commit " : " rollback ", true);
+    sql_query(" set autocommit = 1 ", true);
+    return $fail;
+}
+
+function cart_order_set_invoice($od_id, $company, $invoice)
+{
+    global $g5;
+    sql_query(" update `{$g5['cart_order_table']}`
+        set od_delivery_company = '".sql_real_escape_string(mb_substr(trim($company), 0, 50, 'utf-8'))."',
+            od_invoice = '".sql_real_escape_string(mb_substr(trim($invoice), 0, 50, 'utf-8'))."'
+        where od_id = '".(int)$od_id."' ", true);
+}
+
+// 결제 확정 직후 마무리 — 초안이 예약해 둔 장바구니 행을 비우고 세션 표식을 정리한다.
+// 리턴(pay_return)은 사용자 브라우저 요청이라 주문 당시 세션이 살아 있다. od_bk_ids 를
+// 비워 두 번 불려도 무해하게 한다. 무통장(비초안) 주문은 od_bk_ids 가 비어 있어 그냥 지나간다.
+function cart_order_after_paid($od_id)
+{
+    global $g5;
+    $od = cart_order_get((int)$od_id);
+    if (!$od) return;
+    if ($od['od_bk_ids'] !== '') {
+        foreach (array_filter(array_map('intval', explode(',', $od['od_bk_ids']))) as $bk_id) {
+            cart_basket_remove($bk_id);
+        }
+        sql_query(" update `{$g5['cart_order_table']}` set od_bk_ids = '' where od_id = '".(int)$od_id."' ", true);
+    }
+    if (!empty($_SESSION['ss_cart_draft_od_id']) && (int)$_SESSION['ss_cart_draft_od_id'] === (int)$od_id) {
+        unset($_SESSION['ss_cart_draft_od_id']);
+    }
 }

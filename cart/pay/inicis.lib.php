@@ -60,9 +60,48 @@ function cart_inicis_ready($od)
             'buyeremail' => $od['od_email'],
             'returnUrl' => cart_url('pay_return.php', array('m' => 'inicis')),
             'closeUrl' => (defined('G5_SHOP_URL') ? G5_SHOP_URL : G5_URL.'/shop').'/inicis/close.php',
-            'acceptmethod' => 'below1000',
+            // centerCd(Y) 가 있어야 리턴에 idc_name(센터 코드)이 실린다 — 없으면 빈 값이 와서
+            // 승인 URL 화이트리스트 검증(urlfail)에 걸린다. 부킹 모듈 실결제로 검증된 값.
+            'acceptmethod' => 'below1000:centerCd(Y)',
         ),
     );
+}
+
+// 관리자 환불(전체취소) — INIAPI refund. 결제창(signkey)과 별개의 INIAPI key 를 쓴다.
+// INIpayTest 는 이니시스가 공개한 테스트 키·stg 엔드포인트 고정(순정 shop 과 같은 규칙).
+// 성공 시 빈 문자열, 실패 시 사유 문자열.
+function cart_inicis_refund($od, $tid, $reason)
+{
+    $conf = cart_inicis_conf();
+    $cc = cart_config();
+    $is_test = ($conf['mid'] === 'INIpayTest');
+    $key = $is_test ? 'ItEQKi3rY7uvDS8l' : trim($cc['cc_inicis_apikey']);
+    if ($key === '') return '이니시스 INIAPI 키가 설정되지 않았습니다. 환경설정에서 등록하세요.';
+    $url = $is_test ? 'https://stginiapi.inicis.com/api/v1/refund' : 'https://iniapi.inicis.com/api/v1/refund';
+
+    $type = 'Refund';
+    $paymethod = 'Card';
+    $timestamp = date('YmdHis', G5_SERVER_TIME);
+    $client_ip = isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR'] : '127.0.0.1';
+
+    list($code, $res, $raw) = cart_http_post_form($url, array(
+        'type' => $type,
+        'paymethod' => $paymethod,
+        'timestamp' => $timestamp,
+        'clientIp' => $client_ip,
+        'mid' => $conf['mid'],
+        'tid' => $tid,
+        'msg' => mb_substr($reason, 0, 100, 'utf-8'),
+        'hashData' => hash('sha512', $key.$type.$paymethod.$timestamp.$client_ip.$conf['mid'].$tid),
+    ));
+
+    if ($code !== 200 || !is_array($res)) return '이니시스 환불 통신에 실패했습니다. (http '.$code.')';
+    $rc = cart_pay_res($res, 'resultCode');
+    if ($rc !== '00') {
+        $msg = cart_pay_res($res, 'resultMsg');
+        return '이니시스 환불 거절: '.($msg !== '' ? $msg : $rc);
+    }
+    return '';
 }
 
 // 승인 리턴 처리 — 성공하면 완료 URL 반환, 실패하면 alert(내부에서 exit).
@@ -73,7 +112,7 @@ function cart_inicis_return()
     $util = new INIStdPayUtil();
     $prop = new properties();
 
-    $pay_url = cart_url('basket.php');
+    $pay_url = cart_url('cart.php');
 
     // 1. 승인 전 검증 — 여기서 멈추면 돈은 움직이지 않았다
     if (strcmp('0000', cart_pay_req('resultCode')) !== 0) {
@@ -87,7 +126,10 @@ function cart_inicis_return()
     if (!$od) alert('결제 대상 주문을 찾을 수 없습니다.', $pay_url);
     $od_id = (int)$od['od_id'];
     $price = (int)$od['od_total'];
-    $retry_url = cart_url('pay.php', array('od_no' => $od['od_no']));
+    // 실패 복귀처는 주문서 — 초안 방식이라 장바구니가 그대로 남아 있어 바로 다시 시도할 수 있다.
+    // 초안이 덮던 행들(od_bk_ids)을 buy 로 실어 바로구매 스코프도 그대로 복원한다.
+    $retry_url = cart_url('checkout.php',
+        $od['od_bk_ids'] !== '' ? array('buy' => $od['od_bk_ids']) : array());
 
     if (cart_pay_req('mid') !== $conf['mid']) {
         alert('요청된 상점아이디가 설정과 다릅니다.', $retry_url);
@@ -106,12 +148,15 @@ function cart_inicis_return()
     $authToken = cart_pay_req('authToken');
     if ($authToken === '') alert('인증 토큰이 없습니다.', $retry_url);
 
-    // 2. 승인 요청
+    // 2. 승인 요청 — 결제창을 use_chkfake=Y 로 열었으므로 verification(authToken·signKey·timestamp
+    // 서명)이 필수다. 빼면 R508 "Verification 필수 파라미터가 누락되었습니다"로 거절된다.
     $timestamp = $util->getTimestamp();
     $authMap = array(
         'mid' => $conf['mid'],
         'authToken' => $authToken,
         'signature' => $util->makeSignature(array('authToken' => $authToken, 'timestamp' => $timestamp)),
+        'verification' => $util->makeSignature(array(
+            'authToken' => $authToken, 'signKey' => $conf['sign_key'], 'timestamp' => $timestamp)),
         'timestamp' => $timestamp,
         'charset' => 'UTF-8',
         'format' => 'JSON',
@@ -165,7 +210,9 @@ function cart_inicis_return()
         $net_url = in_array($idc_name, $idc_list, true) ? $prop->getNetCancel($idc_name) : '';
         $sent = 'skip';
         $body = '';
-        if ($net_url !== '' && in_array($fail, array('http', 'parse', 'signature', 'moid', 'amount', 'amount2', 'duplicate', 'status', 'oid', 'update', 'missing'), true)) {
+        // 'code'(승인 거절)는 되돌릴 승인이 없다 — 망취소도, 아래 지연 경고도 해당 없음
+        $need_cancel = in_array($fail, array('http', 'parse', 'signature', 'moid', 'amount', 'amount2', 'duplicate', 'status', 'oid', 'update', 'missing', 'stock'), true);
+        if ($net_url !== '' && $need_cancel) {
             $net_ts = $util->getTimestamp();
             $netMap = array(
                 'mid' => $conf['mid'],
@@ -181,7 +228,7 @@ function cart_inicis_return()
         }
         cart_payment_log($od_id, 'inicis', $tid, $price, 'netcancel',
             array('reason' => $fail, 'sent' => $sent, 'body' => $body));
-        if ($sent !== 'sent') {
+        if ($need_cancel && $sent !== 'sent') {
             // 망취소가 안 나갔거나 통신이 끊겼다 — 이중 결제 가능 상태. 운영 시그널을 남기고
             // 사용자에게 "취소했습니다"라고 단정하지 않는다
             error_log('[cart-pay] inicis netcancel '.$sent.' od_id='.$od_id.' reason='.$fail.' tid='.$tid);
@@ -192,6 +239,7 @@ function cart_inicis_return()
     }
 
     // 성공 — approved 이력은 확정 트랜잭션 안에서 이미 남았다(중복 리턴 오판 방지)
+    cart_order_after_paid($od_id);
     $_SESSION['ss_cart_last_od_no'] = $od['od_no'];
     return cart_url('complete.php', array('od_no' => $od['od_no']));
 }

@@ -2555,10 +2555,11 @@ input[type=checkbox], input[type=radio] {
 .cart-basket-qty { display: flex; gap: var(--s1); }
 .cart-basket-qty input { width: 64px; padding: var(--s1); text-align: right; }
 .btn-ghost {
-    border: 1px solid var(--line); background: none; color: var(--muted);
+    /* 테두리는 --btn-line — --line 은 카드·배경 위에서 1.19:1 이라 버튼으로 안 보인다 (.btn 주석 참고) */
+    border: 1px solid var(--btn-line); background: none; color: var(--fg);
     border-radius: 8px; padding: var(--s1) var(--s2); cursor: pointer; font-size: var(--t-xs);
 }
-.btn-ghost:hover { color: var(--fg); border-color: var(--muted); }
+.btn-ghost:hover { color: var(--accent); border-color: var(--accent); }
 .cart-basket-line { font-weight: 800; min-width: 90px; text-align: right; }
 
 .cart-basket-sum {
@@ -2575,11 +2576,15 @@ input[type=checkbox], input[type=radio] {
 }
 
 /* ---------- 카트 주문서·주문완료 ---------- */
-.cart-co-sec { border: 1px solid var(--line); border-radius: 14px; padding: var(--s5); margin-bottom: var(--s4); }
+/* 다른 폼(.write-form)과 같은 카드 위에 올린다 — 입력칸이 --bg 색이라 페이지 배경 위에서는 묻힌다 */
+.cart-co-sec { background: var(--card); border-radius: var(--r-xl); padding: var(--s5); margin-bottom: var(--s4); box-shadow: var(--sh-md); }
+.cart-co-sec .req::after { content: ' *'; color: var(--danger); }
+.cart-co-sec input.is-invalid { border-color: var(--danger); }
 .cart-co-sec h3 { font-size: var(--t-md); font-weight: 800; margin-bottom: var(--s4); }
 .cart-co-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--s3); }
 .cart-co-grid label, .cart-co-sec > label { display: flex; align-items: center; gap: var(--s3); font-size: var(--t-sm); font-weight: 600; }
 .cart-co-grid input, .cart-co-addr input { flex: 1; min-width: 0; padding: var(--s2); }
+.cart-co-sub { font-size: var(--t-sm); font-weight: 700; margin: var(--s4) 0 var(--s3); }
 .cart-co-addr { display: flex; flex-direction: column; gap: var(--s3); }
 .cart-co-addr input { width: 100%; }
 .cart-co-zip { display: flex; gap: var(--s2); }

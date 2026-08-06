@@ -16,6 +16,7 @@ function cart_table_defaults()
         'cart_order_table'      => 'cart_order',
         'cart_order_item_table' => 'cart_order_item',
         'cart_payment_table'    => 'cart_payment',
+        'cart_address_table'    => 'cart_address',
     );
     foreach ($tables as $key => $name) {
         if (!isset($g5[$key])) $g5[$key] = G5_TABLE_PREFIX.$name;
@@ -50,6 +51,35 @@ function cart_column_upgrades()
         // 2026-08-06 PG 주문번호(oid) — 결제 시도마다 새로 발급(부킹 교훈: oid 재사용 금지)
         array('cart_order_table', 'od_oid',
             " ADD `od_oid` varchar(40) NOT NULL DEFAULT '' AFTER `od_no`, ADD KEY `od_oid` (`od_oid`) "),
+        // 2026-08-06 PG 초안(draft) 주문이 결제 확정 때 비울 장바구니 행 목록(CSV)
+        array('cart_order_table', 'od_bk_ids',
+            " ADD `od_bk_ids` varchar(255) NOT NULL DEFAULT '' AFTER `od_guest_pw` "),
+        // 2026-08-06 관리자 취소 — INIAPI 환불 키, 취소 사유·시각
+        array('cart_config_table', 'cc_inicis_apikey',
+            " ADD `cc_inicis_apikey` varchar(100) NOT NULL DEFAULT '' AFTER `cc_inicis_signkey` "),
+        array('cart_order_table', 'od_cancel_reason',
+            " ADD `od_cancel_reason` varchar(255) NOT NULL DEFAULT '' AFTER `od_shipped_at` "),
+        array('cart_order_table', 'od_canceled_at',
+            " ADD `od_canceled_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00' AFTER `od_cancel_reason` "),
+        array('cart_order_table', 'od_canceled_by',
+            " ADD `od_canceled_by` varchar(20) NOT NULL DEFAULT '' AFTER `od_canceled_at` "),
+        // 2026-08-06 주소록 — 배송지에 주문자(이름·연락처)도 함께 저장해 불러오기가 한 번에 채운다
+        array('cart_address_table', 'ad_name',
+            " ADD `ad_name` varchar(50) NOT NULL DEFAULT '' AFTER `mb_id` "),
+        array('cart_address_table', 'ad_hp',
+            " ADD `ad_hp` varchar(20) NOT NULL DEFAULT '' AFTER `ad_name` "),
+        // 2026-08-06 수령인 — 주문자와 다를 수 있다(선물). 화면은 "주문자와 동일" 체크가 기본.
+        array('cart_order_table', 'od_recv_name',
+            " ADD `od_recv_name` varchar(50) NOT NULL DEFAULT '' AFTER `od_email` "),
+        array('cart_order_table', 'od_recv_hp',
+            " ADD `od_recv_hp` varchar(20) NOT NULL DEFAULT '' AFTER `od_recv_name` "),
+        // 2026-08-06 3단계 배송 — 택배사·송장·발송 시각
+        array('cart_order_table', 'od_delivery_company',
+            " ADD `od_delivery_company` varchar(50) NOT NULL DEFAULT '' AFTER `od_bk_ids` "),
+        array('cart_order_table', 'od_invoice',
+            " ADD `od_invoice` varchar(50) NOT NULL DEFAULT '' AFTER `od_delivery_company` "),
+        array('cart_order_table', 'od_shipped_at',
+            " ADD `od_shipped_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00' AFTER `od_invoice` "),
     );
 }
 
@@ -106,6 +136,7 @@ function cart_table_ddl()
         `cc_bank` varchar(255) NOT NULL DEFAULT '',
         `cc_inicis_mid` varchar(20) NOT NULL DEFAULT '',
         `cc_inicis_signkey` varchar(100) NOT NULL DEFAULT '',
+        `cc_inicis_apikey` varchar(100) NOT NULL DEFAULT '',
         `cc_toss_ckey` varchar(100) NOT NULL DEFAULT '',
         `cc_toss_skey` varchar(100) NOT NULL DEFAULT '',
         PRIMARY KEY (`cc_id`)
@@ -191,6 +222,8 @@ function cart_table_ddl()
         `od_name` varchar(50) NOT NULL DEFAULT '',
         `od_hp` varchar(20) NOT NULL DEFAULT '',
         `od_email` varchar(100) NOT NULL DEFAULT '',
+        `od_recv_name` varchar(50) NOT NULL DEFAULT '',
+        `od_recv_hp` varchar(20) NOT NULL DEFAULT '',
         `od_zip` varchar(10) NOT NULL DEFAULT '',
         `od_addr1` varchar(255) NOT NULL DEFAULT '',
         `od_addr2` varchar(255) NOT NULL DEFAULT '',
@@ -204,6 +237,13 @@ function cart_table_ddl()
         `od_pay_method` varchar(20) NOT NULL DEFAULT 'bank',
         `od_depositor` varchar(50) NOT NULL DEFAULT '',
         `od_guest_pw` varchar(255) NOT NULL DEFAULT '',
+        `od_bk_ids` varchar(255) NOT NULL DEFAULT '',
+        `od_delivery_company` varchar(50) NOT NULL DEFAULT '',
+        `od_invoice` varchar(50) NOT NULL DEFAULT '',
+        `od_shipped_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+        `od_cancel_reason` varchar(255) NOT NULL DEFAULT '',
+        `od_canceled_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+        `od_canceled_by` varchar(20) NOT NULL DEFAULT '',
         `od_ip` varchar(50) NOT NULL DEFAULT '',
         `od_datetime` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
         `od_paid_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
@@ -225,6 +265,17 @@ function cart_table_ddl()
         `oi_total` int(11) NOT NULL DEFAULT '0',
         `oi_status` varchar(20) NOT NULL DEFAULT 'normal',
         PRIMARY KEY (`oi_id`), KEY `od_id` (`od_id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
+    'cart_address_table' => " CREATE TABLE IF NOT EXISTS `{$g5['cart_address_table']}` (
+        `ad_id` int(11) NOT NULL AUTO_INCREMENT,
+        `mb_id` varchar(20) NOT NULL DEFAULT '',
+        `ad_name` varchar(50) NOT NULL DEFAULT '',
+        `ad_hp` varchar(20) NOT NULL DEFAULT '',
+        `ad_zip` varchar(10) NOT NULL DEFAULT '',
+        `ad_addr1` varchar(255) NOT NULL DEFAULT '',
+        `ad_addr2` varchar(255) NOT NULL DEFAULT '',
+        `ad_datetime` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+        PRIMARY KEY (`ad_id`), KEY `mb_recent` (`mb_id`, `ad_datetime`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
     'cart_payment_table' => " CREATE TABLE IF NOT EXISTS `{$g5['cart_payment_table']}` (
         `pm_id` int(11) NOT NULL AUTO_INCREMENT,

@@ -40,16 +40,29 @@ function cart_toss_ready($od)
             'orderName' => cart_pay_goodname((int)$od['od_id']),
             'customerName' => $od['od_name'],
             'successUrl' => cart_url('pay_return.php', array('m' => 'toss')),
-            'failUrl' => cart_url('pay.php', array('od_no' => $od['od_no'], 'fail' => '1')),
+            'failUrl' => cart_url('checkout.php', array_merge(array('fail' => '1'),
+                $od['od_bk_ids'] !== '' ? array('buy' => $od['od_bk_ids']) : array())),
         ),
     );
+}
+
+// 관리자 환불(전체취소) — 승인 확정과 같은 cancel API. 성공 시 빈 문자열, 실패 시 사유.
+function cart_toss_refund($od, $tid, $reason)
+{
+    $conf = cart_toss_conf();
+    list($code, $res, $raw) = cart_http_post_json($conf['api'].'/'.$tid.'/cancel',
+        array('cancelReason' => mb_substr($reason, 0, 100, 'utf-8')),
+        array(cart_toss_auth_header($conf['skey'])));
+    if ($code === 200) return '';
+    $msg = is_array($res) ? cart_pay_res($res, 'message') : '';
+    return '토스 환불 거절: '.($msg !== '' ? $msg : 'http '.$code);
 }
 
 // successUrl 리턴 처리 — 성공 시 완료 URL 반환, 실패 시 alert(내부 exit)
 function cart_toss_return()
 {
     $conf = cart_toss_conf();
-    $pay_url = cart_url('basket.php');
+    $pay_url = cart_url('cart.php');
 
     $payment_key = preg_replace('/[^A-Za-z0-9\-_]/', '', cart_pay_req('paymentKey'));
     $oid = preg_replace('/[^A-Za-z0-9\-_]/', '', cart_pay_req('orderId'));
@@ -60,7 +73,10 @@ function cart_toss_return()
     if (!$od) alert('결제 대상 주문을 찾을 수 없습니다.', $pay_url);
     $od_id = (int)$od['od_id'];
     $price = (int)$od['od_total'];
-    $retry_url = cart_url('pay.php', array('od_no' => $od['od_no']));
+    // 실패 복귀처는 주문서 — 초안 방식이라 장바구니가 그대로 남아 있어 바로 다시 시도할 수 있다.
+    // 초안이 덮던 행들(od_bk_ids)을 buy 로 실어 바로구매 스코프도 그대로 복원한다.
+    $retry_url = cart_url('checkout.php',
+        $od['od_bk_ids'] !== '' ? array('buy' => $od['od_bk_ids']) : array());
 
     // 승인 전 대조 — successUrl 파라미터의 금액이 주문 금액과 다르면 승인 자체를 안 부른다
     if ($amount !== $price) {
@@ -128,6 +144,7 @@ function cart_toss_return()
     }
 
     // approved 이력은 확정 트랜잭션 안에서 이미 남았다
+    cart_order_after_paid($od_id);
     $_SESSION['ss_cart_last_od_no'] = $od['od_no'];
     return cart_url('complete.php', array('od_no' => $od['od_no']));
 }

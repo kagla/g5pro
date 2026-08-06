@@ -41,7 +41,7 @@
 
     <section class="cart-co-sec">
         <h3>배송지</h3>
-        <p>{{ $order['od_name'] }} · {{ $order['od_hp'] }}</p>
+        <p>받는분 {{ $order['od_recv_name'] !== '' ? $order['od_recv_name'] : $order['od_name'] }} · {{ $order['od_recv_hp'] !== '' ? $order['od_recv_hp'] : $order['od_hp'] }}</p>
         <p>({{ $order['od_zip'] }}) {{ $order['od_addr1'] }} {{ $order['od_addr2'] }}</p>
 
         @if ($order['od_memo'] !== '')

@@ -64,8 +64,10 @@ function cart_pay_new_oid($od)
     return $oid;
 }
 
-// 승인 확정 — 주문 행을 잠그고 [상태 unpaid·oid 일치·금액 일치]를 잠긴 값으로 재검증한 뒤
+// 승인 확정 — 주문 행을 잠그고 [상태 unpaid/draft·oid 일치·금액 일치]를 잠긴 값으로 재검증한 뒤
 // paid 로 전이한다. 빈 문자열이면 성공, 아니면 실패 사유 코드(호출자가 망취소로 되돌린다).
+// draft(PG 초안)는 재고를 여기서 처음 차감한다 — 결제 사이 품절이면 'stock' 실패로 승인을
+// 되돌린다(주문서 저장을 결제 뒤로 미룬 대가로, 이 좁은 창은 망취소가 책임진다).
 //
 // approved 이력은 반드시 이 트랜잭션 안(커밋 전)에서 남긴다. 커밋 뒤에 남기면 그 짧은 틈에
 // 도착한 같은 tid 의 중복 리턴이 "paid 인데 approved 이력 없음" → duplicate 로 오판되어
@@ -90,7 +92,7 @@ function cart_order_confirm_paid($od_id, $oid, $method, $tid, $amount)
             where od_id = '".(int)$od_id."' and pm_tid = '".sql_real_escape_string($tid)."'
               and pm_status = 'approved' ");
         $fail = $prev ? '' : 'duplicate';
-    } elseif ($cur['od_status'] !== 'unpaid') {
+    } elseif ($cur['od_status'] !== 'unpaid' && $cur['od_status'] !== 'draft') {
         $fail = 'status';
     } elseif ($cur['od_oid'] !== $oid) {
         // 결제창이 열린 사이 새 시도가 oid 를 갈아 끼웠다 — 이번 승인은 옛 시도의 것
@@ -99,11 +101,25 @@ function cart_order_confirm_paid($od_id, $oid, $method, $tid, $amount)
         $fail = 'amount2';
     }
 
-    if ($fail === '' && $cur['od_status'] === 'unpaid') {
+    $payable = $fail === '' && ($cur['od_status'] === 'unpaid' || $cur['od_status'] === 'draft');
+
+    // 초안은 지금이 첫 재고 차감 — 결제 사이 품절이면 전부 롤백('stock' → 호출자가 망취소)
+    if ($payable && $cur['od_status'] === 'draft') {
+        $who = $cur['mb_id'] !== '' ? $cur['mb_id'] : 'guest';
+        $items = cart_order_items((int)$od_id);
+        foreach ($items as $it) {
+            if (!cart_stock_move((int)$it['sk_id'], -(int)$it['oi_qty'], 'order', $cur['od_no'], $who)) {
+                $fail = 'stock';
+                break;
+            }
+        }
+    }
+
+    if ($payable && $fail === '') {
         sql_query(" update `{$g5['cart_order_table']}`
             set od_status = 'paid', od_pay_method = '".sql_real_escape_string($method)."',
                 od_paid_at = '".G5_TIME_YMDHIS."'
-            where od_id = '".(int)$od_id."' and od_status = 'unpaid' ", true);
+            where od_id = '".(int)$od_id."' and od_status in ('unpaid', 'draft') ", true);
         if (get_sql_affected_rows() < 1) {
             $fail = 'update';
             sql_query(" rollback ", true);
@@ -118,6 +134,52 @@ function cart_order_confirm_paid($od_id, $oid, $method, $tid, $amount)
     }
     sql_query(" set autocommit = 1 ", true);
     return $fail;
+}
+
+// 관리자 주문취소의 전자결제 자동취소(환불) — 승인된 결제(approved 이력)를 PG API 로 되돌린다.
+// 성공 시 빈 문자열, 실패 시 사유 문자열. 호출자는 실패하면 주문 취소 자체를 중단해야 한다
+// (돈이 안 돌아갔는데 주문만 취소되는 상태를 만들지 않는다). 결과는 'refund' 이력으로 남는다.
+function cart_pay_refund($od, $reason, $who = 'admin')
+{
+    global $g5;
+    $od_id = (int)$od['od_id'];
+
+    $appr = sql_fetch(" select * from `{$g5['cart_payment_table']}`
+        where od_id = '$od_id' and pm_status = 'approved' order by pm_id desc limit 1 ");
+    if (!$appr || trim($appr['pm_tid']) === '') return '환불할 승인 이력(TID)이 없습니다.';
+    $tid = trim($appr['pm_tid']);
+
+    if ($od['od_pay_method'] === 'inicis') {
+        $fail = cart_inicis_refund($od, $tid, $reason);
+    } elseif ($od['od_pay_method'] === 'toss') {
+        $fail = cart_toss_refund($od, $tid, $reason);
+    } else {
+        return 'PG 결제 주문이 아닙니다.';
+    }
+
+    cart_payment_log($od_id, $od['od_pay_method'], $tid, (int)$od['od_total'],
+        $fail === '' ? 'refund' : 'failed',
+        array('step' => 'admin_refund', 'reason' => $reason, 'by' => $who, 'fail' => $fail));
+    return $fail;
+}
+
+// 폼 인코딩 POST — 이니시스 INIAPI 용. array(HTTP 코드, 본문배열|null, 원문)
+function cart_http_post_form($url, $body)
+{
+    $ch = curl_init($url);
+    curl_setopt_array($ch, array(
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => http_build_query($body),
+        CURLOPT_HTTPHEADER => array('Content-Type: application/x-www-form-urlencoded; charset=utf-8'),
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 25,
+        CURLOPT_SSL_VERIFYPEER => true,
+    ));
+    $raw = curl_exec($ch);
+    $code = ($raw === false) ? 0 : (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+    curl_close($ch);
+    $parsed = ($raw !== false) ? json_decode($raw, true) : null;
+    return array($code, is_array($parsed) ? $parsed : null, ($raw === false ? '' : $raw));
 }
 
 // JSON POST — 토스 승인·취소용. array(코드, 본문배열|null, 원문)

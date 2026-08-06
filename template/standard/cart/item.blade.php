@@ -28,7 +28,7 @@
             <div class="shop-item-thumbs">
 
                 @foreach ($images as $src)
-                <img src="{{ $src }}" alt="" onclick="document.getElementById('cart_main_img').src=this.src">
+                <img src="{{ $src }}" alt="">
                 @endforeach
 
             </div>
@@ -103,4 +103,13 @@
         {!! $item['it_content'] !!}
     </div>
 </article>
+
+@if (count($images) > 1)
+<script>
+$('.shop-item-thumbs img').on('click', function () {
+    $('#cart_main_img').attr('src', this.src);
+});
+</script>
+@endif
+
 @endsection

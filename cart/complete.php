@@ -16,7 +16,7 @@ if ($order) {
         $is_mine = true;
     }
 }
-if (!$order || !$is_mine) {
+if (!$order || !$is_mine || $order['od_status'] === 'draft') {
     alert('주문을 찾을 수 없습니다.', cart_url(''));
 }
 
