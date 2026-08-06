@@ -116,3 +116,158 @@ function cart_category_delete($ca_id)
     sql_query(" delete from `{$g5['cart_category_table']}` where ca_id = '$ca_id' ", true);
     return '';
 }
+
+// ---------- 상품 ----------
+
+function cart_item_get($it_id)
+{
+    global $g5;
+    $row = sql_fetch(" select * from `{$g5['cart_item_table']}` where it_id = '".(int)$it_id."' ");
+    return $row ? $row : null;
+}
+
+function cart_item_get_by_code($code)
+{
+    global $g5;
+    $code = sql_real_escape_string(trim($code));
+    if ($code === '') return null;
+    $row = sql_fetch(" select * from `{$g5['cart_item_table']}` where it_code = '$code' ");
+    return $row ? $row : null;
+}
+
+function cart_item_save($data, $it_id = 0)
+{
+    global $g5;
+    $code = sql_real_escape_string(trim($data['it_code']));
+    $ca_id = (int)$data['ca_id'];
+    $name = sql_real_escape_string(strip_tags(trim($data['it_name'])));
+    $keyword = sql_real_escape_string(strip_tags(trim($data['it_keyword'])));
+    $content = sql_real_escape_string($data['it_content']);
+    $show = !empty($data['it_show']) ? 1 : 0;
+    $shipping = isset($data['it_shipping_id']) ? (int)$data['it_shipping_id'] : 0;
+    $now = G5_TIME_YMDHIS;
+
+    if ($it_id) {
+        sql_query(" update `{$g5['cart_item_table']}`
+            set it_code = '$code', ca_id = '$ca_id', it_name = '$name', it_keyword = '$keyword',
+                it_content = '$content', it_show = '$show', it_shipping_id = '$shipping',
+                it_update = '$now'
+            where it_id = '".(int)$it_id."' ", true);
+        return (int)$it_id;
+    }
+
+    // it_code 는 UNIQUE — 빈 값 신규가 여럿 겹치지 않게 임시 유일값을 넣고 확정한다
+    $tmp = $code !== '' ? $code : uniqid('PT', true);
+    sql_query(" insert into `{$g5['cart_item_table']}`
+        (it_code, ca_id, it_name, it_keyword, it_content, it_show, it_shipping_id, it_datetime, it_update)
+        values ('".sql_real_escape_string($tmp)."', '$ca_id', '$name', '$keyword', '$content',
+                '$show', '$shipping', '$now', '$now') ", true);
+    $new_id = sql_insert_id();
+    if ($code === '') {
+        sql_query(" update `{$g5['cart_item_table']}` set it_code = 'P{$new_id}'
+            where it_id = '$new_id' ", true);
+    }
+    return (int)$new_id;
+}
+
+// ---------- SKU ----------
+
+function cart_sku_get($sk_id)
+{
+    global $g5;
+    $row = sql_fetch(" select * from `{$g5['cart_sku_table']}` where sk_id = '".(int)$sk_id."' ");
+    return $row ? $row : null;
+}
+
+function cart_sku_get_by_code($code)
+{
+    global $g5;
+    $code = sql_real_escape_string(trim($code));
+    if ($code === '') return null;
+    $row = sql_fetch(" select * from `{$g5['cart_sku_table']}` where sk_code = '$code' ");
+    return $row ? $row : null;
+}
+
+function cart_item_skus($it_id, $only_use = false)
+{
+    global $g5;
+    $and = $only_use ? " and sk_use = 1 " : "";
+    $rows = array();
+    $result = sql_query(" select * from `{$g5['cart_sku_table']}`
+        where it_id = '".(int)$it_id."' $and order by sk_id ");
+    while ($r = sql_fetch_array($result)) $rows[] = $r;
+    return $rows;
+}
+
+// 재고(sk_qty)는 여기서 만지지 않는다 — 전 증감이 stock_log 에 남게 stock.lib 만 재고를 쓴다
+function cart_sku_save($data, $sk_id = 0)
+{
+    global $g5;
+    $it_id = (int)$data['it_id'];
+    $code = sql_real_escape_string(trim($data['sk_code']));
+    $option = sql_real_escape_string(trim($data['sk_option']) !== '' ? trim($data['sk_option']) : '{}');
+    $price = (int)$data['sk_price'];
+    $barcode = sql_real_escape_string(strip_tags(trim($data['sk_barcode'])));
+    $use = !empty($data['sk_use']) ? 1 : 0;
+
+    if ($sk_id) {
+        sql_query(" update `{$g5['cart_sku_table']}`
+            set sk_code = '$code', sk_option = '$option', sk_price = '$price',
+                sk_barcode = '$barcode', sk_use = '$use'
+            where sk_id = '".(int)$sk_id."' ", true);
+        cart_item_cache_refresh($it_id);
+        return (int)$sk_id;
+    }
+
+    $tmp = $code !== '' ? $code : uniqid('ST', true);
+    sql_query(" insert into `{$g5['cart_sku_table']}`
+        (it_id, sk_code, sk_option, sk_price, sk_barcode, sk_use)
+        values ('$it_id', '".sql_real_escape_string($tmp)."', '$option', '$price', '$barcode', '$use') ", true);
+    $new_id = sql_insert_id();
+    if ($code === '') {
+        // it_code-NN — 상품 안에서 몇 번째 SKU 인지로 붙인다(자릿수 2, 100개 넘으면 그대로 숫자)
+        $item = cart_item_get($it_id);
+        $cnt = sql_fetch(" select count(*) as cnt from `{$g5['cart_sku_table']}` where it_id = '$it_id' ");
+        $n = (int)$cnt['cnt'];
+        $auto = $item['it_code'].'-'.($n < 100 ? sprintf('%02d', $n) : $n);
+        sql_query(" update `{$g5['cart_sku_table']}`
+            set sk_code = '".sql_real_escape_string($auto)."' where sk_id = '$new_id' ", true);
+    }
+    cart_item_cache_refresh($it_id);
+    return (int)$new_id;
+}
+
+function cart_sku_delete($sk_id)
+{
+    global $g5;
+    $row = cart_sku_get($sk_id);
+    if (!$row) return;
+    sql_query(" delete from `{$g5['cart_sku_table']}` where sk_id = '".(int)$sk_id."' ", true);
+    cart_item_cache_refresh((int)$row['it_id']);
+}
+
+// 목록이 조인 없이 뜨게 하는 캐시 — SKU 가 바뀔 때마다 호출된다
+function cart_item_cache_refresh($it_id)
+{
+    global $g5;
+    $it_id = (int)$it_id;
+    $sum = sql_fetch(" select min(sk_price) as min_price, sum(sk_qty) as total
+        from `{$g5['cart_sku_table']}` where it_id = '$it_id' and sk_use = 1 ");
+    $price = (int)$sum['min_price'];
+    $stock = (int)$sum['total'];
+    sql_query(" update `{$g5['cart_item_table']}`
+        set it_price = '$price', it_stock = '$stock' where it_id = '$it_id' ", true);
+}
+
+// ---------- 검색 ----------
+
+function cart_item_search_where($q)
+{
+    $q = trim($q);
+    if ($q === '') return '1=1';
+    $esc = sql_real_escape_string($q);
+    if (cart_ft_available()) {
+        return " MATCH(it_name, it_keyword) AGAINST('$esc' IN BOOLEAN MODE) ";
+    }
+    return " it_name LIKE '%$esc%' ";
+}
