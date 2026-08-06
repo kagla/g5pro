@@ -10,9 +10,12 @@
 .ca-panel { flex: 1 1 auto; min-width: 320px; }
 .ca-add { margin-bottom: 10px; }
 .ca-add input[type=text] { width: 150px; }
-.ca-item { border: 1px solid #d8dde3; background: #fff; margin-top: -1px; padding: 6px 8px;
+.ca-list { max-height: 62vh; overflow-y: auto; border: 1px solid #d8dde3; background: #fff; }
+.ca-item { border-bottom: 1px solid #e6eaef; background: #fff; padding: 6px 8px;
     cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ca-item.selected { background: #E5EFFF; border-color: #2563EB; position: relative; z-index: 1; }
+.ca-item:last-child { border-bottom: 0; }
+.ca-item .ca-branch { color: #9aa4b0; margin-right: 3px; }
+.ca-item.selected { background: #E5EFFF; box-shadow: inset 3px 0 0 #2563EB; }
 .ca-item .ca-handle { cursor: grab; padding: 0 6px; color: #888; user-select: none; }
 .ca-item .ca-cnt { color: #888; font-size: 0.92em; }
 .ca-item .ca-hidden-mark { color: #c00; font-size: 0.92em; }
@@ -39,21 +42,30 @@
 
     </form>
 
-    @foreach ($categories as $c)
-    <div class="ca-item {{ (int)$c['ca_id'] === $sel_id ? 'selected' : '' }}" draggable="true"
-         data-id="{{ $c['ca_id'] }}" data-parent="{{ $c['ca_parent'] }}"
-         data-href="{{ $self_url }}?ca_id={{ $c['ca_id'] }}"
-         style="padding-left:{{ ($c['ca_depth'] - 1) * 22 + 8 }}px">
-        <span class="ca-handle" title="끌어서 이동">⠿</span>
-        <strong>{{ $c['ca_name'] }}</strong>
-        <span class="ca-cnt">[{{ $c['ca_code'] }}] · {{ isset($counts[$c['ca_id']]) ? number_format($counts[$c['ca_id']]) : 0 }}개</span>
+    <div class="ca-list">
 
-        @if (!(int)$c['ca_show'])
-        <span class="ca-hidden-mark">(숨김)</span>
-        @endif
+        @foreach ($categories as $c)
+        <div class="ca-item {{ (int)$c['ca_id'] === $sel_id ? 'selected' : '' }}" draggable="true"
+             data-id="{{ $c['ca_id'] }}" data-parent="{{ $c['ca_parent'] }}"
+             data-href="{{ $self_url }}?ca_id={{ $c['ca_id'] }}"
+             style="padding-left:{{ ($c['ca_depth'] - 1) * 22 + 8 }}px">
+            <span class="ca-handle" title="끌어서 이동">⠿</span>
+
+            @if ((int)$c['ca_depth'] > 1)
+            <span class="ca-branch">└</span>
+            @endif
+
+            <strong>{{ $c['ca_name'] }}</strong>
+            <span class="ca-cnt">[{{ $c['ca_code'] }}] · {{ isset($counts[$c['ca_id']]) ? number_format($counts[$c['ca_id']]) : 0 }}개</span>
+
+            @if (!(int)$c['ca_show'])
+            <span class="ca-hidden-mark">(숨김)</span>
+            @endif
+
+        </div>
+        @endforeach
 
     </div>
-    @endforeach
 
 </div>
 
@@ -141,6 +153,10 @@
 $(function () {
     var $drag = null;
     var moved = false;
+
+    // 선택 분류가 스크롤 박스 밖에 있으면 가운데로 — 긴 트리에서 선택 위치를 잃지 않게
+    var $sel = $('.ca-item.selected');
+    if ($sel.length) $sel[0].scrollIntoView({ block: 'center' });
 
     $('.ca-item').on('click', function () {
         if (moved) { moved = false; return; }

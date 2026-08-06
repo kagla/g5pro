@@ -9,27 +9,37 @@
 .cm-tree { flex: 0 0 260px; }
 .cm-linked { flex: 1 1 auto; min-width: 300px; }
 .cm-search { flex: 0 0 340px; }
-.cm-cat { display: block; border: 1px solid #d8dde3; background: #fff; margin-top: -1px;
+.cm-list { max-height: 62vh; overflow-y: auto; border: 1px solid #d8dde3; background: #fff; }
+.cm-cat { display: block; border-bottom: 1px solid #e6eaef; background: #fff;
     padding: 6px 8px; color: inherit; text-decoration: none; white-space: nowrap;
     overflow: hidden; text-overflow: ellipsis; }
-.cm-cat.selected { background: #E5EFFF; border-color: #2563EB; position: relative; z-index: 1; }
+.cm-cat:last-child { border-bottom: 0; }
+.cm-cat.selected { background: #E5EFFF; box-shadow: inset 3px 0 0 #2563EB; }
 .cm-cat .cm-cnt { color: #888; font-size: 0.92em; }
+.cm-cat .cm-branch { color: #9aa4b0; margin-right: 3px; }
 .cm-row-form { display: inline; }
 </style>
 
 <div class="cm-wrap">
 
 <div class="cm-tree">
+    <div class="cm-list">
 
-    @foreach ($categories as $c)
-    <a class="cm-cat {{ (int)$c['ca_id'] === $sel_id ? 'selected' : '' }}"
-       href="{{ $self_url }}?ca_id={{ $c['ca_id'] }}"
-       style="padding-left:{{ ($c['ca_depth'] - 1) * 18 + 8 }}px">
-        {{ $c['ca_name'] }}
-        <span class="cm-cnt">{{ isset($counts[$c['ca_id']]) ? number_format($counts[$c['ca_id']]) : 0 }}개</span>
-    </a>
-    @endforeach
+        @foreach ($categories as $c)
+        <a class="cm-cat {{ (int)$c['ca_id'] === $sel_id ? 'selected' : '' }}"
+           href="{{ $self_url }}?ca_id={{ $c['ca_id'] }}"
+           style="padding-left:{{ ($c['ca_depth'] - 1) * 18 + 8 }}px">
 
+            @if ((int)$c['ca_depth'] > 1)
+            <span class="cm-branch">└</span>
+            @endif
+
+            {{ $c['ca_name'] }}
+            <span class="cm-cnt">{{ isset($counts[$c['ca_id']]) ? number_format($counts[$c['ca_id']]) : 0 }}개</span>
+        </a>
+        @endforeach
+
+    </div>
 </div>
 
 @if ($selected)
@@ -131,5 +141,9 @@ $(function () {
     $('#cm_all').on('change', function () {
         $('input[name="it_ids[]"]').prop('checked', this.checked);
     });
+
+    // 선택 분류가 스크롤 박스 밖에 있으면 가운데로 — 긴 트리에서 선택 위치를 잃지 않게
+    var $sel = $('.cm-cat.selected');
+    if ($sel.length) $sel[0].scrollIntoView({ block: 'center' });
 });
 </script>
