@@ -1,0 +1,52 @@
+<?php
+$sub_menu = '600100';
+include_once('./_common.php');
+auth_check_menu($auth, $sub_menu, 'r');
+
+$g5['title'] = '상품관리';
+include_once(G5_ADMIN_PATH.'/admin.head.php');
+
+$q = (isset($_GET['q']) && !is_array($_GET['q'])) ? trim($_GET['q']) : '';
+$ca_id = (isset($_GET['ca_id']) && !is_array($_GET['ca_id'])) ? (int)$_GET['ca_id'] : 0;
+$page = (isset($_GET['page']) && !is_array($_GET['page'])) ? max(1, (int)$_GET['page']) : 1;
+$rows_per = 30;
+
+$where = array('1=1');
+if ($q !== '') {
+    // 코드 완전 일치 우선 — 관리자가 코드로 찝어 찾는 흐름
+    $exact = cart_item_get_by_code($q);
+    $where[] = $exact ? " (it_code = '".sql_real_escape_string($q)."') " : cart_item_search_where($q);
+}
+if ($ca_id) {
+    $ids = cart_category_descendant_ids($ca_id);
+    if ($ids) $where[] = " ca_id IN (".implode(',', $ids).") ";
+}
+$where_sql = implode(' AND ', $where);
+
+$cnt = sql_fetch(" select count(*) as cnt from `{$g5['cart_item_table']}` where $where_sql ");
+$total = (int)$cnt['cnt'];
+$offset = ($page - 1) * $rows_per;
+
+$items = array();
+$result = sql_query(" select * from `{$g5['cart_item_table']}`
+    where $where_sql order by it_id desc limit $offset, $rows_per ");
+while ($r = sql_fetch_array($result)) {
+    $r['skus'] = cart_item_skus((int)$r['it_id']);
+    $r['single'] = (count($r['skus']) === 1);
+    $items[] = $r;
+}
+
+cadm_view('item_list', array(
+    'items' => $items,
+    'q' => $q,
+    'ca_id' => $ca_id,
+    'categories' => cart_category_list(),
+    'total' => $total,
+    'page' => $page,
+    'total_page' => max(1, (int)ceil($total / $rows_per)),
+    'self_url' => G5_ADMIN_URL.'/cart/item_list.php',
+    'form_url' => G5_ADMIN_URL.'/cart/item_form.php',
+    'update_url' => G5_ADMIN_URL.'/cart/item_list_update.php',
+));
+
+include_once(G5_ADMIN_PATH.'/admin.tail.php');
