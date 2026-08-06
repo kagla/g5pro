@@ -51,6 +51,8 @@ function cart_category_save($data, $ca_id = 0)
 // 트리 순서(부모 아래 자식)로 평탄화한 전체 목록
 // ca_path 문자열 정렬은 '/1/' < '/10/' < '/2/' 로 깨지므로 SQL 정렬에 기대지 않고
 // PHP 에서 ca_parent 로 그룹핑한 뒤 각 형제를 (ca_order, ca_id) 순으로 재귀 평탄화한다.
+// $only_show=true 는 캐스케이드다: 숨긴 분류의 하위는 자신이 노출이어도 함께 숨는다
+// (숨긴 부모가 조회에서 빠지면 그 자식은 트리에서 도달 불가 — 쇼핑몰 분류의 의도된 의미론).
 function cart_category_list($only_show = false)
 {
     global $g5;
