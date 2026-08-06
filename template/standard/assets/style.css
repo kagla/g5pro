@@ -2408,3 +2408,37 @@ input[type=checkbox], input[type=radio] {
 /* 목록 페이징(cart/list.php) — 화면이 모든 페이지 링크를 <a class="current"> 로 내보내므로
    기존 .paging-cur(별도 태그) 규칙이 안 먹는다. 같은 톤으로 a.current 를 추가한다 */
 .paging a.current { background: var(--accent); color: var(--accent-fg); font-weight: 700; box-shadow: var(--sh-btn); }
+
+/* ═══════════ 카트 프론트 상세 (cart/item.php) ═══════════ */
+/* .shop-price·.shop-soldout 은 목록 카드(.shop-card)의 규칙을 물려받는다. .shop-soldout 은
+   카드에서 썸네일 위 오버레이(position:absolute)라, 상세 화면에서는 평범한 안내 문단으로
+   쓰이므로 .shop-item-info 안에서만 오버레이를 해제한다 */
+.shop-item-top { display: flex; gap: var(--s6); flex-wrap: wrap; margin-bottom: var(--s6); }
+.shop-item-gallery { flex: 1 1 360px; min-width: 280px; max-width: 480px; }
+.shop-item-gallery img#cart_main_img {
+    width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: var(--r-xl);
+    background: var(--bg); display: block;
+}
+.shop-thumb-empty {
+    aspect-ratio: 1 / 1; border-radius: var(--r-xl); background: var(--bg);
+    display: flex; align-items: center; justify-content: center; color: var(--muted);
+}
+.shop-item-thumbs { display: flex; gap: var(--s2); margin-top: var(--s3); flex-wrap: wrap; }
+.shop-item-thumbs img {
+    width: 64px; height: 64px; object-fit: cover; border-radius: var(--r-md);
+    cursor: pointer; box-shadow: var(--sh-sm);
+}
+.shop-item-info { flex: 1 1 320px; min-width: 280px; }
+.shop-item-info .shop-price { margin: 0 0 var(--s4); font-size: var(--t-2xl); }
+.shop-sku-table { width: 100%; border-collapse: collapse; margin-bottom: var(--s4); }
+.shop-sku-table th {
+    font-size: var(--t-sm); font-weight: 700; color: var(--muted); letter-spacing: .03em;
+    padding: var(--s2) var(--s3); text-align: center; border-bottom: 1px solid var(--line);
+}
+.shop-sku-table td { padding: var(--s2) var(--s3); text-align: center; border-bottom: 1px solid var(--line); }
+.shop-item-info .shop-soldout {
+    position: static; inset: auto; background: none; display: block;
+    color: var(--accent); font-weight: 700; font-size: var(--t-md); margin: 0 0 var(--s3);
+}
+.shop-item-note { font-size: var(--t-sm); color: var(--muted); }
+.shop-item-content { margin-top: var(--s6); line-height: 1.7; }
