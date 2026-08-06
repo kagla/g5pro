@@ -35,6 +35,7 @@ g5_view('cart.checkout', array(
         'free' => (int)$cc['cc_ship_free'],
         'jeju' => (int)$cc['cc_ship_jeju'],
     ),
+    'pay_methods' => cart_pay_methods(),
     'token' => get_token(),
     'action_url' => cart_url('checkout_update.php'),
     'basket_href' => cart_url('basket.php'),

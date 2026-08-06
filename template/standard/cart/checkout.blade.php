@@ -76,8 +76,12 @@
 
     <section class="cart-co-sec">
         <h3>결제 수단</h3>
-        <label class="cart-co-pay"><input type="radio" name="pay" value="bank" checked> 무통장입금</label>
-        <label>입금자명 <input type="text" name="od_depositor" value="" placeholder="비우면 주문자 이름"></label>
+
+        @foreach ($pay_methods as $mkey => $mlabel)
+        <label class="cart-co-pay"><input type="radio" name="pay" value="{{ $mkey }}" {{ $mkey === 'bank' ? 'checked' : '' }} onchange="cartPayToggle()"> {{ $mlabel }}</label>
+        @endforeach
+
+        <label id="cart_depositor_row">입금자명 <input type="text" name="od_depositor" value="" placeholder="비우면 주문자 이름"></label>
     </section>
 
     <aside class="cart-basket-sum">
@@ -116,6 +120,12 @@ function cartSearchZip() {
         }
     }).open();
 }
+function cartPayToggle() {
+    var pay = document.querySelector('input[name="pay"]:checked');
+    document.getElementById('cart_depositor_row').style.display =
+        (pay && pay.value === 'bank') ? '' : 'none';
+}
 cartShipPreview();
+cartPayToggle();
 </script>
 @endsection

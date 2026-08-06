@@ -37,6 +37,42 @@
 </table>
 </div>
 
+<div class="local_desc02 local_desc">
+    <p>PG 키를 채우면 그 결제수단이 주문서에 나타납니다. 비우면 무통장만 노출됩니다. 키는 DB 에만 저장됩니다.</p>
+</div>
+
+<div class="tbl_frm01 tbl_wrap">
+<table>
+    <caption>이니시스 표준결제</caption>
+    <tbody>
+    <tr>
+        <th scope="row">상점아이디(MID)</th>
+        <td><input type="text" name="cc_inicis_mid" value="{{ $cc['cc_inicis_mid'] }}" size="20" placeholder="테스트: INIpayTest"></td>
+    </tr>
+    <tr>
+        <th scope="row">사인키(signKey)</th>
+        <td><input type="text" name="cc_inicis_signkey" value="{{ $cc['cc_inicis_signkey'] }}" size="50"></td>
+    </tr>
+    </tbody>
+</table>
+</div>
+
+<div class="tbl_frm01 tbl_wrap">
+<table>
+    <caption>토스페이먼츠</caption>
+    <tbody>
+    <tr>
+        <th scope="row">클라이언트 키</th>
+        <td><input type="text" name="cc_toss_ckey" value="{{ $cc['cc_toss_ckey'] }}" size="50" placeholder="test_ck_..."></td>
+    </tr>
+    <tr>
+        <th scope="row">시크릿 키</th>
+        <td><input type="text" name="cc_toss_skey" value="{{ $cc['cc_toss_skey'] }}" size="50" placeholder="test_sk_..."></td>
+    </tr>
+    </tbody>
+</table>
+</div>
+
 <div class="btn_confirm01 btn_confirm">
     <button type="submit" class="btn_submit btn">저장</button>
 </div>

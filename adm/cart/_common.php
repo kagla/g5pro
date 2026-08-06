@@ -8,6 +8,8 @@ include_once(G5_PATH.'/cart/lib/item.lib.php');
 include_once(G5_PATH.'/cart/lib/stock.lib.php');
 include_once(G5_PATH.'/cart/lib/csv.lib.php');
 include_once(G5_PATH.'/cart/lib/order.lib.php');
+include_once(G5_PATH.'/cart/lib/basket.lib.php');
+include_once(G5_PATH.'/cart/lib/pay.lib.php');
 
 if (function_exists('g5_check_data_htaccess')) {
     g5_check_data_htaccess();

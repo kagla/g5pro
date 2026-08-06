@@ -38,6 +38,18 @@ function cart_column_upgrades()
         // 2026-08-06 무통장 입금 안내(계좌 문구) — 결제 단계에서 표시
         array('cart_config_table', 'cc_bank',
             " ADD `cc_bank` varchar(255) NOT NULL DEFAULT '' AFTER `cc_ship_jeju` "),
+        // 2026-08-06 PG 설정 — 키가 채워진 PG 만 결제수단으로 노출된다. 값은 DB 에만(공개 저장소).
+        array('cart_config_table', 'cc_inicis_mid',
+            " ADD `cc_inicis_mid` varchar(20) NOT NULL DEFAULT '' AFTER `cc_bank` "),
+        array('cart_config_table', 'cc_inicis_signkey',
+            " ADD `cc_inicis_signkey` varchar(100) NOT NULL DEFAULT '' AFTER `cc_inicis_mid` "),
+        array('cart_config_table', 'cc_toss_ckey',
+            " ADD `cc_toss_ckey` varchar(100) NOT NULL DEFAULT '' AFTER `cc_inicis_signkey` "),
+        array('cart_config_table', 'cc_toss_skey',
+            " ADD `cc_toss_skey` varchar(100) NOT NULL DEFAULT '' AFTER `cc_toss_ckey` "),
+        // 2026-08-06 PG 주문번호(oid) — 결제 시도마다 새로 발급(부킹 교훈: oid 재사용 금지)
+        array('cart_order_table', 'od_oid',
+            " ADD `od_oid` varchar(40) NOT NULL DEFAULT '' AFTER `od_no`, ADD KEY `od_oid` (`od_oid`) "),
     );
 }
 
@@ -92,6 +104,10 @@ function cart_table_ddl()
         `cc_ship_free` int(11) NOT NULL DEFAULT '50000',
         `cc_ship_jeju` int(11) NOT NULL DEFAULT '3000',
         `cc_bank` varchar(255) NOT NULL DEFAULT '',
+        `cc_inicis_mid` varchar(20) NOT NULL DEFAULT '',
+        `cc_inicis_signkey` varchar(100) NOT NULL DEFAULT '',
+        `cc_toss_ckey` varchar(100) NOT NULL DEFAULT '',
+        `cc_toss_skey` varchar(100) NOT NULL DEFAULT '',
         PRIMARY KEY (`cc_id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
     'cart_category_table' => " CREATE TABLE IF NOT EXISTS `{$g5['cart_category_table']}` (
@@ -170,6 +186,7 @@ function cart_table_ddl()
     'cart_order_table' => " CREATE TABLE IF NOT EXISTS `{$g5['cart_order_table']}` (
         `od_id` int(11) NOT NULL AUTO_INCREMENT,
         `od_no` varchar(30) NOT NULL DEFAULT '',
+        `od_oid` varchar(40) NOT NULL DEFAULT '',
         `mb_id` varchar(20) NOT NULL DEFAULT '',
         `od_name` varchar(50) NOT NULL DEFAULT '',
         `od_hp` varchar(20) NOT NULL DEFAULT '',
@@ -192,6 +209,7 @@ function cart_table_ddl()
         `od_paid_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
         PRIMARY KEY (`od_id`),
         UNIQUE KEY `od_no` (`od_no`),
+        KEY `od_oid` (`od_oid`),
         KEY `mb_id` (`mb_id`, `od_id`),
         KEY `status` (`od_status`, `od_id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",

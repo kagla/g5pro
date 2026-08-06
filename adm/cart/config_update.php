@@ -11,13 +11,22 @@ $post_int = function ($key) {
 $ship_base = max(0, $post_int('cc_ship_base'));
 $ship_free = max(0, $post_int('cc_ship_free'));
 $ship_jeju = max(0, $post_int('cc_ship_jeju'));
-$bank = (isset($_POST['cc_bank']) && !is_array($_POST['cc_bank']))
-    ? sql_real_escape_string(strip_tags(trim($_POST['cc_bank']))) : '';
+$post_key = function ($key) {
+    return (isset($_POST[$key]) && !is_array($_POST[$key]))
+        ? sql_real_escape_string(strip_tags(trim($_POST[$key]))) : '';
+};
+$bank = $post_key('cc_bank');
+$inicis_mid = $post_key('cc_inicis_mid');
+$inicis_signkey = $post_key('cc_inicis_signkey');
+$toss_ckey = $post_key('cc_toss_ckey');
+$toss_skey = $post_key('cc_toss_skey');
 
 cart_config(); // 행이 없으면 만들어 둔다
 sql_query(" update `{$g5['cart_config_table']}`
     set cc_ship_base = '$ship_base', cc_ship_free = '$ship_free',
-        cc_ship_jeju = '$ship_jeju', cc_bank = '$bank'
+        cc_ship_jeju = '$ship_jeju', cc_bank = '$bank',
+        cc_inicis_mid = '$inicis_mid', cc_inicis_signkey = '$inicis_signkey',
+        cc_toss_ckey = '$toss_ckey', cc_toss_skey = '$toss_skey'
     where cc_id = 1 ", true);
 
 goto_url(G5_ADMIN_URL.'/cart/config.php');
