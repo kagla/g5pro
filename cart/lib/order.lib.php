@@ -81,14 +81,14 @@ function cart_order_status_label($status, $pay_method = '')
 
 // 체크아웃 대상 — 바구니에서 구매 가능한 행만. 화면(checkout.php)과 제출(checkout_update.php)이
 // 같은 함수를 쓰므로 두 화면이 서로 다른 목록을 보는 일이 없다.
-// $only_bk_ids — 바로구매 스코프: 이 ct_id 들만 주문 대상으로 본다(나머지 바구니 행은 없는 셈).
+// $only_ct_ids — 바로구매 스코프: 이 ct_id 들만 주문 대상으로 본다(나머지 바구니 행은 없는 셈).
 // 주문서 화면과 주문 생성이 같은 스코프를 받아야 expect_ct_ids 대조가 어긋나지 않는다.
-function cart_checkout_lines($owner = null, $only_bk_ids = null)
+function cart_checkout_lines($owner = null, $only_ct_ids = null)
 {
     $lines = array();
     $blocked = array();
     foreach (cart_cart_items($owner) as $r) {
-        if (is_array($only_bk_ids) && !in_array((int)$r['ct_id'], $only_bk_ids, true)) continue;
+        if (is_array($only_ct_ids) && !in_array((int)$r['ct_id'], $only_ct_ids, true)) continue;
         if ($r['avail'] && !$r['over_stock']) $lines[] = $r;
         else $blocked[] = $r;
     }
@@ -110,8 +110,8 @@ function cart_order_create($input, $owner = null, $draft = false)
     global $g5;
 
     // 바로구매 스코프 — 주문서가 보여준 것과 같은 행들만 대상으로 한다
-    $only = (isset($input['only_bk_ids']) && is_array($input['only_bk_ids']) && count($input['only_bk_ids']))
-        ? $input['only_bk_ids'] : null;
+    $only = (isset($input['only_ct_ids']) && is_array($input['only_ct_ids']) && count($input['only_ct_ids']))
+        ? $input['only_ct_ids'] : null;
     $picked = cart_checkout_lines($owner, $only);
     $lines = $picked['lines'];
     if (!count($lines)) return '주문할 수 있는 상품이 없습니다.';
