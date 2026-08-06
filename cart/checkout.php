@@ -2,7 +2,7 @@
 include_once('./_common.php');
 define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
-// 바로구매 스코프 — buy=bk_id(CSV)면 그 바구니 행만 주문서에 올린다(다른 상품은 함께 결제 안 됨)
+// 바로구매 스코프 — buy=ct_id(CSV)면 그 바구니 행만 주문서에 올린다(다른 상품은 함께 결제 안 됨)
 $buy = (isset($_GET['buy']) && !is_array($_GET['buy'])) ? trim($_GET['buy']) : '';
 $only = array_values(array_filter(array_map('intval', explode(',', $buy))));
 
@@ -25,7 +25,7 @@ $item_total = 0;
 foreach ($lines as $i => $l) {
     $it_id = (int)$l['it_id'];
     $lines[$i]['img'] = isset($main_images[$it_id]) ? cart_item_image_url($main_images[$it_id]) : '';
-    $lines[$i]['line_total'] = (int)$l['sk_price'] * (int)$l['bk_qty'];
+    $lines[$i]['line_total'] = (int)$l['sk_price'] * (int)$l['ct_qty'];
     $item_total += $lines[$i]['line_total'];
 }
 
@@ -37,7 +37,7 @@ g5_view('cart.checkout', array(
     'lines' => $lines,
     'blocked_count' => count($picked['blocked']),
     'item_total' => $item_total,
-    'expect_bk_ids' => implode(',', array_map('intval', array_column($lines, 'bk_id'))),
+    'expect_ct_ids' => implode(',', array_map('intval', array_column($lines, 'ct_id'))),
     'buy' => count($only) ? implode(',', $only) : '',
     'is_member' => $is_member,
     'default_name' => $is_member ? $member['mb_name'] : '',
@@ -52,5 +52,5 @@ g5_view('cart.checkout', array(
     'pay_methods' => cart_pay_methods(),
     'token' => get_token(),
     'action_url' => cart_url('checkout_update.php'),
-    'basket_href' => cart_url('cart.php'),
+    'cart_href' => cart_url('cart.php'),
 ));

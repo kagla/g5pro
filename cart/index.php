@@ -6,17 +6,20 @@ define('G5_PRO_PAGE', true); // g5pro 직통 화면
 $visible_where = " i.it_show = 1 AND ".cart_item_hidden_where('i');
 
 // 상품 행 묶음 조회 — 섹션마다 같은 꼴이라 하나로 모은다. 카드의 분류명 줄(오늘의집의
-// 브랜드 줄 자리)은 연결 분류 중 대표(ca_order 첫 번째)를 서브쿼리로, 대표 이미지는
-// 말미에 한 방 조회
+// 브랜드 줄 자리)은 연결 분류 중 대표(ca_order 첫 번째, 상세 빵부스러기와 같은 기준으로
+// 캐스케이드-숨김 분류는 제외 — 숨긴 분류 이름이 카드에 새는 걸 막는다)를 서브쿼리로,
+// 대표 이미지는 말미에 한 방 조회
 function cart_index_fetch($where, $limit)
 {
     global $g5;
+    $hidden = cart_hidden_category_ids();
+    $not_hidden = $hidden ? " and x.ca_id not in (".implode(',', $hidden).") " : "";
     $rows = array();
     $result = sql_query(" select i.it_id, i.it_name, i.it_price, i.it_stock,
-            (select c.ca_name from `{$g5['cart_item_category_table']}` x
-              inner join `{$g5['cart_category_table']}` c on c.ca_id = x.ca_id
-              where x.it_id = i.it_id order by c.ca_order, c.ca_id limit 1) as ca_name
-        from `{$g5['cart_item_table']}` i
+            (select c.ca_name from `{$g5['ycart_item_category_table']}` x
+              inner join `{$g5['ycart_category_table']}` c on c.ca_id = x.ca_id
+              where x.it_id = i.it_id $not_hidden order by c.ca_order, c.ca_id limit 1) as ca_name
+        from `{$g5['ycart_item_table']}` i
         where $where order by i.it_id desc limit ".(int)$limit);
     while ($r = sql_fetch_array($result)) $rows[] = $r;
     return $rows;
@@ -41,7 +44,7 @@ foreach (cart_category_children(0, true) as $c) {
     if (count($sections) >= 4) continue;
     $ids = cart_category_descendant_ids($ca_id, true);
     $rows = cart_index_fetch(" i.it_show = 1 AND i.it_id IN
-        (select it_id from `{$g5['cart_item_category_table']}` where ca_id IN (".implode(',', $ids).")) ", 8);
+        (select it_id from `{$g5['ycart_item_category_table']}` where ca_id IN (".implode(',', $ids).")) ", 8);
     if (!count($rows)) continue;
     $sections[] = array(
         'ca_id' => $ca_id,
@@ -87,8 +90,8 @@ foreach ($top_cats as $i => $c) {
 }
 
 // 메인 배너 — 데모 배너 파일이 있으면 사진 배너, 없으면 그라데이션 배너로 폴백
-$banner_url = is_file(G5_DATA_PATH.'/cart/demo/banner.jpg')
-    ? G5_DATA_URL.'/cart/demo/banner.jpg' : '';
+$banner_url = is_file(G5_CART_DATA_PATH.'/demo/banner.jpg')
+    ? G5_CART_DATA_URL.'/demo/banner.jpg' : '';
 
 $is_member = isset($member['mb_id']) && $member['mb_id'] !== '';
 
@@ -100,6 +103,6 @@ g5_view('cart.index', array(
     'banner_url' => $banner_url,
     'search_url' => cart_url('list.php'),
     'all_href' => cart_url('list.php'),
-    'basket_href' => cart_url('cart.php'),
+    'cart_href' => cart_url('cart.php'),
     'orders_href' => $is_member ? cart_url('order.php') : cart_url('guest.php'),
 ));

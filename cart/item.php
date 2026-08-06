@@ -4,8 +4,15 @@ define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 $it_id = (isset($_GET['it_id']) && !is_array($_GET['it_id'])) ? (int)$_GET['it_id'] : 0;
 $item = cart_item_get($it_id);
+// 연결 분류는 한 번만 읽어 숨김 판정과 빵부스러기가 같은 데이터를 쓴다
+// (판정 규칙은 cart_item_is_hidden 과 동일: 연결이 있는데 전부 숨김이면 숨김)
+$item_cats = $item ? cart_item_categories($it_id) : array();
+$visible_cats = array();
+foreach ($item_cats as $c) {
+    if (!in_array((int)$c['ca_id'], cart_hidden_category_ids(), true)) $visible_cats[] = $c;
+}
 // 상품 자신이 안 숨었어도 전 연결 분류가 숨김이면 상세도 막는다(목록과 같은 의미론)
-if (!$item || !$item['it_show'] || cart_item_is_hidden($it_id)) {
+if (!$item || !$item['it_show'] || ($item_cats && !$visible_cats)) {
     alert('없는 상품입니다.', cart_url('list.php'));
 }
 
@@ -26,14 +33,11 @@ foreach (cart_item_skus($it_id, true) as $s) {
 }
 
 // 빵부스러기 대표 분류 — 연결 분류(ca_order 순) 중 캐스케이드-노출인 첫 번째
-$category = null;
-foreach (cart_item_categories($it_id) as $c) {
-    if (!in_array((int)$c['ca_id'], cart_hidden_category_ids(), true)) { $category = $c; break; }
-}
+$category = $visible_cats ? $visible_cats[0] : null;
 
 // 관리자 바로가기 — super 판정은 여기서 끝내고 뷰에는 URL 만 (부킹 room.php 관례)
 $admin_edit_url = ($is_admin === 'super')
-    ? G5_ADMIN_URL.'/cart/item_form.php?w=u&it_id='.$it_id : '';
+    ? G5_CART_ADMIN_URL.'/item_form.php?w=u&it_id='.$it_id : '';
 
 // 구매 폼 — 품절 아닌 SKU 가 하나라도 있어야 담기 가능
 $buyable_skus = array();
@@ -52,6 +56,6 @@ g5_view('cart.item', array(
     'list_href' => $category ? cart_url('list.php', array('ca' => $category['ca_code'])) : cart_url('list.php'),
     'admin_edit_url' => $admin_edit_url,
     'token' => get_token(),
-    'basket_action' => cart_url('basket_update.php'),
-    'basket_href' => cart_url('cart.php'),
+    'cart_action' => cart_url('cart_update.php'),
+    'cart_href' => cart_url('cart.php'),
 ));

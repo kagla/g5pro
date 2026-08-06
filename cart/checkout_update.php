@@ -35,7 +35,7 @@ $input = array(
     'od_memo' => $post('od_memo'),
     'od_pay_method' => $post('pay'),
     'od_depositor' => $post('od_depositor'),
-    'expect_bk_ids' => $post('expect_bk_ids'),
+    'expect_ct_ids' => $post('expect_ct_ids'),
     'expect_item_total' => (int)str_replace(',', '', $post('expect_item_total')),
     // 바로구매 스코프 — 주문서가 보여준 행들만 주문한다(장바구니의 다른 상품 제외)
     'only_bk_ids' => array_values(array_filter(array_map('intval', explode(',', $post('buy'))))),

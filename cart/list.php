@@ -26,7 +26,7 @@ if ($sort === '') {
 $where = array(" it_show = 1 ");
 if ($category) {
     $ids = cart_category_descendant_ids($ca_id, true);
-    $where[] = " it_id IN (select it_id from `{$g5['cart_item_category_table']}`
+    $where[] = " it_id IN (select it_id from `{$g5['ycart_item_category_table']}`
         where ca_id IN (".implode(',', $ids).")) ";
 } else {
     // 전체·검색 경로 — 무분류 상품 포함, 전 소속이 숨김인 상품만 제외
@@ -43,14 +43,14 @@ $orders = array(
 );
 if (!isset($orders[$sort])) $sort = 'new';
 
-$cnt = sql_fetch(" select count(*) as cnt from `{$g5['cart_item_table']}` where $where_sql ");
+$cnt = sql_fetch(" select count(*) as cnt from `{$g5['ycart_item_table']}` where $where_sql ");
 $total = (int)$cnt['cnt'];
 $total_page = max(1, (int)ceil($total / $rows_per));
 if ($page > $total_page) $page = $total_page;
 $offset = ($page - 1) * $rows_per;
 
 $items = array();
-$result = sql_query(" select it_id, it_name, it_price, it_stock from `{$g5['cart_item_table']}`
+$result = sql_query(" select it_id, it_name, it_price, it_stock from `{$g5['ycart_item_table']}`
     where $where_sql order by {$orders[$sort]} limit $offset, $rows_per ");
 $rows = array();
 while ($r = sql_fetch_array($result)) $rows[] = $r;

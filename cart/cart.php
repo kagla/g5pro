@@ -2,7 +2,7 @@
 include_once('./_common.php');
 define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
-$rows = cart_basket_items();
+$rows = cart_cart_items();
 
 // 대표 이미지 일괄
 $main_images = cart_item_main_images(array_column($rows, 'it_id'));
@@ -14,7 +14,7 @@ foreach ($rows as $r) {
     $it_id = (int)$r['it_id'];
     $r['img'] = isset($main_images[$it_id]) ? cart_item_image_url($main_images[$it_id]) : '';
     $r['href'] = cart_url('item.php', array('it_id' => $it_id));
-    $r['line_total'] = (int)$r['sk_price'] * (int)$r['bk_qty'];
+    $r['line_total'] = (int)$r['sk_price'] * (int)$r['ct_qty'];
     if ($r['avail'] && !$r['over_stock']) {
         $total += $r['line_total'];
         $buyable++;
@@ -32,14 +32,14 @@ if ((int)$cc['cc_ship_free'] > 0) {
 }
 
 $g5['title'] = '장바구니';
-g5_view('cart.basket', array(
+g5_view('cart.cart', array(
     'items' => $items,
     'total' => $total,
     'buyable' => $buyable,
     'ship_base' => (int)$cc['cc_ship_base'],
     'ship_notice' => $ship_notice,
     'token' => get_token(),
-    'action_url' => cart_url('basket_update.php'),
+    'action_url' => cart_url('cart_update.php'),
     'checkout_href' => cart_url('checkout.php'),
     'list_href' => cart_url(''),
 ));
