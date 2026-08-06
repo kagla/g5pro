@@ -13,7 +13,7 @@ if ($ca_id && (!$category || !$category['ca_show'])) alert('없는 분류입니�
 
 $where = array(" it_show = 1 ");
 if ($category) {
-    $ids = cart_category_descendant_ids($ca_id);
+    $ids = cart_category_descendant_ids($ca_id, true);
     $where[] = " ca_id IN (".implode(',', $ids).") ";
 }
 if ($q !== '') $where[] = cart_item_search_where($q);
@@ -36,9 +36,14 @@ $offset = ($page - 1) * $rows_per;
 $items = array();
 $result = sql_query(" select it_id, it_name, it_price, it_stock from `{$g5['cart_item_table']}`
     where $where_sql order by {$orders[$sort]} limit $offset, $rows_per ");
-while ($r = sql_fetch_array($result)) {
-    $imgs = cart_item_images((int)$r['it_id']);
-    $r['img'] = count($imgs) ? cart_item_image_url($imgs[0]['im_file']) : '';
+$rows = array();
+while ($r = sql_fetch_array($result)) $rows[] = $r;
+
+// 대표 이미지 — 행마다 조회하던 N+1 을 없애고 한 방에 [it_id => im_file] 로 받는다
+$main_images = cart_item_main_images(array_column($rows, 'it_id'));
+foreach ($rows as $r) {
+    $it_id = (int)$r['it_id'];
+    $r['img'] = isset($main_images[$it_id]) ? cart_item_image_url($main_images[$it_id]) : '';
     $r['href'] = cart_url('item.php', array('it_id' => $r['it_id']));
     $items[] = $r;
 }

@@ -89,16 +89,37 @@ function cart_category_children($ca_id, $only_show = true)
 }
 
 // 자기 자신 포함 서브트리 id 목록 — 목록 화면의 "하위 분류 상품 포함" 조회에 쓴다
-function cart_category_descendant_ids($ca_id)
+// $only_show=true 면 숨김 자식 아래를 캐스케이드로 전부 제외한다(cart_category_list() 의
+// "숨긴 분류 아래는 도달 불가" 의미론과 동일 — 자기 자신 $ca_id 는 호출부가 이미 노출을
+// 확인했다는 전제로 항상 포함하고, 그 아래부터 노출 자식만 타고 내려간다)
+function cart_category_descendant_ids($ca_id, $only_show = false)
 {
     global $g5;
     $row = cart_category_get($ca_id);
     if (!$row) return array();
-    $ids = array();
     $like = sql_real_escape_string($row['ca_path']);
-    $result = sql_query(" select ca_id from `{$g5['cart_category_table']}`
+    $result = sql_query(" select ca_id, ca_parent, ca_show from `{$g5['cart_category_table']}`
         where ca_path like '{$like}%' ");
-    while ($r = sql_fetch_array($result)) $ids[] = (int)$r['ca_id'];
+    $rows = array();
+    while ($r = sql_fetch_array($result)) $rows[(int)$r['ca_id']] = $r;
+
+    if (!$only_show) return array_keys($rows);
+
+    $by_parent = array();
+    foreach ($rows as $id => $r) $by_parent[(int)$r['ca_parent']][] = $id;
+
+    $ca_id = (int)$ca_id;
+    $ids = array($ca_id);
+    $queue = array($ca_id);
+    while ($queue) {
+        $pid = array_shift($queue);
+        if (empty($by_parent[$pid])) continue;
+        foreach ($by_parent[$pid] as $cid) {
+            if (!$rows[$cid]['ca_show']) continue;   // 숨긴 자식 — 여기서 가지째 잘라낸다
+            $ids[] = $cid;
+            $queue[] = $cid;
+        }
+    }
     return $ids;
 }
 
@@ -299,6 +320,23 @@ function cart_item_images($it_id)
         where it_id = '".(int)$it_id."' order by im_main desc, im_order, im_id ");
     while ($r = sql_fetch_array($result)) $rows[] = $r;
     return $rows;
+}
+
+// 목록 화면의 N+1 방지 — 상품 id 여러 개의 대표 이미지를 한 방에 [it_id => im_file] 로 돌려준다.
+// 대표(im_main=1) 우선, 없으면 im_order/im_id 순 첫 행. 이미지가 없는 상품은 키 자체가 없다.
+function cart_item_main_images(array $it_ids)
+{
+    global $g5;
+    $map = array();
+    if (empty($it_ids)) return $map;
+    $ids = implode(',', array_map('intval', $it_ids));
+    $result = sql_query(" select it_id, im_file from `{$g5['cart_item_image_table']}`
+        where it_id IN ($ids) order by im_main desc, im_order, im_id ");
+    while ($r = sql_fetch_array($result)) {
+        $iid = (int)$r['it_id'];
+        if (!isset($map[$iid])) $map[$iid] = $r['im_file'];   // 정렬상 첫 행 = 대표(또는 최선순위)
+    }
+    return $map;
 }
 
 // $file 은 $_FILES['im_files'] 의 단일 항목(name, tmp_name, error). 성공 시 빈 문자열
