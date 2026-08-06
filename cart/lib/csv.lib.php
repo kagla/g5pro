@@ -6,21 +6,24 @@ function cart_csv_headers()
     return array('상품코드', '상품명', '분류ID', '노출', 'SKU코드', '옵션', '판매가', '재고', '바코드', 'SKU사용');
 }
 
-// 엑셀 수식/DDE 인젝션 방지 — '=','+','-','@' 로 시작하는 셀은 엑셀이 수식으로 실행한다.
-// 어포스트로피를 붙여 텍스트로 고정한다. 원래 값이 '(어포스트로피)로 시작하는 극단 케이스도
-// 같은 규칙으로 한 번 더 붙여 이중 어포스트로피가 되므로 unguard 에서 하나만 벗기면 무손실이다.
+// 엑셀 수식/DDE 인젝션 방지 — '=','+','-','@' 로 시작하는 셀만 엑셀이 수식으로 실행하므로
+// 그 넷만 가드 대상이다. 어포스트로피로 시작하는 값 자체는 건드리지 않는다(무손실을 우선).
 function cart_csv_guard($s)
 {
     $s = (string)$s;
-    if ($s !== '' && strpos("=+-@'", $s[0]) !== false) return "'".$s;
+    if ($s !== '' && strpos('=+-@', $s[0]) !== false) return "'".$s;
     return $s;
 }
 
-// cart_csv_guard() 의 역함수 — 선두 어포스트로피 하나만 벗긴다
+// cart_csv_guard() 의 역함수 — 선두 어포스트로피 "다음" 글자가 '=+-@' 중 하나일 때만 그
+// 어포스트로피 하나를 벗긴다(=guard 가 실제로 붙였을 흔적일 때만). 그래야 손으로 만든 CSV 의
+// "'90s 컬렉션"처럼 정말 어포스트로피로 시작하는 값은 그대로 보존된다. 트레이드오프: 정당한
+// 값이 하필 "'=..." 처럼 어포스트로피+수식트리거 글자로 시작하는 극단 케이스만 그 어포스트로피를
+// 잃는데, 수식 실행을 막는 쪽이 우선이라 수용한다.
 function cart_csv_unguard($s)
 {
     $s = (string)$s;
-    if ($s !== '' && $s[0] === "'") return substr($s, 1);
+    if (strlen($s) >= 2 && $s[0] === "'" && strpos('=+-@', $s[1]) !== false) return substr($s, 1);
     return $s;
 }
 
@@ -109,12 +112,15 @@ function cart_csv_option_json($str)
     return json_encode($map, JSON_UNESCAPED_UNICODE);
 }
 
-// 신규 상품(=아직 DB 에 없음)인데 분류ID 가 비었거나 0 이면 참 — 어느 분류에도 속하지 않는
-// 상품이 생기는 걸 막는다. 기존 상품 수정은 분류ID 를 비워도(=변경 없음) 걸리지 않는다.
-// summary 와 apply 가 반드시 같은 조건식을 쓰도록 여기 하나로 모은다.
-function cart_csv_item_needs_category($exist_item, $ca_id_cell)
+// 신규 상품(=DB 에도 없고 이 파일 안 앞선 행으로도 아직 확정되지 않음)인데 분류ID 가 비었거나
+// 0 이면 참 — 어느 분류에도 속하지 않는 상품이 생기는 걸 막는다. 기존 상품 수정은 분류ID 를
+// 비워도(=변경 없음) 걸리지 않는다. $known_exists 는 "DB 에 있다" 뿐 아니라 "같은 파일의 앞선
+// 행이 이미 이 상품코드를 유효한 신규 상품으로 확정했다"도 포함해야 한다 — 그래야 한 파일 안에서
+// 행1(분류ID 있음)이 만드는 신규 상품을 행2(분류ID 빈 값)가 "또 신규라서 오류"로 잘못 보지 않는다.
+// summary 와 apply 가 반드시 같은 조건식·같은 입력(존재 여부 bool)을 쓰도록 여기 하나로 모은다.
+function cart_csv_item_needs_category($known_exists, $ca_id_cell)
 {
-    return !$exist_item && !(int)$ca_id_cell;
+    return !$known_exists && !(int)$ca_id_cell;
 }
 
 // 행의 SKU코드가 이미 DB 에 있고 그 SKU 의 소유 상품이 이 행의 상품코드와 다르면 그 소유
@@ -133,6 +139,7 @@ function cart_csv_summary($rows)
     $sum = array('new_items' => 0, 'upd_items' => 0, 'new_skus' => 0, 'upd_skus' => 0,
         'stock_changes' => 0, 'errors' => array());
     $seen_items = array();
+    $file_items = array();   // 상품코드 → true, 이 파일 안 앞선 행이 이미 유효한 신규 상품으로 확정한 코드
     foreach ($rows as $row) {
         if (cart_csv_option_json($row['옵션']) === null) {
             $sum['errors'][] = $row['_line'].'행: 옵션 형식 오류(옵션명=값|옵션명=값)';
@@ -142,21 +149,26 @@ function cart_csv_summary($rows)
             $sum['errors'][] = $row['_line'].'행: 없는 분류ID '.$row['분류ID'];
             continue;
         }
-        $exist_item = cart_item_get_by_code($row['상품코드']);
-        if (cart_csv_item_needs_category($exist_item, $row['분류ID'])) {
+        $code = $row['상품코드'];
+        $known_exists = isset($file_items[$code]) || (cart_item_get_by_code($code) !== null);
+        if (cart_csv_item_needs_category($known_exists, $row['분류ID'])) {
             $sum['errors'][] = $row['_line'].'행: 신규 상품은 분류ID 필수';
             continue;
         }
         $sku = cart_sku_get_by_code($row['SKU코드']);
-        $conflict_owner = cart_csv_sku_conflict($row['상품코드'], $sku);
+        $conflict_owner = cart_csv_sku_conflict($code, $sku);
         if ($conflict_owner !== null) {
             $sum['errors'][] = $row['_line'].'행: SKU코드 '.$row['SKU코드'].' 는 다른 상품(코드 '.$conflict_owner.') 소속';
             continue;
         }
-        if (!isset($seen_items[$row['상품코드']])) {
-            $seen_items[$row['상품코드']] = true;
-            if ($exist_item) $sum['upd_items']++;
-            else $sum['new_items']++;
+        if (!isset($seen_items[$code])) {
+            $seen_items[$code] = true;
+            if ($known_exists) {
+                $sum['upd_items']++;
+            } else {
+                $sum['new_items']++;
+                $file_items[$code] = true;   // 이 행으로 확정 — 같은 파일의 다음 행부터는 "이미 존재"로 본다
+            }
         }
         if ($sku) {
             $sum['upd_skus']++;
@@ -173,11 +185,13 @@ function cart_csv_summary($rows)
 
 // 500행 청크 반영. summary 와 완전히 같은 순서·같은 조건(옵션 형식 → 분류ID 존재 → 신규상품
 // 분류ID 필수 → SKU 소유권 충돌)으로 건너뛸 행을 먼저 가려낸 뒤에만 실제로 쓴다 — 미리보기
-// 수치와 반영 결과가 항상 일치하게 만드는 핵심 구조.
+// 수치와 반영 결과가 항상 일치하게 만드는 핵심 구조. $item_cache 는 "it_code → it_id" 저장소인
+// 동시에 summary 의 $file_items 와 같은 역할도 한다: 캐시에 코드가 있으면 그 자체로 "이 파일
+// 안에서 이미 확정된 상품"이라는 뜻이라 존재 여부 재조회 없이 바로 known_exists=true 로 본다.
 function cart_csv_apply($rows, $who)
 {
     $r = array('new_items' => 0, 'upd_items' => 0, 'new_skus' => 0, 'upd_skus' => 0, 'stock_changes' => 0);
-    $item_cache = array();   // it_code → it_id (파일 안 중복 조회 방지)
+    $item_cache = array();   // it_code → it_id (파일 안 중복 조회 방지 + summary 의 file_items 와 동격)
 
     foreach (array_chunk($rows, 500) as $chunk) {
         sql_query(" START TRANSACTION ", false);
@@ -187,8 +201,15 @@ function cart_csv_apply($rows, $who)
             if ((int)$row['분류ID'] && !cart_category_get((int)$row['분류ID'])) continue;
 
             $code = $row['상품코드'];
-            $exist_item = cart_item_get_by_code($code);
-            if (cart_csv_item_needs_category($exist_item, $row['분류ID'])) continue;
+            if (isset($item_cache[$code])) {
+                // 캐시 히트 — 이미 이 파일 안에서 확정된 상품이므로 DB 재조회 없이 존재함으로 본다
+                $exist_item = null;
+                $known_exists = true;
+            } else {
+                $exist_item = cart_item_get_by_code($code);
+                $known_exists = ($exist_item !== null);
+            }
+            if (cart_csv_item_needs_category($known_exists, $row['분류ID'])) continue;
 
             $sku = cart_sku_get_by_code($row['SKU코드']);
             if (cart_csv_sku_conflict($code, $sku) !== null) continue;
