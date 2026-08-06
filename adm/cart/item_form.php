@@ -12,7 +12,7 @@ $skus = array();
 $images = array();
 if ($w === 'u') {
     $item = cart_item_get($it_id);
-    if (!$item) alert('없는 상품입니다.', G5_ADMIN_URL.'/cart/item_list.php');
+    if (!$item) alert('없는 상품입니다.', G5_CART_ADMIN_URL.'/item_list.php');
     $skus = cart_item_skus($it_id);
     $images = cart_item_images($it_id);
 }
@@ -34,9 +34,9 @@ cadm_view('item_form', array(
     'images' => $images,
     'categories' => cart_category_list(),
     'ca_ids' => $w === 'u' ? cart_item_ca_ids($it_id) : array(),
-    'image_url_base' => G5_DATA_URL.'/cart/item/',
-    'action_url' => G5_ADMIN_URL.'/cart/item_form_update.php',
-    'list_url' => G5_ADMIN_URL.'/cart/item_list.php',
+    'image_url_base' => G5_CART_DATA_URL.'/item/',
+    'action_url' => G5_CART_ADMIN_URL.'/item_form_update.php',
+    'list_url' => G5_CART_ADMIN_URL.'/item_list.php',
 ));
 
 include_once(G5_ADMIN_PATH.'/admin.tail.php');

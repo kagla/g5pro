@@ -9,7 +9,7 @@ $post = function ($key) {
 };
 $w = $post('w');
 $ca_id = (int)$post('ca_id');
-$back = G5_ADMIN_URL.'/cart/category.php'.($ca_id ? '?ca_id='.$ca_id : '');
+$back = G5_CART_ADMIN_URL.'/category.php'.($ca_id ? '?ca_id='.$ca_id : '');
 
 // 드래그 이동 — 트리 JS 가 ajax 로 부른다. 결과는 JSON, 성공 시 화면이 새로고침한다.
 if ($w === 'move') {
@@ -22,7 +22,7 @@ if ($w === 'move') {
 if ($w === 'd') {
     $err = cart_category_delete($ca_id);
     if ($err) alert($err, $back);
-    goto_url(G5_ADMIN_URL.'/cart/category.php');
+    goto_url(G5_CART_ADMIN_URL.'/category.php');
 }
 
 // 이미지 삭제만 따로(우측 패널의 이미지 삭제 버튼)
@@ -44,7 +44,7 @@ if ($w === 'a') {
     $new_id = cart_category_save(array('ca_parent' => $parent, 'ca_name' => $name,
         'ca_order' => 9999, 'ca_show' => 1));
     if (!$new_id) alert('저장에 실패했습니다.', $back);
-    goto_url(G5_ADMIN_URL.'/cart/category.php?ca_id='.$new_id);
+    goto_url(G5_CART_ADMIN_URL.'/category.php?ca_id='.$new_id);
 }
 
 // 수정 — 우측 패널 저장. 부모 변경은 드래그(move)가 담당한다.

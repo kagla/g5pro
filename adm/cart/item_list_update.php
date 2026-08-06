@@ -11,7 +11,7 @@ $who = isset($member['mb_id']) ? $member['mb_id'] : 'admin';
 
 // 노출 토글
 if (isset($_POST['it_show']) && !is_array($_POST['it_show'])) {
-    sql_query(" update `{$g5['cart_item_table']}`
+    sql_query(" update `{$g5['ycart_item_table']}`
         set it_show = '".(!empty($_POST['it_show']) ? 1 : 0)."'
         where it_id = '$it_id' ", true);
 }
@@ -36,4 +36,4 @@ foreach (array('q', 'ca_id', 'page') as $k) {
         $qs[$k] = $_POST['ret_'.$k];
     }
 }
-goto_url(G5_ADMIN_URL.'/cart/item_list.php'.($qs ? '?'.http_build_query($qs) : ''));
+goto_url(G5_CART_ADMIN_URL.'/item_list.php'.($qs ? '?'.http_build_query($qs) : ''));

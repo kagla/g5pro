@@ -19,17 +19,17 @@ if ($q !== '') {
 }
 if ($ca_id) {
     $ids = cart_category_descendant_ids($ca_id);
-    if ($ids) $where[] = " it_id IN (select it_id from `{$g5['cart_item_category_table']}`
+    if ($ids) $where[] = " it_id IN (select it_id from `{$g5['ycart_item_category_table']}`
         where ca_id IN (".implode(',', $ids).")) ";
 }
 $where_sql = implode(' AND ', $where);
 
-$cnt = sql_fetch(" select count(*) as cnt from `{$g5['cart_item_table']}` where $where_sql ");
+$cnt = sql_fetch(" select count(*) as cnt from `{$g5['ycart_item_table']}` where $where_sql ");
 $total = (int)$cnt['cnt'];
 $offset = ($page - 1) * $rows_per;
 
 $items = array();
-$result = sql_query(" select * from `{$g5['cart_item_table']}`
+$result = sql_query(" select * from `{$g5['ycart_item_table']}`
     where $where_sql order by it_id desc limit $offset, $rows_per ");
 while ($r = sql_fetch_array($result)) {
     $r['skus'] = cart_item_skus((int)$r['it_id']);
@@ -45,9 +45,9 @@ cadm_view('item_list', array(
     'total' => $total,
     'page' => $page,
     'total_page' => max(1, (int)ceil($total / $rows_per)),
-    'self_url' => G5_ADMIN_URL.'/cart/item_list.php',
-    'form_url' => G5_ADMIN_URL.'/cart/item_form.php',
-    'update_url' => G5_ADMIN_URL.'/cart/item_list_update.php',
+    'self_url' => G5_CART_ADMIN_URL.'/item_list.php',
+    'form_url' => G5_CART_ADMIN_URL.'/item_form.php',
+    'update_url' => G5_CART_ADMIN_URL.'/item_list_update.php',
 ));
 
 include_once(G5_ADMIN_PATH.'/admin.tail.php');

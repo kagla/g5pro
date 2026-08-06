@@ -34,7 +34,8 @@
 
 @if ($selected)
 <div class="cm-linked">
-    <h2 class="h2_frm">"{{ $selected['ca_name'] }}" 연결 상품 {{ count($linked) }}개</h2>
+    @php $total_linked = isset($counts[$sel_id]) ? $counts[$sel_id] : 0; @endphp
+    <h2 class="h2_frm">"{{ $selected['ca_name'] }}" 연결 상품 {{ number_format($total_linked) }}개{{ $total_linked > count($linked) ? ' (최신 '.count($linked).'개만 표시)' : '' }}</h2>
     <table class="tbl_head01 tbl_wrap">
         <thead>
         <tr><th>번호</th><th>코드</th><th>상품명</th><th>가격</th><th>노출</th><th>해제</th></tr>

@@ -6,7 +6,7 @@ check_admin_token();
 
 $w = (isset($_POST['w']) && !is_array($_POST['w'])) ? $_POST['w'] : '';
 $it_id = (isset($_POST['it_id']) && !is_array($_POST['it_id'])) ? (int)$_POST['it_id'] : 0;
-$list = G5_ADMIN_URL.'/cart/item_list.php';
+$list = G5_CART_ADMIN_URL.'/item_list.php';
 
 $post_str = function ($key) {
     return (isset($_POST[$key]) && !is_array($_POST[$key])) ? trim($_POST[$key]) : '';
@@ -117,7 +117,7 @@ if (!count(cart_item_skus($it_id))) {
 $im_dels = isset($_POST['im_del']) && is_array($_POST['im_del']) ? $_POST['im_del'] : array();
 foreach ($im_dels as $imid) {
     $imid = (int)$imid;
-    $irow = sql_fetch(" select * from `{$g5['cart_item_image_table']}` where im_id = '$imid' ");
+    $irow = sql_fetch(" select * from `{$g5['ycart_item_image_table']}` where im_id = '$imid' ");
     if ($irow && (int)$irow['it_id'] === $it_id) cart_item_image_delete($imid);
 }
 
@@ -137,11 +137,11 @@ if (isset($_FILES['im_files']) && is_array($_FILES['im_files']['name'])) {
 }
 $im_main = (isset($_POST['im_main']) && !is_array($_POST['im_main'])) ? (int)$_POST['im_main'] : 0;
 if ($im_main) {
-    sql_query(" update `{$g5['cart_item_image_table']}` set im_main = 0 where it_id = '$it_id' ", true);
-    sql_query(" update `{$g5['cart_item_image_table']}` set im_main = 1
+    sql_query(" update `{$g5['ycart_item_image_table']}` set im_main = 0 where it_id = '$it_id' ", true);
+    sql_query(" update `{$g5['ycart_item_image_table']}` set im_main = 1
         where im_id = '$im_main' and it_id = '$it_id' ", true);
 }
 
-$back = G5_ADMIN_URL.'/cart/item_form.php?w=u&it_id='.$it_id;
+$back = G5_CART_ADMIN_URL.'/item_form.php?w=u&it_id='.$it_id;
 if ($img_errors) alert('이미지 '.count($img_errors).'건 실패: '.implode(' / ', $img_errors), $back);
 goto_url($back);

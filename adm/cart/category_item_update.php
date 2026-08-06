@@ -6,10 +6,11 @@ check_admin_token();
 
 $w = (isset($_POST['w']) && !is_array($_POST['w'])) ? $_POST['w'] : '';
 $ca_id = (isset($_POST['ca_id']) && !is_array($_POST['ca_id'])) ? (int)$_POST['ca_id'] : 0;
-$q = (isset($_POST['q']) && !is_array($_POST['q'])) ? trim($_POST['q']) : '';
-$back = G5_ADMIN_URL.'/cart/category_item.php?'.http_build_query(array('ca_id' => $ca_id, 'q' => $q));
+// 본체 GPC addslashes 를 벗긴다 — 리다이렉트 URL 에 실려 왕복할 때마다 역슬래시가 쌓이는 걸 막는다
+$q = (isset($_POST['q']) && !is_array($_POST['q'])) ? stripslashes(trim($_POST['q'])) : '';
+$back = G5_CART_ADMIN_URL.'/category_item.php?'.http_build_query(array('ca_id' => $ca_id, 'q' => $q));
 
-if (!cart_category_get($ca_id)) alert('없는 분류입니다.', G5_ADMIN_URL.'/cart/category_item.php');
+if (!cart_category_get($ca_id)) alert('없는 분류입니다.', G5_CART_ADMIN_URL.'/category_item.php');
 
 if ($w === 'add') {
     $it_ids = (isset($_POST['it_ids']) && is_array($_POST['it_ids'])) ? array_map('intval', $_POST['it_ids']) : array();
