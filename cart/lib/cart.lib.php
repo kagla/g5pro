@@ -131,6 +131,12 @@ function cart_install()
     if (sql_fetch(" SHOW COLUMNS FROM `{$g5['cart_item_table']}` LIKE 'ca_id' ")) {
         sql_query(" insert ignore into `{$g5['cart_item_category_table']}` (it_id, ca_id)
             select it_id, ca_id from `{$g5['cart_item_table']}` where ca_id > 0 ", true);
+        // 전 경로 전환 완료 후 수축 — 마지막 backfill 직후라 데이터 손실 없음
+        sql_query(" ALTER TABLE `{$g5['cart_item_table']}`
+            DROP KEY `list_new`, DROP KEY `list_price`, DROP COLUMN `ca_id` ", true);
+        sql_query(" ALTER TABLE `{$g5['cart_item_table']}`
+            ADD KEY `list_new` (`it_show`, `it_id`),
+            ADD KEY `list_price` (`it_show`, `it_price`) ", true);
     }
     return array('created' => $created, 'altered' => $altered);
 }
@@ -188,7 +194,6 @@ function cart_table_ddl()
     'cart_item_table' => " CREATE TABLE IF NOT EXISTS `{$g5['cart_item_table']}` (
         `it_id` int(11) NOT NULL AUTO_INCREMENT,
         `it_code` varchar(50) NOT NULL DEFAULT '',
-        `ca_id` int(11) NOT NULL DEFAULT '0',
         `it_name` varchar(255) NOT NULL DEFAULT '',
         `it_keyword` varchar(255) NOT NULL DEFAULT '',
         `it_content` mediumtext NOT NULL,
@@ -201,8 +206,8 @@ function cart_table_ddl()
         `it_update` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
         PRIMARY KEY (`it_id`),
         UNIQUE KEY `it_code` (`it_code`),
-        KEY `list_new` (`ca_id`, `it_show`, `it_id`),
-        KEY `list_price` (`ca_id`, `it_show`, `it_price`)
+        KEY `list_new` (`it_show`, `it_id`),
+        KEY `list_price` (`it_show`, `it_price`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
     'cart_item_image_table' => " CREATE TABLE IF NOT EXISTS `{$g5['cart_item_image_table']}` (
         `im_id` int(11) NOT NULL AUTO_INCREMENT,
