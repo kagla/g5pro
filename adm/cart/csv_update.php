@@ -4,10 +4,10 @@ include_once('./_common.php');
 auth_check_menu($auth, $sub_menu, 'w');
 check_admin_token();
 
-$self = G5_ADMIN_URL.'/cart/csv.php';
+$self = G5_CART_ADMIN_URL.'/csv.php';
 $mode = (isset($_POST['mode']) && !is_array($_POST['mode'])) ? $_POST['mode'] : '';
 $who = isset($member['mb_id']) ? $member['mb_id'] : 'admin';
-$tmp_dir = G5_DATA_PATH.'/cart/tmp';
+$tmp_dir = G5_CART_DATA_PATH.'/tmp';
 if (!is_dir($tmp_dir)) { @mkdir($tmp_dir, G5_DIR_PERMISSION, true); @chmod($tmp_dir, G5_DIR_PERMISSION); }
 
 if ($mode === 'upload') {

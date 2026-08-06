@@ -8,7 +8,7 @@ include_once(G5_ADMIN_PATH.'/admin.head.php');
 
 cadm_view('config', array(
     'cc' => cart_config(),
-    'action_url' => G5_ADMIN_URL.'/cart/config_update.php',
+    'action_url' => G5_CART_ADMIN_URL.'/config_update.php',
 ));
 
 include_once(G5_ADMIN_PATH.'/admin.tail.php');

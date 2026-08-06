@@ -24,7 +24,7 @@ $toss_ckey = $post_key('cc_toss_ckey');
 $toss_skey = $post_key('cc_toss_skey');
 
 cart_config(); // 행이 없으면 만들어 둔다
-sql_query(" update `{$g5['cart_config_table']}`
+sql_query(" update `{$g5['ycart_config_table']}`
     set cc_ship_base = '$ship_base', cc_ship_free = '$ship_free',
         cc_ship_jeju = '$ship_jeju', cc_bank = '$bank',
         cc_inicis_mid = '$inicis_mid', cc_inicis_signkey = '$inicis_signkey',
@@ -32,4 +32,4 @@ sql_query(" update `{$g5['cart_config_table']}`
         cc_toss_ckey = '$toss_ckey', cc_toss_skey = '$toss_skey'
     where cc_id = 1 ", true);
 
-goto_url(G5_ADMIN_URL.'/cart/config_form.php');
+goto_url(G5_CART_ADMIN_URL.'/config_form.php');

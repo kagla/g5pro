@@ -24,7 +24,7 @@ cadm_view('install', array(
     'tables' => $tables,
     'result' => $result,
     'ft'     => cart_ft_available(),
-    'run_url' => G5_ADMIN_URL.'/cart/install.php?run=1',
+    'run_url' => G5_CART_ADMIN_URL.'/install.php?run=1',
 ));
 
 include_once(G5_ADMIN_PATH.'/admin.tail.php');

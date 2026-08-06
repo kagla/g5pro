@@ -22,7 +22,7 @@ include_once(G5_ADMIN_PATH.'/admin.head.php');
 $preview = null;
 $pv_key = (isset($_GET['pv']) && !is_array($_GET['pv'])) ? preg_replace('/[^a-f0-9]/', '', $_GET['pv']) : '';
 if ($pv_key) {
-    $pv_file = G5_DATA_PATH.'/cart/tmp/'.$pv_key.'.csv';
+    $pv_file = G5_CART_DATA_PATH.'/tmp/'.$pv_key.'.csv';
     if (is_file($pv_file)) {
         $errors = array();
         $rows = cart_csv_parse($pv_file, $errors);
@@ -35,8 +35,8 @@ if ($pv_key) {
 
 cadm_view('csv', array(
     'preview' => $preview,
-    'export_url' => G5_ADMIN_URL.'/cart/csv.php?export=1',
-    'action_url' => G5_ADMIN_URL.'/cart/csv_update.php',
+    'export_url' => G5_CART_ADMIN_URL.'/csv.php?export=1',
+    'action_url' => G5_CART_ADMIN_URL.'/csv_update.php',
 ));
 
 include_once(G5_ADMIN_PATH.'/admin.tail.php');
