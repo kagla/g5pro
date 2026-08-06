@@ -19,8 +19,14 @@ $data = array(
     'it_keyword' => $post_str('it_keyword'),
     'it_content' => (isset($_POST['it_content']) && !is_array($_POST['it_content'])) ? $_POST['it_content'] : '',
     'it_show' => !empty($_POST['it_show']) ? 1 : 0,
+    // 배송비는 몰 전역 정책(설정 화면)이라 폼에 필드가 없다 — 수정 시 기존 값을 보존해
+    // 저장할 때마다 0 으로 덮이던 문제를 막는다(상품별 정책이 생기면 폼 필드로 승격)
     'it_shipping_id' => 0,
 );
+if ($w === 'u') {
+    $prev = cart_item_get($it_id);
+    if ($prev) $data['it_shipping_id'] = (int)$prev['it_shipping_id'];
+}
 if ($data['it_name'] === '') alert('상품 이름을 입력하세요.');
 if (!$data['ca_id'] || !cart_category_get($data['ca_id'])) alert('분류를 선택하세요.');
 if ($data['it_code'] !== '') {

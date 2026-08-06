@@ -23,7 +23,18 @@ cart_table_defaults();
 // (새 설치는 CREATE 가, 기존 설치는 여기가 맡는다 — 부킹 booking_column_upgrades 관례)
 function cart_column_upgrades()
 {
-    return array();
+    return array(
+        // 2026-08-06 2단계 배송비 정책 — 몰 전역 단일 정책(운영 단순화, 상품별 정책은 요구 생기면)
+        array('cart_config_table', 'cc_ship_base',
+            " ADD `cc_ship_base` int(11) NOT NULL DEFAULT '3000' AFTER `cc_id` "),
+        array('cart_config_table', 'cc_ship_free',
+            " ADD `cc_ship_free` int(11) NOT NULL DEFAULT '50000' AFTER `cc_ship_base` "),
+        array('cart_config_table', 'cc_ship_jeju',
+            " ADD `cc_ship_jeju` int(11) NOT NULL DEFAULT '3000' AFTER `cc_ship_free` "),
+        // 2026-08-06 무통장 입금 안내(계좌 문구) — 결제 단계에서 표시
+        array('cart_config_table', 'cc_bank',
+            " ADD `cc_bank` varchar(255) NOT NULL DEFAULT '' AFTER `cc_ship_jeju` "),
+    );
 }
 
 // 모듈 자체 설치/업그레이드 — 순정 설치·dbupgrade 와 무관하게 멱등 실행
@@ -73,6 +84,10 @@ function cart_table_ddl()
     return array(
     'cart_config_table' => " CREATE TABLE IF NOT EXISTS `{$g5['cart_config_table']}` (
         `cc_id` tinyint(4) NOT NULL DEFAULT '1',
+        `cc_ship_base` int(11) NOT NULL DEFAULT '3000',
+        `cc_ship_free` int(11) NOT NULL DEFAULT '50000',
+        `cc_ship_jeju` int(11) NOT NULL DEFAULT '3000',
+        `cc_bank` varchar(255) NOT NULL DEFAULT '',
         PRIMARY KEY (`cc_id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
     'cart_category_table' => " CREATE TABLE IF NOT EXISTS `{$g5['cart_category_table']}` (
