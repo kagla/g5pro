@@ -123,6 +123,14 @@ function cart_csv_item_needs_category($known_exists, $ca_id_cell)
     return !$known_exists && !(int)$ca_id_cell;
 }
 
+// 신규 상품인데 상품명 칸이 비었으면 참 — cart_csv_item_needs_category() 와 같은 판정 패턴.
+// 기존 상품 수정은 상품명을 비워도(=변경 없음, 다른 빈 셀과 동일 규칙) 걸리지 않는다.
+// summary 와 apply 가 반드시 같은 조건식·같은 입력을 쓰도록 여기 하나로 모은다.
+function cart_csv_item_needs_name($known_exists, $name_cell)
+{
+    return !$known_exists && trim($name_cell) === '';
+}
+
 // 행의 SKU코드가 이미 DB 에 있고 그 SKU 의 소유 상품이 이 행의 상품코드와 다르면 그 소유
 // 상품코드를 돌려준다(충돌 없음/신규 SKU 면 null). summary 와 apply 가 같은 조건식을 쓰도록
 // 여기 하나로 모은다 — 어긋나면 미리보기 수치와 반영 결과가 갈린다.
@@ -153,6 +161,10 @@ function cart_csv_summary($rows)
         $known_exists = isset($file_items[$code]) || (cart_item_get_by_code($code) !== null);
         if (cart_csv_item_needs_category($known_exists, $row['분류ID'])) {
             $sum['errors'][] = $row['_line'].'행: 신규 상품은 분류ID 필수';
+            continue;
+        }
+        if (cart_csv_item_needs_name($known_exists, $row['상품명'])) {
+            $sum['errors'][] = $row['_line'].'행: 신규 상품은 상품명 필수';
             continue;
         }
         $sku = cart_sku_get_by_code($row['SKU코드']);
@@ -210,6 +222,7 @@ function cart_csv_apply($rows, $who)
                 $known_exists = ($exist_item !== null);
             }
             if (cart_csv_item_needs_category($known_exists, $row['분류ID'])) continue;
+            if (cart_csv_item_needs_name($known_exists, $row['상품명'])) continue;
 
             $sku = cart_sku_get_by_code($row['SKU코드']);
             if (cart_csv_sku_conflict($code, $sku) !== null) continue;
@@ -222,7 +235,8 @@ function cart_csv_apply($rows, $who)
                 $data = array(
                     'it_code' => $code,
                     'ca_id' => $ca_id,
-                    'it_name' => $row['상품명'],
+                    // 빈 셀 = 변경 없음(수정일 때만). 신규는 위 게이트를 통과했으니 상품명은 이미 있다.
+                    'it_name' => $row['상품명'] !== '' ? $row['상품명'] : ($exist_item ? $exist_item['it_name'] : ''),
                     'it_keyword' => $exist_item ? $exist_item['it_keyword'] : '',
                     'it_content' => $exist_item ? $exist_item['it_content'] : '',
                     'it_show' => $it_show,
