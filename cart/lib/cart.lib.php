@@ -13,6 +13,9 @@ function cart_table_defaults()
         'cart_sku_table'        => 'cart_sku',
         'cart_stock_log_table'  => 'cart_stock_log',
         'cart_basket_table'     => 'cart_basket',
+        'cart_order_table'      => 'cart_order',
+        'cart_order_item_table' => 'cart_order_item',
+        'cart_payment_table'    => 'cart_payment',
     );
     foreach ($tables as $key => $name) {
         if (!isset($g5[$key])) $g5[$key] = G5_TABLE_PREFIX.$name;
@@ -163,6 +166,59 @@ function cart_table_ddl()
         PRIMARY KEY (`bk_id`),
         UNIQUE KEY `owner_sku` (`mb_id`, `bk_sid`, `sk_id`),
         KEY `owner` (`mb_id`, `bk_sid`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
+    'cart_order_table' => " CREATE TABLE IF NOT EXISTS `{$g5['cart_order_table']}` (
+        `od_id` int(11) NOT NULL AUTO_INCREMENT,
+        `od_no` varchar(30) NOT NULL DEFAULT '',
+        `mb_id` varchar(20) NOT NULL DEFAULT '',
+        `od_name` varchar(50) NOT NULL DEFAULT '',
+        `od_hp` varchar(20) NOT NULL DEFAULT '',
+        `od_email` varchar(100) NOT NULL DEFAULT '',
+        `od_zip` varchar(10) NOT NULL DEFAULT '',
+        `od_addr1` varchar(255) NOT NULL DEFAULT '',
+        `od_addr2` varchar(255) NOT NULL DEFAULT '',
+        `od_memo` varchar(255) NOT NULL DEFAULT '',
+        `od_item_total` int(11) NOT NULL DEFAULT '0',
+        `od_ship_fee` int(11) NOT NULL DEFAULT '0',
+        `od_coupon` int(11) NOT NULL DEFAULT '0',
+        `od_point` int(11) NOT NULL DEFAULT '0',
+        `od_total` int(11) NOT NULL DEFAULT '0',
+        `od_status` varchar(20) NOT NULL DEFAULT 'unpaid',
+        `od_pay_method` varchar(20) NOT NULL DEFAULT 'bank',
+        `od_depositor` varchar(50) NOT NULL DEFAULT '',
+        `od_guest_pw` varchar(255) NOT NULL DEFAULT '',
+        `od_ip` varchar(50) NOT NULL DEFAULT '',
+        `od_datetime` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+        `od_paid_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+        PRIMARY KEY (`od_id`),
+        UNIQUE KEY `od_no` (`od_no`),
+        KEY `mb_id` (`mb_id`, `od_id`),
+        KEY `status` (`od_status`, `od_id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
+    'cart_order_item_table' => " CREATE TABLE IF NOT EXISTS `{$g5['cart_order_item_table']}` (
+        `oi_id` int(11) NOT NULL AUTO_INCREMENT,
+        `od_id` int(11) NOT NULL DEFAULT '0',
+        `it_id` int(11) NOT NULL DEFAULT '0',
+        `sk_id` int(11) NOT NULL DEFAULT '0',
+        `oi_name` varchar(255) NOT NULL DEFAULT '',
+        `oi_option` varchar(255) NOT NULL DEFAULT '',
+        `oi_price` int(11) NOT NULL DEFAULT '0',
+        `oi_qty` int(11) NOT NULL DEFAULT '0',
+        `oi_total` int(11) NOT NULL DEFAULT '0',
+        `oi_status` varchar(20) NOT NULL DEFAULT 'normal',
+        PRIMARY KEY (`oi_id`), KEY `od_id` (`od_id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
+    'cart_payment_table' => " CREATE TABLE IF NOT EXISTS `{$g5['cart_payment_table']}` (
+        `pm_id` int(11) NOT NULL AUTO_INCREMENT,
+        `od_id` int(11) NOT NULL DEFAULT '0',
+        `pm_method` varchar(20) NOT NULL DEFAULT '',
+        `pm_tid` varchar(100) NOT NULL DEFAULT '',
+        `pm_amount` int(11) NOT NULL DEFAULT '0',
+        `pm_status` varchar(20) NOT NULL DEFAULT 'ready',
+        `pm_data` text NOT NULL,
+        `pm_datetime` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+        `pm_approved_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+        PRIMARY KEY (`pm_id`), KEY `od_id` (`od_id`), KEY `pm_tid` (`pm_tid`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
     );
 }

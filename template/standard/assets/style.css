@@ -2573,3 +2573,26 @@ input[type=checkbox], input[type=radio] {
     .cart-basket-row { flex-wrap: wrap; }
     .cart-basket-ctrl { width: 100%; justify-content: flex-end; }
 }
+
+/* ---------- 카트 주문서·주문완료 ---------- */
+.cart-co-sec { border: 1px solid var(--line); border-radius: 14px; padding: var(--s5); margin-bottom: var(--s4); }
+.cart-co-sec h3 { font-size: var(--t-md); font-weight: 800; margin-bottom: var(--s4); }
+.cart-co-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--s3); }
+.cart-co-grid label, .cart-co-sec > label { display: flex; align-items: center; gap: var(--s3); font-size: var(--t-sm); font-weight: 600; }
+.cart-co-grid input, .cart-co-addr input { flex: 1; min-width: 0; padding: var(--s2); }
+.cart-co-addr { display: flex; flex-direction: column; gap: var(--s3); }
+.cart-co-addr input { width: 100%; }
+.cart-co-zip { display: flex; gap: var(--s2); }
+.cart-co-zip input { width: 140px; flex: none; }
+.cart-co-pay { margin-bottom: var(--s3); }
+.cart-co-note { font-size: var(--t-xs); color: var(--muted); margin-top: var(--s3); }
+.cart-checkout .cart-basket-sum { position: sticky; bottom: var(--s3); background: var(--card); box-shadow: var(--sh-lg); }
+
+.cart-complete { max-width: 640px; margin: 0 auto; }
+.cart-complete-head { text-align: center; margin: var(--s6) 0; }
+.cart-complete-head h2 { font-size: var(--t-2xl); margin-bottom: var(--s2); }
+.cart-complete-bank { border-color: #35C5F0; }
+.cart-complete-amount strong { font-size: var(--t-xl); color: #1E9CC9; }
+.cart-complete-line { display: flex; justify-content: space-between; padding: var(--s2) 0; font-size: var(--t-sm); }
+.cart-complete-line.is-sub { color: var(--muted); border-top: 1px dashed var(--line); margin-top: var(--s2); padding-top: var(--s3); }
+.cart-complete-line.is-total { font-weight: 800; font-size: var(--t-md); }
