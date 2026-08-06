@@ -6,7 +6,7 @@ auth_check_menu($auth, $sub_menu, 'w');
 $w = (isset($_GET['w']) && !is_array($_GET['w'])) ? $_GET['w'] : '';
 $it_id = (isset($_GET['it_id']) && !is_array($_GET['it_id'])) ? (int)$_GET['it_id'] : 0;
 
-$item = array('it_id' => 0, 'it_code' => '', 'ca_id' => 0, 'it_name' => '', 'it_keyword' => '',
+$item = array('it_id' => 0, 'it_code' => '', 'it_name' => '', 'it_keyword' => '',
     'it_content' => '', 'it_show' => 1);
 $skus = array();
 $images = array();
@@ -33,6 +33,7 @@ cadm_view('item_form', array(
     'skus' => $skus,
     'images' => $images,
     'categories' => cart_category_list(),
+    'ca_ids' => $w === 'u' ? cart_item_ca_ids($it_id) : array(),
     'image_url_base' => G5_DATA_URL.'/cart/item/',
     'action_url' => G5_ADMIN_URL.'/cart/item_form_update.php',
     'list_url' => G5_ADMIN_URL.'/cart/item_list.php',

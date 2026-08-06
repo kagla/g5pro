@@ -427,7 +427,6 @@ function cart_item_save($data, $it_id = 0)
 {
     global $g5;
     $code = sql_real_escape_string(trim($data['it_code']));
-    $ca_id = (int)$data['ca_id'];
     $name = sql_real_escape_string(strip_tags(trim($data['it_name'])));
     $keyword = sql_real_escape_string(strip_tags(trim($data['it_keyword'])));
     $content = sql_real_escape_string($data['it_content']);
@@ -437,7 +436,7 @@ function cart_item_save($data, $it_id = 0)
 
     if ($it_id) {
         sql_query(" update `{$g5['cart_item_table']}`
-            set it_code = '$code', ca_id = '$ca_id', it_name = '$name', it_keyword = '$keyword',
+            set it_code = '$code', it_name = '$name', it_keyword = '$keyword',
                 it_content = '$content', it_show = '$show', it_shipping_id = '$shipping',
                 it_update = '$now'
             where it_id = '".(int)$it_id."' ", true);
@@ -447,8 +446,8 @@ function cart_item_save($data, $it_id = 0)
     // it_code 는 UNIQUE — 빈 값 신규가 여럿 겹치지 않게 임시 유일값을 넣고 확정한다
     $tmp = $code !== '' ? $code : uniqid('PT', true);
     sql_query(" insert into `{$g5['cart_item_table']}`
-        (it_code, ca_id, it_name, it_keyword, it_content, it_show, it_shipping_id, it_datetime, it_update)
-        values ('".sql_real_escape_string($tmp)."', '$ca_id', '$name', '$keyword', '$content',
+        (it_code, it_name, it_keyword, it_content, it_show, it_shipping_id, it_datetime, it_update)
+        values ('".sql_real_escape_string($tmp)."', '$name', '$keyword', '$content',
                 '$show', '$shipping', '$now', '$now') ", true);
     $new_id = sql_insert_id();
     if ($code === '') {

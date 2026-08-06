@@ -14,14 +14,15 @@
     <tr>
         <th scope="row">분류</th>
         <td>
-            <select name="ca_id" required>
-                <option value="">선택</option>
 
-                @foreach ($categories as $c)
-                <option value="{{ $c['ca_id'] }}" {{ (int)$item['ca_id'] === (int)$c['ca_id'] ? 'selected' : '' }}>{{ str_repeat('— ', $c['ca_depth'] - 1) }}{{ $c['ca_name'] }}</option>
-                @endforeach
+            @foreach ($categories as $c)
+            <label style="display:inline-block; margin:2px 14px 2px 0">
+                <input type="checkbox" name="ca_ids[]" value="{{ $c['ca_id'] }}" {{ in_array((int)$c['ca_id'], $ca_ids, true) ? 'checked' : '' }}>
+                {{ str_repeat('— ', $c['ca_depth'] - 1) }}{{ $c['ca_name'] }}
+            </label>
+            @endforeach
 
-            </select>
+            <div><span>여러 개 선택 가능 · 선택 없음 = 분류 없이 단독 노출</span></div>
         </td>
     </tr>
     <tr>

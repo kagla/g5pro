@@ -14,7 +14,6 @@ $post_str = function ($key) {
 
 $data = array(
     'it_code' => $post_str('it_code'),
-    'ca_id' => (int)$post_str('ca_id'),
     'it_name' => $post_str('it_name'),
     'it_keyword' => $post_str('it_keyword'),
     'it_content' => (isset($_POST['it_content']) && !is_array($_POST['it_content'])) ? $_POST['it_content'] : '',
@@ -28,7 +27,8 @@ if ($w === 'u') {
     if ($prev) $data['it_shipping_id'] = (int)$prev['it_shipping_id'];
 }
 if ($data['it_name'] === '') alert('상품 이름을 입력하세요.');
-if (!$data['ca_id'] || !cart_category_get($data['ca_id'])) alert('분류를 선택하세요.');
+// 분류는 0개~여러 개 자유 — 없는 분류 id 는 cart_item_category_set 이 걸러낸다
+$ca_ids = (isset($_POST['ca_ids']) && is_array($_POST['ca_ids'])) ? array_map('intval', $_POST['ca_ids']) : array();
 if ($data['it_code'] !== '') {
     $dup = cart_item_get_by_code($data['it_code']);
     if ($dup && (int)$dup['it_id'] !== $it_id) alert('이미 쓰는 상품코드입니다: '.$data['it_code']);
@@ -84,6 +84,7 @@ if ($w === 'u') {
 } else {
     $it_id = cart_item_save($data);
 }
+cart_item_category_set($it_id, $ca_ids);
 
 // ---- SKU 저장 ----
 foreach ($sku_rows as $srow) {

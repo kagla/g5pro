@@ -19,7 +19,8 @@ if ($q !== '') {
 }
 if ($ca_id) {
     $ids = cart_category_descendant_ids($ca_id);
-    if ($ids) $where[] = " ca_id IN (".implode(',', $ids).") ";
+    if ($ids) $where[] = " it_id IN (select it_id from `{$g5['cart_item_category_table']}`
+        where ca_id IN (".implode(',', $ids).")) ";
 }
 $where_sql = implode(' AND ', $where);
 
