@@ -1,7 +1,0 @@
-/* 관리자 글꼴 — 그누보드5 순정 원본인 돋움(dotum)으로 복원.
-   (관리자 상단 개편 때 admin.css 가 맑은 고딕 스택으로 바뀌어 있었다 — 크기 0.75em 은 그대로.)
-   이 파일만 지우면 맑은 고딕으로 돌아간다. */
-body, h1, h2, h3, h4, h5, h6,
-input, button, textarea, select {
-    font-family: Dotum, "돋움", Gulim, "굴림", sans-serif;
-}
