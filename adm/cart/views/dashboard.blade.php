@@ -5,7 +5,7 @@
     <span class="btn_ov01"><span class="ov_txt">오늘 매출</span><span class="ov_num">{{ number_format($today_sales) }}원 · {{ number_format($today_paid_cnt) }}건</span></span>
     <span class="btn_ov01"><span class="ov_txt">오늘 주문</span><span class="ov_num">{{ number_format($today_orders) }}건</span></span>
     <span class="btn_ov01"><span class="ov_txt">판매 중 상품</span><span class="ov_num">{{ number_format($item_cnt) }}</span></span>
-    <span class="btn_ov01"><span class="ov_txt">담긴 장바구니</span><span class="ov_num">{{ number_format($basket_cnt) }}행</span></span>
+    <span class="btn_ov01"><span class="ov_txt">담긴 장바구니</span><span class="ov_num">{{ number_format($cart_cnt) }}행</span></span>
     <span class="btn_ov01"><span class="ov_txt">재고 임박</span><span class="ov_num">{{ number_format($low_total) }} SKU</span></span>
 </div>
 

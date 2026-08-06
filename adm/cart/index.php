@@ -11,11 +11,11 @@ $paid_in = " od_status in ('paid', 'preparing', 'shipping', 'delivered', 'confir
 $today0 = date('Y-m-d', G5_SERVER_TIME).' 00:00:00';
 
 $r = sql_fetch(" select count(*) cnt, coalesce(sum(od_total), 0) amt
-    from `{$g5['cart_order_table']}` where $paid_in and od_paid_at >= '$today0' ");
+    from `{$g5['ycart_order_table']}` where $paid_in and od_paid_at >= '$today0' ");
 $today_sales = (int)$r['amt'];
 $today_paid_cnt = (int)$r['cnt'];
 
-$r = sql_fetch(" select count(*) cnt from `{$g5['cart_order_table']}`
+$r = sql_fetch(" select count(*) cnt from `{$g5['ycart_order_table']}`
     where od_status <> 'draft' and od_datetime >= '$today0' ");
 $today_orders = (int)$r['cnt'];
 
@@ -25,7 +25,7 @@ $max_amt = 0;
 for ($i = 6; $i >= 0; $i--) {
     $d = date('Y-m-d', G5_SERVER_TIME - $i * 86400);
     $r = sql_fetch(" select coalesce(sum(od_total), 0) amt, count(*) cnt
-        from `{$g5['cart_order_table']}`
+        from `{$g5['ycart_order_table']}`
         where $paid_in and od_paid_at >= '$d 00:00:00' and od_paid_at <= '$d 23:59:59' ");
     $amt = (int)$r['amt'];
     if ($amt > $max_amt) $max_amt = $amt;
@@ -54,7 +54,7 @@ $status_sum = array(
     'canceled' => array('cnt' => 0, 'amt' => 0),
 );
 $result = sql_query(" select od_status, count(*) cnt, coalesce(sum(od_total), 0) amt
-    from `{$g5['cart_order_table']}` where od_status <> 'draft' group by od_status ");
+    from `{$g5['ycart_order_table']}` where od_status <> 'draft' group by od_status ");
 while ($row = sql_fetch_array($result)) {
     $s = $row['od_status'];
     if ($s === 'preparing' || $s === 'shipping' || $s === 'delivered') $s = 'shipping';
@@ -66,30 +66,30 @@ while ($row = sql_fetch_array($result)) {
 
 // 재고 임박 — 판매 중(sk_use, it_show)인데 5개 이하
 $low_limit = 5;
-$r = sql_fetch(" select count(*) cnt from `{$g5['cart_sku_table']}` s
-    join `{$g5['cart_item_table']}` i on i.it_id = s.it_id
+$r = sql_fetch(" select count(*) cnt from `{$g5['ycart_sku_table']}` s
+    join `{$g5['ycart_item_table']}` i on i.it_id = s.it_id
     where s.sk_use = 1 and i.it_show = 1 and s.sk_qty <= $low_limit ");
 $low_total = (int)$r['cnt'];
 $low_rows = array();
 $result = sql_query(" select s.sk_id, s.sk_qty, s.sk_option, s.sk_code, i.it_id, i.it_name
-    from `{$g5['cart_sku_table']}` s
-    join `{$g5['cart_item_table']}` i on i.it_id = s.it_id
+    from `{$g5['ycart_sku_table']}` s
+    join `{$g5['ycart_item_table']}` i on i.it_id = s.it_id
     where s.sk_use = 1 and i.it_show = 1 and s.sk_qty <= $low_limit
     order by s.sk_qty asc, s.sk_id asc limit 10 ");
 while ($row = sql_fetch_array($result)) {
     $opt = json_decode($row['sk_option'], true);
     $row['opt_label'] = (is_array($opt) && count($opt)) ? implode(' / ', array_values($opt)) : '기본';
-    $row['edit_url'] = G5_ADMIN_URL.'/cart/item_form.php?w=u&it_id='.(int)$row['it_id'];
+    $row['edit_url'] = G5_CART_ADMIN_URL.'/item_form.php?w=u&it_id='.(int)$row['it_id'];
     $low_rows[] = $row;
 }
 
 // 최근 주문 — 초안 제외 10건
 $recent = array();
-$result = sql_query(" select * from `{$g5['cart_order_table']}`
+$result = sql_query(" select * from `{$g5['ycart_order_table']}`
     where od_status <> 'draft' order by od_id desc limit 10 ");
 while ($row = sql_fetch_array($result)) {
     $first = sql_fetch(" select min(oi_name) as oi_name, count(*) as cnt
-        from `{$g5['cart_order_item_table']}` where od_id = '".(int)$row['od_id']."' group by od_id ");
+        from `{$g5['ycart_order_item_table']}` where od_id = '".(int)$row['od_id']."' group by od_id ");
     $row['summary'] = $first
         ? ($first['oi_name'].((int)$first['cnt'] > 1 ? ' 외 '.((int)$first['cnt'] - 1).'건' : ''))
         : '';
@@ -98,10 +98,10 @@ while ($row = sql_fetch_array($result)) {
 }
 
 // 카탈로그·바구니 현황
-$r = sql_fetch(" select count(*) cnt from `{$g5['cart_item_table']}` where it_show = 1 ");
+$r = sql_fetch(" select count(*) cnt from `{$g5['ycart_item_table']}` where it_show = 1 ");
 $item_cnt = (int)$r['cnt'];
-$r = sql_fetch(" select count(*) cnt from `{$g5['cart_basket_table']}` ");
-$basket_cnt = (int)$r['cnt'];
+$r = sql_fetch(" select count(*) cnt from `{$g5['ycart_cart_table']}` ");
+$cart_cnt = (int)$r['cnt'];
 
 cadm_view('dashboard', array(
     'today_sales' => $today_sales,
@@ -115,8 +115,8 @@ cadm_view('dashboard', array(
     'low_limit' => $low_limit,
     'recent' => $recent,
     'item_cnt' => $item_cnt,
-    'basket_cnt' => $basket_cnt,
-    'item_list_url' => G5_ADMIN_URL.'/cart/item_list.php',
+    'cart_cnt' => $cart_cnt,
+    'item_list_url' => G5_CART_ADMIN_URL.'/item_list.php',
 ));
 
 include_once(G5_ADMIN_PATH.'/admin.tail.php');

@@ -3,13 +3,13 @@ define('G5_IS_ADMIN', true);
 // 상대 include 는 실행 스크립트 기준이라 adm/_common.php 를 못 거친다 — shop_admin 과 같은 방식
 include_once('../../common.php');
 include_once(G5_ADMIN_PATH.'/admin.lib.php');
-include_once(G5_PATH.'/cart/lib/cart.lib.php');
-include_once(G5_PATH.'/cart/lib/item.lib.php');
-include_once(G5_PATH.'/cart/lib/stock.lib.php');
-include_once(G5_PATH.'/cart/lib/csv.lib.php');
-include_once(G5_PATH.'/cart/lib/order.lib.php');
-include_once(G5_PATH.'/cart/lib/basket.lib.php');
-include_once(G5_PATH.'/cart/lib/pay.lib.php');
+include_once(G5_PATH.'/cart/lib/core.lib.php'); // 상수를 여기서 정의하므로 이 줄만 리터럴
+include_once(G5_CART_LIB_PATH.'/item.lib.php');
+include_once(G5_CART_LIB_PATH.'/stock.lib.php');
+include_once(G5_CART_LIB_PATH.'/csv.lib.php');
+include_once(G5_CART_LIB_PATH.'/order.lib.php');
+include_once(G5_CART_LIB_PATH.'/cart.lib.php');
+include_once(G5_CART_LIB_PATH.'/pay.lib.php');
 
 if (function_exists('g5_check_data_htaccess')) {
     g5_check_data_htaccess();
@@ -38,7 +38,7 @@ function cadm_view($view, $data = array())
     if ($blade === null) {
         $cache = G5_DATA_PATH.'/cache/pro/cadm';
         if (!is_dir($cache)) { @mkdir($cache, G5_DIR_PERMISSION, true); @chmod($cache, G5_DIR_PERMISSION); }
-        $blade = new \eftec\bladeone\BladeOne(G5_ADMIN_PATH.'/cart/views', $cache, \eftec\bladeone\BladeOne::MODE_AUTO);
+        $blade = new \eftec\bladeone\BladeOne(G5_CART_ADMIN_PATH.'/views', $cache, \eftec\bladeone\BladeOne::MODE_AUTO);
     }
     echo $blade->run($view, $data);
 }
