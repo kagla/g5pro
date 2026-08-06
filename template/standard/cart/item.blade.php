@@ -67,7 +67,7 @@
             @endif
 
             @if (count($buyable_skus))
-            <form method="post" action="{{ $basket_action }}" class="cart-buy">
+            <form method="post" action="{{ $cart_action }}" class="cart-buy">
                 <input type="hidden" name="token" value="{{ $token }}">
                 <input type="hidden" name="mode" value="add">
 
@@ -90,7 +90,7 @@
                     <input type="number" name="qty" value="1" min="1" max="999">
                 </label>
                 <div class="cart-buy-btns">
-                    <button type="submit" name="dest" value="basket" class="cart-cta is-line">장바구니</button>
+                    <button type="submit" name="dest" value="cart" class="cart-cta is-line">장바구니</button>
                     <button type="submit" name="dest" value="buy" class="cart-cta">바로구매</button>
                 </div>
             </form>

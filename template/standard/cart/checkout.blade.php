@@ -4,7 +4,7 @@
     <h2>주문서 작성</h2>
 
     @if ($blocked_count > 0)
-    <div class="bbs-meta">구매할 수 없는 상품 {{ $blocked_count }}개는 <a href="{{ $basket_href }}">장바구니</a>에 남겨두었습니다.</div>
+    <div class="bbs-meta">구매할 수 없는 상품 {{ $blocked_count }}개는 <a href="{{ $cart_href }}">장바구니</a>에 남겨두었습니다.</div>
     @endif
 
 </header>
@@ -13,7 +13,7 @@
 {{-- novalidate: 우편번호·주소가 readonly 라 브라우저 required 검증에서 빠진다 — 검증은 아래 스크립트가 한 곳에서 --}}
 <form method="post" action="{{ $action_url }}" class="cart-checkout-form" novalidate>
     <input type="hidden" name="token" value="{{ $token }}">
-    <input type="hidden" name="expect_bk_ids" value="{{ $expect_bk_ids }}">
+    <input type="hidden" name="expect_ct_ids" value="{{ $expect_ct_ids }}">
     <input type="hidden" name="expect_item_total" value="{{ $item_total }}">
     <input type="hidden" name="buy" value="{{ $buy }}">
 
@@ -21,24 +21,24 @@
         <h3>주문 상품</h3>
 
         @foreach ($lines as $l)
-        <div class="cart-basket-row">
-            <span class="cart-basket-thumb">
+        <div class="cart-cart-row">
+            <span class="cart-cart-thumb">
 
                 @if ($l['img'])
                 <img src="{{ $l['img'] }}" alt="">
                 @endif
 
             </span>
-            <div class="cart-basket-info">
-                <span class="cart-basket-name">{{ $l['it_name'] }}</span>
+            <div class="cart-cart-info">
+                <span class="cart-cart-name">{{ $l['it_name'] }}</span>
 
                 @if ($l['opt_label'] !== '')
-                <span class="cart-basket-opt">{{ $l['opt_label'] }}</span>
+                <span class="cart-cart-opt">{{ $l['opt_label'] }}</span>
                 @endif
 
-                <span class="cart-basket-opt">{{ number_format($l['sk_price']) }}원 × {{ $l['bk_qty'] }}개</span>
+                <span class="cart-cart-opt">{{ number_format($l['sk_price']) }}원 × {{ $l['ct_qty'] }}개</span>
             </div>
-            <span class="cart-basket-line">{{ number_format($l['line_total']) }}<em>원</em></span>
+            <span class="cart-cart-line">{{ number_format($l['line_total']) }}<em>원</em></span>
         </div>
         @endforeach
 
@@ -101,7 +101,7 @@
         <label id="cart_depositor_row">입금자명 <input type="text" name="od_depositor" value="" placeholder="비우면 주문자 이름"></label>
     </section>
 
-    <aside class="cart-basket-sum">
+    <aside class="cart-cart-sum">
         <dl>
             <dt>상품 합계</dt>
             <dd>{{ number_format($item_total) }}원</dd>

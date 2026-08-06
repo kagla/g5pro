@@ -10,54 +10,54 @@
 </header>
 
 @if (count($items))
-<div class="cart-basket">
+<div class="cart-cart">
 
     @foreach ($items as $it)
-    <div class="cart-basket-row {{ (!$it['avail'] || $it['over_stock']) ? 'is-blocked' : '' }}">
-        <a href="{{ $it['href'] }}" class="cart-basket-thumb">
+    <div class="cart-cart-row {{ (!$it['avail'] || $it['over_stock']) ? 'is-blocked' : '' }}">
+        <a href="{{ $it['href'] }}" class="cart-cart-thumb">
 
             @if ($it['img'])
             <img src="{{ $it['img'] }}" alt="">
             @endif
 
         </a>
-        <div class="cart-basket-info">
-            <a href="{{ $it['href'] }}" class="cart-basket-name">{{ $it['it_name'] }}</a>
+        <div class="cart-cart-info">
+            <a href="{{ $it['href'] }}" class="cart-cart-name">{{ $it['it_name'] }}</a>
 
             @if ($it['opt_label'] !== '')
-            <span class="cart-basket-opt">{{ $it['opt_label'] }}</span>
+            <span class="cart-cart-opt">{{ $it['opt_label'] }}</span>
             @endif
 
             @if (!$it['avail'])
-            <span class="cart-basket-warn">지금은 구매할 수 없는 상품입니다 (품절·판매중지)</span>
+            <span class="cart-cart-warn">지금은 구매할 수 없는 상품입니다 (품절·판매중지)</span>
             @elseif ($it['over_stock'])
-            <span class="cart-basket-warn">재고가 {{ number_format($it['sk_qty']) }}개뿐입니다 — 수량을 줄여 주세요</span>
+            <span class="cart-cart-warn">재고가 {{ number_format($it['sk_qty']) }}개뿐입니다 — 수량을 줄여 주세요</span>
             @endif
 
-            <span class="cart-basket-price">{{ number_format($it['sk_price']) }}<em>원</em></span>
+            <span class="cart-cart-price">{{ number_format($it['sk_price']) }}<em>원</em></span>
         </div>
-        <div class="cart-basket-ctrl">
-            <form method="post" action="{{ $action_url }}" class="cart-basket-qty">
+        <div class="cart-cart-ctrl">
+            <form method="post" action="{{ $action_url }}" class="cart-cart-qty">
                 <input type="hidden" name="token" value="{{ $token }}">
                 <input type="hidden" name="mode" value="set">
-                <input type="hidden" name="bk_id" value="{{ $it['bk_id'] }}">
-                <input type="number" name="qty" value="{{ $it['bk_qty'] }}" min="1" max="999">
+                <input type="hidden" name="ct_id" value="{{ $it['ct_id'] }}">
+                <input type="number" name="qty" value="{{ $it['ct_qty'] }}" min="1" max="999">
                 <button type="submit" class="btn-ghost">변경</button>
             </form>
             <form method="post" action="{{ $action_url }}">
                 <input type="hidden" name="token" value="{{ $token }}">
                 <input type="hidden" name="mode" value="del">
-                <input type="hidden" name="bk_id" value="{{ $it['bk_id'] }}">
+                <input type="hidden" name="ct_id" value="{{ $it['ct_id'] }}">
                 <button type="submit" class="btn-ghost">삭제</button>
             </form>
-            <span class="cart-basket-line">{{ number_format($it['line_total']) }}<em>원</em></span>
+            <span class="cart-cart-line">{{ number_format($it['line_total']) }}<em>원</em></span>
         </div>
     </div>
     @endforeach
 
 </div>
 
-<aside class="cart-basket-sum">
+<aside class="cart-cart-sum">
     <dl>
         <dt>상품 합계</dt>
         <dd>{{ number_format($total) }}원</dd>

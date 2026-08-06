@@ -2537,42 +2537,42 @@ input[type=checkbox], input[type=radio] {
 .cart-buy-btns { display: flex; gap: var(--s3); }
 .cart-buy-btns .cart-cta { flex: 1; }
 
-.cart-basket { display: flex; flex-direction: column; gap: var(--s4); margin-bottom: var(--s5); }
-.cart-basket-row {
+.cart-cart { display: flex; flex-direction: column; gap: var(--s4); margin-bottom: var(--s5); }
+.cart-cart-row {
     display: flex; gap: var(--s4); align-items: center;
     padding: var(--s4); border: 1px solid var(--line); border-radius: 14px;
 }
-.cart-basket-row.is-blocked { opacity: .55; }
-.cart-basket-thumb { flex: none; width: 84px; height: 84px; border-radius: 10px; overflow: hidden; background: var(--bg); }
-.cart-basket-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.cart-basket-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.cart-basket-name { font-weight: 600; }
-.cart-basket-opt { font-size: var(--t-xs); color: var(--muted); }
-.cart-basket-warn { font-size: var(--t-xs); color: #e5484d; font-weight: 600; }
-.cart-basket-price { font-size: var(--t-sm); font-weight: 700; }
-.cart-basket-price em, .cart-basket-line em { font-style: normal; font-weight: 600; font-size: var(--t-xs); }
-.cart-basket-ctrl { flex: none; display: flex; align-items: center; gap: var(--s3); }
-.cart-basket-qty { display: flex; gap: var(--s1); }
-.cart-basket-qty input { width: 64px; padding: var(--s1); text-align: right; }
+.cart-cart-row.is-blocked { opacity: .55; }
+.cart-cart-thumb { flex: none; width: 84px; height: 84px; border-radius: 10px; overflow: hidden; background: var(--bg); }
+.cart-cart-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cart-cart-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.cart-cart-name { font-weight: 600; }
+.cart-cart-opt { font-size: var(--t-xs); color: var(--muted); }
+.cart-cart-warn { font-size: var(--t-xs); color: #e5484d; font-weight: 600; }
+.cart-cart-price { font-size: var(--t-sm); font-weight: 700; }
+.cart-cart-price em, .cart-cart-line em { font-style: normal; font-weight: 600; font-size: var(--t-xs); }
+.cart-cart-ctrl { flex: none; display: flex; align-items: center; gap: var(--s3); }
+.cart-cart-qty { display: flex; gap: var(--s1); }
+.cart-cart-qty input { width: 64px; padding: var(--s1); text-align: right; }
 .btn-ghost {
     /* 테두리는 --btn-line — --line 은 카드·배경 위에서 1.19:1 이라 버튼으로 안 보인다 (.btn 주석 참고) */
     border: 1px solid var(--btn-line); background: none; color: var(--fg);
     border-radius: 8px; padding: var(--s1) var(--s2); cursor: pointer; font-size: var(--t-xs);
 }
 .btn-ghost:hover { color: var(--accent); border-color: var(--accent); }
-.cart-basket-line { font-weight: 800; min-width: 90px; text-align: right; }
+.cart-cart-line { font-weight: 800; min-width: 90px; text-align: right; }
 
-.cart-basket-sum {
+.cart-cart-sum {
     border: 1px solid var(--line); border-radius: 14px; padding: var(--s5);
     display: flex; align-items: center; justify-content: space-between; gap: var(--s4); flex-wrap: wrap;
 }
-.cart-basket-sum dl { display: flex; gap: var(--s5); margin: 0; }
-.cart-basket-sum dt { font-size: var(--t-sm); color: var(--muted); }
-.cart-basket-sum dd { font-weight: 800; margin: 0; }
+.cart-cart-sum dl { display: flex; gap: var(--s5); margin: 0; }
+.cart-cart-sum dt { font-size: var(--t-sm); color: var(--muted); }
+.cart-cart-sum dd { font-weight: 800; margin: 0; }
 
 @media (max-width: 640px) {
-    .cart-basket-row { flex-wrap: wrap; }
-    .cart-basket-ctrl { width: 100%; justify-content: flex-end; }
+    .cart-cart-row { flex-wrap: wrap; }
+    .cart-cart-ctrl { width: 100%; justify-content: flex-end; }
 }
 
 /* ---------- 카트 주문서·주문완료 ---------- */
@@ -2591,7 +2591,7 @@ input[type=checkbox], input[type=radio] {
 .cart-co-zip input { width: 140px; flex: none; }
 .cart-co-pay { margin-bottom: var(--s3); }
 .cart-co-note { font-size: var(--t-xs); color: var(--muted); margin-top: var(--s3); }
-.cart-checkout .cart-basket-sum { position: sticky; bottom: var(--s3); background: var(--card); box-shadow: var(--sh-lg); }
+.cart-checkout .cart-cart-sum { position: sticky; bottom: var(--s3); background: var(--card); box-shadow: var(--sh-lg); }
 
 .cart-complete { max-width: 640px; margin: 0 auto; }
 .cart-complete-head { text-align: center; margin: var(--s6) 0; }

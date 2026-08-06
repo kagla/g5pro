@@ -8,7 +8,7 @@
 </form>
 
 <nav class="cart-home-links">
-    <a href="{{ $basket_href }}">장바구니</a>
+    <a href="{{ $cart_href }}">장바구니</a>
     <a href="{{ $orders_href }}">주문 조회</a>
 </nav>
 
