@@ -288,3 +288,47 @@ function cart_item_search_where($q)
     }
     return " it_name LIKE '%$esc%' ";
 }
+
+// ---------- 상품 이미지 ----------
+
+function cart_item_images($it_id)
+{
+    global $g5;
+    $rows = array();
+    $result = sql_query(" select * from `{$g5['cart_item_image_table']}`
+        where it_id = '".(int)$it_id."' order by im_main desc, im_order, im_id ");
+    while ($r = sql_fetch_array($result)) $rows[] = $r;
+    return $rows;
+}
+
+// $file 은 $_FILES['im_files'] 의 단일 항목(name, tmp_name, error). 성공 시 빈 문자열
+function cart_item_image_add($it_id, $file, $order = 0, $main = 0)
+{
+    global $g5;
+    $it_id = (int)$it_id;
+    if (!isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) return '업로드 실패(코드 '.$file['error'].')';
+    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    if (!in_array($ext, array('jpg', 'jpeg', 'png', 'gif', 'webp'))) return '이미지 파일만 올릴 수 있습니다: '.$file['name'];
+    // 내용 검사 — 확장자 위장 차단
+    if (!@getimagesize($file['tmp_name'])) return '이미지가 아닙니다: '.$file['name'];
+
+    $dir = cart_item_image_dir($it_id);
+    if (!is_dir($dir)) { @mkdir($dir, G5_DIR_PERMISSION, true); @chmod($dir, G5_DIR_PERMISSION); }
+    $name = $it_id.'_'.substr(md5(uniqid(mt_rand(), true)), 0, 8).'.'.$ext;
+    if (!move_uploaded_file($file['tmp_name'], $dir.'/'.$name)) return '파일 저장 실패';
+    @chmod($dir.'/'.$name, G5_FILE_PERMISSION);
+
+    $rel = sprintf('%03d', (int)($it_id / 1000)).'/'.$name;
+    sql_query(" insert into `{$g5['cart_item_image_table']}` (it_id, im_file, im_order, im_main)
+        values ('$it_id', '".sql_real_escape_string($rel)."', '".(int)$order."', '".(int)$main."') ", true);
+    return '';
+}
+
+function cart_item_image_delete($im_id)
+{
+    global $g5;
+    $row = sql_fetch(" select * from `{$g5['cart_item_image_table']}` where im_id = '".(int)$im_id."' ");
+    if (!$row) return;
+    @unlink(G5_DATA_PATH.'/cart/item/'.$row['im_file']);
+    sql_query(" delete from `{$g5['cart_item_image_table']}` where im_id = '".(int)$im_id."' ", true);
+}
