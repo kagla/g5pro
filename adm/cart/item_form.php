@@ -23,7 +23,7 @@ include_once(G5_ADMIN_PATH.'/admin.head.php');
 // SKU 옵션 JSON 을 뷰에서 다루기 좋게 파싱해 넘긴다
 foreach ($skus as $i => $s) {
     $opt = json_decode($s['sk_option'], true);
-    $skus[$i]['opt_label'] = $opt ? implode(' / ', array_map(
+    $skus[$i]['opt_label'] = (is_array($opt) && count($opt)) ? implode(' / ', array_map(
         function ($k, $v) { return $k.'='.$v; }, array_keys($opt), $opt)) : '단일';
 }
 

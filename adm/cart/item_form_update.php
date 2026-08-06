@@ -47,7 +47,7 @@ $seen_codes = array();  // 이번 제출 안에서의 sk_code 중복(둘 다 신
 foreach ($sk_ids as $i => $sid) {
     $sid = (int)$sid;
     $opt = isset($sk_options[$i]) ? trim($sk_options[$i]) : '{}';
-    if ($opt !== '{}' && json_decode($opt, true) === null) alert('옵션 형식 오류(행 '.($i + 1).')');
+    if ($opt !== '{}' && !is_array(json_decode($opt, true))) alert('옵션 형식 오류(행 '.($i + 1).')');
 
     $code = isset($sk_codes[$i]) ? trim($sk_codes[$i]) : '';
     if ($code !== '') {

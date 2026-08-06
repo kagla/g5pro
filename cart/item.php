@@ -12,7 +12,7 @@ foreach (cart_item_images($it_id) as $img) $images[] = cart_item_image_url($img[
 $skus = array();
 foreach (cart_item_skus($it_id, true) as $s) {
     $opt = json_decode($s['sk_option'], true);
-    $label = ($opt && count($opt)) ? implode(' / ', array_values($opt)) : '기본';
+    $label = (is_array($opt) && count($opt)) ? implode(' / ', array_values($opt)) : '기본';
     $skus[] = array(
         'sk_id' => (int)$s['sk_id'],
         'opt_label' => $label,
@@ -33,7 +33,7 @@ g5_view('cart.item', array(
     'item' => $item,
     'images' => $images,
     'skus' => $skus,
-    'single' => (count($skus) === 1),
+    'single' => (count($skus) <= 1),
     'category' => $category,
     'list_href' => $category ? cart_url('list.php', array('ca_id' => $category['ca_id'])) : cart_url('list.php'),
     'admin_edit_url' => $admin_edit_url,
