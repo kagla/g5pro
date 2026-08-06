@@ -1,6 +1,10 @@
 <?php
 if (!defined('_GNUBOARD_')) exit;
 
+// 이 파일은 순정 admin.lib.php 가 모든 관리자 화면에서 자동 스캔으로 읽는다 —
+// adm/cart/_common.php 를 안 거치므로 G5_CART_* 상수의 출처(core.lib)를 여기서 직접 문다.
+include_once(G5_PATH.'/cart/lib/core.lib.php');
+
 // 5번째 원소 'super' — adm/cart/_common.php 가 최고관리자만 통과시키므로
 // 권한 부여 화면에 헛 메뉴로 뜨지 않게 표시한다 (부킹 950 관례)
 $menu['menu600'] = array(
