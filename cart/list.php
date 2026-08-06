@@ -4,7 +4,7 @@ define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
 $ca_id = (isset($_GET['ca_id']) && !is_array($_GET['ca_id'])) ? (int)$_GET['ca_id'] : 0;
 $q = (isset($_GET['q']) && !is_array($_GET['q'])) ? trim(strip_tags($_GET['q'])) : '';
-$sort = (isset($_GET['sort']) && !is_array($_GET['sort'])) ? $_GET['sort'] : 'new';
+$sort = (isset($_GET['sort']) && !is_array($_GET['sort'])) ? $_GET['sort'] : '';
 $page = (isset($_GET['page']) && !is_array($_GET['page'])) ? max(1, (int)$_GET['page']) : 1;
 $rows_per = 24;
 
@@ -15,6 +15,11 @@ $category = $ca_id ? cart_category_get($ca_id) : null;
 // 숨긴 부모 아래 노출 자식 분류로의 직접 URL 접근 차단
 if ($ca_id && (!$category || !$category['ca_show'] || in_array($ca_id, $hidden_ca_ids, true))) {
     alert('없는 분류입니다.', cart_url('list.php'));
+}
+
+// 분류 기본 정렬 — 방문자가 정렬을 고르기 전(sort 파라미터 없음)에는 분류 설정을 따른다
+if ($sort === '') {
+    $sort = ($category && $category['ca_sort'] !== '') ? $category['ca_sort'] : 'new';
 }
 
 $where = array(" it_show = 1 ");

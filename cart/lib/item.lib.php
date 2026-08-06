@@ -4,6 +4,9 @@ if (!defined('_GNUBOARD_')) exit;
 // ---------- 분류 ----------
 // ca_path 는 자기 자신까지 포함한 '/1/5/23/' 꼴 — 서브트리는 ca_path LIKE '/1/5/%' 프리픽스로 잡는다
 
+// 분류 최대 깊이 — 생성·이동·부모 선택지가 전부 이 값 하나를 본다 (2026-08-06 3→5단 확대)
+if (!defined('CART_CA_MAX_DEPTH')) define('CART_CA_MAX_DEPTH', 5);
+
 function cart_category_get($ca_id)
 {
     global $g5;
@@ -24,16 +27,22 @@ function cart_category_save($data, $ca_id = 0)
     if ($parent) {
         $prow = cart_category_get($parent);
         if (!$prow) return 0;
-        // 최대 3단 — 부모가 이미 3단이면(=자신이 4단이 됨) 신규 생성 거부. 화면 안내문 "최대 3단"과 일치.
-        if (!$ca_id && (int)$prow['ca_depth'] >= 3) return 0;
+        // 최대 깊이 — 부모가 이미 한계 단이면(=자신이 한계+1단이 됨) 신규 생성 거부
+        if (!$ca_id && (int)$prow['ca_depth'] >= CART_CA_MAX_DEPTH) return 0;
         $ppath = $prow['ca_path'];
         $depth = (int)$prow['ca_depth'] + 1;
     }
 
+    // 설명·기본 정렬 — 화이트리스트 밖 정렬 값은 빈 값(몰 기본)으로
+    $desc = sql_real_escape_string(mb_substr(strip_tags(trim(isset($data['ca_desc']) ? $data['ca_desc'] : '')), 0, 500, 'utf-8'));
+    $sort = isset($data['ca_sort']) && in_array($data['ca_sort'], array('new', 'low', 'high'), true)
+        ? $data['ca_sort'] : '';
+
     if ($ca_id) {
-        // 부모 변경은 v1 미지원(트리 재계산 비용·운영 혼란) — 이름·순서·노출만 수정
+        // 부모 변경은 여기서 안 한다 — 드래그 이동(cart_category_move)이 트리 재계산까지 책임진다
         sql_query(" update `{$g5['cart_category_table']}`
-            set ca_name = '$name', ca_order = '$order', ca_show = '$show'
+            set ca_name = '$name', ca_order = '$order', ca_show = '$show',
+                ca_desc = '$desc', ca_sort = '$sort'
             where ca_id = '".(int)$ca_id."' ", true);
         return (int)$ca_id;
     }
@@ -46,6 +55,102 @@ function cart_category_save($data, $ca_id = 0)
         set ca_path = '".sql_real_escape_string($ppath.$new_id.'/')."'
         where ca_id = '$new_id' ", true);
     return (int)$new_id;
+}
+
+// 분류 이미지 — 스토어홈 원형 칩 등에서 쓴다. data/cart/category/ 아래 한 분류 한 파일.
+function cart_category_image_url($file)
+{
+    return $file !== '' ? G5_DATA_URL.'/cart/category/'.$file : '';
+}
+
+function cart_category_image_save($ca_id, $file)
+{
+    global $g5;
+    $ca_id = (int)$ca_id;
+    if (!isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) return '업로드 실패(코드 '.$file['error'].')';
+    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    if (!in_array($ext, array('jpg', 'jpeg', 'png', 'gif', 'webp'))) return '이미지 파일만 올릴 수 있습니다.';
+    if (!@getimagesize($file['tmp_name'])) return '이미지가 아닙니다.';
+
+    $dir = G5_DATA_PATH.'/cart/category';
+    if (!is_dir($dir)) { @mkdir($dir, G5_DIR_PERMISSION, true); @chmod($dir, G5_DIR_PERMISSION); }
+    $name = $ca_id.'_'.substr(md5(uniqid(mt_rand(), true)), 0, 8).'.'.$ext;
+    if (!move_uploaded_file($file['tmp_name'], $dir.'/'.$name)) return '파일 저장 실패';
+    @chmod($dir.'/'.$name, G5_FILE_PERMISSION);
+
+    cart_category_image_delete($ca_id); // 기존 파일 정리 후 교체
+    sql_query(" update `{$g5['cart_category_table']}`
+        set ca_img = '".sql_real_escape_string($name)."' where ca_id = '$ca_id' ", true);
+    return '';
+}
+
+function cart_category_image_delete($ca_id)
+{
+    global $g5;
+    $row = cart_category_get($ca_id);
+    if (!$row || $row['ca_img'] === '') return;
+    @unlink(G5_DATA_PATH.'/cart/category/'.$row['ca_img']);
+    sql_query(" update `{$g5['cart_category_table']}` set ca_img = '' where ca_id = '".(int)$ca_id."' ", true);
+}
+
+// 드래그 이동 — $ca_id 를 $parent 아래로 옮기고 $after_id 형제 바로 뒤에 둔다(0 = 맨 앞).
+// 서브트리의 ca_path·ca_depth 를 프리픽스 교체로 함께 재계산하고, 새 부모의 형제 순서를
+// 10 단위로 재부여한다. 빈 문자열이면 성공, 아니면 사유.
+function cart_category_move($ca_id, $parent, $after_id = 0)
+{
+    global $g5;
+    $ca_id = (int)$ca_id;
+    $parent = (int)$parent;
+    $after_id = (int)$after_id;
+
+    $row = cart_category_get($ca_id);
+    if (!$row) return '없는 분류입니다.';
+    if ($parent === $ca_id) return '자기 자신 아래로는 옮길 수 없습니다.';
+
+    $ppath = '/';
+    $pdepth = 0;
+    if ($parent) {
+        $prow = cart_category_get($parent);
+        if (!$prow) return '없는 부모 분류입니다.';
+        // 자기 자손 밑으로 이동 금지 — 트리가 끊어진다
+        if (strpos($prow['ca_path'], $row['ca_path']) === 0) return '하위 분류 아래로는 옮길 수 없습니다.';
+        $ppath = $prow['ca_path'];
+        $pdepth = (int)$prow['ca_depth'];
+    }
+
+    // 서브트리 높이 포함 최대 깊이 제한 — 이동 후 가장 깊은 자손이 한계를 넘으면 거부
+    $r = sql_fetch(" select coalesce(max(ca_depth), {$row['ca_depth']}) mx from `{$g5['cart_category_table']}`
+        where ca_path like '".sql_real_escape_string($row['ca_path'])."%' ");
+    $height = (int)$r['mx'] - (int)$row['ca_depth'];
+    if ($pdepth + 1 + $height > CART_CA_MAX_DEPTH) return '최대 '.CART_CA_MAX_DEPTH.'단을 넘게 되어 옮길 수 없습니다.';
+
+    // 부모·경로·깊이 — 서브트리 전체를 프리픽스 교체로
+    $old_prefix = $row['ca_path'];
+    $new_prefix = $ppath.$ca_id.'/';
+    $depth_diff = ($pdepth + 1) - (int)$row['ca_depth'];
+    sql_query(" update `{$g5['cart_category_table']}` set ca_parent = '$parent' where ca_id = '$ca_id' ", true);
+    sql_query(" update `{$g5['cart_category_table']}`
+        set ca_path = concat('".sql_real_escape_string($new_prefix)."', substring(ca_path, ".(strlen($old_prefix) + 1).")),
+            ca_depth = ca_depth + ($depth_diff)
+        where ca_path like '".sql_real_escape_string($old_prefix)."%' ", true);
+
+    // 새 부모의 형제 순서 재부여 — after_id 뒤에 끼워 넣고 10 단위로
+    $siblings = array();
+    $result = sql_query(" select ca_id from `{$g5['cart_category_table']}`
+        where ca_parent = '$parent' and ca_id <> '$ca_id' order by ca_order, ca_id ");
+    while ($s = sql_fetch_array($result)) $siblings[] = (int)$s['ca_id'];
+    $ordered = array();
+    if (!$after_id) $ordered[] = $ca_id;
+    foreach ($siblings as $sid) {
+        $ordered[] = $sid;
+        if ($sid === $after_id) $ordered[] = $ca_id;
+    }
+    if (!in_array($ca_id, $ordered, true)) $ordered[] = $ca_id; // after_id 가 형제가 아니면 맨 뒤
+    foreach ($ordered as $i => $sid) {
+        sql_query(" update `{$g5['cart_category_table']}` set ca_order = '".(($i + 1) * 10)."'
+            where ca_id = '$sid' ", true);
+    }
+    return '';
 }
 
 // 트리 순서(부모 아래 자식)로 평탄화한 전체 목록

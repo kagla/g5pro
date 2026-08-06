@@ -7,10 +7,10 @@ $g5['title'] = '분류관리';
 include_once(G5_ADMIN_PATH.'/admin.head.php');
 
 $categories = cart_category_list();
-// 부모 선택지 — 2단계까지만 부모가 될 수 있게(최대 3단 트리, 운영 단순화)
+// 부모 선택지 — 한계 깊이 바로 아래 단까지만 부모가 될 수 있다
 $parent_options = array();
 foreach ($categories as $c) {
-    if ((int)$c['ca_depth'] <= 2) $parent_options[] = $c;
+    if ((int)$c['ca_depth'] < CART_CA_MAX_DEPTH) $parent_options[] = $c;
 }
 // 분류별 상품 수 — 목록에 함께 보여 삭제 가능 여부를 미리 알 수 있게
 $counts = array();

@@ -54,6 +54,13 @@ function cart_column_upgrades()
         // 2026-08-06 PG 초안(draft) 주문이 결제 확정 때 비울 장바구니 행 목록(CSV)
         array('cart_order_table', 'od_bk_ids',
             " ADD `od_bk_ids` varchar(255) NOT NULL DEFAULT '' AFTER `od_guest_pw` "),
+        // 2026-08-06 분류 설정 — 이미지(스토어홈 칩)·설명(목록 소개문)·기본 정렬
+        array('cart_category_table', 'ca_img',
+            " ADD `ca_img` varchar(255) NOT NULL DEFAULT '' AFTER `ca_name` "),
+        array('cart_category_table', 'ca_desc',
+            " ADD `ca_desc` varchar(500) NOT NULL DEFAULT '' AFTER `ca_img` "),
+        array('cart_category_table', 'ca_sort',
+            " ADD `ca_sort` varchar(10) NOT NULL DEFAULT '' AFTER `ca_desc` "),
         // 2026-08-06 관리자 취소 — INIAPI 환불 키, 취소 사유·시각
         array('cart_config_table', 'cc_inicis_apikey',
             " ADD `cc_inicis_apikey` varchar(100) NOT NULL DEFAULT '' AFTER `cc_inicis_signkey` "),
@@ -145,6 +152,9 @@ function cart_table_ddl()
         `ca_id` int(11) NOT NULL AUTO_INCREMENT,
         `ca_parent` int(11) NOT NULL DEFAULT '0',
         `ca_name` varchar(100) NOT NULL DEFAULT '',
+        `ca_img` varchar(255) NOT NULL DEFAULT '',
+        `ca_desc` varchar(500) NOT NULL DEFAULT '',
+        `ca_sort` varchar(10) NOT NULL DEFAULT '',
         `ca_path` varchar(100) NOT NULL DEFAULT '/',
         `ca_depth` tinyint(4) NOT NULL DEFAULT '1',
         `ca_order` int(11) NOT NULL DEFAULT '0',

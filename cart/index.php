@@ -37,7 +37,8 @@ foreach (cart_category_children(0, true) as $c) {
         'name' => $c['ca_name'],
         'initial' => mb_substr($c['ca_name'], 0, 1, 'utf-8'),
         'href' => cart_url('list.php', array('ca_id' => $ca_id)),
-        'img' => '',
+        // 분류 이미지가 있으면 그것부터 — 없으면 아래에서 첫 상품 이미지로 폴백
+        'img' => cart_category_image_url($c['ca_img']),
     );
     if (count($sections) >= 4) continue;
     $ids = cart_category_descendant_ids($ca_id, true);
@@ -83,7 +84,7 @@ foreach ($sections as $sec) {
     }
 }
 foreach ($top_cats as $i => $c) {
-    if (isset($cat_img[$c['ca_id']])) $top_cats[$i]['img'] = $cat_img[$c['ca_id']];
+    if ($c['img'] === '' && isset($cat_img[$c['ca_id']])) $top_cats[$i]['img'] = $cat_img[$c['ca_id']];
 }
 
 // 메인 배너 — 데모 배너 파일이 있으면 사진 배너, 없으면 그라데이션 배너로 폴백

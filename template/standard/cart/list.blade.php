@@ -12,6 +12,11 @@
         @endif
 
     </h2>
+
+    @if ($category && $category['ca_desc'] !== '')
+    <p class="bbs-meta">{{ $category['ca_desc'] }}</p>
+    @endif
+
     <div class="bbs-meta">전체 {{ number_format($total_count) }}개 · {{ $page }} / {{ $total_page }} 페이지</div>
 </header>
 
