@@ -20,7 +20,7 @@ $daily = array();
 $sum = array('cnt' => 0, 'item' => 0, 'ship' => 0, 'total' => 0);
 $result = sql_query(" select date(od_paid_at) d, count(*) cnt,
         sum(od_item_total) item_amt, sum(od_ship_fee) ship_amt, sum(od_total) total_amt
-    from `{$g5['cart_order_table']}`
+    from `{$g5['ycart_order_table']}`
     where $paid_in and $range group by date(od_paid_at) order by d desc ");
 while ($r = sql_fetch_array($result)) {
     $daily[] = $r;
@@ -33,7 +33,7 @@ while ($r = sql_fetch_array($result)) {
 // 수단별 합계 — 같은 기간·같은 기준
 $by_method = array();
 $result = sql_query(" select od_pay_method m, count(*) cnt, sum(od_total) amt
-    from `{$g5['cart_order_table']}`
+    from `{$g5['ycart_order_table']}`
     where $paid_in and $range group by od_pay_method ");
 $method_names = array('bank' => '무통장', 'inicis' => '이니시스', 'toss' => '토스페이먼츠');
 while ($r = sql_fetch_array($result)) {
@@ -43,21 +43,21 @@ while ($r = sql_fetch_array($result)) {
 
 // 같은 기간의 취소 — 참고 수치(취소 시각 컬럼이 없어 주문 시각 기준)
 $r = sql_fetch(" select count(*) cnt, coalesce(sum(od_total), 0) amt
-    from `{$g5['cart_order_table']}`
+    from `{$g5['ycart_order_table']}`
     where od_status = 'canceled' and od_datetime >= '$from 00:00:00' and od_datetime <= '$to 23:59:59' ");
 $canceled = array('cnt' => (int)$r['cnt'], 'amt' => (int)$r['amt']);
 
 // 망취소 이력 — sent 가 'sent' 가 아닌 행은 돈이 걸려 있을 수 있는 미확인 취소라 강조
 $netcancels = array();
-$result = sql_query(" select p.*, o.od_no from `{$g5['cart_payment_table']}` p
-    join `{$g5['cart_order_table']}` o on o.od_id = p.od_id
+$result = sql_query(" select p.*, o.od_no from `{$g5['ycart_payment_table']}` p
+    join `{$g5['ycart_order_table']}` o on o.od_id = p.od_id
     where p.pm_status = 'netcancel' order by p.pm_id desc limit 50 ");
 while ($r = sql_fetch_array($result)) {
     $data = json_decode($r['pm_data'], true);
     $r['sent'] = (is_array($data) && isset($data['sent'])) ? $data['sent'] : '';
     $r['reason'] = (is_array($data) && isset($data['reason'])) ? $data['reason'] : '';
     $r['alarm'] = ($r['sent'] !== 'sent' && $r['sent'] !== '' && $r['sent'] !== 'skip');
-    $r['view_url'] = G5_ADMIN_URL.'/cart/order_view.php?od_id='.(int)$r['od_id'];
+    $r['view_url'] = G5_CART_ADMIN_URL.'/order_view.php?od_id='.(int)$r['od_id'];
     $netcancels[] = $r;
 }
 
@@ -69,7 +69,7 @@ cadm_view('settle', array(
     'by_method' => $by_method,
     'canceled' => $canceled,
     'netcancels' => $netcancels,
-    'self_url' => G5_ADMIN_URL.'/cart/settle.php',
+    'self_url' => G5_CART_ADMIN_URL.'/settle.php',
 ));
 
 include_once(G5_ADMIN_PATH.'/admin.tail.php');

@@ -16,18 +16,18 @@ $where = ($tab !== '') ? " od_status = '".sql_real_escape_string($tab)."' "
 
 $page = (isset($_GET['page']) && !is_array($_GET['page'])) ? max(1, (int)$_GET['page']) : 1;
 $rows_per = 30;
-$cnt = sql_fetch(" select count(*) as cnt from `{$g5['cart_order_table']}` where $where ");
+$cnt = sql_fetch(" select count(*) as cnt from `{$g5['ycart_order_table']}` where $where ");
 $total = (int)$cnt['cnt'];
 $total_page = max(1, (int)ceil($total / $rows_per));
 if ($page > $total_page) $page = $total_page;
 $offset = ($page - 1) * $rows_per;
 
 $orders = array();
-$result = sql_query(" select * from `{$g5['cart_order_table']}`
+$result = sql_query(" select * from `{$g5['ycart_order_table']}`
     where $where order by od_id asc limit $offset, $rows_per ");
 while ($r = sql_fetch_array($result)) {
     $first = sql_fetch(" select min(oi_name) as oi_name, count(*) as cnt
-        from `{$g5['cart_order_item_table']}` where od_id = '".(int)$r['od_id']."' group by od_id ");
+        from `{$g5['ycart_order_item_table']}` where od_id = '".(int)$r['od_id']."' group by od_id ");
     $r['summary'] = $first
         ? ($first['oi_name'].((int)$first['cnt'] > 1 ? ' 외 '.((int)$first['cnt'] - 1).'건' : ''))
         : '';
@@ -35,12 +35,12 @@ while ($r = sql_fetch_array($result)) {
     // 이 상태에서 배송관리가 눌러줄 다음 단계 하나
     $r['next_action'] = ($r['od_status'] === 'shipping') ? 'delivered' : 'shipping';
     $r['next_label'] = ($r['od_status'] === 'shipping') ? '배송완료' : '발송(배송중)';
-    $r['view_url'] = G5_ADMIN_URL.'/cart/order_view.php?od_id='.(int)$r['od_id'];
+    $r['view_url'] = G5_CART_ADMIN_URL.'/order_view.php?od_id='.(int)$r['od_id'];
     $orders[] = $r;
 }
 
 $tab_counts = array();
-$result = sql_query(" select od_status, count(*) cnt from `{$g5['cart_order_table']}`
+$result = sql_query(" select od_status, count(*) cnt from `{$g5['ycart_order_table']}`
     where od_status in ('paid', 'preparing', 'shipping') group by od_status ");
 while ($r = sql_fetch_array($result)) $tab_counts[$r['od_status']] = (int)$r['cnt'];
 
@@ -53,8 +53,8 @@ cadm_view('delivery_list', array(
     'page' => $page,
     'total_page' => $total_page,
     'token' => get_token(),
-    'self_url' => G5_ADMIN_URL.'/cart/delivery_list.php',
-    'update_url' => G5_ADMIN_URL.'/cart/order_update.php',
+    'self_url' => G5_CART_ADMIN_URL.'/delivery_list.php',
+    'update_url' => G5_CART_ADMIN_URL.'/order_update.php',
 ));
 
 include_once(G5_ADMIN_PATH.'/admin.tail.php');

@@ -33,29 +33,29 @@ if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) $where[] = " od_datetime <= '$to 2
 else $to = '';
 $where_sql = implode(' and ', $where);
 
-$cnt = sql_fetch(" select count(*) as cnt from `{$g5['cart_order_table']}` where $where_sql ");
+$cnt = sql_fetch(" select count(*) as cnt from `{$g5['ycart_order_table']}` where $where_sql ");
 $total = (int)$cnt['cnt'];
 $total_page = max(1, (int)ceil($total / $rows_per));
 if ($page > $total_page) $page = $total_page;
 $offset = ($page - 1) * $rows_per;
 
 $orders = array();
-$result = sql_query(" select * from `{$g5['cart_order_table']}`
+$result = sql_query(" select * from `{$g5['ycart_order_table']}`
     where $where_sql order by od_id desc limit $offset, $rows_per ");
 while ($r = sql_fetch_array($result)) {
     $first = sql_fetch(" select min(oi_name) as oi_name, count(*) as cnt
-        from `{$g5['cart_order_item_table']}` where od_id = '".(int)$r['od_id']."' group by od_id ");
+        from `{$g5['ycart_order_item_table']}` where od_id = '".(int)$r['od_id']."' group by od_id ");
     $r['summary'] = $first
         ? ($first['oi_name'].((int)$first['cnt'] > 1 ? ' 외 '.((int)$first['cnt'] - 1).'건' : ''))
         : '';
     $r['status_label'] = cart_order_status_label($r['od_status'], $r['od_pay_method']);
-    $r['view_url'] = G5_ADMIN_URL.'/cart/order_view.php?od_id='.(int)$r['od_id'];
+    $r['view_url'] = G5_CART_ADMIN_URL.'/order_view.php?od_id='.(int)$r['od_id'];
     $orders[] = $r;
 }
 
 // 상태 탭에 건수를 함께 — 운영자가 처리할 일을 숫자로 본다
 $status_counts = array();
-$result = sql_query(" select od_status, count(*) cnt from `{$g5['cart_order_table']}`
+$result = sql_query(" select od_status, count(*) cnt from `{$g5['ycart_order_table']}`
     where od_status <> 'draft' group by od_status ");
 while ($r = sql_fetch_array($result)) $status_counts[$r['od_status']] = (int)$r['cnt'];
 
@@ -70,7 +70,7 @@ cadm_view('order_list', array(
     'total' => $total,
     'page' => $page,
     'total_page' => $total_page,
-    'self_url' => G5_ADMIN_URL.'/cart/order_list.php',
+    'self_url' => G5_CART_ADMIN_URL.'/order_list.php',
 ));
 
 include_once(G5_ADMIN_PATH.'/admin.tail.php');

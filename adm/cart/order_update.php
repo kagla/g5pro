@@ -13,13 +13,13 @@ $post = function ($key) {
 };
 $od_id = (int)$post('od_id');
 $mode = $post('mode');
-$back = G5_ADMIN_URL.'/cart/order_view.php?od_id='.$od_id;
+$back = G5_CART_ADMIN_URL.'/order_view.php?od_id='.$od_id;
 // 배송관리 화면에서 온 요청은 그 목록으로 돌려보낸다
-if ($post('ret') === 'delivery') $back = G5_ADMIN_URL.'/cart/delivery_list.php';
+if ($post('ret') === 'delivery') $back = G5_CART_ADMIN_URL.'/delivery_list.php';
 
 $order = cart_order_get($od_id);
 if (!$order || $order['od_status'] === 'draft') {
-    alert('주문을 찾을 수 없습니다.', G5_ADMIN_URL.'/cart/order_list.php');
+    alert('주문을 찾을 수 없습니다.', G5_CART_ADMIN_URL.'/order_list.php');
 }
 
 if ($mode === 'invoice') {
@@ -57,7 +57,7 @@ if ($mode === 'cancel') {
         // 환불은 나갔는데 전이가 실패한 드문 경우 — 이력이 남아 있으니 화면이 대사 근거가 된다
         alert($err.' (전자결제 취소 여부는 결제 이력을 확인하세요)', $back);
     }
-    sql_query(" update `{$g5['cart_order_table']}`
+    sql_query(" update `{$g5['ycart_order_table']}`
         set od_cancel_reason = '".sql_real_escape_string(strip_tags($reason))."',
             od_canceled_at = '".G5_TIME_YMDHIS."',
             od_canceled_by = '".sql_real_escape_string($member['mb_id'])."'

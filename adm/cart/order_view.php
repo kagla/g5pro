@@ -6,7 +6,7 @@ auth_check_menu($auth, $sub_menu, 'r');
 $od_id = (isset($_GET['od_id']) && !is_array($_GET['od_id'])) ? (int)$_GET['od_id'] : 0;
 $order = cart_order_get($od_id);
 if (!$order || $order['od_status'] === 'draft') {
-    alert('주문을 찾을 수 없습니다.', G5_ADMIN_URL.'/cart/order_list.php');
+    alert('주문을 찾을 수 없습니다.', G5_CART_ADMIN_URL.'/order_list.php');
 }
 
 $g5['title'] = '주문 상세 '.$order['od_no'];
@@ -14,7 +14,7 @@ include_once(G5_ADMIN_PATH.'/admin.head.php');
 
 // 결제 이력 — 망취소가 필요했는데 못 나간 행(sent commfail/skip)은 이중 결제 위험 신호로 강조
 $payments = array();
-$result = sql_query(" select * from `{$g5['cart_payment_table']}`
+$result = sql_query(" select * from `{$g5['ycart_payment_table']}`
     where od_id = '$od_id' order by pm_id desc ");
 while ($r = sql_fetch_array($result)) {
     $data = json_decode($r['pm_data'], true);
@@ -46,8 +46,8 @@ cadm_view('order_view', array(
     'can_cancel' => $can_cancel,
     'pg_paid' => $pg_paid,
     'token' => get_token(),
-    'update_url' => G5_ADMIN_URL.'/cart/order_update.php',
-    'list_url' => G5_ADMIN_URL.'/cart/order_list.php',
+    'update_url' => G5_CART_ADMIN_URL.'/order_update.php',
+    'list_url' => G5_CART_ADMIN_URL.'/order_list.php',
 ));
 
 include_once(G5_ADMIN_PATH.'/admin.tail.php');
