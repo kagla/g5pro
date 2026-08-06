@@ -7,6 +7,11 @@
     <button type="submit">검색</button>
 </form>
 
+<nav class="cart-home-links">
+    <a href="{{ $basket_href }}">장바구니</a>
+    <a href="{{ $orders_href }}">주문 조회</a>
+</nav>
+
 <a href="{{ $all_href }}" class="cart-banner {{ $banner_url === '' ? 'no-photo' : '' }}">
 
     @if ($banner_url !== '')

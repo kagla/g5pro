@@ -90,6 +90,8 @@ foreach ($top_cats as $i => $c) {
 $banner_url = is_file(G5_DATA_PATH.'/cart/demo/banner.jpg')
     ? G5_DATA_URL.'/cart/demo/banner.jpg' : '';
 
+$is_member = isset($member['mb_id']) && $member['mb_id'] !== '';
+
 $g5['title'] = '스토어';
 g5_view('cart.index', array(
     'top_cats' => $top_cats,
@@ -98,4 +100,6 @@ g5_view('cart.index', array(
     'banner_url' => $banner_url,
     'search_url' => cart_url('list.php'),
     'all_href' => cart_url('list.php'),
+    'basket_href' => cart_url('basket.php'),
+    'orders_href' => $is_member ? cart_url('order.php') : cart_url('guest.php'),
 ));
