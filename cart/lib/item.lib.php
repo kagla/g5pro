@@ -24,6 +24,8 @@ function cart_category_save($data, $ca_id = 0)
     if ($parent) {
         $prow = cart_category_get($parent);
         if (!$prow) return 0;
+        // 최대 3단 — 부모가 이미 3단이면(=자신이 4단이 됨) 신규 생성 거부. 화면 안내문 "최대 3단"과 일치.
+        if (!$ca_id && (int)$prow['ca_depth'] >= 3) return 0;
         $ppath = $prow['ca_path'];
         $depth = (int)$prow['ca_depth'] + 1;
     }
@@ -47,15 +49,30 @@ function cart_category_save($data, $ca_id = 0)
 }
 
 // 트리 순서(부모 아래 자식)로 평탄화한 전체 목록
+// ca_path 문자열 정렬은 '/1/' < '/10/' < '/2/' 로 깨지므로 SQL 정렬에 기대지 않고
+// PHP 에서 ca_parent 로 그룹핑한 뒤 각 형제를 (ca_order, ca_id) 순으로 재귀 평탄화한다.
 function cart_category_list($only_show = false)
 {
     global $g5;
     $where = $only_show ? " where ca_show = 1 " : "";
-    $rows = array();
+    $by_parent = array();
     $result = sql_query(" select * from `{$g5['cart_category_table']}` $where
-        order by ca_path, ca_order, ca_id ");
-    while ($r = sql_fetch_array($result)) $rows[] = $r;
+        order by ca_order, ca_id ");
+    while ($r = sql_fetch_array($result)) $by_parent[(int)$r['ca_parent']][] = $r;
+
+    $rows = array();
+    cart_category_flatten($by_parent, 0, $rows);
     return $rows;
+}
+
+// cart_category_list() 내부 재귀 헬퍼 — 형제는 이미 (ca_order, ca_id) 순으로 들어와 있다
+function cart_category_flatten($by_parent, $parent_id, &$rows)
+{
+    if (empty($by_parent[$parent_id])) return;
+    foreach ($by_parent[$parent_id] as $r) {
+        $rows[] = $r;
+        cart_category_flatten($by_parent, (int)$r['ca_id'], $rows);
+    }
 }
 
 function cart_category_children($ca_id, $only_show = true)

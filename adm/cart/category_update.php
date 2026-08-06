@@ -26,7 +26,11 @@ if ($w === 'u') {
     if (!cart_category_get($ca_id)) alert('없는 분류입니다.', $back);
     cart_category_save($data, $ca_id);
 } else {
-    if ($data['ca_parent'] && !cart_category_get($data['ca_parent'])) alert('없는 부모 분류입니다.', $back);
+    if ($data['ca_parent']) {
+        $prow = cart_category_get($data['ca_parent']);
+        if (!$prow) alert('없는 부모 분류입니다.', $back);
+        if ((int)$prow['ca_depth'] >= 3) alert('3단까지만 만들 수 있습니다.', $back);
+    }
     if (!cart_category_save($data)) alert('저장에 실패했습니다.', $back);
 }
 goto_url($back);
