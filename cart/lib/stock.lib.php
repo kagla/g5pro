@@ -11,18 +11,18 @@ function cart_stock_move($sk_id, $diff, $reason, $ref = '', $who = '')
 
     if ($diff < 0) {
         $need = -$diff;
-        sql_query(" update `{$g5['cart_sku_table']}`
+        sql_query(" update `{$g5['ycart_sku_table']}`
             set sk_qty = sk_qty - '$need'
             where sk_id = '$sk_id' and sk_qty >= '$need' ", true);
         if (!get_sql_affected_rows()) return false;   // 재고 부족 — 아무것도 안 바뀜
     } else {
-        sql_query(" update `{$g5['cart_sku_table']}`
+        sql_query(" update `{$g5['ycart_sku_table']}`
             set sk_qty = sk_qty + '$diff' where sk_id = '$sk_id' ", true);
         if (!get_sql_affected_rows()) return false;   // 없는 SKU
     }
 
-    $row = sql_fetch(" select it_id, sk_qty from `{$g5['cart_sku_table']}` where sk_id = '$sk_id' ");
-    sql_query(" insert into `{$g5['cart_stock_log_table']}`
+    $row = sql_fetch(" select it_id, sk_qty from `{$g5['ycart_sku_table']}` where sk_id = '$sk_id' ");
+    sql_query(" insert into `{$g5['ycart_stock_log_table']}`
         (sk_id, it_id, sl_diff, sl_after, sl_reason, sl_ref, sl_who, sl_datetime)
         values ('$sk_id', '".(int)$row['it_id']."', '$diff', '".(int)$row['sk_qty']."',
                 '".sql_real_escape_string($reason)."', '".sql_real_escape_string($ref)."',

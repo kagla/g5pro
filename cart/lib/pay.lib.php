@@ -25,7 +25,7 @@ function cart_pay_methods()
 function cart_payment_log($od_id, $method, $tid, $amount, $status, $data)
 {
     global $g5;
-    sql_query(" insert into `{$g5['cart_payment_table']}`
+    sql_query(" insert into `{$g5['ycart_payment_table']}`
         (od_id, pm_method, pm_tid, pm_amount, pm_status, pm_data, pm_datetime, pm_approved_at)
         values ('".(int)$od_id."', '".sql_real_escape_string($method)."',
                 '".sql_real_escape_string($tid)."', '".(int)$amount."',
@@ -49,7 +49,7 @@ function cart_order_get_by_oid($oid)
     global $g5;
     $oid = sql_real_escape_string(trim($oid));
     if ($oid === '') return null;
-    $row = sql_fetch(" select * from `{$g5['cart_order_table']}` where od_oid = '$oid' ");
+    $row = sql_fetch(" select * from `{$g5['ycart_order_table']}` where od_oid = '$oid' ");
     return $row ? $row : null;
 }
 
@@ -58,7 +58,7 @@ function cart_pay_new_oid($od)
 {
     global $g5;
     $oid = $od['od_no'].'T'.G5_SERVER_TIME.rand(10, 99);
-    sql_query(" update `{$g5['cart_order_table']}`
+    sql_query(" update `{$g5['ycart_order_table']}`
         set od_oid = '".sql_real_escape_string($oid)."'
         where od_id = '".(int)$od['od_id']."' ", true);
     return $oid;
@@ -80,7 +80,7 @@ function cart_order_confirm_paid($od_id, $oid, $method, $tid, $amount)
     sql_query(" set autocommit = 0 ", true);
     sql_query(" start transaction ", true);
 
-    $cur = sql_fetch(" select * from `{$g5['cart_order_table']}`
+    $cur = sql_fetch(" select * from `{$g5['ycart_order_table']}`
         where od_id = '".(int)$od_id."' for update ");
 
     if (!$cur) {
@@ -88,7 +88,7 @@ function cart_order_confirm_paid($od_id, $oid, $method, $tid, $amount)
     } elseif ($cur['od_status'] === 'paid') {
         // 같은 주문에 승인이 두 번(창 중복·리턴 중복). 같은 tid 면 이미 처리된 성공 —
         // 멱등 성공으로 두고(이력 추가 없음), 다른 tid 면 이번 승인을 되돌리게 한다
-        $prev = sql_fetch(" select pm_id from `{$g5['cart_payment_table']}`
+        $prev = sql_fetch(" select pm_id from `{$g5['ycart_payment_table']}`
             where od_id = '".(int)$od_id."' and pm_tid = '".sql_real_escape_string($tid)."'
               and pm_status = 'approved' ");
         $fail = $prev ? '' : 'duplicate';
@@ -116,7 +116,7 @@ function cart_order_confirm_paid($od_id, $oid, $method, $tid, $amount)
     }
 
     if ($payable && $fail === '') {
-        sql_query(" update `{$g5['cart_order_table']}`
+        sql_query(" update `{$g5['ycart_order_table']}`
             set od_status = 'paid', od_pay_method = '".sql_real_escape_string($method)."',
                 od_paid_at = '".G5_TIME_YMDHIS."'
             where od_id = '".(int)$od_id."' and od_status in ('unpaid', 'draft') ", true);
@@ -144,7 +144,7 @@ function cart_pay_refund($od, $reason, $who = 'admin')
     global $g5;
     $od_id = (int)$od['od_id'];
 
-    $appr = sql_fetch(" select * from `{$g5['cart_payment_table']}`
+    $appr = sql_fetch(" select * from `{$g5['ycart_payment_table']}`
         where od_id = '$od_id' and pm_status = 'approved' order by pm_id desc limit 1 ");
     if (!$appr || trim($appr['pm_tid']) === '') return '환불할 승인 이력(TID)이 없습니다.';
     $tid = trim($appr['pm_tid']);
@@ -214,5 +214,5 @@ function cart_pay_req($key)
     return stripslashes((string)$_REQUEST[$key]);
 }
 
-include_once(G5_PATH.'/cart/pay/inicis.lib.php');
-include_once(G5_PATH.'/cart/pay/toss.lib.php');
+include_once(G5_CART_PATH.'/pay/inicis.lib.php');
+include_once(G5_CART_PATH.'/pay/toss.lib.php');

@@ -127,9 +127,9 @@ function cart_inicis_return()
     $od_id = (int)$od['od_id'];
     $price = (int)$od['od_total'];
     // 실패 복귀처는 주문서 — 초안 방식이라 장바구니가 그대로 남아 있어 바로 다시 시도할 수 있다.
-    // 초안이 덮던 행들(od_bk_ids)을 buy 로 실어 바로구매 스코프도 그대로 복원한다.
+    // 초안이 덮던 행들(od_ct_ids)을 buy 로 실어 바로구매 스코프도 그대로 복원한다.
     $retry_url = cart_url('checkout.php',
-        $od['od_bk_ids'] !== '' ? array('buy' => $od['od_bk_ids']) : array());
+        $od['od_ct_ids'] !== '' ? array('buy' => $od['od_ct_ids']) : array());
 
     if (cart_pay_req('mid') !== $conf['mid']) {
         alert('요청된 상점아이디가 설정과 다릅니다.', $retry_url);

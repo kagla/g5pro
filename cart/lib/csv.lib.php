@@ -34,12 +34,12 @@ function cart_csv_export_rows()
     $rows = array();
     $result = sql_query(" select i.it_code, i.it_name, i.it_show,
             (select group_concat(c.ca_code order by c.ca_order, c.ca_id separator ',')
-               from `{$g5['cart_item_category_table']}` x
-               inner join `{$g5['cart_category_table']}` c on c.ca_id = x.ca_id
+               from `{$g5['ycart_item_category_table']}` x
+               inner join `{$g5['ycart_category_table']}` c on c.ca_id = x.ca_id
               where x.it_id = i.it_id) as ca_codes,
             s.sk_code, s.sk_option, s.sk_price, s.sk_qty, s.sk_barcode, s.sk_use
-        from `{$g5['cart_item_table']}` i
-        inner join `{$g5['cart_sku_table']}` s on s.it_id = i.it_id
+        from `{$g5['ycart_item_table']}` i
+        inner join `{$g5['ycart_sku_table']}` s on s.it_id = i.it_id
         order by i.it_id, s.sk_id ");
     while ($r = sql_fetch_array($result)) {
         $opt = json_decode($r['sk_option'], true);
@@ -118,7 +118,9 @@ function cart_csv_option_json($str)
 }
 
 // '분류코드' 셀('a,b,c') → ca_id 배열. 빈 셀은 빈 배열(=변경 없음, 신규면 무분류), 잘못된
-// 코드가 하나라도 있으면 null(행 오류). summary 와 apply 가 같은 판정을 쓰도록 여기 하나로 모은다.
+// 코드가 하나라도 있으면 null(행 오류). 쉼표만 있는 셀(',')도 null — 빈 배열을 돌려주면
+// apply 의 "셀이 비지 않았으면 교체" 규칙과 만나 소속 전체가 소리 없이 풀린다.
+// summary 와 apply 가 같은 판정을 쓰도록 여기 하나로 모은다.
 function cart_csv_category_ids($cell)
 {
     $cell = trim($cell);
@@ -131,7 +133,7 @@ function cart_csv_category_ids($cell)
         if (!$row) return null;
         $ids[] = (int)$row['ca_id'];
     }
-    return $ids;
+    return $ids ? $ids : null;
 }
 
 // 신규 상품인데 상품명 칸이 비었으면 참.
@@ -211,6 +213,7 @@ function cart_csv_apply($rows, $who)
 {
     $r = array('new_items' => 0, 'upd_items' => 0, 'new_skus' => 0, 'upd_skus' => 0, 'stock_changes' => 0);
     $item_cache = array();   // it_code → it_id (파일 안 중복 조회 방지 + summary 의 file_items 와 동격)
+    $cat_done = array();     // it_code → true, 분류 소속을 이미 반영한 상품(상품당 한 번만 쓴다)
 
     foreach (array_chunk($rows, 500) as $chunk) {
         sql_query(" START TRANSACTION ", false);
@@ -257,10 +260,11 @@ function cart_csv_apply($rows, $who)
             }
             $it_id = $item_cache[$code];
 
-            // 분류코드 셀이 비어 있지 않으면 소속 전체 교체(빈 셀 = 변경 없음). set 은 멱등이라
-            // 같은 상품의 SKU 행마다 반복돼도 무해하다.
-            if ($row['분류코드'] !== '') {
+            // 분류코드 셀이 비어 있지 않으면 소속 전체 교체(빈 셀 = 변경 없음).
+            // 같은 상품의 SKU 행마다 다시 쓰지 않게 상품당 한 번만 반영한다.
+            if ($row['분류코드'] !== '' && !isset($cat_done[$code])) {
                 cart_item_category_set($it_id, $csv_ca_ids);
+                $cat_done[$code] = true;
             }
 
             // 빈 셀 = 변경 없음(수정일 때만). 신규 SKU 의 기본값: 판매가 0, 바코드 '', 사용함
