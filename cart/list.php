@@ -2,7 +2,7 @@
 include_once('./_common.php');
 define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
-$ca_id = (isset($_GET['ca_id']) && !is_array($_GET['ca_id'])) ? (int)$_GET['ca_id'] : 0;
+$ca = (isset($_GET['ca']) && !is_array($_GET['ca'])) ? trim($_GET['ca']) : '';
 $q = (isset($_GET['q']) && !is_array($_GET['q'])) ? trim(strip_tags($_GET['q'])) : '';
 $sort = (isset($_GET['sort']) && !is_array($_GET['sort'])) ? $_GET['sort'] : '';
 $page = (isset($_GET['page']) && !is_array($_GET['page'])) ? max(1, (int)$_GET['page']) : 1;
@@ -10,10 +10,11 @@ $rows_per = 24;
 
 $hidden_ca_ids = cart_hidden_category_ids();
 
-$category = $ca_id ? cart_category_get($ca_id) : null;
+$category = $ca !== '' ? cart_category_get_by_code($ca) : null;
+$ca_id = $category ? (int)$category['ca_id'] : 0;
 // ca_show 뿐 아니라 캐스케이드-숨김(부모가 숨겨진 노출 자식)도 같이 막는다 —
 // 숨긴 부모 아래 노출 자식 분류로의 직접 URL 접근 차단
-if ($ca_id && (!$category || !$category['ca_show'] || in_array($ca_id, $hidden_ca_ids, true))) {
+if ($ca !== '' && (!$category || !$category['ca_show'] || in_array($ca_id, $hidden_ca_ids, true))) {
     alert('없는 분류입니다.', cart_url('list.php'));
 }
 
@@ -25,10 +26,11 @@ if ($sort === '') {
 $where = array(" it_show = 1 ");
 if ($category) {
     $ids = cart_category_descendant_ids($ca_id, true);
-    $where[] = " ca_id IN (".implode(',', $ids).") ";
-} elseif ($hidden_ca_ids) {
-    // 전체목록·검색(ca_id=0) 경로 — 숨긴 분류(캐스케이드 포함) 소속 상품은 제외
-    $where[] = " ca_id NOT IN (".implode(',', $hidden_ca_ids).") ";
+    $where[] = " it_id IN (select it_id from `{$g5['cart_item_category_table']}`
+        where ca_id IN (".implode(',', $ids).")) ";
+} else {
+    // 전체·검색 경로 — 무분류 상품 포함, 전 소속이 숨김인 상품만 제외
+    $where[] = cart_item_hidden_where('');
 }
 if ($q !== '') $where[] = cart_item_search_where($q);
 $where_sql = implode(' AND ', $where);
@@ -65,11 +67,11 @@ foreach ($rows as $r) {
 // 하위 분류 내비 — 현재 분류의 자식들(최상위면 최상위들)
 $children = array();
 foreach (cart_category_children($ca_id, true) as $c) {
-    $c['href'] = cart_url('list.php', array('ca_id' => $c['ca_id']));
+    $c['href'] = cart_url('list.php', array('ca' => $c['ca_code']));
     $children[] = $c;
 }
 
-$base_qs = array('ca_id' => $ca_id, 'q' => $q, 'sort' => $sort);
+$base_qs = array('ca' => $ca, 'q' => $q, 'sort' => $sort);
 $sorts = array();
 foreach (array('new' => '신상품', 'low' => '낮은가격', 'high' => '높은가격') as $k => $name) {
     $sorts[] = array('name' => $name, 'active' => ($sort === $k),

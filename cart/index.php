@@ -2,23 +2,21 @@
 include_once('./_common.php');
 define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
-$hidden_ca_ids = cart_hidden_category_ids();
-
-// 노출 상품 공통 조건 — 목록(list.php)의 전체 경로와 같은 기준
-$visible_where = " i.it_show = 1 ";
-if ($hidden_ca_ids) {
-    $visible_where .= " AND i.ca_id NOT IN (".implode(',', $hidden_ca_ids).") ";
-}
+// 노출 상품 공통 조건 — 목록(list.php)의 전체 경로와 같은 기준(N:M 숨김 의미론)
+$visible_where = " i.it_show = 1 AND ".cart_item_hidden_where('i');
 
 // 상품 행 묶음 조회 — 섹션마다 같은 꼴이라 하나로 모은다. 카드의 분류명 줄(오늘의집의
-// 브랜드 줄 자리)을 위해 분류 이름을 조인하고, 대표 이미지는 말미에 한 방 조회
+// 브랜드 줄 자리)은 연결 분류 중 대표(ca_order 첫 번째)를 서브쿼리로, 대표 이미지는
+// 말미에 한 방 조회
 function cart_index_fetch($where, $limit)
 {
     global $g5;
     $rows = array();
-    $result = sql_query(" select i.it_id, i.it_name, i.it_price, i.it_stock, c.ca_name
+    $result = sql_query(" select i.it_id, i.it_name, i.it_price, i.it_stock,
+            (select c.ca_name from `{$g5['cart_item_category_table']}` x
+              inner join `{$g5['cart_category_table']}` c on c.ca_id = x.ca_id
+              where x.it_id = i.it_id order by c.ca_order, c.ca_id limit 1) as ca_name
         from `{$g5['cart_item_table']}` i
-        left join `{$g5['cart_category_table']}` c on c.ca_id = i.ca_id
         where $where order by i.it_id desc limit ".(int)$limit);
     while ($r = sql_fetch_array($result)) $rows[] = $r;
     return $rows;
@@ -36,18 +34,19 @@ foreach (cart_category_children(0, true) as $c) {
         'ca_id' => $ca_id,
         'name' => $c['ca_name'],
         'initial' => mb_substr($c['ca_name'], 0, 1, 'utf-8'),
-        'href' => cart_url('list.php', array('ca_id' => $ca_id)),
+        'href' => cart_url('list.php', array('ca' => $c['ca_code'])),
         // 분류 이미지가 있으면 그것부터 — 없으면 아래에서 첫 상품 이미지로 폴백
         'img' => cart_category_image_url($c['ca_img']),
     );
     if (count($sections) >= 4) continue;
     $ids = cart_category_descendant_ids($ca_id, true);
-    $rows = cart_index_fetch(" i.it_show = 1 AND i.ca_id IN (".implode(',', $ids).") ", 8);
+    $rows = cart_index_fetch(" i.it_show = 1 AND i.it_id IN
+        (select it_id from `{$g5['cart_item_category_table']}` where ca_id IN (".implode(',', $ids).")) ", 8);
     if (!count($rows)) continue;
     $sections[] = array(
         'ca_id' => $ca_id,
         'name' => $c['ca_name'],
-        'href' => cart_url('list.php', array('ca_id' => $ca_id)),
+        'href' => cart_url('list.php', array('ca' => $c['ca_code'])),
         'items' => $rows,
     );
 }
