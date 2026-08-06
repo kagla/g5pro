@@ -66,7 +66,36 @@
             <p class="shop-soldout">품절된 상품입니다.</p>
             @endif
 
-            <p class="shop-item-note">장바구니·구매는 2단계에서 열립니다.</p>
+            @if (count($buyable_skus))
+            <form method="post" action="{{ $basket_action }}" class="cart-buy">
+                <input type="hidden" name="token" value="{{ $token }}">
+                <input type="hidden" name="mode" value="add">
+
+                @if ($single)
+                <input type="hidden" name="sk_id" value="{{ $buyable_skus[0]['sk_id'] }}">
+                @else
+                <label class="cart-buy-label">옵션
+                    <select name="sk_id" id="cart_sku_select" required>
+                        <option value="">옵션을 선택하세요</option>
+
+                        @foreach ($buyable_skus as $s)
+                        <option value="{{ $s['sk_id'] }}" data-price="{{ $s['sk_price'] }}">{{ $s['opt_label'] }} — {{ number_format($s['sk_price']) }}원</option>
+                        @endforeach
+
+                    </select>
+                </label>
+                @endif
+
+                <label class="cart-buy-label">수량
+                    <input type="number" name="qty" value="1" min="1" max="999">
+                </label>
+                <div class="cart-buy-btns">
+                    <button type="submit" name="dest" value="basket" class="cart-cta is-line">장바구니</button>
+                    <button type="submit" name="dest" value="buy" class="cart-cta">바로구매</button>
+                </div>
+            </form>
+            @endif
+
         </div>
     </div>
 

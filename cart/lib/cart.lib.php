@@ -12,6 +12,7 @@ function cart_table_defaults()
         'cart_item_image_table' => 'cart_item_image',
         'cart_sku_table'        => 'cart_sku',
         'cart_stock_log_table'  => 'cart_stock_log',
+        'cart_basket_table'     => 'cart_basket',
     );
     foreach ($tables as $key => $name) {
         if (!isset($g5[$key])) $g5[$key] = G5_TABLE_PREFIX.$name;
@@ -151,6 +152,17 @@ function cart_table_ddl()
         `sl_who` varchar(50) NOT NULL DEFAULT '',
         `sl_datetime` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
         PRIMARY KEY (`sl_id`), KEY `sk_id` (`sk_id`, `sl_id`), KEY `it_id` (`it_id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
+    'cart_basket_table' => " CREATE TABLE IF NOT EXISTS `{$g5['cart_basket_table']}` (
+        `bk_id` int(11) NOT NULL AUTO_INCREMENT,
+        `mb_id` varchar(20) NOT NULL DEFAULT '',
+        `bk_sid` varchar(64) NOT NULL DEFAULT '',
+        `sk_id` int(11) NOT NULL DEFAULT '0',
+        `bk_qty` int(11) NOT NULL DEFAULT '1',
+        `bk_datetime` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+        PRIMARY KEY (`bk_id`),
+        UNIQUE KEY `owner_sku` (`mb_id`, `bk_sid`, `sk_id`),
+        KEY `owner` (`mb_id`, `bk_sid`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
     );
 }

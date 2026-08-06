@@ -31,13 +31,23 @@ $category = cart_category_get((int)$item['ca_id']);
 $admin_edit_url = ($is_admin === 'super')
     ? G5_ADMIN_URL.'/cart/item_form.php?w=u&it_id='.$it_id : '';
 
+// 구매 폼 — 품절 아닌 SKU 가 하나라도 있어야 담기 가능
+$buyable_skus = array();
+foreach ($skus as $s) {
+    if (!$s['soldout']) $buyable_skus[] = $s;
+}
+
 $g5['title'] = $item['it_name'];
 g5_view('cart.item', array(
     'item' => $item,
     'images' => $images,
     'skus' => $skus,
+    'buyable_skus' => $buyable_skus,
     'single' => (count($skus) <= 1),
     'category' => $category,
     'list_href' => $category ? cart_url('list.php', array('ca_id' => $category['ca_id'])) : cart_url('list.php'),
     'admin_edit_url' => $admin_edit_url,
+    'token' => get_token(),
+    'basket_action' => cart_url('basket_update.php'),
+    'basket_href' => cart_url('basket.php'),
 ));
