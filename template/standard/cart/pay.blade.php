@@ -51,15 +51,9 @@ cartOpenPay();
 <script src="{{ $pg['js_url'] }}"></script>
 <script>
 var cartToss = TossPayments('{{ $pg['ckey'] }}');
+var cartTossParams = {!! $pg['params_json'] !!};
 function cartOpenPay() {
-    cartToss.requestPayment('카드', {
-        amount: {{ $pg['params']['amount'] }},
-        orderId: '{{ $pg['params']['orderId'] }}',
-        orderName: '{{ $pg['params']['orderName'] }}',
-        customerName: '{{ $pg['params']['customerName'] }}',
-        successUrl: '{{ $pg['params']['successUrl'] }}',
-        failUrl: '{{ $pg['params']['failUrl'] }}'
-    });
+    cartToss.requestPayment('카드', cartTossParams);
 }
 document.getElementById('cart_pay_btn').addEventListener('click', cartOpenPay);
 cartOpenPay();

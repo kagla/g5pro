@@ -62,10 +62,14 @@ function cart_order_no()
     return date('ymd', G5_SERVER_TIME).'-'.strtoupper(substr(md5(uniqid((string)mt_rand(), true)), 0, 12));
 }
 
-function cart_order_status_label($status)
+function cart_order_status_label($status, $pay_method = '')
 {
+    // unpaid 는 수단에 따라 말이 다르다 — 무통장은 입금을 기다리고, 카드는 결제를 기다린다
+    if ($status === 'unpaid') {
+        return ($pay_method === '' || $pay_method === 'bank') ? '입금대기' : '결제대기';
+    }
     $map = array(
-        'unpaid' => '입금대기', 'paid' => '결제완료', 'preparing' => '배송준비',
+        'paid' => '결제완료', 'preparing' => '배송준비',
         'shipping' => '배송중', 'delivered' => '배송완료', 'confirmed' => '구매확정',
         'canceled' => '취소됨',
     );
@@ -126,6 +130,18 @@ function cart_order_create($input, $owner = null)
 
     $od_no = cart_order_no();
     $who = $mb_id !== '' ? $mb_id : 'guest';
+
+    // 컬럼 길이 상한 — STRICT 모드 서버에서 초과 입력이 트랜잭션 중 DB 오류로 죽지 않게
+    // 저장 전에 자른다(utf8 varchar 는 문자 수 기준이라 mb_substr)
+    $cap = function ($v, $len) { return mb_substr(trim($v), 0, $len, 'utf-8'); };
+    $input['od_name'] = $cap($input['od_name'], 50);
+    $input['od_hp'] = $cap($input['od_hp'], 20);
+    $input['od_email'] = $cap($input['od_email'], 100);
+    $input['od_zip'] = $cap($input['od_zip'], 10);
+    $input['od_addr1'] = $cap($input['od_addr1'], 255);
+    $input['od_addr2'] = $cap($input['od_addr2'], 255);
+    $input['od_memo'] = $cap($input['od_memo'], 255);
+    $input['od_depositor'] = $cap($input['od_depositor'], 50);
 
     sql_query(" START TRANSACTION ", true);
 

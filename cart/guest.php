@@ -5,8 +5,9 @@ define('G5_PRO_PAGE', true); // g5pro 직통 화면
 // 비회원 주문 조회 — 주문번호 + 주문 비밀번호. 성공하면 세션에 허가를 남기고 상세로 보낸다.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     check_token();
-    $od_no = (isset($_POST['od_no']) && !is_array($_POST['od_no'])) ? trim($_POST['od_no']) : '';
-    $pw = (isset($_POST['od_pw']) && !is_array($_POST['od_pw'])) ? trim($_POST['od_pw']) : '';
+    // 비밀번호는 저장(checkout) 쪽과 같은 정규화를 거쳐야 해시가 맞는다 — 원문(stripslashes)
+    $od_no = (isset($_POST['od_no']) && !is_array($_POST['od_no'])) ? stripslashes(trim($_POST['od_no'])) : '';
+    $pw = (isset($_POST['od_pw']) && !is_array($_POST['od_pw'])) ? stripslashes(trim($_POST['od_pw'])) : '';
 
     $order = ($od_no !== '' && $pw !== '') ? cart_order_get_by_no($od_no) : null;
     // 회원 주문은 이 경로로 열 수 없다(비밀번호 해시가 없다) — 로그인 안내

@@ -10,6 +10,9 @@ $is_mine = false;
 if ($order) {
     if (!empty($_SESSION['ss_cart_last_od_no']) && $_SESSION['ss_cart_last_od_no'] === $order['od_no']) {
         $is_mine = true;
+    } elseif (!empty($_SESSION['ss_cart_guest_od_no']) && $_SESSION['ss_cart_guest_od_no'] === $order['od_no']) {
+        // 비회원이 guest.php 로 인증하고 미결제 주문을 이어서 결제하는 경로
+        $is_mine = true;
     } elseif (isset($member['mb_id']) && $member['mb_id'] !== '' && $member['mb_id'] === $order['mb_id']) {
         $is_mine = true;
     }
@@ -36,6 +39,11 @@ if (isset($_GET['fail']) && !is_array($_GET['fail'])) {
 }
 
 $pg = ($method === 'inicis') ? cart_inicis_ready($order) : cart_toss_ready($order);
+if ($method === 'toss') {
+    // JS 문자열 조립 대신 스크립트-안전 JSON 으로 통째로 내린다(HEX 플래그가 </script>·따옴표 봉인)
+    $pg['params_json'] = json_encode($pg['params'],
+        JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE);
+}
 
 $g5['title'] = '결제';
 g5_view('cart.pay', array(

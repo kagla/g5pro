@@ -3,8 +3,10 @@ include_once('./_common.php');
 
 check_token();
 
+// common.php 가 GPC 전체에 addslashes 를 걸어 둔다 — 그대로 저장하면 O'Neil 이 O\'Neil 로
+// 남는다(이스케이프는 저장 지점의 sql_real_escape_string 이 담당). 원문으로 되돌려 읽는다.
 $post = function ($key) {
-    return (isset($_POST[$key]) && !is_array($_POST[$key])) ? trim($_POST[$key]) : '';
+    return (isset($_POST[$key]) && !is_array($_POST[$key])) ? stripslashes(trim($_POST[$key])) : '';
 };
 
 $is_member = isset($member['mb_id']) && $member['mb_id'] !== '';

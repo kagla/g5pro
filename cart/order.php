@@ -23,7 +23,7 @@ if ($od_no !== '') {
     g5_view('cart.order_view', array(
         'order' => $order,
         'items' => cart_order_items((int)$order['od_id']),
-        'status_label' => cart_order_status_label($order['od_status']),
+        'status_label' => cart_order_status_label($order['od_status'], $order['od_pay_method']),
         'bank' => trim($cc['cc_bank']),
         'pay_href' => ($order['od_status'] === 'unpaid' && $order['od_pay_method'] !== 'bank')
             ? cart_url('pay.php', array('od_no' => $order['od_no'])) : '',
@@ -52,12 +52,14 @@ $orders = array();
 $result = sql_query(" select * from `{$g5['cart_order_table']}`
     where mb_id = '$mb_esc' order by od_id desc limit $offset, $rows_per ");
 while ($r = sql_fetch_array($result)) {
-    $first = sql_fetch(" select oi_name, count(*) as cnt from `{$g5['cart_order_item_table']}`
+    // min(oi_name): ONLY_FULL_GROUP_BY 모드에서도 안전한 대표 상품명
+    $first = sql_fetch(" select min(oi_name) as oi_name, count(*) as cnt
+        from `{$g5['cart_order_item_table']}`
         where od_id = '".(int)$r['od_id']."' group by od_id ");
     $r['summary'] = $first
         ? ($first['oi_name'].((int)$first['cnt'] > 1 ? ' 외 '.((int)$first['cnt'] - 1).'건' : ''))
         : '';
-    $r['status_label'] = cart_order_status_label($r['od_status']);
+    $r['status_label'] = cart_order_status_label($r['od_status'], $r['od_pay_method']);
     $r['href'] = cart_url('order.php', array('od_no' => $r['od_no']));
     $orders[] = $r;
 }

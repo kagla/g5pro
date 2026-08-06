@@ -54,7 +54,7 @@ function cart_inicis_ready($od)
                 'oid' => $oid, 'price' => $price, 'signKey' => $conf['sign_key'], 'timestamp' => $timestamp)),
             'mKey' => $util->makeHash($conf['sign_key'], 'sha256'),
             'currency' => 'WON',
-            'goodname' => cart_inicis_goodname((int)$od['od_id']),
+            'goodname' => cart_pay_goodname((int)$od['od_id']),
             'buyername' => $od['od_name'],
             'buyertel' => $od['od_hp'],
             'buyeremail' => $od['od_email'],
@@ -63,14 +63,6 @@ function cart_inicis_ready($od)
             'acceptmethod' => 'below1000',
         ),
     );
-}
-
-function cart_inicis_goodname($od_id)
-{
-    $items = cart_order_items($od_id);
-    if (!count($items)) return '주문상품';
-    $name = $items[0]['oi_name'];
-    return count($items) > 1 ? $name.' 외 '.(count($items) - 1).'건' : $name;
 }
 
 // 승인 리턴 처리 — 성공하면 완료 URL 반환, 실패하면 alert(내부에서 exit).
@@ -165,12 +157,15 @@ function cart_inicis_return()
         $fail = cart_order_confirm_paid($od_id, $oid, 'inicis', $tid, (int)cart_pay_res($res, 'TotPrice'));
     }
 
-    // 5. 실패 → 망취소로 승인을 되돌린다
+    // 5. 실패 → 망취소로 승인을 되돌린다.
+    // tid 유무는 조건에 넣지 않는다 — 'http'(응답 유실)·'parse'(해석 불가)는 정의상 tid 를
+    // 모르는 채 승인이 잡혀 있을 수 있는 실패다. 망취소 전문은 authToken 만 쓰므로 tid 없이
+    // 보내면 되고, 승인이 실제로 없었다면 이니시스가 "취소 대상 없음"으로 응답할 뿐 무해하다.
     if ($fail !== '') {
         $net_url = in_array($idc_name, $idc_list, true) ? $prop->getNetCancel($idc_name) : '';
         $sent = 'skip';
         $body = '';
-        if ($net_url !== '' && $tid !== '' && in_array($fail, array('http', 'parse', 'signature', 'moid', 'amount', 'amount2', 'duplicate', 'status', 'oid', 'update', 'missing'), true)) {
+        if ($net_url !== '' && in_array($fail, array('http', 'parse', 'signature', 'moid', 'amount', 'amount2', 'duplicate', 'status', 'oid', 'update', 'missing'), true)) {
             $net_ts = $util->getTimestamp();
             $netMap = array(
                 'mid' => $conf['mid'],
@@ -186,12 +181,17 @@ function cart_inicis_return()
         }
         cart_payment_log($od_id, 'inicis', $tid, $price, 'netcancel',
             array('reason' => $fail, 'sent' => $sent, 'body' => $body));
+        if ($sent !== 'sent') {
+            // 망취소가 안 나갔거나 통신이 끊겼다 — 이중 결제 가능 상태. 운영 시그널을 남기고
+            // 사용자에게 "취소했습니다"라고 단정하지 않는다
+            error_log('[cart-pay] inicis netcancel '.$sent.' od_id='.$od_id.' reason='.$fail.' tid='.$tid);
+            alert('결제 확인이 지연되고 있습니다. 잠시 후 주문 조회에서 상태를 확인해 주세요. 중복 결제된 경우 자동으로 취소되며, 계속되면 고객센터로 문의해 주세요.', $retry_url);
+        }
         alert($fail_msg !== '' ? $fail_msg : '결제를 확정하지 못해 승인을 취소했습니다. 다시 시도해 주세요. ('.$fail.')',
             $retry_url);
     }
 
-    // 성공 — 승인 확정 로그를 approved 로 남기고 완료로
-    cart_payment_log($od_id, 'inicis', $tid, $price, 'approved', array('oid' => $oid));
+    // 성공 — approved 이력은 확정 트랜잭션 안에서 이미 남았다(중복 리턴 오판 방지)
     $_SESSION['ss_cart_last_od_no'] = $od['od_no'];
     return cart_url('complete.php', array('od_no' => $od['od_no']));
 }

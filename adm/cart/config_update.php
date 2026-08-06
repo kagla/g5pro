@@ -12,8 +12,9 @@ $ship_base = max(0, $post_int('cc_ship_base'));
 $ship_free = max(0, $post_int('cc_ship_free'));
 $ship_jeju = max(0, $post_int('cc_ship_jeju'));
 $post_key = function ($key) {
+    // GPC addslashes 원복 후 저장 지점 이스케이프(이중 이스케이프 방지)
     return (isset($_POST[$key]) && !is_array($_POST[$key]))
-        ? sql_real_escape_string(strip_tags(trim($_POST[$key]))) : '';
+        ? sql_real_escape_string(strip_tags(stripslashes(trim($_POST[$key])))) : '';
 };
 $bank = $post_key('cc_bank');
 $inicis_mid = $post_key('cc_inicis_mid');
@@ -29,4 +30,4 @@ sql_query(" update `{$g5['cart_config_table']}`
         cc_toss_ckey = '$toss_ckey', cc_toss_skey = '$toss_skey'
     where cc_id = 1 ", true);
 
-goto_url(G5_ADMIN_URL.'/cart/config.php');
+goto_url(G5_ADMIN_URL.'/cart/config_form.php');

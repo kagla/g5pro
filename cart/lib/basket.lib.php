@@ -44,6 +44,8 @@ function cart_basket_add($sk_id, $qty, $owner = null)
     if (!$sku || !(int)$sku['sk_use']) return '판매하지 않는 옵션입니다.';
     $item = cart_item_get((int)$sku['it_id']);
     if (!$item || !(int)$item['it_show']) return '판매하지 않는 상품입니다.';
+    // 숨긴 분류 서브트리는 프론트 어디서도 안 판다(1단계 확정 의미론) — sk_id 직접 지정 우회 차단
+    if (in_array((int)$item['ca_id'], cart_hidden_category_ids(), true)) return '판매하지 않는 상품입니다.';
     if ((int)$sku['sk_qty'] <= 0) return '품절된 옵션입니다.';
 
     sql_query(" insert into `{$g5['cart_basket_table']}`
@@ -62,9 +64,10 @@ function cart_basket_items($owner = null)
     global $g5;
     $owner = cart_basket_owner($owner);
     $rows = array();
+    $hidden = cart_hidden_category_ids();
     $result = sql_query(" select b.bk_id, b.sk_id, b.bk_qty,
             s.sk_option, s.sk_price, s.sk_qty, s.sk_use,
-            i.it_id, i.it_name, i.it_show
+            i.it_id, i.it_name, i.it_show, i.ca_id
         from `{$g5['cart_basket_table']}` b
         inner join `{$g5['cart_sku_table']}` s on s.sk_id = b.sk_id
         inner join `{$g5['cart_item_table']}` i on i.it_id = s.it_id
@@ -73,7 +76,8 @@ function cart_basket_items($owner = null)
     while ($r = sql_fetch_array($result)) {
         $opt = json_decode($r['sk_option'], true);
         $r['opt_label'] = (is_array($opt) && count($opt)) ? implode(' / ', array_values($opt)) : '';
-        $r['avail'] = ((int)$r['sk_use'] && (int)$r['it_show'] && (int)$r['sk_qty'] > 0);
+        $r['avail'] = ((int)$r['sk_use'] && (int)$r['it_show'] && (int)$r['sk_qty'] > 0
+            && !in_array((int)$r['ca_id'], $hidden, true));
         $r['over_stock'] = ($r['avail'] && (int)$r['bk_qty'] > (int)$r['sk_qty']);
         $rows[] = $r;
     }

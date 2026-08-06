@@ -10,6 +10,8 @@ $is_mine = false;
 if ($order) {
     if (!empty($_SESSION['ss_cart_last_od_no']) && $_SESSION['ss_cart_last_od_no'] === $order['od_no']) {
         $is_mine = true;
+    } elseif (!empty($_SESSION['ss_cart_guest_od_no']) && $_SESSION['ss_cart_guest_od_no'] === $order['od_no']) {
+        $is_mine = true;
     } elseif (isset($member['mb_id']) && $member['mb_id'] !== '' && $member['mb_id'] === $order['mb_id']) {
         $is_mine = true;
     }
@@ -25,7 +27,7 @@ $g5['title'] = '주문 완료';
 g5_view('cart.complete', array(
     'order' => $order,
     'items' => $items,
-    'status_label' => cart_order_status_label($order['od_status']),
+    'status_label' => cart_order_status_label($order['od_status'], $order['od_pay_method']),
     'bank' => trim($cc['cc_bank']),
     'home_href' => cart_url(''),
 ));

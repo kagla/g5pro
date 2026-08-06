@@ -35,6 +35,15 @@ function cart_payment_log($od_id, $method, $tid, $amount, $status, $data)
                 '".($status === 'approved' ? G5_TIME_YMDHIS : '1970-01-01 00:00:00')."') ", true);
 }
 
+// 결제창에 보여줄 주문명 — "첫 상품명 외 N건"
+function cart_pay_goodname($od_id)
+{
+    $items = cart_order_items((int)$od_id);
+    if (!count($items)) return '주문상품';
+    $name = $items[0]['oi_name'];
+    return count($items) > 1 ? $name.' 외 '.(count($items) - 1).'건' : $name;
+}
+
 function cart_order_get_by_oid($oid)
 {
     global $g5;
@@ -57,6 +66,11 @@ function cart_pay_new_oid($od)
 
 // 승인 확정 — 주문 행을 잠그고 [상태 unpaid·oid 일치·금액 일치]를 잠긴 값으로 재검증한 뒤
 // paid 로 전이한다. 빈 문자열이면 성공, 아니면 실패 사유 코드(호출자가 망취소로 되돌린다).
+//
+// approved 이력은 반드시 이 트랜잭션 안(커밋 전)에서 남긴다. 커밋 뒤에 남기면 그 짧은 틈에
+// 도착한 같은 tid 의 중복 리턴이 "paid 인데 approved 이력 없음" → duplicate 로 오판되어
+// 방금 확정한 진짜 승인을 망취소한다(상품은 나가고 돈은 취소되는 최악의 유출). 잠금 아래
+// 단일 기록자가 되면 이후 어떤 같은-tid 관찰자도 반드시 approved 행을 본다.
 function cart_order_confirm_paid($od_id, $oid, $method, $tid, $amount)
 {
     global $g5;
@@ -71,7 +85,7 @@ function cart_order_confirm_paid($od_id, $oid, $method, $tid, $amount)
         $fail = 'missing';
     } elseif ($cur['od_status'] === 'paid') {
         // 같은 주문에 승인이 두 번(창 중복·리턴 중복). 같은 tid 면 이미 처리된 성공 —
-        // 멱등 성공으로 두고, 다른 tid 면 이번 승인을 되돌리게 한다
+        // 멱등 성공으로 두고(이력 추가 없음), 다른 tid 면 이번 승인을 되돌리게 한다
         $prev = sql_fetch(" select pm_id from `{$g5['cart_payment_table']}`
             where od_id = '".(int)$od_id."' and pm_tid = '".sql_real_escape_string($tid)."'
               and pm_status = 'approved' ");
@@ -94,6 +108,7 @@ function cart_order_confirm_paid($od_id, $oid, $method, $tid, $amount)
             $fail = 'update';
             sql_query(" rollback ", true);
         } else {
+            cart_payment_log((int)$od_id, $method, $tid, (int)$amount, 'approved', array('oid' => $oid));
             sql_query(" commit ", true);
         }
     } elseif ($fail === '') {
