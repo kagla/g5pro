@@ -62,15 +62,14 @@
     <h2 class="h2_frm">"{{ $selected['ca_name'] }}" 연결 상품 {{ number_format($total_linked) }}개{{ $total_linked > count($linked) ? ' (최신 '.count($linked).'개만 표시)' : '' }}</h2>
     <table class="tbl_head01 tbl_wrap">
         <thead>
-        <tr><th>번호</th><th>코드</th><th>상품명</th><th>가격</th><th>노출</th><th>해제</th></tr>
+        <tr><th>코드</th><th>상품명</th><th>가격</th><th>노출</th><th>해제</th></tr>
         </thead>
         <tbody>
 
         @foreach ($linked as $r)
         <tr>
-            <td>{{ $r['it_id'] }}</td>
-            <td>{{ $r['it_code'] }}</td>
-            <td class="td_left">{{ $r['it_name'] }}</td>
+            <td><a href="{{ $form_url }}?w=u&it_id={{ $r['it_id'] }}" title="상품 수정">{{ $r['it_code'] }}</a></td>
+            <td class="td_left"><a href="{{ cart_url('item.php', array('code' => $r['it_code'])) }}" target="_blank" title="사용자 화면에서 보기">{{ $r['it_name'] }}</a></td>
             <td class="td_num">{{ number_format($r['it_price']) }}</td>
             <td>{{ (int)$r['it_show'] ? '노출' : '숨김' }}</td>
             <td>
@@ -126,8 +125,8 @@
                     @endif
 
                 </td>
-                <td>{{ $r['it_code'] }}</td>
-                <td class="td_left">{{ $r['it_name'] }}</td>
+                <td><a href="{{ $form_url }}?w=u&it_id={{ $r['it_id'] }}" title="상품 수정">{{ $r['it_code'] }}</a></td>
+                <td class="td_left"><a href="{{ cart_url('item.php', array('code' => $r['it_code'])) }}" target="_blank" title="사용자 화면에서 보기">{{ $r['it_name'] }}</a></td>
             </tr>
             @endforeach
 

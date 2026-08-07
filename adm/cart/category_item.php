@@ -71,6 +71,7 @@ cadm_view('category_item', array(
     'found_label' => $found_label,
     'q' => $q,
     'self_url' => G5_CART_ADMIN_URL.'/category_item.php',
+    'form_url' => G5_CART_ADMIN_URL.'/item_form.php',
     'action_url' => G5_CART_ADMIN_URL.'/category_item_update.php',
     'category_url' => G5_CART_ADMIN_URL.'/category.php',
 ));
