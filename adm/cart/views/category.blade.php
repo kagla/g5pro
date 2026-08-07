@@ -21,8 +21,6 @@
 .ca-item.selected { background: #E5EFFF; box-shadow: inset 3px 0 0 #2563EB; }
 .ca-item .ca-handle { cursor: grab; margin-right: 2px; color: #b3bac2; user-select: none; }
 .ca-item .ca-cnt { color: #888; font-size: 0.92em; }
-.ca-item .ca-view { color: #888; text-decoration: none; }
-.ca-item .ca-view:hover { color: #2563EB; text-decoration: underline; }
 .ca-item .ca-off { display: inline-block; margin-left: 5px; padding: 0 6px; border-radius: 9px;
     background: #e9edf2; color: #6b7683; font-size: 0.78em; vertical-align: 1px; }
 .ca-item.off > strong { color: #98a1ab; font-weight: 600; }
@@ -85,16 +83,9 @@
             <span class="ca-toggle {{ $kid ? '' : 'leaf' }}"
                   data-id="{{ $c['ca_id'] }}" title="하위 분류 접기/펼치기">▼</span>
             <strong>{{ $c['ca_name'] }}</strong>
-            <span class="ca-cnt">
-
-                @if (in_array((int)$c['ca_id'], $hidden_ids, true))
-                [{{ $c['ca_code'] }}]
-                @else
-                <a class="ca-view" href="{{ cart_url('list.php', array('ca' => $c['ca_code'])) }}"
-                   target="_blank" title="사용자 화면에서 이 분류 보기">[{{ $c['ca_code'] }}]</a>
-                @endif
-
-                · {{ $kid ? '하위 '.$kid.' · ' : '' }}상품 {{ number_format($items) }}개</span>
+            {{-- 코드는 글자로만 둔다 — 줄 클릭(분류 선택)과 겹치지 않게, 사용자 화면 이동은
+                 오른쪽 패널의 바로가기 버튼 하나로 모은다 --}}
+            <span class="ca-cnt">[{{ $c['ca_code'] }}] · {{ $kid ? '하위 '.$kid.' · ' : '' }}상품 {{ number_format($items) }}개</span>
 
             @if (!(int)$c['ca_show'])
             <span class="ca-off">숨김</span>
@@ -270,9 +261,6 @@ $(function () {
         if (moved) { moved = false; return; }
         location.href = $(this).data('href');
     });
-
-    // 분류코드 = 사용자 화면 바로가기(새 탭) — 줄 클릭(선택 이동)까지 번지지 않게
-    $('.ca-view').on('click', function (e) { e.stopPropagation(); });
 
     $('.ca-item').on('dragstart', function (e) {
         $drag = $(this);
