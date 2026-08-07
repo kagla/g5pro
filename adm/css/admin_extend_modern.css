@@ -87,12 +87,13 @@ select, textarea { border: 1px solid #B9D2F7; border-radius: 6px; }
    회색이 축약형으로 박혀 있어, 같은 특이성으로 뒤에서 background-color 만 다시 칠한다 ── */
 #gnb .gnb_ul { background: #E0EDFF; }
 #gnb .gnb_li { border-color: #CFE0FA; }
-#gnb .gnb_ul .gnb_li button { background-color: #E0EDFF; }
-#gnb .gnb_ul .gnb_li .btn_op { background-color: #E0EDFF; }
+/* 레일은 한 톤 진하게 — 선택 칸(흰색)이 도드라지려면 주변이 충분히 어두워야 한다 */
+#gnb .gnb_ul .gnb_li button { background-color: #D3E3F9; }
+#gnb .gnb_ul .gnb_li .btn_op { background-color: #D3E3F9; }
 /* 선택된 메뉴는 확실히 구분되게 — 흰 바탕(열린 패널과 이어져 보인다) + 왼쪽 강조 바.
    위 두 줄이 모든 버튼에 연블루를 줘서 순정의 '선택 시 흰 바탕'(#gnb .on .btn_op)을 눌렀다.
    특정도를 같은 (1,3,0)으로 맞추고 뒤에 둬서 선택 상태만 되돌린다. 호버(1,2,1)보다도 세다. */
-#gnb .gnb_ul .on .btn_op { background-color: #fff; box-shadow: inset 3px 0 0 #2563EB; }
+#gnb .gnb_ul .on .btn_op { background-color: #fff; box-shadow: inset 5px 0 0 #2563EB; }
 #gnb .gnb_ul .on .gnb_menu_btn, #gnb .gnb_ul .on > a { color: #2563EB; }
 #gnb .gnb_oparea { border-right-color: #C9DCFA; }
 #gnb .gnb_oparea li a:hover, #gnb .gnb_oparea li .on { color: #2563EB; }
