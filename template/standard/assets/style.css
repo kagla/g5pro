@@ -2706,12 +2706,14 @@ input[type=checkbox], input[type=radio] {
 .cart-cart-row.is-blocked { opacity: .55; }
 .cart-cart-thumb { flex: none; width: 84px; height: 84px; border-radius: 10px; overflow: hidden; background: var(--bg); }
 .cart-cart-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.cart-cart-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.cart-cart-name { font-weight: 600; }
-.cart-cart-opt { font-size: var(--t-xs); color: var(--muted); }
-.cart-cart-warn { font-size: var(--t-xs); color: #e5484d; font-weight: 600; }
-.cart-cart-price { font-size: var(--t-sm); font-weight: 700; }
-.cart-cart-price em, .cart-cart-line em { font-style: normal; font-weight: 600; font-size: var(--t-xs); }
+.cart-cart-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.cart-cart-name { font-size: var(--t-md); font-weight: 600; }
+/* 옵션·안내는 --t-xs(11px) 로 뒀더니 무엇을 담았는지, 왜 못 사는지가 읽히지 않았다.
+   담은 옵션은 상품명 다음으로 확인하는 값이고 안내는 손을 대야 할 곳이라 더 키운다 */
+.cart-cart-opt { font-size: var(--t-base); color: var(--muted); }
+.cart-cart-warn { font-size: var(--t-base); color: #D93A2B; font-weight: 700; }
+.cart-cart-price { font-size: var(--t-base); font-weight: 700; }
+.cart-cart-price em, .cart-cart-line em { font-style: normal; font-weight: 600; font-size: var(--t-sm); }
 .cart-cart-ctrl { flex: none; display: flex; align-items: center; gap: var(--s3); }
 .cart-cart-qty { display: flex; gap: var(--s1); }
 .cart-cart-qty input { width: 64px; padding: var(--s1); text-align: right; }
