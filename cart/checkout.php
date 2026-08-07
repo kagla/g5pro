@@ -20,6 +20,20 @@ if (!count($lines)) {
     alert('주문할 수 있는 상품이 없습니다.', cart_url('cart.php'));
 }
 
+// 재고가 모자라거나 판매가 중지된 행이 하나라도 있으면 주문서로 넘기지 않는다.
+// 조용히 빼고 진행하면 손님은 빠진 줄 모르고 결제한다 — 장바구니에서 정리하고 오게 한다.
+// (화면 JS 도 같은 것을 막지만, 주소로 바로 들어오는 경우가 있어 여기가 진짜 방어선이다)
+if (count($picked['blocked'])) {
+    $names = array();
+    foreach ($picked['blocked'] as $b) {
+        $names[] = $b['it_name'].($b['over_stock'] ? '(재고 '.(int)$b['sk_qty'].'개)' : '(판매 중지)');
+    }
+    $head = implode(', ', array_slice($names, 0, 3));
+    if (count($names) > 3) $head .= ' 외 '.(count($names) - 3).'건';
+    alert('주문할 수 없는 상품이 있습니다: '.$head.'. 장바구니에서 수량을 줄이거나 삭제한 뒤 다시 주문해 주세요.',
+        cart_url('cart.php'));
+}
+
 $main_images = cart_item_main_images(array_column($lines, 'it_id'));
 $item_total = 0;
 foreach ($lines as $i => $l) {
@@ -40,9 +54,11 @@ g5_view('cart.checkout', array(
     'expect_ct_ids' => implode(',', array_map('intval', array_column($lines, 'ct_id'))),
     'buy' => count($only) ? implode(',', $only) : '',
     'is_member' => $is_member,
-    'default_name' => $is_member ? $member['mb_name'] : '',
-    'default_hp' => $is_member ? $member['mb_hp'] : '',
-    'default_email' => $is_member ? $member['mb_email'] : '',
+    // 기본값은 "지난 주문에 쓴 것" 이 먼저다 — 회원 정보는 가입 당시 값이라, 주문서에서 고쳐 쓴
+    // 이메일·연락처가 다음 주문서에서 되돌아가면 매번 다시 고쳐야 한다(주소록이 있는 이유).
+    'default_name' => $is_member ? cart_address_default($member, 'ad_name', 'mb_name') : '',
+    'default_hp' => $is_member ? cart_address_default($member, 'ad_hp', 'mb_hp') : '',
+    'default_email' => $is_member ? cart_address_default($member, 'ad_email', 'mb_email') : '',
     'addresses' => $is_member ? cart_address_list($member['mb_id']) : array(),
     'ship' => array(
         'base' => (int)$cc['cc_ship_base'],
@@ -52,5 +68,6 @@ g5_view('cart.checkout', array(
     'pay_methods' => cart_pay_methods(),
     'token' => get_token(),
     'action_url' => cart_url('checkout_update.php'),
+    'address_url' => cart_url('address_update.php'),
     'cart_href' => cart_url('cart.php'),
 ));

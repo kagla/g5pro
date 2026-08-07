@@ -10,14 +10,17 @@ $main_images = cart_item_main_images(array_column($rows, 'it_id'));
 $items = array();
 $total = 0;
 $buyable = 0;
+$blocked = 0;   // 재고 부족·판매 중지 — 하나라도 있으면 주문 단계로 못 넘어간다
 foreach ($rows as $r) {
     $it_id = (int)$r['it_id'];
     $r['img'] = isset($main_images[$it_id]) ? cart_item_image_url($main_images[$it_id]) : '';
-    $r['href'] = cart_url('item.php', array('it_id' => $it_id));
+    $r['href'] = cart_url('item.php', array('code' => $r['it_code']));
     $r['line_total'] = (int)$r['sk_price'] * (int)$r['ct_qty'];
     if ($r['avail'] && !$r['over_stock']) {
         $total += $r['line_total'];
         $buyable++;
+    } else {
+        $blocked++;
     }
     $items[] = $r;
 }
@@ -36,6 +39,7 @@ g5_view('cart.cart', array(
     'items' => $items,
     'total' => $total,
     'buyable' => $buyable,
+    'blocked' => $blocked,
     'ship_base' => (int)$cc['cc_ship_base'],
     'ship_notice' => $ship_notice,
     'token' => get_token(),

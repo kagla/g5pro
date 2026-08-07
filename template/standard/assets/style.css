@@ -2693,6 +2693,10 @@ input[type=checkbox], input[type=radio] {
 .cart-buy-btns { display: flex; gap: var(--s3); }
 .cart-buy-btns .cart-cta { flex: 1; }
 
+/* 주문 단계로 못 넘어가는 이유 — 버튼 바로 위에 둬서 왜 눌리지 않는지 바로 읽히게 */
+.cart-cart-warn { margin: 0 0 var(--s3); padding: var(--s3) var(--s4); border-radius: var(--r2);
+    background: #FDECEA; color: #A32B1C; border: 1px solid #F3C7C0; font-weight: 700; }
+
 .cart-cart { display: flex; flex-direction: column; gap: var(--s4); margin-bottom: var(--s5); }
 .cart-cart-row {
     display: flex; gap: var(--s4); align-items: center;

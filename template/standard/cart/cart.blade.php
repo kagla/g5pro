@@ -65,7 +65,12 @@
         <dd>주문서에서 계산 (기본 {{ number_format($ship_base) }}원)</dd>
     </dl>
 
-    @if ($buyable > 0)
+    {{-- 재고가 모자란 줄이 하나라도 있으면 주문 단계로 넘기지 않는다. 조용히 빼고 진행하면
+         손님은 빠진 줄 모르고 결제한다. 서버(checkout.php)도 같은 것을 막는다. --}}
+    @if ($blocked > 0)
+    <p class="cart-cart-warn">주문할 수 없는 상품이 {{ number_format($blocked) }}개 있습니다. 수량을 줄이거나 삭제해 주세요.</p>
+    <span class="cart-cta is-disabled">주문할 수 없는 상품이 있습니다</span>
+    @elseif ($buyable > 0)
     <a href="{{ $checkout_href }}" class="cart-cta">주문하기</a>
     @else
     <span class="cart-cta is-disabled">주문 가능한 상품이 없습니다</span>
