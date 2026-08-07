@@ -35,12 +35,23 @@ if (!$item['it_show'] || ($item_cats && !$visible_cats)) {
 $images = array();
 foreach (cart_item_images($it_id) as $img) $images[] = cart_item_image_url($img['im_file']);
 
+// SKU 목록 + 옵션 축(색상·사이즈 …) 을 함께 만든다.
+// 화면은 조합을 한 번에 늘어놓지 않고 축마다 선택칸을 두어, 앞의 선택에 맞는 값만 남긴다.
+// 축 이름과 순서는 옵션 JSON 의 키 순서를 그대로 따른다(관리자가 넣은 순서 = 색상, 사이즈).
 $skus = array();
+$opt_names = array();      // 축 이름 (예: 색상, 사이즈)
+$opt_values = array();     // 축별 값 목록 — 첫 축의 선택칸을 채울 때 쓴다
 foreach (cart_item_skus($it_id, true) as $s) {
     $opt = json_decode($s['sk_option'], true);
-    $label = (is_array($opt) && count($opt)) ? implode(' / ', array_values($opt)) : '기본';
+    if (!is_array($opt)) $opt = array();
+    $label = count($opt) ? implode(' / ', array_values($opt)) : '기본';
+    foreach ($opt as $k => $v) {
+        if (!in_array($k, $opt_names, true)) { $opt_names[] = $k; $opt_values[$k] = array(); }
+        if (!in_array($v, $opt_values[$k], true)) $opt_values[$k][] = $v;
+    }
     $skus[] = array(
         'sk_id' => (int)$s['sk_id'],
+        'opt' => $opt,
         'opt_label' => $label,
         'sk_price' => (int)$s['sk_price'],
         'sk_qty' => (int)$s['sk_qty'],
@@ -104,6 +115,13 @@ $seller = array(
 $admin_edit_url = ($is_admin === 'super')
     ? G5_CART_ADMIN_URL.'/item_form.php?w=u&it_id='.$it_id : '';
 
+// 축 순서대로 값을 늘어놓은 배열 — 화면이 앞 축부터 좁혀 갈 때 쓴다(["화이트","L"] 꼴)
+foreach ($skus as $i => $s) {
+    $path = array();
+    foreach ($opt_names as $n) $path[] = isset($s['opt'][$n]) ? $s['opt'][$n] : '';
+    $skus[$i]['opt_path'] = $path;
+}
+
 // 구매 폼 — 품절 아닌 SKU 가 하나라도 있어야 담기 가능
 $buyable_skus = array();
 foreach ($skus as $s) {
@@ -116,6 +134,8 @@ g5_view('cart.item', array(
     'images' => $images,
     'skus' => $skus,
     'buyable_skus' => $buyable_skus,
+    'opt_names' => $opt_names,
+    'opt_values' => $opt_values,
     'single' => (count($skus) <= 1),
     'category' => $category,
     'list_href' => $category ? cart_url('list.php', array('ca' => $category['ca_code'])) : cart_url('list.php'),

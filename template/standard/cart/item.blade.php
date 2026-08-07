@@ -49,24 +49,6 @@
         <div class="shop-item-info">
             <p class="shop-price"><strong>{{ number_format($item['it_price']) }}</strong>원{{ $single ? '' : '부터' }}</p>
 
-            @if (count($skus) && !$single)
-            <table class="shop-sku-table">
-                <thead>
-                <tr><th>옵션</th><th>가격</th><th>재고</th></tr>
-                </thead>
-                <tbody>
-
-                @foreach ($skus as $s)
-                <tr>
-                    <td>{{ $s['opt_label'] }}</td>
-                    <td>{{ number_format($s['sk_price']) }}원</td>
-                    <td>{{ $s['soldout'] ? '품절' : number_format($s['sk_qty']) }}</td>
-                </tr>
-                @endforeach
-
-                </tbody>
-            </table>
-            @endif
 
             @if ((int)$item['it_stock'] === 0)
             <p class="shop-soldout">품절된 상품입니다.</p>
@@ -79,13 +61,36 @@
 
                 @if ($single)
                 <input type="hidden" name="sk_id" value="{{ $buyable_skus[0]['sk_id'] }}">
+                @elseif (count($opt_names))
+                {{-- 옵션 축마다 선택칸 하나. 앞 축을 고르면 뒤 축은 그 조합에 있는 값만 남고,
+                     마지막 축에는 값마다 가격·재고가 함께 보인다. 실제로 전송되는 건 sk_id 뿐. --}}
+                <input type="hidden" name="sk_id" id="cart_sk_id" value="" required>
+                <div class="cart-opts" id="cart_opts">
+
+                    @foreach ($opt_names as $oi => $name)
+                    <label class="cart-buy-label">{{ $name }}
+                        <select class="cart-opt" data-axis="{{ $oi }}" {{ $oi > 0 ? 'disabled' : '' }}>
+                            <option value="">{{ $oi > 0 ? '앞 옵션을 먼저 고르세요' : $name.' 선택' }}</option>
+
+                            @if ($oi === 0)
+                            @foreach ($opt_values[$name] as $v)
+                            <option value="{{ $v }}">{{ $v }}</option>
+                            @endforeach
+                            @endif
+
+                        </select>
+                    </label>
+                    @endforeach
+
+                </div>
+                <p class="cart-opt-pick" id="cart_opt_pick" hidden></p>
                 @else
                 <label class="cart-buy-label">옵션
-                    <select name="sk_id" id="cart_sku_select" required>
+                    <select name="sk_id" required>
                         <option value="">옵션을 선택하세요</option>
 
                         @foreach ($buyable_skus as $s)
-                        <option value="{{ $s['sk_id'] }}" data-price="{{ $s['sk_price'] }}">{{ $s['opt_label'] }} — {{ number_format($s['sk_price']) }}원</option>
+                        <option value="{{ $s['sk_id'] }}">{{ $s['opt_label'] }} — {{ number_format($s['sk_price']) }}원</option>
                         @endforeach
 
                     </select>
@@ -203,6 +208,99 @@
 <script>
 $('.shop-item-thumbs img').on('click', function () {
     $('#cart_main_img').attr('src', this.src);
+});
+</script>
+@endif
+
+@if (!$single && count($opt_names))
+<script>
+// 옵션 단계 선택 — 앞 축을 고르면 뒤 축을 그 조합에 실제로 있는 값으로 다시 채운다.
+// 마지막 축에는 값마다 가격과 재고를 함께 적고, 품절 조합은 고를 수 없게 막는다.
+var CART_SKUS = {!! json_encode(array_map(function ($s) {
+    return array('id' => $s['sk_id'], 'path' => $s['opt_path'], 'price' => $s['sk_price'], 'qty' => $s['sk_qty']);
+}, $skus), JSON_UNESCAPED_UNICODE) !!};
+
+$(function () {
+    var $axes = $('#cart_opts .cart-opt'),
+        last = $axes.length - 1,
+        won = function (n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); };
+
+    // 앞 축들에서 고른 값(부분 조합)에 해당하는 SKU 만 남긴다
+    function matching(prefix) {
+        return $.grep(CART_SKUS, function (s) {
+            for (var i = 0; i < prefix.length; i++) if (s.path[i] !== prefix[i]) return false;
+            return true;
+        });
+    }
+
+    function chosen(upto) {
+        var v = [];
+        $axes.each(function (i) { if (i < upto) v.push($(this).val()); });
+        return v;
+    }
+
+    // axis 번째 선택칸을 앞 선택에 맞춰 다시 채운다
+    function refill(axis) {
+        var $sel = $axes.eq(axis),
+            prefix = chosen(axis),
+            rows = matching(prefix),
+            seen = {}, html = '<option value="">' + $sel.data('label') + ' 선택</option>';
+
+        $.each(rows, function (i, s) {
+            var v = s.path[axis];
+            if (seen[v] !== undefined) { seen[v] = Math.max(seen[v], s.qty); return; }
+            seen[v] = s.qty;
+        });
+        $.each(seen, function (v, qty) {
+            var text = v, sold = (qty <= 0);
+            if (axis === last) {
+                var row = $.grep(rows, function (s) { return s.path[axis] === v; })[0];
+                text = v + ' — ' + won(row.price) + '원 · ' + (sold ? '품절' : '재고 ' + won(qty) + '개');
+            } else if (sold) {
+                text = v + ' (품절)';
+            }
+            html += '<option value="' + v + '"' + (sold ? ' disabled' : '') + '>' + text + '</option>';
+        });
+        $sel.html(html).prop('disabled', false);
+    }
+
+    function reset(fromAxis) {
+        for (var i = fromAxis; i <= last; i++) {
+            $axes.eq(i).html('<option value="">앞 옵션을 먼저 고르세요</option>').prop('disabled', true);
+        }
+        $('#cart_sk_id').val('');
+        $('#cart_opt_pick').attr('hidden', true).text('');
+    }
+
+    // 선택이 다 차면 그 조합의 SKU 를 폼에 싣고 요약을 보여 준다
+    function settle() {
+        var rows = matching(chosen(last + 1));
+        if (!rows.length) return;
+        var s = rows[0];
+        $('#cart_sk_id').val(s.id);
+        $('.cart-buy input[name="qty"]').attr('max', Math.max(1, s.qty)).val(1);
+        $('#cart_opt_pick').removeAttr('hidden')
+            .text(s.path.join(' / ') + ' · ' + won(s.price) + '원 · 재고 ' + won(s.qty) + '개');
+    }
+
+    $axes.each(function (i) { $(this).data('label', $(this).closest('label').contents().first().text().trim()); });
+    // 첫 축도 같은 규칙으로 한 번 채운다 — 조합이 전부 품절인 값에 (품절) 이 붙는다
+    refill(0);
+
+    $axes.on('change', function () {
+        var axis = parseInt($(this).data('axis'), 10);
+        reset(axis + 1);
+        if (!$(this).val()) return;
+        if (axis < last) refill(axis + 1); else settle();
+    });
+
+    // 담기 전에 옵션을 다 골랐는지 확인 — 안 고르면 브라우저 기본 메시지 대신 안내를 준다
+    $('.cart-buy').on('submit', function () {
+        if (!$('#cart_sk_id').val()) {
+            alert('옵션을 모두 선택해 주세요.');
+            return false;
+        }
+    });
 });
 </script>
 @endif
