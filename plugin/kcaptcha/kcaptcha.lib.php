@@ -65,6 +65,24 @@ class KCAPTCHA{
             }
         }
 
+        // 글자 잉크가 스프라이트 세로 어디까지 차는지 찾는다. 0행은 글자 경계를
+        // 표시하는 줄이라 잉크는 1행부터 시작한다. 아래에서 위로 훑으므로
+        // 빈 여백 몇 줄만 읽고 끝난다. 260807
+        $ink_height=$fontfile_height;
+        for($sy=$fontfile_height;$sy>0;$sy--){
+            $row_has_ink=false;
+            for($sx=0;$sx<$fontfile_width;$sx++){
+                if((imagecolorat($font, $sx, $sy) >> 24) != 127){
+                    $row_has_ink=true;
+                    break;
+                }
+            }
+            if($row_has_ink){
+                $ink_height=$sy;
+                break;
+            }
+        }
+
         $img=imagecreatetruecolor($width, $height);
         imagealphablending($img, true);
         $white=imagecolorallocate($img, 255, 255, 255);
@@ -85,9 +103,19 @@ class KCAPTCHA{
             if( ! isset($this->keystring[$i]) ) continue;
             $m=$font_metrics[$this->keystring[$i]];
 
+            // 스프라이트 높이($fontfile_height, 69)가 캔버스 높이($height, 60)보다
+            // 커서 기준선이 -4.5 로 시작했다. 그래서 글자 윗부분이 늘 잘리고
+            // 아래는 남았다. 스프라이트가 아니라 실제 잉크 높이로 가운데를 잡는다.
             $y=(($i%2)*$fluctuation_amplitude - $fluctuation_amplitude/2)*$odd
                 + mt_rand(-round($fluctuation_amplitude/3), round($fluctuation_amplitude/3))
-                + ($height-$fontfile_height)/2;
+                + ($height-$ink_height)/2;
+
+            // 가로는 아래 wave 단계에서 $center 로 다시 가운데를 맞추지만
+            // 세로에는 그런 보정이 없다. 여기서 가두지 않으면 그대로 잘린다.
+            if($ink_height<=$height){
+                if($y<0) $y=0;
+                else if($y>$height-$ink_height) $y=$height-$ink_height;
+            }
 
             if($no_spaces){
                 $shift=0;
