@@ -56,13 +56,25 @@
 </div>
 
 @if ($total_page > 1)
+{{-- 처음·이전·다음·맨끝은 순정 pg_* 클래스(아이콘) 그대로 — 첫/끝 페이지에서는 감춘다 --}}
+@php $qs = array('tab' => $tab); @endphp
+
 <nav class="pg_wrap">
     <span class="pg">
 
+    @if ($page > 1)
+    <a href="{{ $self_url.'?'.http_build_query($qs + array('page' => 1)) }}" class="pg_page pg_start">처음</a>
+    <a href="{{ $self_url.'?'.http_build_query($qs + array('page' => $page - 1)) }}" class="pg_page pg_prev">이전</a>
+    @endif
+
     @for ($p = max(1, $page - 4); $p <= min($total_page, $page + 4); $p++)
-    @php $link = $self_url.'?'.http_build_query(array('tab' => $tab, 'page' => $p)); @endphp
-    <a href="{{ $link }}" class="pg_page {{ $p === $page ? 'pg_current' : '' }}">{{ $p }}</a>
+    <a href="{{ $self_url.'?'.http_build_query($qs + array('page' => $p)) }}" class="pg_page {{ $p === $page ? 'pg_current' : '' }}">{{ $p }}</a>
     @endfor
+
+    @if ($page < $total_page)
+    <a href="{{ $self_url.'?'.http_build_query($qs + array('page' => $page + 1)) }}" class="pg_page pg_next">다음</a>
+    <a href="{{ $self_url.'?'.http_build_query($qs + array('page' => $total_page)) }}" class="pg_page pg_end">맨끝</a>
+    @endif
 
     </span>
 </nav>
