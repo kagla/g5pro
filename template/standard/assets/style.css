@@ -2491,7 +2491,11 @@ input[type=checkbox], input[type=radio] {
 .opt-chip.is-on .opt-chip-left { color: rgba(255, 255, 255, .85); }
 .opt-chip.is-off { color: var(--muted); border-style: dashed; cursor: not-allowed;
     background: transparent; text-decoration: line-through; text-decoration-color: var(--line); }
-.opt-chip-left { font-size: var(--t-xs); font-weight: 700; color: var(--muted); }
+/* 칩에 붙는 남은 수량 — 값 뒤에 작게. 몇 개 안 남았으면 색으로 알린다 */
+.opt-chip-left { font-size: var(--t-xs); font-weight: 700; color: var(--muted);
+    font-variant-numeric: tabular-nums; }
+.opt-chip-left.is-low { color: #C2452D; }
+.opt-chip.is-on .opt-chip-left.is-low { color: #FFE0D8; }
 .opt-swatch { width: 16px; height: 16px; border-radius: 50%; flex: none;
     border: 1px solid rgba(0, 0, 0, .18); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .35); }
 @media (prefers-reduced-motion: reduce) {
@@ -2526,7 +2530,10 @@ input[type=checkbox], input[type=radio] {
     padding: var(--s3) var(--s4); border: 1px solid var(--line); border-radius: var(--r2);
     background: var(--card); transition: background-color .2s; }
 .cart-pick.is-bump { background: var(--bg); }
-.cart-pick-name { flex: 1 1 8em; font-weight: 700; }
+.cart-pick-name { flex: 1 1 8em; font-weight: 700; display: grid; gap: 2px; }
+/* 담긴 줄에도 재고를 적어 둔다 — 수량을 올릴 때 어디까지 되는지 알 수 있게 */
+.cart-pick-stock { font-size: var(--t-xs); font-weight: 600; color: var(--muted);
+    font-variant-numeric: tabular-nums; }
 .cart-pick-qty { display: inline-flex; align-items: center; border: 1px solid var(--btn-line);
     border-radius: var(--r2); overflow: hidden; }
 .cart-qty-btn { width: 34px; height: 32px; border: 0; background: transparent; cursor: pointer;

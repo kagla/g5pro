@@ -283,9 +283,12 @@ $(function () {
             }
             $b.append($('<span class="opt-chip-label"></span>').text(v));
 
-            // 마지막 축은 값 옆에 재고를 적어 준다 — 고르기 전에 살 수 있는지 보이게
-            if (i === axes - 1 && live && stock[v] <= 5) {
-                $b.append($('<span class="opt-chip-left"></span>').text(stock[v] + '개'));
+            // 마지막 축은 값마다 남은 재고를 적는다 — 고르기 전에 몇 개 살 수 있는지 보이게.
+            // 얼마 안 남았으면 색을 달리해 눈에 띄게 한다.
+            if (i === axes - 1 && live) {
+                $b.append($('<span class="opt-chip-left"></span>')
+                    .addClass(stock[v] <= 5 ? 'is-low' : '')
+                    .text(stock[v] + '개'));
             }
             if (!live) {
                 $b.addClass('is-off').prop('disabled', true)
@@ -338,7 +341,9 @@ $(function () {
         } else {
             var $li = $('<li class="cart-pick"></li>')
                 .attr('data-sk', s.id).attr('data-price', s.price);
-            $li.append($('<span class="cart-pick-name"></span>').text(s.path.join(' / ')));
+            $li.append($('<span class="cart-pick-name"></span>')
+                .text(s.path.join(' / '))
+                .append($('<span class="cart-pick-stock"></span>').text('재고 ' + won(s.qty) + '개')));
             $li.append(
                 '<span class="cart-pick-qty">' +
                 '<button type="button" class="cart-qty-btn" data-d="-1" aria-label="수량 줄이기">−</button>' +
