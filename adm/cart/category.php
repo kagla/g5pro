@@ -18,6 +18,9 @@ foreach ($categories as $c) {
     if ($p) $child_count[$p] = isset($child_count[$p]) ? $child_count[$p] + 1 : 1;
 }
 
+// 숨김(캐스케이드 포함) 분류 — 사용자 화면 바로가기는 실제로 열리는 분류에만 건다
+$hidden_ids = cart_hidden_category_ids();
+
 // 분류별 연결 상품 수 — 트리에 함께 보여 삭제 가능 여부를 미리 알 수 있게
 $counts = array();
 $result = sql_query(" select ca_id, count(*) as cnt from `{$g5['ycart_item_category_table']}` group by ca_id ");
@@ -31,6 +34,7 @@ cadm_view('category', array(
     'child_count' => $child_count,
     // 선택 분류가 한계 단이면 "하위에" 선택지를 아예 안 준다(눌러 보고 alert 로 막히지 않게)
     'can_add_child' => ($selected && (int)$selected['ca_depth'] < CART_CA_MAX_DEPTH),
+    'hidden_ids' => $hidden_ids,
     'self_url' => G5_CART_ADMIN_URL.'/category.php',
     'action_url' => G5_CART_ADMIN_URL.'/category_update.php',
     'link_url' => G5_CART_ADMIN_URL.'/category_item.php',
