@@ -13,17 +13,19 @@
     <select name="per" id="per_select">
 
         @foreach ($per_options as $po)
-        <option value="{{ $po }}" {{ $per === $po ? 'selected' : '' }}>{{ $po === 30 ? '기본(30개)' : $po.'개씩' }}</option>
+        <option value="{{ $po }}" {{ $per === $po ? 'selected' : '' }}>{{ $po === $per_options[0] ? '기본('.$po.'개)' : $po.'개씩' }}</option>
         @endforeach
 
     </select>
     <span class="btn_ov01"><span class="ov_txt">전체 {{ number_format($total) }}개 · {{ $page }}/{{ $total_page }}</span></span>
 
-    {{-- 작업 버튼은 검색과 같은 줄 오른쪽 끝. [선택 저장]은 아래 목록 폼(cart_list_form)을
-         제출해야 해서 type=button + JS 다 — 이 폼(GET 검색) 안에 있으므로 그냥 submit 하면
-         검색으로 가 버린다. 토큰은 인라인 저장이 쓰던 방식대로 직접 채운다. --}}
+    {{-- 작업 버튼은 검색과 같은 줄 오른쪽 끝. 두 가지를 지켜야 한다:
+         ① btn_submit 클래스를 쓰지 않는다 — 순정의 .local_sch01 .btn_submit 이 이 폼 안의
+            btn_submit 을 전부 30x30 돋보기 아이콘(글자 숨김)으로 바꿔 버린다(검색 버튼용 규칙).
+         ② [선택 저장]은 아래 목록 폼(cart_list_form)을 제출해야 해서 type=button + JS 다 —
+            이 폼(GET 검색) 안에 있어 그냥 submit 하면 검색으로 가 버린다. 토큰도 직접 채운다. --}}
     <span style="float:right">
-        <button type="button" class="btn_submit btn" onclick="cartListSave()">선택 저장</button>
+        <button type="button" class="btn btn_01" onclick="cartListSave()">선택 저장</button>
         <a href="{{ $form_url }}" class="btn btn_01">상품 등록</a>
     </span>
 </form>
