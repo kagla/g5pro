@@ -34,15 +34,28 @@
 <div class="ca-wrap">
 
 <div class="ca-tree">
+    {{-- 넣을 자리를 select 로 보여 준다 — 제출 버튼이 둘이면 Enter 가 늘 첫 버튼(최상위)으로
+         가서, 하위로 넣으려던 분류가 조용히 최상위에 생기기 때문 --}}
     <form method="post" action="{{ $action_url }}" class="ca-add">
         <input type="hidden" name="token" value="">
         <input type="hidden" name="w" value="a">
         <input type="hidden" name="ca_id" value="{{ $sel_id }}">
         <input type="text" name="ca_name" placeholder="새 분류 이름" required>
-        <button type="submit" name="ca_parent" value="0" class="btn_submit btn">최상위 추가</button>
 
-        @if ($selected)
-        <button type="submit" name="ca_parent" value="{{ $sel_id }}" class="btn btn_02">"{{ $selected['ca_name'] }}" 하위 추가</button>
+        @if ($can_add_child)
+        <select name="ca_parent">
+            <option value="{{ $sel_id }}">"{{ $selected['ca_name'] }}" 하위에</option>
+            <option value="0">최상위에</option>
+        </select>
+        @else
+        <input type="hidden" name="ca_parent" value="0">
+        <span class="ca-cnt">최상위에</span>
+        @endif
+
+        <button type="submit" class="btn_submit btn">추가</button>
+
+        @if ($selected && !$can_add_child)
+        <span class="ca-cnt">— "{{ $selected['ca_name'] }}"는 {{ CART_CA_MAX_DEPTH }}단이라 하위를 못 만듭니다</span>
         @endif
 
     </form>

@@ -29,6 +29,8 @@ cadm_view('category', array(
     'sel_id' => $sel_id,
     'counts' => $counts,
     'child_count' => $child_count,
+    // 선택 분류가 한계 단이면 "하위에" 선택지를 아예 안 준다(눌러 보고 alert 로 막히지 않게)
+    'can_add_child' => ($selected && (int)$selected['ca_depth'] < CART_CA_MAX_DEPTH),
     'self_url' => G5_CART_ADMIN_URL.'/category.php',
     'action_url' => G5_CART_ADMIN_URL.'/category_update.php',
     'link_url' => G5_CART_ADMIN_URL.'/category_item.php',
