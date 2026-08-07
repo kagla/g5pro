@@ -57,7 +57,15 @@
             <input type="hidden" name="it_id[{{ $i }}]" value="{{ $it['it_id'] }}">
             <input type="hidden" name="sk_id[{{ $i }}]" value="{{ $it['single'] ? $it['skus'][0]['sk_id'] : 0 }}">
         </td>
-        <td>{{ $it['it_code'] !== '' ? $it['it_code'] : '-' }}</td>
+        <td>
+
+            @if ($it['it_code'] !== '')
+            <a href="{{ cart_url('item.php', array('code' => $it['it_code'])) }}" target="_blank" title="사용자 화면에서 보기">{{ $it['it_code'] }}</a>
+            @else
+            -
+            @endif
+
+        </td>
         <td>
             @php $imgs = cart_item_images((int)$it['it_id']); @endphp
 
