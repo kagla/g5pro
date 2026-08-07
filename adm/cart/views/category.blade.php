@@ -128,7 +128,8 @@
                 <input type="text" name="ca_code" value="{{ $selected['ca_code'] }}" class="frm_input" size="24" maxlength="20" pattern="[A-Za-z0-9_-]{1,20}">
 
                 @if (!in_array((int)$selected['ca_id'], $hidden_ids, true))
-                <a href="{{ cart_url('list.php', array('ca' => $selected['ca_code'])) }}" target="_blank" class="btn btn_01">사용자 화면에서 보기</a>
+                <a href="{{ cart_url('list.php', array('ca' => $selected['ca_code'])) }}" target="_blank"
+                   class="btn btn_01" title="사용자 화면에서 이 분류 보기">미리보기</a>
                 @endif
 
                 <span>영문·숫자·하이픈·언더라인 1~20자 · 목록 주소와 CSV 에 쓰입니다</span>
