@@ -1,7 +1,4 @@
 <form method="get" action="{{ $self_url }}" class="local_sch01 local_sch">
-    {{-- 등록 버튼은 검색줄 오른쪽 끝(순정 목록 화면 관례). float 이라 소스에서 먼저 나와야
-         같은 줄에 붙는다 — .local_sch 가 :after 로 clear 하므로 줄 높이는 안 무너진다 --}}
-    <a href="{{ $form_url }}" class="btn btn_01" style="float:right">상품 등록</a>
     <select name="ca_id">
         <option value="0">전체 분류</option>
 
@@ -25,9 +22,10 @@
 <input type="hidden" name="ret_ca_id" value="{{ $ca_id }}">
 <input type="hidden" name="ret_page" value="{{ $page }}">
 
+{{-- 작업 버튼은 한 줄에 모아 오른쪽 끝(순정 목록 화면 관례) — 저장이 등록 왼쪽 --}}
 <div class="btn_add01">
     <button type="submit" class="btn_submit btn">선택 저장</button>
-    <span class="txt_id">체크한 상품의 판매가·재고·노출을 한 번에 저장합니다</span>
+    <a href="{{ $form_url }}" class="btn btn_01">상품 등록</a>
 </div>
 
 <table class="tbl_head01 tbl_wrap">
@@ -81,6 +79,7 @@
 
 <div class="btn_confirm01 btn_confirm">
     <button type="submit" class="btn_submit btn">선택 저장</button>
+    <span class="txt_id">체크한 상품의 판매가·재고·노출을 한 번에 저장합니다</span>
 </div>
 </form>
 

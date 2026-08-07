@@ -15,7 +15,12 @@ body { background: #F6FAFF; }
 .btn_03, a.btn_03 { background: #2563EB; border-radius: 6px; }
 .btn_03:hover, a.btn_03:hover { background: #1D4ED8; }
 .btn_list .btn, .btn_list a { border-radius: 6px; }
-.local_sch01 .btn_submit { border-radius: 6px; }
+/* 순정에서 .local_sch01 .btn_submit 은 돋보기 아이콘 버튼이다 — 글자는 text-indent 로 숨기고
+   배경 이미지로 보여 준다. 위 버튼 규칙의 background 단축 속성이 그 이미지를 지워 빈 사각형이
+   되므로, 이 버튼만 이미지를 유지한 채 색을 입힌다(평소·호버 둘 다). */
+.local_sch01 .btn_submit { background: url(../img/sch_btn.png) no-repeat 50% 50% #E0EDFF;
+    border-color: #B9D2F7; border-radius: 6px; }
+.local_sch01 .btn_submit:hover { background: url(../img/sch_btn.png) no-repeat 50% 50% #C4DBFF; }
 
 /* 요약 칩 */
 .local_ov01 .ov_a { background: #2563EB; }
