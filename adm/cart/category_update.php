@@ -51,10 +51,12 @@ if ($w === 'a') {
 $cur = cart_category_get($ca_id);
 if (!$cur) alert('없는 분류입니다.', $back);
 
+// 부모·순서는 폼에 없다 — 둘 다 드래그 이동(w=move)이 정하는 값이라, 저장이 건드리지 않게
+// 지금 값을 그대로 되쓴다(안 그러면 0 으로 덮여 트리 순서가 무너진다)
 $data = array(
     'ca_parent' => (int)$cur['ca_parent'],
     'ca_name' => $post('ca_name'),
-    'ca_order' => (int)$post('ca_order'),
+    'ca_order' => (int)$cur['ca_order'],
     'ca_show' => !empty($_POST['ca_show']) ? 1 : 0,
     'ca_desc' => $post('ca_desc'),
     'ca_sort' => $post('ca_sort'),

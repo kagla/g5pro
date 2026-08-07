@@ -147,10 +147,6 @@
             </td>
         </tr>
         <tr>
-            <th scope="row">순서</th>
-            <td><input type="number" name="ca_order" value="{{ $selected['ca_order'] }}" class="frm_input" style="width:90px"> <span>같은 부모 안 정렬값 · 드래그로도 바뀝니다</span></td>
-        </tr>
-        <tr>
             <th scope="row">노출</th>
             <td><label><input type="checkbox" name="ca_show" value="1" {{ $selected['ca_show'] ? 'checked' : '' }}> 쇼핑몰에 노출</label> <span>숨기면 하위 분류·소속 상품도 함께 숨습니다(다른 노출 분류에 속한 상품은 그쪽에서 보입니다)</span></td>
         </tr>
