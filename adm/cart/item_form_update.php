@@ -8,15 +8,23 @@ $w = (isset($_POST['w']) && !is_array($_POST['w'])) ? $_POST['w'] : '';
 $it_id = (isset($_POST['it_id']) && !is_array($_POST['it_id'])) ? (int)$_POST['it_id'] : 0;
 $list = G5_CART_ADMIN_URL.'/item_list.php';
 
+// common.php 가 POST 를 통째로 SQL 이스케이프해 넘긴다 — 여기서 벗겨야 저장 함수의
+// sql_real_escape_string 과 겹쳐 역슬래시가 쌓이지 않는다(분류 관리와 같은 처리).
+// 에디터 HTML·옵션 JSON 처럼 따옴표가 많은 값에서 특히 크게 어긋난다.
 $post_str = function ($key) {
-    return (isset($_POST[$key]) && !is_array($_POST[$key])) ? trim($_POST[$key]) : '';
+    return (isset($_POST[$key]) && !is_array($_POST[$key])) ? stripslashes(trim($_POST[$key])) : '';
+};
+$post_arr = function ($key) {
+    if (!isset($_POST[$key]) || !is_array($_POST[$key])) return array();
+    return array_map(function ($v) { return is_array($v) ? '' : stripslashes($v); }, $_POST[$key]);
 };
 
 $data = array(
     'it_code' => $post_str('it_code'),
     'it_name' => $post_str('it_name'),
     'it_keyword' => $post_str('it_keyword'),
-    'it_content' => (isset($_POST['it_content']) && !is_array($_POST['it_content'])) ? $_POST['it_content'] : '',
+    // 에디터 HTML — trim 하지 않는다(앞뒤 공백도 본문의 일부)
+    'it_content' => (isset($_POST['it_content']) && !is_array($_POST['it_content'])) ? stripslashes($_POST['it_content']) : '',
     'it_show' => !empty($_POST['it_show']) ? 1 : 0,
     // 배송비는 몰 전역 정책(설정 화면)이라 폼에 필드가 없다 — 수정 시 기존 값을 보존해
     // 저장할 때마다 0 으로 덮이던 문제를 막는다(상품별 정책이 생기면 폼 필드로 승격)
@@ -40,11 +48,11 @@ if ($w === 'u' && !cart_item_get($it_id)) alert('없는 상품입니다.', $list
 // 뒷 행에서 alert 로 중단될 때 앞 행은 이미 커밋된 채로 남는다(부분 저장) — 그래서
 // 상품·SKU 어느 쪽도 아직 쓰지 않은 이 시점에 전부 검사하고, 문제가 있으면 여기서 끝낸다.
 $sk_ids = isset($_POST['sk_id']) && is_array($_POST['sk_id']) ? $_POST['sk_id'] : array();
-$sk_codes = isset($_POST['sk_code']) && is_array($_POST['sk_code']) ? $_POST['sk_code'] : array();
-$sk_options = isset($_POST['sk_option']) && is_array($_POST['sk_option']) ? $_POST['sk_option'] : array();
-$sk_prices = isset($_POST['sk_price']) && is_array($_POST['sk_price']) ? $_POST['sk_price'] : array();
-$sk_qtys = isset($_POST['sk_qty']) && is_array($_POST['sk_qty']) ? $_POST['sk_qty'] : array();
-$sk_barcodes = isset($_POST['sk_barcode']) && is_array($_POST['sk_barcode']) ? $_POST['sk_barcode'] : array();
+$sk_codes = $post_arr('sk_code');
+$sk_options = $post_arr('sk_option');
+$sk_prices = $post_arr('sk_price');
+$sk_qtys = $post_arr('sk_qty');
+$sk_barcodes = $post_arr('sk_barcode');
 $sk_uses = isset($_POST['sk_use']) && is_array($_POST['sk_use']) ? $_POST['sk_use'] : array();
 $who = isset($member['mb_id']) ? $member['mb_id'] : 'admin';
 

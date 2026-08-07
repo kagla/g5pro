@@ -9,20 +9,34 @@
     <tbody>
     <tr>
         <th scope="row">상품 이름</th>
-        <td><input type="text" name="it_name" value="{{ $item['it_name'] }}" required class="frm_input" size="60"></td>
+        <td>
+            <input type="text" name="it_name" value="{{ $item['it_name'] }}" required class="frm_input" size="60">
+
+            @if ($view_url !== '')
+            <a href="{{ $view_url }}" class="btn btn_01" target="_blank">바로가기</a>
+            @endif
+
+        </td>
     </tr>
     <tr>
         <th scope="row">분류</th>
         <td>
 
-            @foreach ($categories as $c)
-            <label style="display:inline-block; margin:2px 14px 2px 0">
-                <input type="checkbox" name="ca_ids[]" value="{{ $c['ca_id'] }}" {{ in_array((int)$c['ca_id'], $ca_ids, true) ? 'checked' : '' }}>
-                {{ str_repeat('— ', $c['ca_depth'] - 1) }}{{ $c['ca_name'] }}
-            </label>
-            @endforeach
+            {{-- 체크박스가 한 줄로 흘러 계층이 안 보였다 — 한 줄 한 분류인 다중 선택 목록으로.
+                 선택이 하나도 없으면 브라우저가 ca_ids 를 아예 안 보내는데, 저장 쪽이 그 경우를
+                 빈 배열(= 분류 없음)로 처리하므로 그대로 맞는다 --}}
+            <select name="ca_ids[]" multiple size="{{ min(25, max(10, count($categories))) }}" style="min-width:320px; min-height:260px">
 
-            <div><span>여러 개 선택 가능 · 선택 없음 = 분류 없이 단독 노출</span></div>
+                @foreach ($categories as $c)
+                <option value="{{ $c['ca_id'] }}" {{ in_array((int)$c['ca_id'], $ca_ids, true) ? 'selected' : '' }}>{{ str_repeat('　', $c['ca_depth'] - 1) }}{{ $c['ca_depth'] > 1 ? '└ ' : '' }}{{ $c['ca_name'] }} [{{ $c['ca_code'] }}]</option>
+                @endforeach
+
+            </select>
+            <div>
+                <span>Ctrl(⌘)+클릭으로 여러 개 선택 · 선택 없음 = 분류 없이 단독 노출</span>
+                <a href="{{ $category_item_url }}" class="btn btn_02" target="_blank">상품 연결</a>
+                <a href="{{ $category_url }}" class="btn btn_02" target="_blank">분류 관리</a>
+            </div>
         </td>
     </tr>
     <tr>
@@ -39,7 +53,7 @@
     </tr>
     <tr>
         <th scope="row">상세 설명</th>
-        <td><textarea name="it_content" rows="10" style="width:100%">{{ $item['it_content'] }}</textarea></td>
+        <td>{!! $editor_html !!}</td>
     </tr>
     </tbody>
 </table>
@@ -160,4 +174,16 @@ function cartBuildSkus() {
         $tbody.append($tr);
     });
 }
+
+// 상세 설명 에디터 — 제출 순간 에디터 내용을 폼 필드로 내린다.
+// 어떤 에디터를 쓰는지는 환경설정이 정하므로, 동기화 코드도 서버가 그 에디터 것으로 넣어 준다
+// (순정 글쓰기 화면과 같은 방식). CKEditor 는 자체 제출 훅으로도 한 번 더 맞춘다.
+$(function () {
+    $('#cart_item_form').on('submit', function () {
+        if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.it_content) {
+            CKEDITOR.instances.it_content.updateElement();
+        }
+        {!! $editor_js !!}
+    });
+});
 </script>
