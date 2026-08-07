@@ -14,8 +14,12 @@ $allowed_symbols = "0123456789"; #digits
 $fontsdir = 'fonts';
 
 # CAPTCHA string length
-//$length = mt_rand(5,6); # random 5 or 6
-$length = 6;
+# 길이가 고정이면 푸는 쪽이 몇 칸인지 세지 않아도 된다. 5~6 랜덤으로 둔다.
+# 이 값은 kcaptcha_session.php(정답 생성)와 image()(그리기)에서 따로 계산되므로
+# 그리는 쪽이 세션의 정답 길이를 따라야 한다. kcaptcha.lib.php 에서 그렇게 고쳤다.
+# 되돌리려면 아래 두 줄을 맞바꾼다.
+$length = mt_rand(5,6); # random 5 or 6
+//$length = 6;
 
 # CAPTCHA image size (you do not need to change it, whis parameters is optimal)
 $width = 160;
@@ -33,6 +37,11 @@ $white_noise_density=1/6;
 $black_noise_density=1/20;
 
 # increase safety by prevention of spaces between symbols
+# true 로 하면 글자를 붙여 한 글자씩 잘라내지 못하게 막는다. OCR 방어 효과는 가장 크다.
+# 다만 260807 측정에서 사람의 첫 시도 적중률이 15장 중 8장(53%)까지 떨어졌다.
+# 세로 잘림을 고친 뒤 다시 재도 6장 중 3장이었다. 틀린 경우가 전부 같은 숫자가
+# 붙어 뭉친 것이라(555065, 122805) 잘림과는 무관한 겹치기 자체의 값이다.
+# 방문자 절반이 틀리므로 켜지 않는다.
 $no_spaces = false;
 
 # show credits
@@ -40,10 +49,23 @@ $show_credits = false; # set to false to remove credits line. Credits adds 12 pi
 $credits = 'www.captcha.ru'; # if empty, HTTP_HOST will be shown
 
 # CAPTCHA image colors (RGB, 0-255)
-$foreground_color = array(0, 0, 0);
-$background_color = array(255, 255, 255);
-//$foreground_color = array(mt_rand(0,100), mt_rand(0,100), mt_rand(0,100));
-//$background_color = array(mt_rand(200,255), mt_rand(200,255), mt_rand(200,255));
+//$foreground_color = array(0, 0, 0);
+//$background_color = array(255, 255, 255);
+# 검정 글자 흰 배경으로 고정되어 있으면 밝기 한 번만 잘라도 글자가 깨끗이 분리된다.
+# 매번 다른 색으로 뽑아 그 한 번을 못 쓰게 한다. 사람의 첫 시도 적중률은
+# 260807 측정에서 고정 흑백과 같았다.
+#
+# 다만 폭을 온통 열어 두면 새로고침할 때마다 분홍·연두·보라가 튀어나와 화면과 따로 논다.
+# 파랑 계열 안에서만 흔든다. 채널마다 폭이 30 이상 남아 있어 색이 고정되지 않으므로
+# 밝기 한 번으로 글자를 분리하지 못하는 성질은 그대로다.
+#
+# 한 번은 글자를 중간 파랑(60,70,120), 배경을 연파랑(214,232,244)으로 잡아 봤는데
+# 사람의 첫 시도 적중률이 12장 중 7장까지 떨어졌다. 밝기 대비는 7:1 로 충분했지만
+# 파랑 글자에 파랑 배경이라 색상 차가 없어 눈에는 덜 갈렸고, 잡음 점도 같은 색이라
+# 획에 묻었다. 그래서 색조만 파랑으로 두고 밝기는 다시 벌린다 —
+# 거의 검정인 남색 글자와 거의 흰색인 연푸른 배경. 최저 대비 11.8:1.
+$foreground_color = array(mt_rand(10, 40), mt_rand(14, 44), mt_rand(30, 70));
+$background_color = array(mt_rand(232, 246), mt_rand(240, 250), mt_rand(248, 255));
 
 # JPEG quality of CAPTCHA image (bigger is better quality, but larger file size)
 $jpeg_quality = 90;
