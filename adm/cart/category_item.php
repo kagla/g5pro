@@ -45,8 +45,7 @@ $found = array();
 $found_label = '';
 if ($selected) {
     if ($q !== '') {
-        $exact = cart_item_get_by_code($q);
-        $search_where = $exact ? " (it_code = '".sql_real_escape_string($q)."') " : cart_item_search_where($q);
+        $search_where = cart_item_admin_search_where($q);   // 상품관리와 같은 검색 규칙
         $found_label = '검색 결과';
     } else {
         $search_where = ' 1=1 ';

@@ -609,6 +609,23 @@ function cart_item_cache_refresh($it_id)
 
 // ---------- 검색 ----------
 
+// 관리자 목록 검색 — 프론트(cart_item_search_where)와 달리 상품코드도 함께 본다.
+// 관리자는 코드로 상품을 찝는 일이 잦은데, 코드는 전체를 외워 치기 어렵고 앞자리(예: DEMO)만
+// 기억하는 경우가 많다. 코드가 정확히 맞으면 그 하나로 좁히고(가장 흔한 의도),
+// 아니면 이름·키워드 검색에 코드 부분일치를 더한다.
+// 관리자 화면들이 같은 결과를 내도록 검색 규칙은 이 함수 하나에 모은다.
+function cart_item_admin_search_where($q)
+{
+    $q = trim($q);
+    if ($q === '') return ' 1=1 ';
+    if (cart_item_get_by_code($q)) {
+        return " (it_code = '".sql_real_escape_string($q)."') ";
+    }
+    // LIKE 와일드카드(%·_)는 리터럴로 — cart_item_search_where 의 폴백과 같은 규칙
+    $like = addcslashes(sql_real_escape_string($q), '%_');
+    return " (".cart_item_search_where($q)." or it_code LIKE '%$like%') ";
+}
+
 function cart_item_search_where($q)
 {
     $q = trim($q);

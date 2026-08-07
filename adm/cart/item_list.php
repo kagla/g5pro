@@ -17,11 +17,7 @@ if (!in_array($per, $per_options, true)) $per = $per_options[0];
 $rows_per = $per;
 
 $where = array('1=1');
-if ($q !== '') {
-    // 코드 완전 일치 우선 — 관리자가 코드로 찝어 찾는 흐름
-    $exact = cart_item_get_by_code($q);
-    $where[] = $exact ? " (it_code = '".sql_real_escape_string($q)."') " : cart_item_search_where($q);
-}
+if ($q !== '') $where[] = cart_item_admin_search_where($q);
 if ($ca_id) {
     $ids = cart_category_descendant_ids($ca_id);
     if ($ids) $where[] = " it_id IN (select it_id from `{$g5['ycart_item_category_table']}`

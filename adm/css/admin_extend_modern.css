@@ -50,7 +50,9 @@ select, textarea { border: 1px solid #B9D2F7; border-radius: 6px; }
 .local_desc01, .local_desc02 { border-color: #C9DCFA; background: #F0F6FF; }
 .pg_page, .pg_current { border-color: #C9DCFA; }
 .pg_page { color: #4A6FC4; }
-.pg_page:hover { background: #E7F0FF; }
+/* 색만 바꾼다(background 단축 금지) — 처음·이전·다음·맨끝은 배경 이미지가 곧 아이콘이라
+   단축 속성으로 덮으면 호버할 때 아이콘이 사라진다(검색 버튼과 같은 함정). */
+.pg_page:hover { background-color: #E7F0FF; }
 .pg_current { background: #2563EB; }
 .h2_frm { color: #2563EB; }
 
