@@ -1,4 +1,7 @@
 <form method="get" action="{{ $self_url }}" class="local_sch01 local_sch">
+    {{-- 등록 버튼은 검색줄 오른쪽 끝(순정 목록 화면 관례). float 이라 소스에서 먼저 나와야
+         같은 줄에 붙는다 — .local_sch 가 :after 로 clear 하므로 줄 높이는 안 무너진다 --}}
+    <a href="{{ $form_url }}" class="btn btn_01" style="float:right">상품 등록</a>
     <select name="ca_id">
         <option value="0">전체 분류</option>
 
@@ -9,7 +12,6 @@
     </select>
     <input type="text" name="q" value="{{ $q }}" placeholder="상품명 또는 상품코드" class="frm_input">
     <button type="submit" class="btn_submit btn">검색</button>
-    <a href="{{ $form_url }}" class="btn btn_01">상품 등록</a>
     <span class="btn_ov01"><span class="ov_txt">전체 {{ number_format($total) }}개 · {{ $page }}/{{ $total_page }}</span></span>
 </form>
 
@@ -33,24 +35,24 @@
 
 <table class="tbl_head01 tbl_wrap">
     <thead>
-    <tr><th>번호</th><th>이미지</th><th>상품</th><th>판매가</th><th>재고</th><th>노출</th><th>저장</th><th>수정</th></tr>
+    <tr><th>상품코드</th><th>이미지</th><th>상품</th><th>판매가</th><th>재고</th><th>노출</th><th>관리</th></tr>
     </thead>
     <tbody>
 
     @foreach ($items as $it)
     <tr>
-        <td>{{ $it['it_id'] }}</td>
+        <td>{{ $it['it_code'] !== '' ? $it['it_code'] : '-' }}</td>
         <td>
             @php $imgs = cart_item_images((int)$it['it_id']); @endphp
 
             @if (count($imgs))
-            <a href="{{ cart_url('item.php', array('it_id' => $it['it_id'])) }}" target="_blank"><img src="{{ G5_DATA_URL }}/cart/item/{{ $imgs[0]['im_file'] }}" alt="{{ $it['it_name'] }} 상품보기" style="max-height:44px"></a>
+            <a href="{{ cart_url('item.php', array('code' => $it['it_code'])) }}" target="_blank"><img src="{{ G5_DATA_URL }}/cart/item/{{ $imgs[0]['im_file'] }}" alt="{{ $it['it_name'] }} 상품보기" style="max-height:44px"></a>
             @endif
 
         </td>
         <td class="td_left">
             <a href="{{ $form_url }}?w=u&it_id={{ $it['it_id'] }}"><strong>{{ $it['it_name'] }}</strong></a>
-            <br><span class="txt_id">{{ $it['it_code'] }} · SKU {{ count($it['skus']) }}종</span>
+            <br><span class="txt_id">#{{ $it['it_id'] }} · SKU {{ count($it['skus']) }}종</span>
         </td>
 
         @if ($it['single'])
@@ -62,8 +64,10 @@
         @endif
 
         <td><input type="checkbox" data-role="it_show" {{ $it['it_show'] ? 'checked' : '' }}></td>
-        <td><button type="button" class="btn_submit btn" onclick="cartInlineSave({{ $it['it_id'] }}, {{ $it['single'] ? $it['skus'][0]['sk_id'] : 0 }}, this)">저장</button></td>
-        <td><a href="{{ $form_url }}?w=u&it_id={{ $it['it_id'] }}" class="btn btn_02">수정</a></td>
+        <td style="white-space:nowrap">
+            <button type="button" class="btn_submit btn" onclick="cartInlineSave({{ $it['it_id'] }}, {{ $it['single'] ? $it['skus'][0]['sk_id'] : 0 }}, this)">저장</button>
+            <a href="{{ $form_url }}?w=u&it_id={{ $it['it_id'] }}" class="btn btn_02">수정</a>
+        </td>
     </tr>
     @endforeach
 
