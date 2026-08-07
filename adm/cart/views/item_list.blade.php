@@ -15,32 +15,36 @@
     <span class="btn_ov01"><span class="ov_txt">전체 {{ number_format($total) }}개 · {{ $page }}/{{ $total_page }}</span></span>
 </form>
 
-<!--
-    행 안에 <form style="display:contents"> 를 넣지 않는다 — tbody/tr 사이에 낀 form 은
-    HTML 파서가 밖으로 밀어낼 수 있어(브라우저마다 다르게) 표 레이아웃이 깨질 위험이 있다.
-    대신 표 밖에 인라인 저장용 hidden form 을 하나만 두고, 행의 저장 버튼이 JS 로 그 행의
-    입력값만 모아 이 폼에 채운 뒤 제출한다.
--->
-<form method="post" action="{{ $update_url }}" id="cart_inline_form" style="display:none">
-<input type="hidden" name="token" id="f_token" value="">
-<input type="hidden" name="it_id" id="f_it_id" value="">
-<input type="hidden" name="sk_id" id="f_sk_id" value="">
-<input type="hidden" name="sk_price" id="f_sk_price" value="">
-<input type="hidden" name="sk_qty" id="f_sk_qty" value="">
-<input type="hidden" name="it_show" id="f_it_show" value="">
+{{-- 표 전체가 폼 하나다 — 행마다 폼을 넣으면(tr 사이 form) 브라우저가 밖으로 밀어내 표가 깨진다.
+     행 값은 전부 [행번호] 키로 보내 체크한 행만 골라 저장한다(미체크 체크박스가 빠져도 안 밀린다).
+     제출 버튼이 여럿이라 Enter 는 트리 순서상 첫 버튼으로 간다 — 그래서 [선택 저장]을 표 위에
+     먼저 두고, 되돌릴 수 없는 행 삭제 버튼은 그 뒤에 둔다. --}}
+<form method="post" action="{{ $update_url }}" id="cart_list_form">
+<input type="hidden" name="token" value="">
 <input type="hidden" name="ret_q" value="{{ $q }}">
 <input type="hidden" name="ret_ca_id" value="{{ $ca_id }}">
 <input type="hidden" name="ret_page" value="{{ $page }}">
-</form>
+
+<div class="btn_add01">
+    <button type="submit" class="btn_submit btn">선택 저장</button>
+    <span class="txt_id">체크한 상품의 판매가·재고·노출을 한 번에 저장합니다</span>
+</div>
 
 <table class="tbl_head01 tbl_wrap">
     <thead>
-    <tr><th>상품코드</th><th>이미지</th><th>상품</th><th>판매가</th><th>재고</th><th>노출</th><th>관리</th></tr>
+    <tr><th><label><input type="checkbox" id="chk_all"> 전체</label></th><th>상품코드</th><th>이미지</th><th>상품</th><th>판매가</th><th>재고</th><th>노출</th><th>관리</th></tr>
     </thead>
     <tbody>
 
     @foreach ($items as $it)
+    @php $i = $loop->index; @endphp
+
     <tr>
+        <td>
+            <input type="checkbox" name="chk[]" value="{{ $i }}">
+            <input type="hidden" name="it_id[{{ $i }}]" value="{{ $it['it_id'] }}">
+            <input type="hidden" name="sk_id[{{ $i }}]" value="{{ $it['single'] ? $it['skus'][0]['sk_id'] : 0 }}">
+        </td>
         <td>{{ $it['it_code'] !== '' ? $it['it_code'] : '-' }}</td>
         <td>
             @php $imgs = cart_item_images((int)$it['it_id']); @endphp
@@ -56,23 +60,29 @@
         </td>
 
         @if ($it['single'])
-        <td><input type="text" data-role="sk_price" value="{{ $it['skus'][0]['sk_price'] }}" size="9" style="text-align:right"></td>
-        <td><input type="text" data-role="sk_qty" value="{{ $it['skus'][0]['sk_qty'] }}" size="6" style="text-align:right"></td>
+        <td><input type="text" name="sk_price[{{ $i }}]" value="{{ $it['skus'][0]['sk_price'] }}" size="9" style="text-align:right"></td>
+        <td><input type="text" name="sk_qty[{{ $i }}]" value="{{ $it['skus'][0]['sk_qty'] }}" size="6" style="text-align:right"></td>
         @else
         <td style="text-align:right">{{ number_format($it['it_price']) }}~</td>
         <td style="text-align:right">{{ number_format($it['it_stock']) }}</td>
         @endif
 
-        <td><input type="checkbox" data-role="it_show" {{ $it['it_show'] ? 'checked' : '' }}></td>
+        <td><input type="checkbox" name="it_show[{{ $i }}]" value="1" {{ $it['it_show'] ? 'checked' : '' }}></td>
         <td style="white-space:nowrap">
-            <button type="button" class="btn_submit btn" onclick="cartInlineSave({{ $it['it_id'] }}, {{ $it['single'] ? $it['skus'][0]['sk_id'] : 0 }}, this)">저장</button>
             <a href="{{ $form_url }}?w=u&it_id={{ $it['it_id'] }}" class="btn btn_02">수정</a>
+            <button type="submit" name="del_it_id" value="{{ $it['it_id'] }}" class="btn btn_02"
+                onclick="return confirm('이 상품을 삭제할까요?\n옵션·재고 이력·이미지·분류 연결이 함께 지워집니다.\n지난 주문 내역은 그대로 남습니다.')">삭제</button>
         </td>
     </tr>
     @endforeach
 
     </tbody>
 </table>
+
+<div class="btn_confirm01 btn_confirm">
+    <button type="submit" class="btn_submit btn">선택 저장</button>
+</div>
+</form>
 
 @if ($total_page > 1)
 <nav class="pg_wrap">
@@ -88,23 +98,15 @@
 @endif
 
 <script>
-// 행의 판매가·재고(단일 SKU 상품만) · 노출 체크박스를 모아 표 밖 hidden form 에 채워 제출한다.
-// 저장 버튼이 type=button 이라 admin.js 의 클릭 위임(form input:submit, form button:submit)이
-// 걸리지 않는다 — delete_confirm() 과 같은 방식으로 get_ajax_token() 을 직접 불러 토큰을 채운다.
-function cartInlineSave(itId, skId, btn) {
-    var $tr = $(btn).closest('tr');
-    var token = get_ajax_token();
-    if (!token) {
-        alert('토큰 정보가 올바르지 않습니다.');
-        return;
-    }
-    $('#f_token').val(token);
-    $('#f_it_id').val(itId);
-    $('#f_sk_id').val(skId);
-    // 단일 SKU 행이 아니면 가격·재고 입력칸이 없다 — .val() 이 undefined 라 빈 값으로 채운다
-    $('#f_sk_price').val($tr.find('[data-role="sk_price"]').val() || '');
-    $('#f_sk_qty').val($tr.find('[data-role="sk_qty"]').val() || '');
-    $('#f_it_show').val($tr.find('[data-role="it_show"]').is(':checked') ? 1 : 0);
-    $('#cart_inline_form').trigger('submit');
-}
+$(function () {
+    // 머리글 전체 체크 — 행 값을 고쳐도 체크를 잊으면 저장이 안 되므로, 입력칸을 건드리면
+    // 그 행을 자동으로 체크해 준다(고쳤는데 안 저장되는 헛걸음 방지)
+    $('#chk_all').on('change', function () {
+        $('input[name="chk[]"]').prop('checked', this.checked);
+    });
+    $('#cart_list_form tbody').on('input change', 'input[type="text"], input[type="checkbox"]', function () {
+        var $tr = $(this).closest('tr');
+        if (!$(this).is('input[name="chk[]"]')) $tr.find('input[name="chk[]"]').prop('checked', true);
+    });
+});
 </script>

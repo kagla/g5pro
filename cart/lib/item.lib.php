@@ -678,6 +678,35 @@ function cart_item_image_add($it_id, $file, $order = 0, $main = 0)
     return '';
 }
 
+// 상품 삭제 — 주문 이력은 스냅샷(oi_name·oi_price 등)이라 상품이 사라져도 주문서는 그대로다
+// (어느 조회도 주문상품을 상품 테이블에 조인하지 않는다). 상품에 딸린 것만 치운다:
+// 장바구니 행(SKU 경유) → 이미지(파일 포함) → SKU → 재고 이력 → 분류 연결 → 상품 행.
+// 빈 문자열이면 성공, 아니면 사용자에게 보여줄 사유.
+function cart_item_delete($it_id)
+{
+    global $g5;
+    $it_id = (int)$it_id;
+    if (!cart_item_get($it_id)) return '없는 상품입니다.';
+
+    // 장바구니는 sk_id 로만 상품을 가리킨다 — SKU 를 지우기 전에 먼저 비운다(고아 행 방지)
+    $sk_ids = array();
+    $result = sql_query(" select sk_id from `{$g5['ycart_sku_table']}` where it_id = '$it_id' ");
+    while ($r = sql_fetch_array($result)) $sk_ids[] = (int)$r['sk_id'];
+    if ($sk_ids) {
+        sql_query(" delete from `{$g5['ycart_cart_table']}`
+            where sk_id in (".implode(',', $sk_ids).") ", true);
+    }
+
+    // 이미지는 파일도 함께 지워야 해서 행 단위로 부른다
+    foreach (cart_item_images($it_id) as $img) cart_item_image_delete((int)$img['im_id']);
+
+    sql_query(" delete from `{$g5['ycart_sku_table']}` where it_id = '$it_id' ", true);
+    sql_query(" delete from `{$g5['ycart_stock_log_table']}` where it_id = '$it_id' ", true);
+    sql_query(" delete from `{$g5['ycart_item_category_table']}` where it_id = '$it_id' ", true);
+    sql_query(" delete from `{$g5['ycart_item_table']}` where it_id = '$it_id' ", true);
+    return '';
+}
+
 function cart_item_image_delete($im_id)
 {
     global $g5;
