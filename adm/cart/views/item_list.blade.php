@@ -71,7 +71,7 @@
         <td style="white-space:nowrap">
             <a href="{{ $form_url }}?w=u&it_id={{ $it['it_id'] }}" class="btn btn_02">수정</a>
             <button type="submit" name="del_it_id" value="{{ $it['it_id'] }}" class="btn btn_02"
-                onclick="return confirm('이 상품을 삭제할까요?\n옵션·재고 이력·이미지·분류 연결이 함께 지워집니다.\n지난 주문 내역은 그대로 남습니다.')">삭제</button>
+                onclick="return confirm('이 상품을 삭제할까요?\n옵션·재고 이력·이미지·분류 연결이 함께 지워집니다.\n팔린 적 있는 상품은 삭제되지 않습니다(노출을 꺼서 숨기세요).')">삭제</button>
         </td>
     </tr>
     @endforeach

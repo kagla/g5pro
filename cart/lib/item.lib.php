@@ -678,8 +678,12 @@ function cart_item_image_add($it_id, $file, $order = 0, $main = 0)
     return '';
 }
 
-// 상품 삭제 — 주문 이력은 스냅샷(oi_name·oi_price 등)이라 상품이 사라져도 주문서는 그대로다
-// (어느 조회도 주문상품을 상품 테이블에 조인하지 않는다). 상품에 딸린 것만 치운다:
+// 상품 삭제 — 한 번이라도 팔린 상품은 지우지 않는다.
+// 주문서 자체는 스냅샷(oi_name·oi_price)이라 읽히지만, 취소는 재고를 되돌리는 동작이라
+// cart_stock_move 가 사라진 SKU 에서 false 를 내고 cart_order_transition 이 취소를 통째로
+// 거부한다 — 즉 삭제하면 그 상품이 든 미완료 주문을 영영 취소·환불할 수 없게 된다.
+// 그래서 판매 이력이 있으면 거부하고 '노출 끄기(숨김)'로 안내한다.
+// 팔린 적 없는 상품만 딸린 자료까지 정리한다:
 // 장바구니 행(SKU 경유) → 이미지(파일 포함) → SKU → 재고 이력 → 분류 연결 → 상품 행.
 // 빈 문자열이면 성공, 아니면 사용자에게 보여줄 사유.
 function cart_item_delete($it_id)
@@ -687,6 +691,15 @@ function cart_item_delete($it_id)
     global $g5;
     $it_id = (int)$it_id;
     if (!cart_item_get($it_id)) return '없는 상품입니다.';
+
+    // draft 는 결제 전 초안이라 재고를 건드린 적이 없다 — 판매 이력으로 치지 않는다
+    $sold = sql_fetch(" select count(*) as cnt from `{$g5['ycart_order_item_table']}` oi
+        inner join `{$g5['ycart_order_table']}` o on o.od_id = oi.od_id
+        where oi.it_id = '$it_id' and o.od_status <> 'draft' ");
+    if ((int)$sold['cnt'] > 0) {
+        return '주문 '.(int)$sold['cnt'].'건에 팔린 상품이라 삭제할 수 없습니다.'
+            .' 노출을 꺼서 숨기세요 — 판매는 멈추고 주문·재고 이력은 보존됩니다.';
+    }
 
     // 장바구니는 sk_id 로만 상품을 가리킨다 — SKU 를 지우기 전에 먼저 비운다(고아 행 방지)
     $sk_ids = array();
