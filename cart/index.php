@@ -15,7 +15,7 @@ function cart_index_fetch($where, $limit)
     $hidden = cart_hidden_category_ids();
     $not_hidden = $hidden ? " and x.ca_id not in (".implode(',', $hidden).") " : "";
     $rows = array();
-    $result = sql_query(" select i.it_id, i.it_name, i.it_price, i.it_stock,
+    $result = sql_query(" select i.it_id, i.it_code, i.it_name, i.it_price, i.it_stock,
             (select c.ca_name from `{$g5['ycart_item_category_table']}` x
               inner join `{$g5['ycart_category_table']}` c on c.ca_id = x.ca_id
               where x.it_id = i.it_id $not_hidden order by c.ca_order, c.ca_id limit 1) as ca_name
@@ -67,7 +67,7 @@ function cart_index_decorate($rows, $main_images)
     foreach ($rows as $r) {
         $it_id = (int)$r['it_id'];
         $r['img'] = isset($main_images[$it_id]) ? cart_item_image_url($main_images[$it_id]) : '';
-        $r['href'] = cart_url('item.php', array('it_id' => $it_id));
+        $r['href'] = cart_url('item.php', array('code' => $r['it_code']));
         $out[] = $r;
     }
     return $out;

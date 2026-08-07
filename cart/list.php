@@ -50,7 +50,7 @@ if ($page > $total_page) $page = $total_page;
 $offset = ($page - 1) * $rows_per;
 
 $items = array();
-$result = sql_query(" select it_id, it_name, it_price, it_stock from `{$g5['ycart_item_table']}`
+$result = sql_query(" select it_id, it_code, it_name, it_price, it_stock from `{$g5['ycart_item_table']}`
     where $where_sql order by {$orders[$sort]} limit $offset, $rows_per ");
 $rows = array();
 while ($r = sql_fetch_array($result)) $rows[] = $r;
@@ -60,7 +60,7 @@ $main_images = cart_item_main_images(array_column($rows, 'it_id'));
 foreach ($rows as $r) {
     $it_id = (int)$r['it_id'];
     $r['img'] = isset($main_images[$it_id]) ? cart_item_image_url($main_images[$it_id]) : '';
-    $r['href'] = cart_url('item.php', array('it_id' => $r['it_id']));
+    $r['href'] = cart_url('item.php', array('code' => $r['it_code']));
     $items[] = $r;
 }
 
