@@ -65,22 +65,33 @@ class KCAPTCHA{
             }
         }
 
-        // 글자 잉크가 스프라이트 세로 어디까지 차는지 찾는다. 0행은 글자 경계를
-        // 표시하는 줄이라 잉크는 1행부터 시작한다. 아래에서 위로 훑으므로
-        // 빈 여백 몇 줄만 읽고 끝난다. 260807
-        $ink_height=$fontfile_height;
-        for($sy=$fontfile_height;$sy>0;$sy--){
-            $row_has_ink=false;
-            for($sx=0;$sx<$fontfile_width;$sx++){
-                if((imagecolorat($font, $sx, $sy) >> 24) != 127){
-                    $row_has_ink=true;
-                    break;
+        // 설정의 $length 가 아니라 세션에 저장된 정답 길이만큼 그린다.
+        // $length 를 랜덤으로 두면 세션 생성 때와 이미지 그릴 때 값이 달라져
+        // 6자리를 만들어 놓고 5자리만 그리는 일이 생긴다. 260807
+        $draw_length=strlen($this->keystring);
+
+        // 이번에 그릴 글자들의 잉크가 스프라이트 세로 어디에 있는지 잰다.
+        // 스프라이트에는 쓰지 않는 a~z 도 들어 있고 g·p·y 는 아래로 내려가므로
+        // 스프라이트 전체를 재면 숫자가 위로 밀린다. 그릴 글자만 재야
+        // 폰트를 새로 넣어도 세로가 틀어지지 않는다. 260807
+        $ink_top=$fontfile_height;
+        $ink_bottom=1;
+        for($i=0;$i<$draw_length;$i++){
+            if( ! isset($font_metrics[$this->keystring[$i]]) ) continue;
+            $m=$font_metrics[$this->keystring[$i]];
+            for($sy=1;$sy<=$fontfile_height;$sy++){
+                for($sx=$m['start'];$sx<$m['end'];$sx++){
+                    if((imagecolorat($font, $sx, $sy) >> 24) != 127){
+                        if($sy<$ink_top) $ink_top=$sy;
+                        if($sy>$ink_bottom) $ink_bottom=$sy;
+                        break;
+                    }
                 }
             }
-            if($row_has_ink){
-                $ink_height=$sy;
-                break;
-            }
+        }
+        if($ink_top>$ink_bottom){ // 그릴 글자가 없으면 스프라이트 기준으로 둔다
+            $ink_top=1;
+            $ink_bottom=$fontfile_height;
         }
 
         $img=imagecreatetruecolor($width, $height);
@@ -94,27 +105,25 @@ class KCAPTCHA{
         $x=1;
         $odd=mt_rand(0,1);
         if($odd==0) $odd=-1;
-        // 설정의 $length 가 아니라 세션에 저장된 정답 길이만큼 그린다.
-        // $length 를 랜덤으로 두면 세션 생성 때와 이미지 그릴 때 값이 달라져
-        // 6자리를 만들어 놓고 5자리만 그리는 일이 생긴다. 260807
-        $draw_length=strlen($this->keystring);
         for($i=0;$i<$draw_length;$i++){
 
             if( ! isset($this->keystring[$i]) ) continue;
             $m=$font_metrics[$this->keystring[$i]];
 
             // 스프라이트 높이($fontfile_height, 69)가 캔버스 높이($height, 60)보다
-            // 커서 기준선이 -4.5 로 시작했다. 그래서 글자 윗부분이 늘 잘리고
-            // 아래는 남았다. 스프라이트가 아니라 실제 잉크 높이로 가운데를 잡는다.
+            // 커서 원래 기준선 ($height-$fontfile_height)/2 는 -4.5 였다.
+            // 그래서 글자가 위로 밀려 잘렸다. 잉크가 놓인 자리를 캔버스 가운데에 맞춘다.
+            // imagecopy 는 스프라이트 1행을 캔버스 $y 에 놓으므로
+            // 잉크는 캔버스 $y+$ink_top-1 부터 $y+$ink_bottom-1 까지 온다.
             $y=(($i%2)*$fluctuation_amplitude - $fluctuation_amplitude/2)*$odd
                 + mt_rand(-round($fluctuation_amplitude/3), round($fluctuation_amplitude/3))
-                + ($height-$ink_height)/2;
+                + ($height-$ink_top-$ink_bottom+1)/2;
 
             // 가로는 아래 wave 단계에서 $center 로 다시 가운데를 맞추지만
             // 세로에는 그런 보정이 없다. 여기서 가두지 않으면 그대로 잘린다.
-            if($ink_height<=$height){
-                if($y<0) $y=0;
-                else if($y>$height-$ink_height) $y=$height-$ink_height;
+            if($ink_bottom-$ink_top+1<=$height){
+                if($y<1-$ink_top) $y=1-$ink_top;
+                else if($y>$height-$ink_bottom) $y=$height-$ink_bottom;
             }
 
             if($no_spaces){
