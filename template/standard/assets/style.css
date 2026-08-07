@@ -2472,8 +2472,10 @@ input[type=checkbox], input[type=radio] {
    카드에서 썸네일 위 오버레이(position:absolute)라, 상세 화면에서는 평범한 안내 문단으로
    쓰이므로 .shop-item-info 안에서만 오버레이를 해제한다 */
 /* ── 상세 아래 탭(상세정보·리뷰·문의·판매자정보·추천) ── */
+/* 가로로만 스크롤한다 — overflow-x 만 주면 overflow-y 의 visible 이 auto 로 계산돼
+   탭 줄 오른쪽에 짧은 세로 스크롤바가 생긴다(위 .list-table-wrap 과 같은 함정) */
 .shop-tabs { display: flex; gap: var(--s5); align-items: center; margin: var(--s7) 0 var(--s5);
-    border-bottom: 1px solid var(--line); overflow-x: auto; }
+    border-bottom: 1px solid var(--line); overflow-x: auto; overflow-y: hidden; }
 .shop-tab { flex: 0 0 auto; padding: var(--s3) 2px var(--s3); color: var(--muted);
     text-decoration: none; font-weight: 600; white-space: nowrap; border-bottom: 3px solid transparent;
     margin-bottom: -1px; }
