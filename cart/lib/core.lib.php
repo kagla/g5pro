@@ -108,7 +108,7 @@ function cart_column_upgrades()
         // 2026-08-07 분류코드 — 사람이 쓰는 식별자(프론트 URL·CSV). 내부 키·FK 는 ca_id 그대로.
         // UNIQUE 는 여기 안 넣는다 — 기존 행이 전부 빈 값이라 채운 뒤 cart_install() 이 붙인다.
         array('ycart_category_table', 'ca_code',
-            " ADD `ca_code` varchar(20) NOT NULL DEFAULT '' AFTER `ca_parent` "),
+            " ADD `ca_code` varchar(30) NOT NULL DEFAULT '' AFTER `ca_parent` "),
     );
 }
 
@@ -183,6 +183,13 @@ function cart_install()
     if (!sql_fetch(" SHOW INDEX FROM `{$g5['ycart_category_table']}` WHERE Key_name = 'ca_code' ")) {
         sql_query(" ALTER TABLE `{$g5['ycart_category_table']}` ADD UNIQUE KEY `ca_code` (`ca_code`) ", true);
     }
+    // 2026-08-07 분류코드 20→30자 — 늘리기만 하므로 기존 값은 그대로다(줄이면 잘린다).
+    // 컬럼 추가(cart_column_upgrades)는 "있으면 건너뛰기"라 이미 있는 컬럼의 폭은 여기서 넓힌다.
+    $col = sql_fetch(" SHOW COLUMNS FROM `{$g5['ycart_category_table']}` LIKE 'ca_code' ");
+    if ($col && preg_match('/varchar\((\d+)\)/i', $col['Type'], $m) && (int)$m[1] < CART_CA_CODE_MAX) {
+        sql_query(" ALTER TABLE `{$g5['ycart_category_table']}`
+            MODIFY `ca_code` varchar(".CART_CA_CODE_MAX.") NOT NULL DEFAULT '' ", true);
+    }
     if (sql_fetch(" SHOW COLUMNS FROM `{$g5['ycart_item_table']}` LIKE 'ca_id' ")) {
         sql_query(" insert ignore into `{$g5['ycart_item_category_table']}` (it_id, ca_id)
             select it_id, ca_id from `{$g5['ycart_item_table']}` where ca_id > 0 ", true);
@@ -234,7 +241,7 @@ function cart_table_ddl()
     'ycart_category_table' => " CREATE TABLE IF NOT EXISTS `{$g5['ycart_category_table']}` (
         `ca_id` int(11) NOT NULL AUTO_INCREMENT,
         `ca_parent` int(11) NOT NULL DEFAULT '0',
-        `ca_code` varchar(20) NOT NULL DEFAULT '',
+        `ca_code` varchar(30) NOT NULL DEFAULT '',
         `ca_name` varchar(100) NOT NULL DEFAULT '',
         `ca_img` varchar(255) NOT NULL DEFAULT '',
         `ca_desc` varchar(500) NOT NULL DEFAULT '',

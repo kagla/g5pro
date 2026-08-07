@@ -7,6 +7,10 @@ if (!defined('_GNUBOARD_')) exit;
 // 분류 최대 깊이 — 생성·이동·부모 선택지가 전부 이 값 하나를 본다 (2026-08-06 3→5단 확대)
 if (!defined('CART_CA_MAX_DEPTH')) define('CART_CA_MAX_DEPTH', 5);
 
+// 분류코드 최대 길이 — 검증·화면·DDL 이 전부 이 값 하나를 본다 (2026-08-07 20→30자 확대:
+// 설명적인 코드가 20자에 금방 붙었다. 늘리는 건 무해하고, 줄이면 기존 코드가 잘린다)
+if (!defined('CART_CA_CODE_MAX')) define('CART_CA_CODE_MAX', 30);
+
 function cart_category_get($ca_id)
 {
     global $g5;
@@ -32,8 +36,8 @@ function cart_category_code_generate()
 function cart_category_code_error($code, $except_ca_id = 0)
 {
     global $g5;
-    if (!preg_match('/^[A-Za-z0-9_-]{1,20}$/', $code)) {
-        return '분류코드는 영문·숫자·하이픈·언더라인 1~20자입니다.';
+    if (!preg_match('/^[A-Za-z0-9_-]{1,'.CART_CA_CODE_MAX.'}$/', $code)) {
+        return '분류코드는 영문·숫자·하이픈·언더라인 1~'.CART_CA_CODE_MAX.'자입니다.';
     }
     $row = sql_fetch(" select ca_id from `{$g5['ycart_category_table']}`
         where ca_code = '".sql_real_escape_string($code)."' and ca_id <> '".(int)$except_ca_id."' ");
