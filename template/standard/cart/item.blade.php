@@ -230,17 +230,6 @@ $(function () {
         sel = [],                      // 축별로 고른 값
         won = function (n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); };
 
-    // 색상 축이면 값 이름에서 색을 알아내 점을 찍는다(모르는 이름은 점 없이 글자만)
-    var SWATCH = {
-        '블랙': '#222', '검정': '#222', '차콜': '#4A4A4A', '그레이': '#9AA0A6', '회색': '#9AA0A6',
-        '화이트': '#FFF', '흰색': '#FFF', '아이보리': '#F5EFE0', '베이지': '#D9C7A7',
-        '네이비': '#22335C', '블루': '#2E7CF6', '파랑': '#2E7CF6', '스카이': '#7EC8F0',
-        '레드': '#D93A3A', '빨강': '#D93A3A', '핑크': '#EF8AB0', '오렌지': '#F08A3C',
-        '옐로우': '#F2C94C', '노랑': '#F2C94C', '그린': '#3EA96B', '초록': '#3EA96B',
-        '카키': '#6E7A4F', '브라운': '#8A5A32', '갈색': '#8A5A32', '퍼플': '#8B5CF6', '보라': '#8B5CF6'
-    };
-    function isColorAxis(i) { return /색|컬러|color/i.test(CART_AXES[i]); }
-
     // 앞 축들에서 고른 값에 맞는 SKU 만
     function matching(prefix) {
         return $.grep(CART_SKUS, function (s) {
@@ -278,9 +267,6 @@ $(function () {
                     .attr('data-axis', i).attr('data-val', v)
                     .attr('aria-pressed', sel[i] === v ? 'true' : 'false');
 
-            if (isColorAxis(i) && SWATCH[v]) {
-                $b.append($('<span class="opt-swatch"></span>').css('background', SWATCH[v]));
-            }
             $b.append($('<span class="opt-chip-label"></span>').text(v));
 
             // 마지막 축은 값마다 남은 재고를 적는다 — 고르기 전에 몇 개 살 수 있는지 보이게.
