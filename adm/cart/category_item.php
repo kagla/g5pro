@@ -38,11 +38,20 @@ if ($selected) {
     while ($r = sql_fetch_array($result)) $linked_ids[(int)$r['it_id']] = true;
 }
 
-// 상품 검색 — 코드 완전 일치 우선(상품관리와 같은 흐름), 이미 연결된 상품은 표시만
+// 고를 상품 목록 — 검색어가 없으면 최근 등록순으로 바로 보여 준다(빈 화면에서 검색부터
+// 해야 하는 수고를 없앤다). 검색어가 있으면 코드 완전 일치 우선(상품관리와 같은 흐름).
+// 이미 연결된 상품도 빼지 않고 '연결됨'으로 표시만 한다.
 $found = array();
-if ($selected && $q !== '') {
-    $exact = cart_item_get_by_code($q);
-    $search_where = $exact ? " (it_code = '".sql_real_escape_string($q)."') " : cart_item_search_where($q);
+$found_label = '';
+if ($selected) {
+    if ($q !== '') {
+        $exact = cart_item_get_by_code($q);
+        $search_where = $exact ? " (it_code = '".sql_real_escape_string($q)."') " : cart_item_search_where($q);
+        $found_label = '검색 결과';
+    } else {
+        $search_where = ' 1=1 ';
+        $found_label = '최근 등록 상품';
+    }
     $result = sql_query(" select it_id, it_code, it_name, it_price, it_show
         from `{$g5['ycart_item_table']}` where $search_where order by it_id desc limit 30 ");
     while ($r = sql_fetch_array($result)) {
@@ -59,6 +68,7 @@ cadm_view('category_item', array(
     'child_count' => $child_count,
     'linked' => $linked,
     'found' => $found,
+    'found_label' => $found_label,
     'q' => $q,
     'self_url' => G5_CART_ADMIN_URL.'/category_item.php',
     'action_url' => G5_CART_ADMIN_URL.'/category_item_update.php',

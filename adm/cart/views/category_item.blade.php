@@ -19,6 +19,7 @@
 .cm-cat .cm-toggle { display: inline-block; width: 14px; margin-right: 2px; text-align: center;
     color: #5b6673; cursor: pointer; user-select: none; font-size: 0.8em; }
 .cm-cat .cm-toggle.leaf { cursor: default; visibility: hidden; }
+.cm-note { color: #6b7683; font-size: 0.92em; margin: 8px 0 4px; }
 .cm-cat .cm-off { display: inline-block; margin-left: 5px; padding: 0 6px; border-radius: 9px;
     background: #e9edf2; color: #6b7683; font-size: 0.78em; vertical-align: 1px; }
 .cm-cat.off { color: #98a1ab; }
@@ -102,12 +103,12 @@
         <button type="submit" class="btn_submit btn">검색</button>
     </form>
 
-    @if ($q !== '')
     <form method="post" action="{{ $action_url }}">
         <input type="hidden" name="token" value="">
         <input type="hidden" name="w" value="add">
         <input type="hidden" name="ca_id" value="{{ $sel_id }}">
         <input type="hidden" name="q" value="{{ $q }}">
+        <p class="cm-note">{{ $found_label }} {{ count($found) }}개{{ count($found) >= 30 ? ' (30개까지 · 검색으로 좁히세요)' : '' }}</p>
         <table class="tbl_head01 tbl_wrap">
             <thead>
             <tr><th><label><input type="checkbox" id="cm_all"> 전체</label></th><th>코드</th><th>상품명</th></tr>
@@ -131,14 +132,13 @@
             @endforeach
 
             @if (!count($found))
-            <tr><td colspan="3" class="empty_table">검색 결과가 없습니다.</td></tr>
+            <tr><td colspan="3" class="empty_table">{{ $q !== '' ? '검색 결과가 없습니다.' : '등록된 상품이 없습니다.' }}</td></tr>
             @endif
 
             </tbody>
         </table>
         <button type="submit" class="btn_submit btn">체크한 상품을 "{{ $selected['ca_name'] }}"에 추가</button>
     </form>
-    @endif
 
 </div>
 @else
