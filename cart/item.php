@@ -122,6 +122,24 @@ foreach ($skus as $i => $s) {
     $skus[$i]['opt_path'] = $path;
 }
 
+// 단계 선택의 대상은 '축 값이 모두 찬' SKU 뿐이다. 옵션 없이 남아 있는 기본 SKU
+// (단일 SKU 시절 자동 생성분)가 섞이면 선택칸에 빈 항목이 생긴다.
+// 값 목록도 같은 대상에서 다시 뽑아 화면과 자료가 어긋나지 않게 한다.
+$opt_skus = array();
+if (count($opt_names)) {
+    foreach ($skus as $s) {
+        if (!in_array('', $s['opt_path'], true)) $opt_skus[] = $s;
+    }
+    $opt_values = array();
+    foreach ($opt_names as $ai => $n) {
+        $opt_values[$n] = array();
+        foreach ($opt_skus as $s) {
+            $v = $s['opt_path'][$ai];
+            if (!in_array($v, $opt_values[$n], true)) $opt_values[$n][] = $v;
+        }
+    }
+}
+
 // 구매 폼 — 품절 아닌 SKU 가 하나라도 있어야 담기 가능
 $buyable_skus = array();
 foreach ($skus as $s) {
@@ -136,6 +154,7 @@ g5_view('cart.item', array(
     'buyable_skus' => $buyable_skus,
     'opt_names' => $opt_names,
     'opt_values' => $opt_values,
+    'opt_skus' => $opt_skus,
     'single' => (count($skus) <= 1),
     'category' => $category,
     'list_href' => $category ? cart_url('list.php', array('ca' => $category['ca_code'])) : cart_url('list.php'),

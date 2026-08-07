@@ -2471,11 +2471,28 @@ input[type=checkbox], input[type=radio] {
 /* .shop-price·.shop-soldout 은 목록 카드(.shop-card)의 규칙을 물려받는다. .shop-soldout 은
    카드에서 썸네일 위 오버레이(position:absolute)라, 상세 화면에서는 평범한 안내 문단으로
    쓰이므로 .shop-item-info 안에서만 오버레이를 해제한다 */
-/* ── 옵션 단계 선택 — 축마다 선택칸 하나, 고른 조합은 아래 요약으로 확인 ── */
+/* ── 옵션 단계 선택 — 축마다 선택칸 하나, 고른 조합은 아래 목록으로 쌓인다 ── */
 .cart-opts { display: grid; gap: var(--s3); margin-bottom: var(--s3); }
-.cart-opts .cart-buy-label { display: grid; gap: 6px; }
-.cart-opts select { width: 100%; }
-.cart-opts select:disabled { color: var(--muted); background: var(--bg); }
+.cart-opts .cart-buy-label { display: grid; gap: 6px; font-weight: 700; }
+/* 브라우저 기본 화살표를 끄고 직접 그린다 — 운영체제마다 제각각인 모양을 통일하려고.
+   화살표는 인라인 SVG 라 이미지 파일이 늘지 않는다(# 은 %23 으로 써야 잘리지 않는다). */
+.cart-opts select, .cart-buy select {
+    appearance: none; -webkit-appearance: none; -moz-appearance: none;
+    width: 100%; padding: 12px 42px 12px 14px;
+    border: 1px solid var(--btn-line); border-radius: var(--r2);
+    background-color: var(--card); color: var(--fg); font: inherit; line-height: 1.3;
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9' fill='none' stroke='%237C8EA6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M1 1.5 7 7.5 13 1.5'/></svg>");
+    background-repeat: no-repeat; background-position: right 14px center;
+    cursor: pointer; transition: border-color .15s, box-shadow .15s;
+}
+.cart-opts select:hover, .cart-buy select:hover { border-color: var(--accent); }
+.cart-opts select:focus-visible, .cart-buy select:focus-visible {
+    outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(46, 124, 246, .18); }
+.cart-opts select:disabled { color: var(--muted); background-color: var(--bg); cursor: not-allowed;
+    border-color: var(--line); }
+/* 같은 옵션을 또 고른 경우처럼 '막을 일은 아니지만 알려야 하는' 안내 */
+.cart-pick-msg { margin: 0 0 var(--s3); padding: var(--s3) var(--s4); border-radius: var(--r2);
+    background: #FFF4E5; color: #8A5300; border: 1px solid #F5D9A8; font-weight: 700; }
 /* 고른 옵션 줄 — 여러 조합을 담고 줄마다 수량을 조절한다 */
 .cart-picks { list-style: none; margin: 0 0 var(--s3); padding: 0; display: grid; gap: 8px; }
 .cart-pick { display: flex; align-items: center; gap: var(--s3); flex-wrap: wrap;

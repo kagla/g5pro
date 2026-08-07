@@ -85,6 +85,7 @@
 
                 {{-- 고른 옵션이 한 줄씩 쌓인다 — 다른 색·다른 사이즈를 이어서 고를 수 있다.
                      줄마다 sk_id[]·qty[] 로 전송되고, 서버는 짝을 맞춰 한 번에 담는다. --}}
+                <p class="cart-pick-msg" id="cart_pick_msg" hidden></p>
                 <ul class="cart-picks" id="cart_picks"></ul>
                 <p class="cart-picks-empty" id="cart_picks_empty">옵션을 고르면 여기에 담깁니다. 여러 개 고를 수 있어요.</p>
                 <p class="cart-picks-total" id="cart_picks_total" hidden></p>
@@ -224,9 +225,9 @@ $('.shop-item-thumbs img').on('click', function () {
 <script>
 // 옵션 단계 선택 — 앞 축을 고르면 뒤 축을 그 조합에 실제로 있는 값으로 다시 채운다.
 // 마지막 축에는 값마다 가격과 재고를 함께 적고, 품절 조합은 고를 수 없게 막는다.
-var CART_SKUS = {!! json_encode(array_map(function ($s) {
+var CART_SKUS = {!! json_encode(array_values(array_map(function ($s) {
     return array('id' => $s['sk_id'], 'path' => $s['opt_path'], 'price' => $s['sk_price'], 'qty' => $s['sk_qty']);
-}, $skus), JSON_UNESCAPED_UNICODE) !!};
+}, $opt_skus)), JSON_UNESCAPED_UNICODE) !!};
 
 $(function () {
     var $axes = $('#cart_opts .cart-opt'),
@@ -278,6 +279,15 @@ $(function () {
         }
     }
 
+    // 잠깐 뜨는 안내 — 같은 옵션을 또 고른 경우처럼 막을 일이 아니라 알려 줄 일에 쓴다
+    var noticeTimer = null;
+    function notice(text) {
+        var $n = $('#cart_pick_msg');
+        $n.text(text).removeAttr('hidden');
+        clearTimeout(noticeTimer);
+        noticeTimer = setTimeout(function () { $n.attr('hidden', true); }, 2500);
+    }
+
     // 담긴 줄들의 수량·금액을 다시 센다
     function retotal() {
         var qty = 0, sum = 0;
@@ -301,11 +311,13 @@ $(function () {
             $exist = $('#cart_picks .cart-pick[data-sk="' + s.id + '"]');
 
         if ($exist.length) {
-            var $q = $exist.find('input[name="qty[]"]'),
-                next = Math.min(s.qty, (parseInt($q.val(), 10) || 0) + 1);
-            $q.val(next);
+            // 이미 담긴 조합 — 수량을 몰래 올리지 않고 알린다. 수량은 그 줄에서 직접 조절한다.
+            notice('이미 선택된 옵션입니다. 수량은 아래에서 조절하세요.');
             $exist.addClass('is-bump');
-            setTimeout(function () { $exist.removeClass('is-bump'); }, 300);
+            setTimeout(function () { $exist.removeClass('is-bump'); }, 900);
+            $axes.eq(0).val('');
+            reset(1);
+            return;
         } else {
             var $li = $('<li class="cart-pick"></li>')
                 .attr('data-sk', s.id).attr('data-price', s.price);
