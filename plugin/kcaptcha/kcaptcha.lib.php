@@ -76,7 +76,11 @@ class KCAPTCHA{
         $x=1;
         $odd=mt_rand(0,1);
         if($odd==0) $odd=-1;
-        for($i=0;$i<$length;$i++){
+        // 설정의 $length 가 아니라 세션에 저장된 정답 길이만큼 그린다.
+        // $length 를 랜덤으로 두면 세션 생성 때와 이미지 그릴 때 값이 달라져
+        // 6자리를 만들어 놓고 5자리만 그리는 일이 생긴다. 260807
+        $draw_length=strlen($this->keystring);
+        for($i=0;$i<$draw_length;$i++){
 
             if( ! isset($this->keystring[$i]) ) continue;
             $m=$font_metrics[$this->keystring[$i]];
