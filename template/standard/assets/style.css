@@ -2493,6 +2493,44 @@ input[type=checkbox], input[type=radio] {
 /* 같은 옵션을 또 고른 경우처럼 '막을 일은 아니지만 알려야 하는' 안내 */
 .cart-pick-msg { margin: 0 0 var(--s3); padding: var(--s3) var(--s4); border-radius: var(--r2);
     background: #FFF4E5; color: #8A5300; border: 1px solid #F5D9A8; font-weight: 700; }
+
+/* ── 구매 상자 — 옵션·수량·버튼을 카드 하나로 묶는다(요즘 상세 화면의 기본 꼴) ── */
+.shop-item-info .cart-buy {
+    margin-top: var(--s5); padding: var(--s5); gap: var(--s4);
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--r-xl); box-shadow: var(--sh-sm);
+}
+/* 넓은 화면에서는 사진을 내려도 구매 상자가 따라온다 */
+@media (min-width: 981px) {
+    .shop-item-info .cart-buy { position: sticky; top: 16px; }
+}
+.cart-opts .cart-buy-label { font-size: var(--t-sm); font-weight: 700; color: var(--muted);
+    letter-spacing: .02em; }
+.cart-picks-empty { margin: 0 0 var(--s3); padding: var(--s4); text-align: center;
+    border: 1px dashed var(--line); border-radius: var(--r-md); }
+.cart-picks-total { display: flex; justify-content: space-between; align-items: baseline;
+    gap: var(--s3); font-size: var(--t-md); }
+.cart-picks-total .cart-total-sum { font-size: var(--t-xl); color: var(--accent); }
+.cart-pick { box-shadow: var(--sh-sm); border-color: transparent; }
+.cart-pick.is-bump { background: #FFF7EA; }
+
+/* 버튼 — 손가락으로 누르기 좋은 높이와 무게 */
+.shop-item-info .cart-buy-btns { gap: var(--s3); }
+.shop-item-info .cart-buy-btns .cart-cta {
+    padding: 14px var(--s5); border-radius: 12px; font-size: var(--t-md); font-weight: 800;
+    transition: transform .15s, box-shadow .15s, filter .15s;
+}
+.shop-item-info .cart-buy-btns .cart-cta:not(.is-line) { box-shadow: 0 6px 16px rgba(53, 197, 240, .32); }
+.shop-item-info .cart-buy-btns .cart-cta:hover { transform: translateY(-1px); }
+.shop-item-info .cart-buy-btns .cart-cta:active { transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+    .shop-item-info .cart-buy-btns .cart-cta { transition: none; }
+    .shop-item-info .cart-buy-btns .cart-cta:hover { transform: none; }
+}
+@media (max-width: 640px) {
+    .shop-item-info .cart-buy { padding: var(--s4); }
+    .shop-item-info .cart-buy-btns { flex-direction: column; }
+}
 /* 고른 옵션 줄 — 여러 조합을 담고 줄마다 수량을 조절한다 */
 .cart-picks { list-style: none; margin: 0 0 var(--s3); padding: 0; display: grid; gap: 8px; }
 .cart-pick { display: flex; align-items: center; gap: var(--s3); flex-wrap: wrap;
@@ -2663,9 +2701,12 @@ input[type=checkbox], input[type=radio] {
 .cart-cart-row.is-blocked { opacity: .55; }
 .cart-cart-thumb { flex: none; width: 84px; height: 84px; border-radius: 10px; overflow: hidden; background: var(--bg); }
 .cart-cart-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.cart-cart-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.cart-cart-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--s1); }
 .cart-cart-name { font-weight: 600; }
-.cart-cart-opt { font-size: var(--t-xs); color: var(--muted); }
+/* 담은 옵션 — 어떤 색·크기를 사는지가 상품명 못지않게 중요하다.
+   보조 문구(--t-xs·--muted)로 두면 흐리고 작아 확인이 안 된다 */
+.cart-cart-opt { align-self: flex-start; font-size: var(--t-sm); font-weight: 600; color: var(--fg);
+    padding: 2px var(--s2); border-radius: var(--r-sm); background: var(--bg); border: 1px solid var(--line); }
 .cart-cart-warn { font-size: var(--t-xs); color: #e5484d; font-weight: 600; }
 .cart-cart-price { font-size: var(--t-sm); font-weight: 700; }
 .cart-cart-price em, .cart-cart-line em { font-style: normal; font-weight: 600; font-size: var(--t-xs); }
@@ -2709,6 +2750,13 @@ input[type=checkbox], input[type=radio] {
 .cart-co-zip input { width: 140px; flex: none; }
 .cart-co-pay { margin-bottom: var(--s3); }
 .cart-co-note { font-size: var(--t-xs); color: var(--muted); margin-top: var(--s3); }
+/* 저장된 배송지 줄 — 셀렉트와 삭제가 한 줄. 삭제는 눈에 덜 띄게(주 동작은 불러오기다) */
+.cart-addr-pick { display: flex; gap: var(--s2); align-items: center; margin-bottom: var(--s3); }
+.cart-addr-pick select { flex: 1; min-width: 0; padding: var(--s2); }
+.cart-addr-del { flex: none; padding: var(--s2) var(--s3); font-size: var(--t-xs);
+    color: var(--muted); background: var(--card); border: 1px solid var(--btn-line); border-radius: var(--r-sm); cursor: pointer; }
+.cart-addr-del:hover { color: var(--fg); border-color: var(--muted); }
+.cart-addr-del:disabled { opacity: .5; cursor: default; }
 .cart-checkout .cart-cart-sum { position: sticky; bottom: var(--s3); background: var(--card); box-shadow: var(--sh-lg); }
 
 .cart-complete { max-width: 640px; margin: 0 auto; }

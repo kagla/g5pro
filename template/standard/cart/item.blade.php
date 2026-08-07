@@ -47,7 +47,13 @@
         </div>
 
         <div class="shop-item-info">
-            <p class="shop-price"><strong>{{ number_format($item['it_price']) }}</strong>원{{ $single ? '' : '부터' }}</p>
+            <p class="shop-price"><strong>{{ number_format($item["it_price"]) }}</strong>원
+
+                @if (!$single)
+                <em>부터</em>
+                @endif
+
+            </p>
 
 
             @if ((int)$item['it_stock'] === 0)
@@ -298,8 +304,9 @@ $(function () {
         });
         var has = $('#cart_picks .cart-pick').length > 0;
         $('#cart_picks_empty').toggle(!has);
-        $('#cart_picks_total').attr('hidden', !has)
-            .text('총 ' + won(qty) + '개 · ' + won(sum) + '원');
+        $('#cart_picks_total').attr('hidden', !has).html('')
+            .append($('<span></span>').text('총 ' + won(qty) + '개'))
+            .append($('<strong class="cart-total-sum"></strong>').text(won(sum) + '원'));
     }
 
     // 선택이 다 차면 그 조합을 아래 목록에 한 줄 얹는다. 이미 있으면 수량만 올린다.
