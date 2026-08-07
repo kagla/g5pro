@@ -56,9 +56,10 @@ select, textarea { border: 1px solid #B9D2F7; border-radius: 6px; }
    눌러 연한 바탕이 되면, 흰 글자와 겹쳐 숫자가 사라진다 */
 .pg_page:not(.pg_current):hover { background-color: #E7F0FF; }
 /* 현재 페이지는 글자를 반전(흰색)한다 — 우리 페이징은 한 태그에 pg_page·pg_current 를 함께
-   주는데(순정 get_paging 은 현재 페이지에 pg_page 를 안 붙인다), 위 .pg_page 색 규칙이 같은
-   특정도로 뒤에 와서 순정의 흰 글자를 눌러 파랑 바탕에 파랑 글자가 됐다. */
-.pg_current { background: #2563EB; color: #fff; }
+   주는데(순정 get_paging 은 현재 페이지에 pg_page 를 안 붙인다), .pg_page 의 색 규칙과
+   특정도가 같아 순서에 따라 파랑 바탕에 파랑 글자가 될 수 있다.
+   그래서 .pg 자손·a 태그로 특정도를 한 단 올려 규칙 순서와 무관하게 이기게 한다. */
+.pg_current, .pg .pg_current, a.pg_current { background: #2563EB; color: #fff; }
 .h2_frm { color: #2563EB; }
 
 /* ── 경고성 텍스트는 의미(주의)를 지키되 차분한 레드 ── */
