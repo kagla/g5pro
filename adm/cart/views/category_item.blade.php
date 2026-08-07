@@ -16,9 +16,12 @@
 .cm-cat:last-child { border-bottom: 0; }
 .cm-cat.selected { background: #E5EFFF; box-shadow: inset 3px 0 0 #2563EB; }
 .cm-cat .cm-cnt { color: #888; font-size: 0.92em; }
-.cm-cat .cm-toggle { display: inline-block; width: 16px; text-align: center;
-    color: #5b6673; cursor: pointer; user-select: none; font-size: 0.85em; }
+.cm-cat .cm-toggle { display: inline-block; width: 14px; margin-right: 2px; text-align: center;
+    color: #5b6673; cursor: pointer; user-select: none; font-size: 0.8em; }
 .cm-cat .cm-toggle.leaf { cursor: default; visibility: hidden; }
+.cm-cat .cm-off { display: inline-block; margin-left: 5px; padding: 0 6px; border-radius: 9px;
+    background: #e9edf2; color: #6b7683; font-size: 0.78em; vertical-align: 1px; }
+.cm-cat.off { color: #98a1ab; }
 .cm-row-form { display: inline; }
 </style>
 
@@ -28,14 +31,24 @@
     <div class="cm-list">
 
         @foreach ($categories as $c)
-        <a class="cm-cat {{ (int)$c['ca_id'] === $sel_id ? 'selected' : '' }}"
+        @php
+            $kid = isset($child_count[$c['ca_id']]) ? (int)$child_count[$c['ca_id']] : 0;
+            $items = isset($counts[$c['ca_id']]) ? (int)$counts[$c['ca_id']] : 0;
+        @endphp
+
+        <a class="cm-cat {{ (int)$c['ca_id'] === $sel_id ? 'selected' : '' }} {{ (int)$c['ca_show'] ? '' : 'off' }}"
            href="{{ $self_url }}?ca_id={{ $c['ca_id'] }}"
            data-id="{{ $c['ca_id'] }}" data-depth="{{ $c['ca_depth'] }}" data-path="{{ $c['ca_path'] }}"
            style="padding-left:{{ ($c['ca_depth'] - 1) * 18 + 8 }}px">
-            <span class="cm-toggle {{ isset($has_child[$c['ca_id']]) ? '' : 'leaf' }}"
+            <span class="cm-toggle {{ $kid ? '' : 'leaf' }}"
                   data-id="{{ $c['ca_id'] }}" title="하위 분류 접기/펼치기">▼</span>
             {{ $c['ca_name'] }}
-            <span class="cm-cnt">{{ isset($counts[$c['ca_id']]) ? number_format($counts[$c['ca_id']]) : 0 }}개</span>
+            <span class="cm-cnt">{{ $kid ? '하위 '.$kid.' · ' : '' }}상품 {{ number_format($items) }}개</span>
+
+            @if (!(int)$c['ca_show'])
+            <span class="cm-off">숨김</span>
+            @endif
+
         </a>
         @endforeach
 

@@ -15,13 +15,15 @@
     cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ca-item:last-child { border-bottom: 0; }
 .ca-bulk { margin: 8px 0; }
-.ca-item .ca-toggle { display: inline-block; width: 16px; text-align: center;
-    color: #5b6673; cursor: pointer; user-select: none; font-size: 0.85em; }
+.ca-item .ca-toggle { display: inline-block; width: 14px; margin-right: 2px; text-align: center;
+    color: #5b6673; cursor: pointer; user-select: none; font-size: 0.8em; }
 .ca-item .ca-toggle.leaf { cursor: default; visibility: hidden; }
 .ca-item.selected { background: #E5EFFF; box-shadow: inset 3px 0 0 #2563EB; }
-.ca-item .ca-handle { cursor: grab; padding: 0 6px; color: #888; user-select: none; }
+.ca-item .ca-handle { cursor: grab; margin-right: 2px; color: #b3bac2; user-select: none; }
 .ca-item .ca-cnt { color: #888; font-size: 0.92em; }
-.ca-item .ca-hidden-mark { color: #c00; font-size: 0.92em; }
+.ca-item .ca-off { display: inline-block; margin-left: 5px; padding: 0 6px; border-radius: 9px;
+    background: #e9edf2; color: #6b7683; font-size: 0.78em; vertical-align: 1px; }
+.ca-item.off > strong { color: #98a1ab; font-weight: 600; }
 .ca-item.drag-before { border-top: 2px solid #2563EB; }
 .ca-item.drag-after { border-bottom: 2px solid #2563EB; }
 .ca-item.drag-inside { background: #E5EFFF; }
@@ -53,19 +55,25 @@
     <div class="ca-list">
 
         @foreach ($categories as $c)
-        <div class="ca-item {{ (int)$c['ca_id'] === $sel_id ? 'selected' : '' }}" draggable="true"
+        @php
+            $kid = isset($child_count[$c['ca_id']]) ? (int)$child_count[$c['ca_id']] : 0;
+            $items = isset($counts[$c['ca_id']]) ? (int)$counts[$c['ca_id']] : 0;
+        @endphp
+
+        <div class="ca-item {{ (int)$c['ca_id'] === $sel_id ? 'selected' : '' }} {{ (int)$c['ca_show'] ? '' : 'off' }}"
+             draggable="true"
              data-id="{{ $c['ca_id'] }}" data-parent="{{ $c['ca_parent'] }}"
              data-depth="{{ $c['ca_depth'] }}" data-path="{{ $c['ca_path'] }}"
              data-href="{{ $self_url }}?ca_id={{ $c['ca_id'] }}"
              style="padding-left:{{ ($c['ca_depth'] - 1) * 22 + 8 }}px">
             <span class="ca-handle" title="끌어서 이동">⠿</span>
-            <span class="ca-toggle {{ isset($has_child[$c['ca_id']]) ? '' : 'leaf' }}"
+            <span class="ca-toggle {{ $kid ? '' : 'leaf' }}"
                   data-id="{{ $c['ca_id'] }}" title="하위 분류 접기/펼치기">▼</span>
             <strong>{{ $c['ca_name'] }}</strong>
-            <span class="ca-cnt">[{{ $c['ca_code'] }}] · {{ isset($counts[$c['ca_id']]) ? number_format($counts[$c['ca_id']]) : 0 }}개</span>
+            <span class="ca-cnt">[{{ $c['ca_code'] }}] · {{ $kid ? '하위 '.$kid.' · ' : '' }}상품 {{ number_format($items) }}개</span>
 
             @if (!(int)$c['ca_show'])
-            <span class="ca-hidden-mark">(숨김)</span>
+            <span class="ca-off">숨김</span>
             @endif
 
         </div>

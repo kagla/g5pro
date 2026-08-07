@@ -11,10 +11,11 @@ $categories = cart_category_list();
 $selected = $sel_id ? cart_category_get($sel_id) : null;
 if ($sel_id && !$selected) $sel_id = 0;
 
-// 하위가 있는 분류 — 트리의 접기/펼치기 토글을 붙일 자리를 화면이 알아야 한다
-$has_child = array();
+// 직계 하위 수 — 접기/펼치기 토글을 붙일 자리이자, 접었을 때 안에 몇 개가 숨었는지 알려 준다
+$child_count = array();
 foreach ($categories as $c) {
-    if ((int)$c['ca_parent']) $has_child[(int)$c['ca_parent']] = true;
+    $p = (int)$c['ca_parent'];
+    if ($p) $child_count[$p] = isset($child_count[$p]) ? $child_count[$p] + 1 : 1;
 }
 
 // 분류별 연결 상품 수 — 트리에 함께 보여 삭제 가능 여부를 미리 알 수 있게
@@ -27,7 +28,7 @@ cadm_view('category', array(
     'selected' => $selected,
     'sel_id' => $sel_id,
     'counts' => $counts,
-    'has_child' => $has_child,
+    'child_count' => $child_count,
     'self_url' => G5_CART_ADMIN_URL.'/category.php',
     'action_url' => G5_CART_ADMIN_URL.'/category_update.php',
     'link_url' => G5_CART_ADMIN_URL.'/category_item.php',
