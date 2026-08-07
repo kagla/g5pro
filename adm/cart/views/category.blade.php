@@ -178,7 +178,9 @@
 
     <div class="btn_confirm01 btn_confirm">
         <button type="submit" class="btn_submit btn">저장</button>
-        <a href="{{ $link_url }}?ca_id={{ $selected['ca_id'] }}" class="btn btn_01">상품 연결</a>
+        {{-- 새 탭 — 이 패널은 편집 폼이라 같은 탭으로 나가면 입력 중인 내용이 날아간다.
+             링크 규칙: 프런트로 = 새 탭, 관리자끼리 = 같은 탭, 편집 폼에서 나갈 때만 새 탭 --}}
+        <a href="{{ $link_url }}?ca_id={{ $selected['ca_id'] }}" class="btn btn_01" target="_blank">상품 연결</a>
         <button type="submit" name="w" value="d" class="btn btn_02"
             onclick="return confirm('{{ $del_msg }}')">삭제</button>
     </div>
