@@ -1035,6 +1035,14 @@ function g5_map_poll_result()
         );
     }
 
+    // 비회원 이름 칸에는 순정이 아무 안내도 두지 않아 무엇을 넣는 칸인지 알 수 없다.
+    // 회원일 때 $name 은 닉네임 글자 + hidden 이라 아래 치환이 걸리지 않는다.
+    $etc_name = $is_etc ? str_replace(
+        'name="pc_name" size="10"',
+        'name="pc_name" size="10" placeholder="작성자"',
+        $name
+    ) : '';
+
     g5_view('bbs.poll_result', array(
         'po_id'      => (int)$po_id,
         'subject'    => $po['po_subject'],
@@ -1044,7 +1052,7 @@ function g5_map_poll_result()
         // 기타의견 — po_etc 가 비어 있으면 순정도 그리지 않는다
         'is_etc'     => (bool)$is_etc,
         'etc_label'  => $is_etc ? $po_etc : '',
-        'etc_name'   => $is_etc ? $name : '',    // 회원이면 닉네임+hidden, 아니면 입력칸 → {!! !!}
+        'etc_name'   => $etc_name,               // 회원이면 닉네임+hidden, 아니면 입력칸 → {!! !!}
         'etc_items'  => $etc,
         'etc_action' => G5_BBS_URL.'/poll_etc_update.php',
         // 의견 남기기는 권한이 될 때만 (순정 스킨도 같은 조건으로 폼을 감춘다)
