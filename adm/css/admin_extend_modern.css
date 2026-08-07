@@ -65,14 +65,15 @@ select, textarea { border: 1px solid #B9D2F7; border-radius: 6px; }
 .pg a.pg_current:hover, .pg a.pg_current:focus { background-color: #2563EB; color: #fff; }
 /* 카트 모듈(menu600)만 아이콘이 없어 기본 폴더 그림으로 떨어졌다 — 상점(가게) 아이콘을 준다.
    순정 영카트(menu400)의 쇼핑카트는 그대로 둬서 둘이 구분된다.
-   크기·색은 순정 아이콘 실측값에 맞춘다: 16x13 단색, 평소 #686868 · 선택 #3F51B5
-   (영카트 16x13, 게시판 13x11 과 같은 무게로 보이게).
+   이웃이 전부 선 그림이라 채운 그림은 혼자 무거워 보인다 — 선으로 그리고 굵기는 눈대중이 아니라
+   잉크 농도(알파 가중)를 재서 맞췄다: 순정 평균 30%(영카트 25·게시판 27·메일 33·통계 39)에
+   가장 가까운 stroke 0.9(32%). 크기·색도 실측값: 16x13, 평소 #686868 · 선택 #3F51B5.
    상단 바의 shop_icon.png 를 그대로 쓰지 않는 이유 — 13x12 흰색 비트맵이라 밝은 사이드바에서
    안 보이고 키우면 뭉개진다. 같은 상점 모양을 벡터로 다시 그렸다(순정 img 폴더 무수정).
    background 단축 대신 image·position·repeat 를 따로 준다(단축이면 위에서 준 바탕색이 날아간다). */
-#gnb .gnb_li .btn_op.menu-600 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='13' viewBox='0 0 16 13' fill='%23686868'><path d='M1.2 0.6h13.6l1.2 3.1H0z'/><path fill-rule='evenodd' d='M1.5 4.5h13v7.9H9.6V7.9H6.4v4.5H1.5z'/></svg>");
+#gnb .gnb_li .btn_op.menu-600 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='13' viewBox='0 0 16 13' fill='none' stroke='%23686868' stroke-width='0.9' stroke-linejoin='round' stroke-linecap='round'><path d='M1.3 1.2h13.4l1 2.6H0.3z'/><path d='M1.9 3.8v8h12.2v-8'/><path d='M6.3 11.8V7.6h3.4v4.2'/></svg>");
     background-position: 50% 50%; background-repeat: no-repeat; }
-#gnb .on .btn_op.menu-600 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='13' viewBox='0 0 16 13' fill='%233F51B5'><path d='M1.2 0.6h13.6l1.2 3.1H0z'/><path fill-rule='evenodd' d='M1.5 4.5h13v7.9H9.6V7.9H6.4v4.5H1.5z'/></svg>");
+#gnb .on .btn_op.menu-600 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='13' viewBox='0 0 16 13' fill='none' stroke='%233F51B5' stroke-width='0.9' stroke-linejoin='round' stroke-linecap='round'><path d='M1.3 1.2h13.4l1 2.6H0.3z'/><path d='M1.9 3.8v8h12.2v-8'/><path d='M6.3 11.8V7.6h3.4v4.2'/></svg>");
     background-position: 50% 50%; background-repeat: no-repeat; }
 
 .h2_frm { color: #2563EB; }
