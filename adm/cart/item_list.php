@@ -9,7 +9,11 @@ include_once(G5_ADMIN_PATH.'/admin.head.php');
 $q = (isset($_GET['q']) && !is_array($_GET['q'])) ? trim($_GET['q']) : '';
 $ca_id = (isset($_GET['ca_id']) && !is_array($_GET['ca_id'])) ? (int)$_GET['ca_id'] : 0;
 $page = (isset($_GET['page']) && !is_array($_GET['page'])) ? max(1, (int)$_GET['page']) : 1;
-$rows_per = 30;
+// 한 페이지 개수 — 화이트리스트 밖 값은 기본으로(주소 조작으로 수만 행을 뽑지 못하게)
+$per_options = array(30, 50, 100);
+$per = (isset($_GET['per']) && !is_array($_GET['per'])) ? (int)$_GET['per'] : 30;
+if (!in_array($per, $per_options, true)) $per = 30;
+$rows_per = $per;
 
 $where = array('1=1');
 if ($q !== '') {
@@ -44,6 +48,8 @@ cadm_view('item_list', array(
     'categories' => cart_category_list(),
     'total' => $total,
     'page' => $page,
+    'per' => $per,
+    'per_options' => $per_options,
     'total_page' => max(1, (int)ceil($total / $rows_per)),
     'self_url' => G5_CART_ADMIN_URL.'/item_list.php',
     'form_url' => G5_CART_ADMIN_URL.'/item_form.php',

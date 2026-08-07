@@ -8,7 +8,7 @@ $who = isset($member['mb_id']) ? $member['mb_id'] : 'admin';
 
 // 돌아갈 목록 — 검색어·분류·페이지를 유지해 작업하던 자리로 되돌린다
 $qs = array();
-foreach (array('q', 'ca_id', 'page') as $k) {
+foreach (array('q', 'ca_id', 'page', 'per') as $k) {
     if (isset($_POST['ret_'.$k]) && !is_array($_POST['ret_'.$k]) && $_POST['ret_'.$k] !== '') {
         $qs[$k] = $_POST['ret_'.$k];
     }
