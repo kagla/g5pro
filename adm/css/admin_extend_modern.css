@@ -52,8 +52,13 @@ select, textarea { border: 1px solid #B9D2F7; border-radius: 6px; }
 .pg_page { color: #4A6FC4; }
 /* 색만 바꾼다(background 단축 금지) — 처음·이전·다음·맨끝은 배경 이미지가 곧 아이콘이라
    단축 속성으로 덮으면 호버할 때 아이콘이 사라진다(검색 버튼과 같은 함정). */
-.pg_page:hover { background-color: #E7F0FF; }
-.pg_current { background: #2563EB; }
+/* 현재 페이지는 호버 색을 빼야 한다 — :hover 가 더 특정해서 아래 .pg_current 의 진한 파랑을
+   눌러 연한 바탕이 되면, 흰 글자와 겹쳐 숫자가 사라진다 */
+.pg_page:not(.pg_current):hover { background-color: #E7F0FF; }
+/* 현재 페이지는 글자를 반전(흰색)한다 — 우리 페이징은 한 태그에 pg_page·pg_current 를 함께
+   주는데(순정 get_paging 은 현재 페이지에 pg_page 를 안 붙인다), 위 .pg_page 색 규칙이 같은
+   특정도로 뒤에 와서 순정의 흰 글자를 눌러 파랑 바탕에 파랑 글자가 됐다. */
+.pg_current { background: #2563EB; color: #fff; }
 .h2_frm { color: #2563EB; }
 
 /* ── 경고성 텍스트는 의미(주의)를 지키되 차분한 레드 ── */
