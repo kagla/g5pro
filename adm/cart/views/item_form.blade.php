@@ -1,10 +1,10 @@
 <style>
-/* 상세 설명 에디터 높이 — 플러그인 기본 200px 는 이 화면(옵션·이미지가 아래에 이어진다)에는
-   과해서 3분의 2 인 133px 로 줄인다. CKEditor 가 인라인 높이를 넣으므로 !important 가 필요하고,
-   이 폼 안으로만 한정해 게시판·FAQ 등 다른 화면의 에디터는 건드리지 않는다.
+/* 상세 설명 에디터 높이 — 이 화면에 맞춰 250px 로 잡는다(플러그인 기본은 200px).
+   CKEditor 가 인라인 높이를 넣으므로 !important 가 필요하고, 이 폼 안으로만 한정해
+   게시판·FAQ 등 다른 화면의 에디터는 건드리지 않는다.
    순정 플러그인(plugin/editor/ckeditor4)은 손대지 않는다. */
-#cart_item_form .cke_contents { height: 133px !important; }
-#cart_item_form textarea#it_content { height: 133px; }
+#cart_item_form .cke_contents { height: 250px !important; }
+#cart_item_form textarea#it_content { height: 250px; }
 </style>
 
 <form method="post" action="{{ $action_url }}" enctype="multipart/form-data" id="cart_item_form">
