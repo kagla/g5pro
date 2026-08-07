@@ -7,6 +7,11 @@
         @endforeach
 
     </select>
+    <select name="show">
+        <option value="">노출여부 전체</option>
+        <option value="1" {{ $show === '1' ? 'selected' : '' }}>노출만</option>
+        <option value="0" {{ $show === '0' ? 'selected' : '' }}>숨김만</option>
+    </select>
     <input type="text" name="q" value="{{ $q }}" placeholder="상품명 또는 상품코드" class="frm_input">
     <button type="submit" class="btn_submit btn">검색</button>
 
@@ -40,6 +45,7 @@
 <input type="hidden" name="ret_ca_id" value="{{ $ca_id }}">
 <input type="hidden" name="ret_page" value="{{ $page }}">
 <input type="hidden" name="ret_per" value="{{ $per }}">
+<input type="hidden" name="ret_show" value="{{ $show }}">
 
 
 <table class="tbl_head01 tbl_wrap">
@@ -103,7 +109,7 @@
 
 @if ($total_page > 1)
 {{-- 처음·이전·다음·맨끝은 순정 pg_* 클래스(아이콘) 그대로 — 첫/끝 페이지에서는 감춘다 --}}
-@php $qs = array('q' => $q, 'ca_id' => $ca_id, 'per' => $per); @endphp
+@php $qs = array('q' => $q, 'ca_id' => $ca_id, 'per' => $per, 'show' => $show); @endphp
 
 <nav class="pg_wrap">
     <span class="pg">

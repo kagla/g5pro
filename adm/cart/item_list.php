@@ -16,8 +16,13 @@ $per = (isset($_GET['per']) && !is_array($_GET['per'])) ? (int)$_GET['per'] : $p
 if (!in_array($per, $per_options, true)) $per = $per_options[0];
 $rows_per = $per;
 
+// 노출여부 — ''(전체)·'1'(노출만)·'0'(숨김만) 셋만. 숨김('0')도 뜻이 있어 문자열로 다룬다
+$show = (isset($_GET['show']) && !is_array($_GET['show'])) ? $_GET['show'] : '';
+if (!in_array($show, array('', '1', '0'), true)) $show = '';
+
 $where = array('1=1');
 if ($q !== '') $where[] = cart_item_admin_search_where($q);
+if ($show !== '') $where[] = " it_show = '$show' ";
 if ($ca_id) {
     $ids = cart_category_descendant_ids($ca_id);
     if ($ids) $where[] = " it_id IN (select it_id from `{$g5['ycart_item_category_table']}`
@@ -42,6 +47,7 @@ cadm_view('item_list', array(
     'items' => $items,
     'q' => $q,
     'ca_id' => $ca_id,
+    'show' => $show,
     'categories' => cart_category_list(),
     'total' => $total,
     'page' => $page,
