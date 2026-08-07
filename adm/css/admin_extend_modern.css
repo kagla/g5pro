@@ -65,7 +65,10 @@ select, textarea { border: 1px solid #B9D2F7; border-radius: 6px; }
 
 /* ── 남은 회색 면 일소 — 박스·검색 버튼·합계행을 블루 화이트 계열로 ── */
 tfoot th, tfoot td { background: #E5EFFF; border-color: #C9DCFA; }
-.local_sch .btn_sch, .local_sch .btn_sch2, .local_sch01 .btn_submit { background-color: #E0EDFF; border-color: #B9D2F7; }
+/* 연블루 면은 아이콘 검색 버튼(btn_sch·btn_sch2 — 돋보기 이미지에 text-indent)에만 준다.
+   글자가 있는 .local_sch01 .btn_submit(검색)까지 묶으면 순정의 흰 글자와 겹쳐 라벨이 안 보이고,
+   같은 특정도라 뒤에 오는 이 규칙이 위쪽 :hover 까지 눌러 호버에서도 안 나타난다. */
+.local_sch .btn_sch, .local_sch .btn_sch2 { background-color: #E0EDFF; border-color: #B9D2F7; }
 .local_sch .sch_input, .local_sch select { border-color: #B9D2F7; }
 #sit_compact, .sit_option, .cke_sc_def { background: #EEF5FF; border-color: #C9DCFA; }
 .ul_01 li { border-color: #D9E7FB; }
