@@ -414,18 +414,33 @@ function cart_item_hidden_where($alias = '')
                    where vx.it_id = $col and vx.ca_id not in ($in)) ) ";
 }
 
-// 빈 문자열이면 성공, 아니면 사용자에게 보여줄 거부 사유
+// 삭제 — N:M 에서 분류는 상품이 속한 여러 자리 중 하나일 뿐이라, 지워도 상품은 사라지지 않는다
+// (다른 분류에 그대로 있거나 무분류가 된다). 그래서 상품 연결은 끊기만 한다.
+// 하위 분류는 '연결'이 아니라 독립된 분류라 함께 지우면 손실이므로, 지우지 않고 한 단 위로 올린다
+// (2026-08-07 사용자 결정: 하위·연결이 있어도 삭제는 되어야 한다).
+// 빈 문자열이면 성공, 아니면 사용자에게 보여줄 사유.
 function cart_category_delete($ca_id)
 {
     global $g5;
     $ca_id = (int)$ca_id;
-    $child = sql_fetch(" select count(*) as cnt from `{$g5['ycart_category_table']}`
-        where ca_parent = '$ca_id' ");
-    if ($child['cnt'] > 0) return '하위 분류가 있어 삭제할 수 없습니다. 하위 분류를 먼저 정리하세요.';
-    $item = sql_fetch(" select count(*) as cnt from `{$g5['ycart_item_category_table']}`
-        where ca_id = '$ca_id' ");
-    if ($item['cnt'] > 0) return '이 분류에 연결된 상품 '.(int)$item['cnt'].'개가 있어 삭제할 수 없습니다. 연결을 먼저 해제하세요.';
+    $row = cart_category_get($ca_id);
+    if (!$row) return '없는 분류입니다.';
+
+    // 직계 하위를 삭제될 분류의 부모로 승격 — 경로·깊이 재계산은 이동 함수가 맡는다.
+    // 넣는 자리를 직전에 옮긴 분류 뒤로 이어 붙여(커서) 원래 형제 순서를 지킨다.
+    $children = array();
+    $result = sql_query(" select ca_id from `{$g5['ycart_category_table']}`
+        where ca_parent = '$ca_id' order by ca_order, ca_id ");
+    while ($r = sql_fetch_array($result)) $children[] = (int)$r['ca_id'];
+    $after = $ca_id;
+    foreach ($children as $cid) {
+        $err = cart_category_move($cid, (int)$row['ca_parent'], $after);
+        if ($err) return '하위 분류를 옮기지 못해 삭제를 멈췄습니다: '.$err;
+        $after = $cid;
+    }
+
     cart_category_image_delete($ca_id); // 행이 지워지면 파일 경로를 아는 곳이 없어진다 — 먼저 정리
+    sql_query(" delete from `{$g5['ycart_item_category_table']}` where ca_id = '$ca_id' ", true);
     sql_query(" delete from `{$g5['ycart_category_table']}` where ca_id = '$ca_id' ", true);
     return '';
 }

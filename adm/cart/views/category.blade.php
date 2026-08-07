@@ -175,11 +175,20 @@
         </tbody>
     </table>
     </div>
+    {{-- 삭제 안내는 숫자만 끼워 넣는다 — 분류 이름에 따옴표가 있으면 JS 문자열이 깨지기 때문 --}}
+    @php
+        $sel_kid = isset($child_count[$sel_id]) ? (int)$child_count[$sel_id] : 0;
+        $sel_items = isset($counts[$sel_id]) ? (int)$counts[$sel_id] : 0;
+        $del_msg = '이 분류를 삭제할까요?';
+        if ($sel_kid) $del_msg .= '\n하위 분류 '.$sel_kid.'개는 지워지지 않고 한 단 위로 올라갑니다.';
+        if ($sel_items) $del_msg .= '\n연결된 상품 '.$sel_items.'개는 연결만 끊기고 상품은 그대로 남습니다.';
+    @endphp
+
     <div class="btn_confirm01 btn_confirm">
         <button type="submit" class="btn_submit btn">저장</button>
         <a href="{{ $link_url }}?ca_id={{ $selected['ca_id'] }}" class="btn btn_01">상품 연결</a>
         <button type="submit" name="w" value="d" class="btn btn_02"
-            onclick="return confirm('분류를 삭제할까요? 하위 분류나 연결 상품이 있으면 거부됩니다.')">삭제</button>
+            onclick="return confirm('{{ $del_msg }}')">삭제</button>
     </div>
     </form>
     @else
