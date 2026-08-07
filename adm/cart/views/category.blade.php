@@ -14,7 +14,10 @@
 .ca-item { border-bottom: 1px solid #e6eaef; background: #fff; padding: 6px 8px;
     cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ca-item:last-child { border-bottom: 0; }
-.ca-item .ca-branch { color: #9aa4b0; margin-right: 3px; }
+.ca-bulk { margin: 8px 0; }
+.ca-item .ca-toggle { display: inline-block; width: 16px; text-align: center;
+    color: #5b6673; cursor: pointer; user-select: none; font-size: 0.85em; }
+.ca-item .ca-toggle.leaf { cursor: default; visibility: hidden; }
 .ca-item.selected { background: #E5EFFF; box-shadow: inset 3px 0 0 #2563EB; }
 .ca-item .ca-handle { cursor: grab; padding: 0 6px; color: #888; user-select: none; }
 .ca-item .ca-cnt { color: #888; font-size: 0.92em; }
@@ -42,19 +45,22 @@
 
     </form>
 
+    <div class="ca-bulk">
+        <button type="button" class="btn btn_02" id="ca_expand">모두 펼치기</button>
+        <button type="button" class="btn btn_02" id="ca_collapse">모두 접기</button>
+    </div>
+
     <div class="ca-list">
 
         @foreach ($categories as $c)
         <div class="ca-item {{ (int)$c['ca_id'] === $sel_id ? 'selected' : '' }}" draggable="true"
              data-id="{{ $c['ca_id'] }}" data-parent="{{ $c['ca_parent'] }}"
+             data-depth="{{ $c['ca_depth'] }}" data-path="{{ $c['ca_path'] }}"
              data-href="{{ $self_url }}?ca_id={{ $c['ca_id'] }}"
              style="padding-left:{{ ($c['ca_depth'] - 1) * 22 + 8 }}px">
             <span class="ca-handle" title="끌어서 이동">⠿</span>
-
-            @if ((int)$c['ca_depth'] > 1)
-            <span class="ca-branch">└</span>
-            @endif
-
+            <span class="ca-toggle {{ isset($has_child[$c['ca_id']]) ? '' : 'leaf' }}"
+                  data-id="{{ $c['ca_id'] }}" title="하위 분류 접기/펼치기">▼</span>
             <strong>{{ $c['ca_name'] }}</strong>
             <span class="ca-cnt">[{{ $c['ca_code'] }}] · {{ isset($counts[$c['ca_id']]) ? number_format($counts[$c['ca_id']]) : 0 }}개</span>
 
@@ -154,9 +160,64 @@ $(function () {
     var $drag = null;
     var moved = false;
 
-    // 선택 분류가 스크롤 박스 밖에 있으면 가운데로 — 긴 트리에서 선택 위치를 잃지 않게
+    // ---- 접기/펼치기 ----
+    // 접힌 분류 id 를 브라우저에 남겨(localStorage) 저장·선택으로 화면이 새로 그려져도 유지한다.
+    // 목록은 트리 순서로 평탄화돼 있으므로, 접힌 분류를 만나면 그보다 깊은 줄을 전부 감추면 된다.
+    var STORE = 'cart_ca_collapsed';
+    var collapsed = {};
+    try { collapsed = JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { collapsed = {}; }
+
+    function saveCollapsed() {
+        try { localStorage.setItem(STORE, JSON.stringify(collapsed)); } catch (e) {}
+    }
+
+    function applyCollapse() {
+        var hide_depth = 0;   // 0 = 감출 것 없음, n = n 단보다 깊은 줄은 감춘다
+        $('.ca-item').each(function () {
+            var $i = $(this);
+            var depth = parseInt($i.attr('data-depth'), 10);
+            if (hide_depth && depth > hide_depth) { $i.hide(); return; }
+            hide_depth = 0;
+            $i.show();
+            var id = String($i.data('id'));
+            var $t = $i.find('.ca-toggle');
+            if (!$t.hasClass('leaf')) $t.text(collapsed[id] ? '▲' : '▼');
+            if (collapsed[id]) hide_depth = depth;
+        });
+    }
+
+    // 선택한 분류가 접힌 상위 안에 묻혀 있으면 그 위쪽을 전부 펼친다(자기 자신은 그대로)
     var $sel = $('.ca-item.selected');
+    if ($sel.length) {
+        var ancestors = $.grep(String($sel.attr('data-path') || '').split('/'), function (v) { return v !== ''; });
+        ancestors.pop();
+        $.each(ancestors, function (i, id) { delete collapsed[id]; });
+        saveCollapsed();
+    }
+    applyCollapse();
+    // 선택 분류가 스크롤 박스 밖에 있으면 가운데로 — 긴 트리에서 선택 위치를 잃지 않게
     if ($sel.length) $sel[0].scrollIntoView({ block: 'center' });
+
+    $('.ca-toggle').on('click', function (e) {
+        e.stopPropagation();   // 줄 클릭(=선택 이동)까지 번지지 않게
+        var $t = $(this);
+        if ($t.hasClass('leaf')) return;
+        var id = String($t.data('id'));
+        if (collapsed[id]) delete collapsed[id]; else collapsed[id] = 1;
+        saveCollapsed();
+        applyCollapse();
+    });
+
+    $('#ca_collapse').on('click', function () {
+        $('.ca-toggle').not('.leaf').each(function () { collapsed[String($(this).data('id'))] = 1; });
+        saveCollapsed();
+        applyCollapse();
+    });
+    $('#ca_expand').on('click', function () {
+        collapsed = {};
+        saveCollapsed();
+        applyCollapse();
+    });
 
     $('.ca-item').on('click', function () {
         if (moved) { moved = false; return; }
@@ -200,6 +261,9 @@ $(function () {
         if (z === 'inside') {
             parent = $t.data('id');
             after = -1; // 형제 목록에 없는 값 → 서버가 맨 뒤로 붙인다
+            // 접힌 분류에 넣으면 새로고침 뒤 안 보인다 — 받은 쪽을 펼쳐 둔다
+            delete collapsed[String(parent)];
+            saveCollapsed();
         } else {
             parent = $t.data('parent');
             if (z === 'after') {
@@ -207,7 +271,7 @@ $(function () {
             } else {
                 // before: 같은 부모의 바로 앞 형제 뒤에 = 그 형제 id, 없으면 맨 앞(0)
                 after = 0;
-                $t.prevAll('.ca-item').each(function () {
+                $t.prevAll('.ca-item:visible').each(function () {
                     if ($(this).data('parent') === parent && $(this).data('id') !== caId) {
                         after = $(this).data('id');
                         return false;

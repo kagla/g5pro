@@ -13,6 +13,12 @@ $categories = cart_category_list();
 $selected = $sel_id ? cart_category_get($sel_id) : null;
 if ($sel_id && !$selected) { $sel_id = 0; $q = ''; }
 
+// 하위가 있는 분류 — 트리의 접기/펼치기 토글을 붙일 자리를 화면이 알아야 한다
+$has_child = array();
+foreach ($categories as $c) {
+    if ((int)$c['ca_parent']) $has_child[(int)$c['ca_parent']] = true;
+}
+
 $counts = array();
 $result = sql_query(" select ca_id, count(*) as cnt from `{$g5['ycart_item_category_table']}` group by ca_id ");
 while ($r = sql_fetch_array($result)) $counts[(int)$r['ca_id']] = (int)$r['cnt'];
@@ -49,6 +55,7 @@ cadm_view('category_item', array(
     'selected' => $selected,
     'sel_id' => $sel_id,
     'counts' => $counts,
+    'has_child' => $has_child,
     'linked' => $linked,
     'found' => $found,
     'q' => $q,
