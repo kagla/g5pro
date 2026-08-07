@@ -63,6 +63,15 @@ select, textarea { border: 1px solid #B9D2F7; border-radius: 6px; }
 /* 현재 페이지는 호버·포커스에도 색이 그대로여야 한다 — 순정 `.pg a:focus, .pg a:hover` 가
    배경만 연회색으로 바꿔 흰 글자와 겹쳐 숫자가 사라진다. 그 규칙보다 한 단 더 특정하게. */
 .pg a.pg_current:hover, .pg a.pg_current:focus { background-color: #2563EB; color: #fff; }
+/* 카트 모듈(menu600)만 아이콘이 없어 기본 폴더 그림으로 떨어졌다 — 상점(가게) 아이콘을 준다.
+   순정 영카트(menu400)의 쇼핑카트 아이콘은 그대로 두어 둘이 구분된다.
+   background 단축 대신 image·position·repeat 를 따로 준다(단축이면 위에서 준 바탕색이 날아간다).
+   그림은 SVG 인라인이라 새 이미지 파일을 더하지 않는다(순정 img 폴더 무수정). */
+#gnb .gnb_li .btn_op.menu-600 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%234A6FC4' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M3 5.5h18l1.5 4H1.5z'/><path d='M4.5 9.5V20.5h15V9.5'/><path d='M9.8 20.5v-6h4.4v6'/></svg>");
+    background-position: 50% 50%; background-repeat: no-repeat; }
+#gnb .on .btn_op.menu-600 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%232563EB' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M3 5.5h18l1.5 4H1.5z'/><path d='M4.5 9.5V20.5h15V9.5'/><path d='M9.8 20.5v-6h4.4v6'/></svg>");
+    background-position: 50% 50%; background-repeat: no-repeat; }
+
 .h2_frm { color: #2563EB; }
 
 /* ── 경고성 텍스트는 의미(주의)를 지키되 차분한 레드 ── */
