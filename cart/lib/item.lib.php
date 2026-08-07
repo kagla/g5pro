@@ -96,6 +96,20 @@ function cart_category_save($data, $ca_id = 0)
     return (int)$new_id;
 }
 
+// 업로드 폴더 준비 — 없으면 만들고, 못 만들거나 못 쓰면 사유를 돌려준다(빈 문자열이면 준비 완료).
+// 실패를 '파일 저장 실패'로 뭉뚱그리지 않는 이유: 웹서버(www-data)가 data/cart 에 못 쓰는
+// 권한 문제가 실제로 있었고, 그때 화면 문구만으로는 원인을 알 수 없었다(2026-08-07).
+function cart_image_dir_ready($dir)
+{
+    if (!is_dir($dir)) {
+        @mkdir($dir, G5_DIR_PERMISSION, true);
+        @chmod($dir, G5_DIR_PERMISSION);
+    }
+    if (!is_dir($dir)) return '이미지 폴더를 만들 수 없습니다 — data/cart 에 웹서버 쓰기 권한이 있는지 확인하세요.';
+    if (!is_writable($dir)) return '이미지 폴더에 쓸 수 없습니다 — '.$dir.' 권한을 확인하세요.';
+    return '';
+}
+
 // 분류 이미지 — 스토어홈 원형 칩 등에서 쓴다. data/cart/category/ 아래 한 분류 한 파일.
 function cart_category_image_url($file)
 {
@@ -112,7 +126,8 @@ function cart_category_image_save($ca_id, $file)
     if (!@getimagesize($file['tmp_name'])) return '이미지가 아닙니다.';
 
     $dir = G5_CART_DATA_PATH.'/category';
-    if (!is_dir($dir)) { @mkdir($dir, G5_DIR_PERMISSION, true); @chmod($dir, G5_DIR_PERMISSION); }
+    $err = cart_image_dir_ready($dir);
+    if ($err) return $err;
     $name = $ca_id.'_'.substr(md5(uniqid(mt_rand(), true)), 0, 8).'.'.$ext;
     if (!move_uploaded_file($file['tmp_name'], $dir.'/'.$name)) return '파일 저장 실패';
     @chmod($dir.'/'.$name, G5_FILE_PERMISSION);
@@ -632,7 +647,8 @@ function cart_item_image_add($it_id, $file, $order = 0, $main = 0)
     if (!@getimagesize($file['tmp_name'])) return '이미지가 아닙니다: '.$file['name'];
 
     $dir = cart_item_image_dir($it_id);
-    if (!is_dir($dir)) { @mkdir($dir, G5_DIR_PERMISSION, true); @chmod($dir, G5_DIR_PERMISSION); }
+    $err = cart_image_dir_ready($dir);
+    if ($err) return $err;
     $name = $it_id.'_'.substr(md5(uniqid(mt_rand(), true)), 0, 8).'.'.$ext;
     if (!move_uploaded_file($file['tmp_name'], $dir.'/'.$name)) return '파일 저장 실패';
     @chmod($dir.'/'.$name, G5_FILE_PERMISSION);
