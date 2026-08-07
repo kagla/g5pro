@@ -62,23 +62,18 @@
                 @if ($single)
                 <input type="hidden" name="sk_id" value="{{ $buyable_skus[0]['sk_id'] }}">
                 @elseif (count($opt_names))
-                {{-- 옵션 축마다 선택칸 하나. 앞 축을 고르면 뒤 축은 그 조합에 있는 값만 남고,
-                     마지막 축에는 값마다 가격·재고가 함께 보인다. 실제로 전송되는 건 sk_id 뿐. --}}
-                <div class="cart-opts" id="cart_opts">
+                {{-- 값을 눌러서 고른다 — 드롭다운을 열지 않고 한눈에 보고 한 번에 고른다.
+                     칸은 JS 가 채운다(앞 선택에 따라 살아 있는 값이 달라지므로 한 곳에서 그린다). --}}
+                <div class="opt-picker" id="cart_opts">
 
                     @foreach ($opt_names as $oi => $name)
-                    <label class="cart-buy-label">{{ $name }}
-                        <select class="cart-opt" data-axis="{{ $oi }}" {{ $oi > 0 ? 'disabled' : '' }}>
-                            <option value="">{{ $oi > 0 ? '앞 옵션을 먼저 고르세요' : $name.' 선택' }}</option>
-
-                            @if ($oi === 0)
-                            @foreach ($opt_values[$name] as $v)
-                            <option value="{{ $v }}">{{ $v }}</option>
-                            @endforeach
-                            @endif
-
-                        </select>
-                    </label>
+                    <div class="opt-axis" data-axis="{{ $oi }}">
+                        <p class="opt-axis-head">
+                            <span class="opt-axis-name">{{ $name }}</span>
+                            <span class="opt-axis-pick" data-role="pick"></span>
+                        </p>
+                        <div class="opt-chips" role="group" aria-label="{{ $name }} 선택"></div>
+                    </div>
                     @endforeach
 
                 </div>
@@ -220,66 +215,93 @@ $('.shop-item-thumbs img').on('click', function () {
 });
 </script>
 @endif
-
 @if (!$single && count($opt_names))
 <script>
-// 옵션 단계 선택 — 앞 축을 고르면 뒤 축을 그 조합에 실제로 있는 값으로 다시 채운다.
-// 마지막 축에는 값마다 가격과 재고를 함께 적고, 품절 조합은 고를 수 없게 막는다.
+// 옵션은 눌러서 고른다 — 값을 칩으로 늘어놓고, 앞 축을 고르면 뒤 축에서 살아 있는 값만 남긴다.
+// 고를 수 없는 값은 지우지 않고 흐리게 두어 "이 색엔 이 사이즈가 없다"가 보이게 한다.
 var CART_SKUS = {!! json_encode(array_values(array_map(function ($s) {
     return array('id' => $s['sk_id'], 'path' => $s['opt_path'], 'price' => $s['sk_price'], 'qty' => $s['sk_qty']);
 }, $opt_skus)), JSON_UNESCAPED_UNICODE) !!};
+var CART_AXES = {!! json_encode(array_values($opt_names), JSON_UNESCAPED_UNICODE) !!};
 
 $(function () {
-    var $axes = $('#cart_opts .cart-opt'),
-        last = $axes.length - 1,
+    var $picker = $('#cart_opts'),
+        axes = CART_AXES.length,
+        sel = [],                      // 축별로 고른 값
         won = function (n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); };
 
-    // 앞 축들에서 고른 값(부분 조합)에 해당하는 SKU 만 남긴다
+    // 색상 축이면 값 이름에서 색을 알아내 점을 찍는다(모르는 이름은 점 없이 글자만)
+    var SWATCH = {
+        '블랙': '#222', '검정': '#222', '차콜': '#4A4A4A', '그레이': '#9AA0A6', '회색': '#9AA0A6',
+        '화이트': '#FFF', '흰색': '#FFF', '아이보리': '#F5EFE0', '베이지': '#D9C7A7',
+        '네이비': '#22335C', '블루': '#2E7CF6', '파랑': '#2E7CF6', '스카이': '#7EC8F0',
+        '레드': '#D93A3A', '빨강': '#D93A3A', '핑크': '#EF8AB0', '오렌지': '#F08A3C',
+        '옐로우': '#F2C94C', '노랑': '#F2C94C', '그린': '#3EA96B', '초록': '#3EA96B',
+        '카키': '#6E7A4F', '브라운': '#8A5A32', '갈색': '#8A5A32', '퍼플': '#8B5CF6', '보라': '#8B5CF6'
+    };
+    function isColorAxis(i) { return /색|컬러|color/i.test(CART_AXES[i]); }
+
+    // 앞 축들에서 고른 값에 맞는 SKU 만
     function matching(prefix) {
         return $.grep(CART_SKUS, function (s) {
-            for (var i = 0; i < prefix.length; i++) if (s.path[i] !== prefix[i]) return false;
+            for (var i = 0; i < prefix.length; i++) {
+                if (prefix[i] !== null && s.path[i] !== prefix[i]) return false;
+            }
             return true;
         });
     }
 
-    function chosen(upto) {
-        var v = [];
-        $axes.each(function (i) { if (i < upto) v.push($(this).val()); });
-        return v;
-    }
-
-    // axis 번째 선택칸을 앞 선택에 맞춰 다시 채운다
-    function refill(axis) {
-        var $sel = $axes.eq(axis),
-            prefix = chosen(axis),
+    // 축 하나를 다시 그린다. 값마다 살아 있는지(재고 있는 조합이 있는지)를 함께 계산한다.
+    function drawAxis(i) {
+        var prefix = sel.slice(0, i),
             rows = matching(prefix),
-            seen = {}, html = '<option value="">' + $sel.data('label') + ' 선택</option>';
+            order = [], stock = {}, exists = {};
 
-        $.each(rows, function (i, s) {
-            var v = s.path[axis];
-            if (seen[v] !== undefined) { seen[v] = Math.max(seen[v], s.qty); return; }
-            seen[v] = s.qty;
+        $.each(CART_SKUS, function (n, s) {          // 값의 등장 순서는 전체 기준으로 고정
+            var v = s.path[i];
+            if (order.indexOf(v) < 0) order.push(v);
         });
-        $.each(seen, function (v, qty) {
-            var text = v, sold = (qty <= 0);
-            if (axis === last) {
-                var row = $.grep(rows, function (s) { return s.path[axis] === v; })[0];
-                text = v + ' — ' + won(row.price) + '원 · ' + (sold ? '품절' : '재고 ' + won(qty) + '개');
-            } else if (sold) {
-                text = v + ' (품절)';
+        $.each(rows, function (n, s) {
+            var v = s.path[i];
+            exists[v] = true;
+            stock[v] = Math.max(stock[v] || 0, s.qty);
+        });
+
+        var $wrap = $picker.find('.opt-axis[data-axis="' + i + '"]'),
+            $chips = $wrap.find('.opt-chips').empty(),
+            locked = (i > 0 && sel[i - 1] == null);
+
+        $wrap.toggleClass('is-locked', locked);
+        $.each(order, function (n, v) {
+            var live = !locked && exists[v] && stock[v] > 0,
+                $b = $('<button type="button" class="opt-chip"></button>')
+                    .attr('data-axis', i).attr('data-val', v)
+                    .attr('aria-pressed', sel[i] === v ? 'true' : 'false');
+
+            if (isColorAxis(i) && SWATCH[v]) {
+                $b.append($('<span class="opt-swatch"></span>').css('background', SWATCH[v]));
             }
-            html += '<option value="' + v + '"' + (sold ? ' disabled' : '') + '>' + text + '</option>';
+            $b.append($('<span class="opt-chip-label"></span>').text(v));
+
+            // 마지막 축은 값 옆에 재고를 적어 준다 — 고르기 전에 살 수 있는지 보이게
+            if (i === axes - 1 && live && stock[v] <= 5) {
+                $b.append($('<span class="opt-chip-left"></span>').text(stock[v] + '개'));
+            }
+            if (!live) {
+                $b.addClass('is-off').prop('disabled', true)
+                  .attr('title', locked ? '앞 옵션을 먼저 고르세요' : '품절');
+                if (!locked) $b.append($('<span class="opt-chip-left"></span>').text('품절'));
+            }
+            if (sel[i] === v) $b.addClass('is-on');
+            $chips.append($b);
         });
-        $sel.html(html).prop('disabled', false);
+
+        $wrap.find('[data-role="pick"]').text(sel[i] == null ? '' : sel[i]);
     }
 
-    function reset(fromAxis) {
-        for (var i = fromAxis; i <= last; i++) {
-            $axes.eq(i).html('<option value="">앞 옵션을 먼저 고르세요</option>').prop('disabled', true);
-        }
-    }
+    function drawFrom(i) { for (var k = i; k < axes; k++) drawAxis(k); }
 
-    // 잠깐 뜨는 안내 — 같은 옵션을 또 고른 경우처럼 막을 일이 아니라 알려 줄 일에 쓴다
+    // 잠깐 뜨는 안내 — 막을 일이 아니라 알려 줄 일에 쓴다
     var noticeTimer = null;
     function notice(text) {
         var $n = $('#cart_pick_msg');
@@ -288,7 +310,6 @@ $(function () {
         noticeTimer = setTimeout(function () { $n.attr('hidden', true); }, 2500);
     }
 
-    // 담긴 줄들의 수량·금액을 다시 센다
     function retotal() {
         var qty = 0, sum = 0;
         $('#cart_picks .cart-pick').each(function () {
@@ -298,26 +319,22 @@ $(function () {
         });
         var has = $('#cart_picks .cart-pick').length > 0;
         $('#cart_picks_empty').toggle(!has);
-        $('#cart_picks_total').attr('hidden', !has)
-            .text('총 ' + won(qty) + '개 · ' + won(sum) + '원');
+        $('#cart_picks_total').attr('hidden', !has).html('')
+            .append($('<span></span>').text('총 ' + won(qty) + '개'))
+            .append($('<strong class="cart-total-sum"></strong>').text(won(sum) + '원'));
     }
 
-    // 선택이 다 차면 그 조합을 아래 목록에 한 줄 얹는다. 이미 있으면 수량만 올린다.
-    // 그리고 선택칸을 비워 다음 조합을 이어서 고를 수 있게 한다(요즘 쇼핑몰 방식).
+    // 축을 다 고르면 그 조합을 아래 목록에 얹고, 칩 선택은 비워 다음 조합을 잇는다
     function settle() {
-        var rows = matching(chosen(last + 1));
+        var rows = matching(sel);
         if (!rows.length) return;
         var s = rows[0],
             $exist = $('#cart_picks .cart-pick[data-sk="' + s.id + '"]');
 
         if ($exist.length) {
-            // 이미 담긴 조합 — 수량을 몰래 올리지 않고 알린다. 수량은 그 줄에서 직접 조절한다.
             notice('이미 선택된 옵션입니다. 수량은 아래에서 조절하세요.');
             $exist.addClass('is-bump');
             setTimeout(function () { $exist.removeClass('is-bump'); }, 900);
-            $axes.eq(0).val('');
-            reset(1);
-            return;
         } else {
             var $li = $('<li class="cart-pick"></li>')
                 .attr('data-sk', s.id).attr('data-price', s.price);
@@ -329,18 +346,29 @@ $(function () {
                 '<button type="button" class="cart-qty-btn" data-d="1" aria-label="수량 늘리기">+</button>' +
                 '</span>' +
                 '<span class="cart-pick-price">' + won(s.price) + '원</span>' +
-                '<button type="button" class="cart-pick-del" aria-label="선택 취소">삭제</button>' +
+                '<button type="button" class="cart-pick-del" aria-label="선택 취소">✕</button>' +
                 '<input type="hidden" name="sk_id[]" value="' + s.id + '">');
             $('#cart_picks').append($li);
+            retotal();
         }
-        retotal();
 
-        // 다음 조합을 고를 수 있게 처음으로 되돌린다
-        $axes.eq(0).val('');
-        reset(1);
+        sel = [];
+        drawFrom(0);
     }
 
-    // 줄 수량 조절·삭제
+    $picker.on('click', '.opt-chip', function () {
+        var i = parseInt($(this).data('axis'), 10),
+            v = String($(this).data('val'));
+
+        sel[i] = (sel[i] === v) ? null : v;        // 같은 칩을 다시 누르면 해제
+        for (var k = i + 1; k < axes; k++) sel[k] = null;
+        drawFrom(i);
+
+        var done = true;
+        for (var n = 0; n < axes; n++) if (sel[n] == null) done = false;
+        if (done) settle();
+    });
+
     $('#cart_picks').on('click', '.cart-qty-btn', function () {
         var $q = $(this).siblings('input[name="qty[]"]'),
             max = parseInt($q.attr('max'), 10),
@@ -356,24 +384,15 @@ $(function () {
         retotal();
     });
 
-    $axes.each(function (i) { $(this).data('label', $(this).closest('label').contents().first().text().trim()); });
-    // 첫 축도 같은 규칙으로 한 번 채운다 — 조합이 전부 품절인 값에 (품절) 이 붙는다
-    refill(0);
-
-    $axes.on('change', function () {
-        var axis = parseInt($(this).data('axis'), 10);
-        reset(axis + 1);
-        if (!$(this).val()) return;
-        if (axis < last) refill(axis + 1); else settle();
-    });
-
-    // 담기 전에 고른 옵션이 있는지 확인
     $('.cart-buy').on('submit', function () {
         if (!$('#cart_picks .cart-pick').length) {
             alert('옵션을 선택해 주세요.');
             return false;
         }
     });
+
+    for (var i = 0; i < axes; i++) sel[i] = null;
+    drawFrom(0);
 });
 </script>
 @endif

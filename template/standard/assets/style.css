@@ -2471,7 +2471,34 @@ input[type=checkbox], input[type=radio] {
 /* .shop-price·.shop-soldout 은 목록 카드(.shop-card)의 규칙을 물려받는다. .shop-soldout 은
    카드에서 썸네일 위 오버레이(position:absolute)라, 상세 화면에서는 평범한 안내 문단으로
    쓰이므로 .shop-item-info 안에서만 오버레이를 해제한다 */
-/* ── 옵션 단계 선택 — 축마다 선택칸 하나, 고른 조합은 아래 목록으로 쌓인다 ── */
+/* ── 옵션 고르기 — 값을 칩으로 늘어놓고 눌러서 고른다(드롭다운을 열지 않는다) ── */
+.opt-picker { display: grid; gap: var(--s4); margin: var(--s4) 0; }
+.opt-axis.is-locked { opacity: .55; }
+.opt-axis-head { display: flex; align-items: baseline; gap: var(--s2); margin: 0 0 8px; }
+.opt-axis-name { font-size: var(--t-sm); font-weight: 800; letter-spacing: .02em; }
+.opt-axis-pick { font-size: var(--t-sm); color: var(--accent); font-weight: 700; }
+.opt-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt-chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 14px; border: 1.5px solid var(--line); border-radius: var(--r-full);
+    background: var(--card); color: var(--fg); font: inherit; font-weight: 600; line-height: 1;
+    cursor: pointer; transition: border-color .15s, background-color .15s, color .15s, transform .1s;
+}
+.opt-chip:hover:not(:disabled) { border-color: var(--accent); transform: translateY(-1px); }
+.opt-chip:focus-visible { outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(46, 124, 246, .2); }
+.opt-chip.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.opt-chip.is-on .opt-chip-left { color: rgba(255, 255, 255, .85); }
+.opt-chip.is-off { color: var(--muted); border-style: dashed; cursor: not-allowed;
+    background: transparent; text-decoration: line-through; text-decoration-color: var(--line); }
+.opt-chip-left { font-size: var(--t-xs); font-weight: 700; color: var(--muted); }
+.opt-swatch { width: 16px; height: 16px; border-radius: 50%; flex: none;
+    border: 1px solid rgba(0, 0, 0, .18); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .35); }
+@media (prefers-reduced-motion: reduce) {
+    .opt-chip { transition: none; }
+    .opt-chip:hover:not(:disabled) { transform: none; }
+}
+
 .cart-opts { display: grid; gap: var(--s3); margin-bottom: var(--s3); }
 .cart-opts .cart-buy-label { display: grid; gap: 6px; font-weight: 700; }
 /* 브라우저 기본 화살표를 끄고 직접 그린다 — 운영체제마다 제각각인 모양을 통일하려고.
