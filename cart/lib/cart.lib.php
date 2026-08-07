@@ -59,6 +59,11 @@ function cart_cart_add($sk_id, $qty, $owner = null)
 
 // 바구니 행 + 상품·SKU 현재 정보. 판매 중지/품절은 지우지 않고 avail=false 로 표시만 한다 —
 // 손님이 "왜 사라졌지" 하지 않게 화면이 사유를 보여 주고, 체크아웃이 최종 거른다.
+//
+// 정렬: 최근에 담은 묶음이 위로, 한 묶음 안에서는 고른 순서 그대로.
+// 상세 화면에서 옵션 여러 줄을 한 번에 담으면 같은 시각으로 들어오므로, 시각만 보면
+// 묶음 위치가 정해지고 ct_id 오름차순이 그 안의 순서를 화면과 맞춘다
+// (ct_id 만으로 내림차순 하면 한 번에 담은 줄이 거꾸로 보인다).
 function cart_cart_items($owner = null)
 {
     global $g5;
@@ -66,12 +71,12 @@ function cart_cart_items($owner = null)
     $rows = array();
     $result = sql_query(" select b.ct_id, b.sk_id, b.ct_qty,
             s.sk_option, s.sk_price, s.sk_qty, s.sk_use,
-            i.it_id, i.it_name, i.it_show
+            i.it_id, i.it_code, i.it_name, i.it_show
         from `{$g5['ycart_cart_table']}` b
         inner join `{$g5['ycart_sku_table']}` s on s.sk_id = b.sk_id
         inner join `{$g5['ycart_item_table']}` i on i.it_id = s.it_id
         where ".cart_cart_where($owner)."
-        order by b.ct_id desc ");
+        order by b.ct_datetime desc, b.ct_id asc ");
     while ($r = sql_fetch_array($result)) {
         $opt = json_decode($r['sk_option'], true);
         $r['opt_label'] = (is_array($opt) && count($opt)) ? implode(' / ', array_values($opt)) : '';
@@ -91,8 +96,11 @@ function cart_cart_set_qty($ct_id, $qty, $owner = null)
     $ct_id = (int)$ct_id;
     $qty = (int)$qty;
     if ($qty <= 0) return cart_cart_remove($ct_id, $owner);
+    // ct_datetime 은 건드리지 않는다 — 그 값이 목록 정렬 기준이라, 수량만 고쳤는데도 그 줄이
+    // 맨 위로 튀어 오른다. 여러 줄을 차례로 고치면 순서가 계속 뒤집혀 어디를 고쳤는지 잃는다.
+    // ct_datetime 은 "담은 시각" 이고, 수량 변경은 담는 행위가 아니다.
     sql_query(" update `{$g5['ycart_cart_table']}`
-        set ct_qty = '$qty', ct_datetime = '".G5_TIME_YMDHIS."'
+        set ct_qty = '$qty'
         where ct_id = '$ct_id' and ".cart_cart_where($owner), true);
     return '';
 }
