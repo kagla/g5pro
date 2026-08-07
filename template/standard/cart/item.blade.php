@@ -64,7 +64,6 @@
                 @elseif (count($opt_names))
                 {{-- 옵션 축마다 선택칸 하나. 앞 축을 고르면 뒤 축은 그 조합에 있는 값만 남고,
                      마지막 축에는 값마다 가격·재고가 함께 보인다. 실제로 전송되는 건 sk_id 뿐. --}}
-                <input type="hidden" name="sk_id" id="cart_sk_id" value="" required>
                 <div class="cart-opts" id="cart_opts">
 
                     @foreach ($opt_names as $oi => $name)
@@ -83,7 +82,12 @@
                     @endforeach
 
                 </div>
-                <p class="cart-opt-pick" id="cart_opt_pick" hidden></p>
+
+                {{-- 고른 옵션이 한 줄씩 쌓인다 — 다른 색·다른 사이즈를 이어서 고를 수 있다.
+                     줄마다 sk_id[]·qty[] 로 전송되고, 서버는 짝을 맞춰 한 번에 담는다. --}}
+                <ul class="cart-picks" id="cart_picks"></ul>
+                <p class="cart-picks-empty" id="cart_picks_empty">옵션을 고르면 여기에 담깁니다. 여러 개 고를 수 있어요.</p>
+                <p class="cart-picks-total" id="cart_picks_total" hidden></p>
                 @else
                 <label class="cart-buy-label">옵션
                     <select name="sk_id" required>
@@ -97,9 +101,13 @@
                 </label>
                 @endif
 
+                {{-- 옵션 단계 선택일 때는 수량을 줄마다 따로 조절하므로 여기 수량칸이 없다 --}}
+                @if ($single || !count($opt_names))
                 <label class="cart-buy-label">수량
                     <input type="number" name="qty" value="1" min="1" max="999">
                 </label>
+                @endif
+
                 <div class="cart-buy-btns">
                     <button type="submit" name="dest" value="cart" class="cart-cta is-line">장바구니</button>
                     <button type="submit" name="dest" value="buy" class="cart-cta">바로구매</button>
@@ -268,20 +276,73 @@ $(function () {
         for (var i = fromAxis; i <= last; i++) {
             $axes.eq(i).html('<option value="">앞 옵션을 먼저 고르세요</option>').prop('disabled', true);
         }
-        $('#cart_sk_id').val('');
-        $('#cart_opt_pick').attr('hidden', true).text('');
     }
 
-    // 선택이 다 차면 그 조합의 SKU 를 폼에 싣고 요약을 보여 준다
+    // 담긴 줄들의 수량·금액을 다시 센다
+    function retotal() {
+        var qty = 0, sum = 0;
+        $('#cart_picks .cart-pick').each(function () {
+            var n = parseInt($(this).find('input[name="qty[]"]').val(), 10) || 0;
+            qty += n;
+            sum += n * parseInt($(this).data('price'), 10);
+        });
+        var has = $('#cart_picks .cart-pick').length > 0;
+        $('#cart_picks_empty').toggle(!has);
+        $('#cart_picks_total').attr('hidden', !has)
+            .text('총 ' + won(qty) + '개 · ' + won(sum) + '원');
+    }
+
+    // 선택이 다 차면 그 조합을 아래 목록에 한 줄 얹는다. 이미 있으면 수량만 올린다.
+    // 그리고 선택칸을 비워 다음 조합을 이어서 고를 수 있게 한다(요즘 쇼핑몰 방식).
     function settle() {
         var rows = matching(chosen(last + 1));
         if (!rows.length) return;
-        var s = rows[0];
-        $('#cart_sk_id').val(s.id);
-        $('.cart-buy input[name="qty"]').attr('max', Math.max(1, s.qty)).val(1);
-        $('#cart_opt_pick').removeAttr('hidden')
-            .text(s.path.join(' / ') + ' · ' + won(s.price) + '원 · 재고 ' + won(s.qty) + '개');
+        var s = rows[0],
+            $exist = $('#cart_picks .cart-pick[data-sk="' + s.id + '"]');
+
+        if ($exist.length) {
+            var $q = $exist.find('input[name="qty[]"]'),
+                next = Math.min(s.qty, (parseInt($q.val(), 10) || 0) + 1);
+            $q.val(next);
+            $exist.addClass('is-bump');
+            setTimeout(function () { $exist.removeClass('is-bump'); }, 300);
+        } else {
+            var $li = $('<li class="cart-pick"></li>')
+                .attr('data-sk', s.id).attr('data-price', s.price);
+            $li.append($('<span class="cart-pick-name"></span>').text(s.path.join(' / ')));
+            $li.append(
+                '<span class="cart-pick-qty">' +
+                '<button type="button" class="cart-qty-btn" data-d="-1" aria-label="수량 줄이기">−</button>' +
+                '<input type="number" name="qty[]" value="1" min="1" max="' + Math.max(1, s.qty) + '">' +
+                '<button type="button" class="cart-qty-btn" data-d="1" aria-label="수량 늘리기">+</button>' +
+                '</span>' +
+                '<span class="cart-pick-price">' + won(s.price) + '원</span>' +
+                '<button type="button" class="cart-pick-del" aria-label="선택 취소">삭제</button>' +
+                '<input type="hidden" name="sk_id[]" value="' + s.id + '">');
+            $('#cart_picks').append($li);
+        }
+        retotal();
+
+        // 다음 조합을 고를 수 있게 처음으로 되돌린다
+        $axes.eq(0).val('');
+        reset(1);
     }
+
+    // 줄 수량 조절·삭제
+    $('#cart_picks').on('click', '.cart-qty-btn', function () {
+        var $q = $(this).siblings('input[name="qty[]"]'),
+            max = parseInt($q.attr('max'), 10),
+            next = (parseInt($q.val(), 10) || 1) + parseInt($(this).data('d'), 10);
+        $q.val(Math.min(max, Math.max(1, next)));
+        retotal();
+    }).on('change input', 'input[name="qty[]"]', function () {
+        var max = parseInt($(this).attr('max'), 10);
+        $(this).val(Math.min(max, Math.max(1, parseInt($(this).val(), 10) || 1)));
+        retotal();
+    }).on('click', '.cart-pick-del', function () {
+        $(this).closest('.cart-pick').remove();
+        retotal();
+    });
 
     $axes.each(function (i) { $(this).data('label', $(this).closest('label').contents().first().text().trim()); });
     // 첫 축도 같은 규칙으로 한 번 채운다 — 조합이 전부 품절인 값에 (품절) 이 붙는다
@@ -294,10 +355,10 @@ $(function () {
         if (axis < last) refill(axis + 1); else settle();
     });
 
-    // 담기 전에 옵션을 다 골랐는지 확인 — 안 고르면 브라우저 기본 메시지 대신 안내를 준다
+    // 담기 전에 고른 옵션이 있는지 확인
     $('.cart-buy').on('submit', function () {
-        if (!$('#cart_sk_id').val()) {
-            alert('옵션을 모두 선택해 주세요.');
+        if (!$('#cart_picks .cart-pick').length) {
+            alert('옵션을 선택해 주세요.');
             return false;
         }
     });

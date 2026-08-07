@@ -2476,8 +2476,27 @@ input[type=checkbox], input[type=radio] {
 .cart-opts .cart-buy-label { display: grid; gap: 6px; }
 .cart-opts select { width: 100%; }
 .cart-opts select:disabled { color: var(--muted); background: var(--bg); }
-.cart-opt-pick { margin: 0 0 var(--s4); padding: var(--s3) var(--s4); border-radius: var(--r2);
-    background: var(--bg); border: 1px solid var(--line); font-weight: 700; }
+/* 고른 옵션 줄 — 여러 조합을 담고 줄마다 수량을 조절한다 */
+.cart-picks { list-style: none; margin: 0 0 var(--s3); padding: 0; display: grid; gap: 8px; }
+.cart-pick { display: flex; align-items: center; gap: var(--s3); flex-wrap: wrap;
+    padding: var(--s3) var(--s4); border: 1px solid var(--line); border-radius: var(--r2);
+    background: var(--card); transition: background-color .2s; }
+.cart-pick.is-bump { background: var(--bg); }
+.cart-pick-name { flex: 1 1 8em; font-weight: 700; }
+.cart-pick-qty { display: inline-flex; align-items: center; border: 1px solid var(--btn-line);
+    border-radius: var(--r2); overflow: hidden; }
+.cart-qty-btn { width: 34px; height: 32px; border: 0; background: transparent; cursor: pointer;
+    font-size: 1.1em; line-height: 1; color: var(--fg); }
+.cart-qty-btn:hover { background: var(--row-hover); }
+.cart-pick-qty input { width: 48px; height: 32px; border: 0; border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line); text-align: center; background: transparent; }
+.cart-pick-price { min-width: 5em; text-align: right; font-weight: 700; }
+.cart-pick-del { border: 0; background: transparent; color: var(--muted); cursor: pointer;
+    text-decoration: underline; }
+.cart-pick-del:hover { color: var(--fg); }
+.cart-picks-empty { margin: 0 0 var(--s3); color: var(--muted); font-size: .95em; }
+.cart-picks-total { margin: 0 0 var(--s4); padding: var(--s3) var(--s4); border-radius: var(--r2);
+    background: var(--bg); border: 1px solid var(--line); font-weight: 800; text-align: right; }
 
 /* ── 상세 아래 탭(상세정보·리뷰·문의·판매자정보·추천) ── */
 /* 가로로만 스크롤한다 — overflow-x 만 주면 overflow-y 의 visible 이 auto 로 계산돼
