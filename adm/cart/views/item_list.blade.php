@@ -72,13 +72,20 @@
             @endif
 
         </td>
+        {{-- 이미지 칸 — 눌러서 그 자리에서 바로 갈아 끼운다.
+             올린 사진이 대표가 되므로 바뀐 것이 이 칸에서 바로 보인다.
+             file 입력에 name 을 주지 않는 이유 — 이 표는 통째로 폼 하나라(cart_list_form),
+             이름이 있으면 [선택 저장]에 딸려 나간다. 업로드는 아래 JS 가 따로 보낸다. --}}
         <td>
             @php $imgs = cart_item_images((int)$it['it_id']); @endphp
-
-            @if (count($imgs))
-            <a href="{{ cart_url('item.php', array('code' => $it['it_code'])) }}" target="_blank"><img src="{{ G5_DATA_URL }}/cart/item/{{ $imgs[0]['im_file'] }}" alt="{{ $it['it_name'] }} 상품보기" style="max-height:44px"></a>
-            @endif
-
+            <label class="it-img {{ count($imgs) ? '' : 'it-img-empty' }}" title="눌러서 사진 올리기">
+                @if (count($imgs))
+                <img src="{{ G5_DATA_URL }}/cart/item/{{ $imgs[0]['im_file'] }}" alt="{{ $it['it_name'] }}">
+                @else
+                <span class="it-img-none">사진<br>추가</span>
+                @endif
+                <input type="file" accept="image/*" class="it-img-file" data-it-id="{{ $it['it_id'] }}">
+            </label>
         </td>
         <td class="td_left">
             <a href="{{ $form_url }}?w=u&it_id={{ $it['it_id'] }}"><strong>{{ $it['it_name'] }}</strong></a>
@@ -164,5 +171,63 @@ $(function () {
         var $tr = $(this).closest('tr');
         if (!$(this).is('input[name="chk[]"]')) $tr.find('input[name="chk[]"]').prop('checked', true);
     });
+
+    // 이미지 칸 — 고르는 즉시 올리고 그 자리 사진만 바꾼다.
+    // 토큰은 쓸 때마다 새로 받는다. check_admin_token() 이 세션 값을 지우므로
+    // 미리 받아 두면 [선택 저장]과 서로 무효로 만든다.
+    $('#cart_list_form tbody').on('change', '.it-img-file', function () {
+        var input = this,
+            file  = input.files && input.files[0],
+            $cell = $(input).closest('.it-img');
+        if (!file) return;
+
+        var token = get_ajax_token();
+        if (!token) { alert('토큰 정보가 올바르지 않습니다.'); input.value = ''; return; }
+
+        var fd = new FormData();
+        fd.append('token', token);
+        fd.append('it_id', $(input).data('itId'));
+        fd.append('im_file', file);
+
+        $cell.addClass('is-busy');
+        $.ajax({
+            type: 'POST',
+            url: '{{ $image_upload_url }}',
+            data: fd,
+            processData: false,
+            contentType: false,
+            cache: false,
+            dataType: 'json'
+        }).done(function (res) {
+            if (!res || !res.ok) { alert((res && res.msg) ? res.msg : '올리지 못했습니다.'); return; }
+            // 캐시된 옛 사진이 나오지 않게 주소 뒤에 시각을 붙인다
+            var src = res.url + (res.url.indexOf('?') < 0 ? '?' : '&') + 't=' + (new Date()).getTime();
+            var $img = $cell.find('img');
+            if ($img.length) $img.attr('src', src);
+            else $cell.find('.it-img-none').replaceWith($('<img>').attr({src: src, alt: ''}));
+        }).fail(function () {
+            alert('올리지 못했습니다. 파일 크기나 로그인 상태를 확인해 주세요.');
+        }).always(function () {
+            $cell.removeClass('is-busy');
+            input.value = '';   // 같은 파일을 다시 골라도 change 가 나게 비운다
+        });
+    });
 });
 </script>
+
+<style>
+/* 이미지 칸 — 라벨 전체가 파일 고르기 버튼이다 */
+.it-img {
+    position: relative; display: inline-flex; align-items: center; justify-content: center;
+    width: 56px; height: 46px; cursor: pointer; border-radius: 4px;
+    border: 1px solid #d5d9e0; background: #fff; overflow: hidden;
+}
+.it-img img { display: block; max-width: 100%; max-height: 44px; }
+.it-img:hover { border-color: #3b7ddd; }
+/* 사진이 없는 칸 — 여기를 누르면 된다는 것이 보이게 점선으로 비워 둔다 */
+.it-img-none { font-size: 11px; line-height: 1.25; color: #98a2b3; text-align: center; }
+.it-img-empty { border-style: dashed; background: #fafbfc; }
+.it-img input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+/* 올리는 동안 — 눌러도 반응 없게 막고 흐리게 */
+.it-img.is-busy { opacity: .45; pointer-events: none; }
+</style>

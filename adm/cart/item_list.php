@@ -57,6 +57,8 @@ cadm_view('item_list', array(
     'self_url' => G5_CART_ADMIN_URL.'/item_list.php',
     'form_url' => G5_CART_ADMIN_URL.'/item_form.php',
     'update_url' => G5_CART_ADMIN_URL.'/item_list_update.php',
+    // 목록에서 사진을 그 자리에서 갈아 끼울 때 쓰는 AJAX 주소
+    'image_upload_url' => G5_CART_ADMIN_URL.'/item_image_upload.php',
 ));
 
 include_once(G5_ADMIN_PATH.'/admin.tail.php');
