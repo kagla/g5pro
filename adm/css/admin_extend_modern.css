@@ -96,7 +96,13 @@ select, textarea { border: 1px solid #B9D2F7; border-radius: 6px; }
 #gnb .gnb_ul .on .btn_op { background-color: #fff; box-shadow: inset 5px 0 0 #2563EB; }
 #gnb .gnb_ul .on .gnb_menu_btn, #gnb .gnb_ul .on > a { color: #2563EB; }
 #gnb .gnb_oparea { border-right-color: #C9DCFA; }
-#gnb .gnb_oparea li a:hover, #gnb .gnb_oparea li .on { color: #2563EB; }
+#gnb .gnb_oparea li a:hover { color: #2563EB; }
+/* 지금 보고 있는 메뉴는 굵게 + 더 진한 파랑 — 순정은 호버와 같은 색이라 어느 것이 현재
+   화면인지 구분되지 않았다. 왼쪽 짧은 막대까지 붙여 훑을 때 바로 잡히게 한다. */
+#gnb .gnb_oparea li .on {
+    color: #1D3FA8; font-weight: 700;
+    border-left: 3px solid #2563EB; padding-left: 7px; margin-left: -10px;
+}
 
 /* ── 남은 회색 면 일소 — 박스·검색 버튼·합계행을 블루 화이트 계열로 ── */
 tfoot th, tfoot td { background: #E5EFFF; border-color: #C9DCFA; }
