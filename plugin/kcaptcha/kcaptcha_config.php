@@ -14,13 +14,12 @@ $allowed_symbols = "0123456789"; #digits
 $fontsdir = 'fonts';
 
 # CAPTCHA string length
-# 길이가 고정이면 푸는 쪽이 칸 수를 세지 않아도 되니 랜덤이 유리해 보인다.
-# 260807 측정에서 사람의 첫 시도 적중률이 고정은 10장 중 9장, 랜덤은 14장 중 10장이었다.
-# 틀린 이유는 늘 글자 수를 잘못 센 것이다. 사람이 무는 값에 비해 얻는 게 적어 고정으로 둔다.
-# 랜덤으로 바꾸려면 아래 두 줄을 맞바꾸면 된다. 그리는 쪽이 세션의 정답 길이를 따르도록
-# kcaptcha.lib.php 를 이미 고쳐 두었으므로 길이가 어긋나는 문제는 없다.
-//$length = mt_rand(5,6); # random 5 or 6
-$length = 6;
+# 길이가 고정이면 푸는 쪽이 몇 칸인지 세지 않아도 된다. 5~6 랜덤으로 둔다.
+# 이 값은 kcaptcha_session.php(정답 생성)와 image()(그리기)에서 따로 계산되므로
+# 그리는 쪽이 세션의 정답 길이를 따라야 한다. kcaptcha.lib.php 에서 그렇게 고쳤다.
+# 되돌리려면 아래 두 줄을 맞바꾼다.
+$length = mt_rand(5,6); # random 5 or 6
+//$length = 6;
 
 # CAPTCHA image size (you do not need to change it, whis parameters is optimal)
 $width = 160;
