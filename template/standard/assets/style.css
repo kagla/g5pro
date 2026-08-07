@@ -2542,9 +2542,15 @@ input[type=checkbox], input[type=radio] {
 .cart-pick-qty input { width: 48px; height: 32px; border: 0; border-left: 1px solid var(--line);
     border-right: 1px solid var(--line); text-align: center; background: transparent; }
 .cart-pick-price { min-width: 5em; text-align: right; font-weight: 700; }
-.cart-pick-del { border: 0; background: transparent; color: var(--muted); cursor: pointer;
-    text-decoration: underline; }
-.cart-pick-del:hover { color: var(--fg); }
+/* ✕ 아이콘 버튼 — 글자가 아니라 기호라서 밑줄을 긋지 않는다 */
+.cart-pick-del { display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; flex: none; padding: 0; border: 0; border-radius: 50%;
+    background: transparent; color: var(--muted); cursor: pointer; font-size: 15px; line-height: 1;
+    text-decoration: none; transition: background-color .15s, color .15s; }
+.cart-pick-del:hover { background: var(--row-hover); color: var(--fg); text-decoration: none; }
+.cart-pick-del:focus-visible { outline: none; color: var(--fg);
+    box-shadow: 0 0 0 3px rgba(46, 124, 246, .2); }
+@media (prefers-reduced-motion: reduce) { .cart-pick-del { transition: none; } }
 .cart-picks-empty { margin: 0 0 var(--s3); color: var(--muted); font-size: .95em; }
 .cart-picks-total { margin: 0 0 var(--s4); padding: var(--s3) var(--s4); border-radius: var(--r2);
     background: var(--bg); border: 1px solid var(--line); font-weight: 800; text-align: right; }
@@ -2739,6 +2745,8 @@ input[type=checkbox], input[type=radio] {
 .cart-co-sub { font-size: var(--t-sm); font-weight: 700; margin: var(--s4) 0 var(--s3); }
 .cart-co-addr { display: flex; flex-direction: column; gap: var(--s3); }
 .cart-co-addr input { width: 100%; }
+/* 배송 요청사항 셀렉트 — 같은 칸 줄에 있으니 입력칸과 같은 크기·여백으로 */
+.cart-co-addr select { width: 100%; padding: var(--s2); }
 .cart-co-zip { display: flex; gap: var(--s2); }
 .cart-co-zip input { width: 140px; flex: none; }
 .cart-co-pay { margin-bottom: var(--s3); }
