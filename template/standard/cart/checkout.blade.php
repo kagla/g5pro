@@ -48,27 +48,32 @@
         <h3>주문하시는 분</h3>
         <p class="cart-co-note">받는분은 주문하시는 분과 같습니다.</p>
 
-        @if (count($addresses))
-        {{-- 회원이 전에 쓴 배송지 — 주문자(이름·연락처)까지 함께 저장돼 있어 한 번에 채워진다 --}}
-        <p style="margin-bottom: var(--s3)">
+        {{-- 회원이 전에 쓴 배송지 — 주문자(이름·연락처)까지 함께 저장돼 있어 한 번에 채워진다.
+             목록이 비면 줄 전체를 감춘다(마지막 하나를 지운 뒤에도 이 자리가 남지 않게) --}}
+        @if ($is_member)
+        <p class="cart-addr-pick" style="{{ count($addresses) ? '' : 'display:none' }}">
             <select id="cart_addr_pick">
                 <option value="">저장된 배송지 불러오기</option>
 
                 @foreach ($addresses as $a)
-                <option value="{{ $a['ad_id'] }}" data-name="{{ $a['ad_name'] }}" data-hp="{{ $a['ad_hp'] }}" data-zip="{{ $a['ad_zip'] }}" data-addr1="{{ $a['ad_addr1'] }}" data-addr2="{{ $a['ad_addr2'] }}">{{ $a['ad_name'] !== '' ? $a['ad_name'].' · ' : '' }}[{{ $a['ad_zip'] }}] {{ $a['ad_addr1'] }} {{ $a['ad_addr2'] }}</option>
+                <option value="{{ $a['ad_id'] }}" data-name="{{ $a['ad_name'] }}" data-hp="{{ $a['ad_hp'] }}" data-email="{{ isset($a['ad_email']) ? $a['ad_email'] : '' }}" data-zip="{{ $a['ad_zip'] }}" data-addr1="{{ $a['ad_addr1'] }}" data-addr2="{{ $a['ad_addr2'] }}">{{ $a['ad_name'] !== '' ? $a['ad_name'].' · ' : '' }}[{{ $a['ad_zip'] }}] {{ $a['ad_addr1'] }} {{ $a['ad_addr2'] }}</option>
                 @endforeach
 
             </select>
+            <button type="button" id="cart_addr_del" class="cart-addr-del">삭제</button>
         </p>
         @endif
 
         <div class="cart-co-grid" style="margin-bottom: var(--s3)">
             <label><span class="req">이름</span> <input type="text" name="od_name" value="{{ $default_name }}" required data-req-msg="이름을 입력해 주세요."></label>
             <label><span class="req">연락처</span> <input type="text" name="od_hp" value="{{ $default_hp }}" placeholder="010-0000-0000" required data-req-msg="연락처를 입력해 주세요."></label>
-            <label><span class="req">이메일</span> <input type="email" name="od_email" value="{{ $default_email }}" required data-req-msg="이메일을 입력해 주세요."></label>
+            {{-- autocomplete 를 끄는 이유: 아래 "주문 비밀번호"가 password 칸이라 브라우저가 이 폼을
+                 로그인 폼으로 보고, 이메일 칸에 저장된 아이디를(예: admin) 비밀번호 칸에 저장된
+                 비밀번호를 채워 넣었다. new-password 는 저장된 자격증명을 채우지 말라는 표준 신호다. --}}
+            <label><span class="req">이메일</span> <input type="email" name="od_email" value="{{ $default_email }}" autocomplete="off" required data-req-msg="이메일을 입력해 주세요."></label>
 
             @if (!$is_member)
-            <label><span class="req">주문 비밀번호</span> <input type="password" name="guest_pw" minlength="4" placeholder="주문 조회에 사용 (4자 이상)" required data-req-msg="주문 비밀번호를 4자 이상 입력해 주세요."></label>
+            <label><span class="req">주문 비밀번호</span> <input type="password" name="guest_pw" minlength="4" placeholder="주문 조회에 사용 (4자 이상)" autocomplete="new-password" required data-req-msg="주문 비밀번호를 4자 이상 입력해 주세요."></label>
             @endif
 
         </div>
@@ -81,7 +86,18 @@
             </div>
             <input type="text" name="od_addr1" id="od_addr1" value="" placeholder="주소" readonly required data-req-msg="주소 검색으로 배송지를 입력해 주세요.">
             <input type="text" name="od_addr2" id="od_addr2" value="" placeholder="상세 주소" required data-req-msg="상세 주소를 입력해 주세요.">
-            <input type="text" name="od_memo" value="" placeholder="배송 요청사항 (선택)">
+            {{-- 배송 요청사항 — 자주 쓰는 문구를 고르고, 그 밖의 내용만 직접 적는다.
+                 고른 문구도 결국 od_memo 한 칸에 담겨 서버는 지금과 똑같이 받는다 --}}
+            <select id="od_memo_pick">
+                <option value="">배송 요청사항 (선택)</option>
+                <option>부재 시 경비실에 맡겨 주세요</option>
+                <option>부재 시 문 앞에 놓아 주세요</option>
+                <option>부재 시 택배함에 넣어 주세요</option>
+                <option>배송 전에 연락 주세요</option>
+                <option>파손 위험 상품입니다. 조심히 다뤄 주세요</option>
+                <option value="custom">직접 입력</option>
+            </select>
+            <input type="text" name="od_memo" id="od_memo" value="" placeholder="요청사항을 입력해 주세요" style="display:none">
         </div>
         <p class="cart-co-note">* 표시는 필수 입력입니다.</p>
 
@@ -201,19 +217,65 @@ $(function () {
         $(this).val(out);
     });
 
-    // 저장된 배송지 선택 — 주문자(이름·연락처)와 주소를 한 번에 채우고 배송비 미리보기를
-    // 갱신한다. 이름·연락처는 값이 저장돼 있을 때만 덮는다(옛 형식 주소록 보호).
+    // 저장된 배송지 선택 — 주문자(이름·연락처·이메일)와 주소를 한 번에 채우고 배송비 미리보기를
+    // 갱신한다. 주문자 값은 저장돼 있을 때만 덮는다(옛 형식 주소록 보호).
     $('#cart_addr_pick').on('change', function () {
         var $o = $(this).find(':selected');
         if (!$o.val()) return;
         if ($o.data('name')) $('input[name="od_name"]').val($o.data('name')).removeClass('is-invalid');
         if ($o.data('hp')) $('input[name="od_hp"]').val($o.data('hp')).removeClass('is-invalid');
+        if ($o.data('email')) $('input[name="od_email"]').val($o.data('email')).removeClass('is-invalid');
         $('#od_zip').val($o.data('zip'));
         $('#od_addr1').val($o.data('addr1'));
         $('#od_addr2').val($o.data('addr2')).removeClass('is-invalid');
         $('#od_zip, #od_addr1').removeClass('is-invalid');
         cartShipPreview();
     });
+    // 배송 요청사항 — 고른 문구를 od_memo 에 담고, "직접 입력"일 때만 칸을 연다.
+    // 값은 언제나 od_memo 하나로 나가므로 서버는 고름·직접입력을 구분할 필요가 없다.
+    $('#od_memo_pick').on('change', function () {
+        var v = $(this).val(), $memo = $('#od_memo');
+        if (v === 'custom') {
+            $memo.val('').show().trigger('focus');
+            return;
+        }
+        // 고른 문구 그대로 담고 칸은 감춘다(감춰도 값은 함께 제출된다)
+        $memo.val(v).hide();
+    });
+
+    // 저장된 배송지 삭제 — 고른 것만 지운다. 주문서에 이미 채워진 값은 건드리지 않는다
+    // (지우는 것은 주소록일 뿐, 지금 쓰려던 배송지를 비우면 놀란다).
+    $('#cart_addr_del').on('click', function () {
+        var $sel = $('#cart_addr_pick'), id = $sel.val();
+        if (!id) { alert('지울 배송지를 고르세요.'); return; }
+        if (!confirm('저장된 배송지를 목록에서 지울까요?\n' + $.trim($sel.find(':selected').text()))) return;
+
+        var $btn = $(this).prop('disabled', true);
+        $.ajax({
+            type: 'POST',
+            url: '{{ $address_url }}',
+            data: {token: '{{ $token }}', ad_id: id},
+            dataType: 'json'
+        }).done(function (res) {
+            if (!res || !res.ok) { alert((res && res.msg) ? res.msg : '지우지 못했습니다.'); return; }
+            $sel.find('option').not('[value=""]').remove();
+            $.each(res.addresses, function (i, a) {
+                // 값은 속성으로 넣는다 — 주소·이름이 사용자 입력이라 문자열로 이어 붙이지 않는다
+                $('<option>').val(a.id)
+                    .attr({'data-name': a.name, 'data-hp': a.hp, 'data-email': a.email,
+                           'data-zip': a.zip, 'data-addr1': a.addr1, 'data-addr2': a.addr2})
+                    .text((a.name ? a.name + ' · ' : '') + '[' + a.zip + '] ' + a.addr1 + ' ' + a.addr2)
+                    .appendTo($sel);
+            });
+            $sel.val('');
+            if (!res.addresses.length) $('.cart-addr-pick').hide();
+        }).fail(function () {
+            alert('지우지 못했습니다. 로그인 상태를 확인해 주세요.');
+        }).always(function () {
+            $btn.prop('disabled', false);
+        });
+    });
+
     $form.on('input change', '.is-invalid', function () { $(this).removeClass('is-invalid'); });
 
     $form.on('submit', function () {

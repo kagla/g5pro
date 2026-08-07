@@ -227,16 +227,19 @@ function cart_order_create($input, $owner = null, $draft = false)
     if ($draft) $_SESSION['ss_cart_draft_od_id'] = $od_id;
 
     // 배송지 자동 저장(회원) — 다음 주문서가 "저장된 배송지 불러오기"로 쓴다
-    cart_address_save($mb_id, $input['od_name'], $input['od_hp'],
+    cart_address_save($mb_id, $input['od_name'], $input['od_hp'], $input['od_email'],
         $input['od_zip'], $input['od_addr1'], $input['od_addr2']);
 
     return array('od_id' => $od_id, 'od_no' => $od_no);
 }
 
 // ---------- 배송지 저장(주소록) ----------
-// 회원 주문 때마다 자동 저장 — 주문자(이름·연락처)까지 함께 담아 "불러오기"가 주문서를 한 번에
-// 채운다. 다섯 값이 전부 같으면 시간만 갱신하고, 최근 10개만 남긴다. 비회원은 대상이 아니다.
-function cart_address_save($mb_id, $name, $hp, $zip, $addr1, $addr2)
+// 회원 주문 때마다 자동 저장 — 주문자(이름·연락처·이메일)까지 함께 담아 "불러오기"가 주문서를
+// 한 번에 채운다. 최근 10개만 남긴다. 비회원은 대상이 아니다.
+//
+// 같은 곳인지는 이름·연락처·주소로만 판단한다(이메일 제외). 이메일만 바꾼 주문이 같은 배송지의
+// 새 줄을 만들면 주소록이 금방 지저분해지므로, 그때는 기존 줄의 이메일을 최신 값으로 갱신한다.
+function cart_address_save($mb_id, $name, $hp, $email, $zip, $addr1, $addr2)
 {
     global $g5;
     $mb_id = trim($mb_id);
@@ -244,6 +247,7 @@ function cart_address_save($mb_id, $name, $hp, $zip, $addr1, $addr2)
 
     $nm_e = sql_real_escape_string(mb_substr(trim($name), 0, 50, 'utf-8'));
     $hp_e = sql_real_escape_string(mb_substr(trim($hp), 0, 20, 'utf-8'));
+    $em_e = sql_real_escape_string(mb_substr(trim($email), 0, 100, 'utf-8'));
     $zip_e = sql_real_escape_string(mb_substr(trim($zip), 0, 10, 'utf-8'));
     $a1_e = sql_real_escape_string(mb_substr(trim($addr1), 0, 255, 'utf-8'));
     $a2_e = sql_real_escape_string(mb_substr(trim($addr2), 0, 255, 'utf-8'));
@@ -254,11 +258,12 @@ function cart_address_save($mb_id, $name, $hp, $zip, $addr1, $addr2)
           and ad_zip = '$zip_e' and ad_addr1 = '$a1_e' and ad_addr2 = '$a2_e' ");
     if ($dup) {
         sql_query(" update `{$g5['ycart_address_table']}`
-            set ad_datetime = '".G5_TIME_YMDHIS."' where ad_id = '".(int)$dup['ad_id']."' ", true);
+            set ad_email = '$em_e', ad_datetime = '".G5_TIME_YMDHIS."'
+            where ad_id = '".(int)$dup['ad_id']."' ", true);
         return;
     }
-    sql_query(" insert into `{$g5['ycart_address_table']}` (mb_id, ad_name, ad_hp, ad_zip, ad_addr1, ad_addr2, ad_datetime)
-        values ('$mb_e', '$nm_e', '$hp_e', '$zip_e', '$a1_e', '$a2_e', '".G5_TIME_YMDHIS."') ", true);
+    sql_query(" insert into `{$g5['ycart_address_table']}` (mb_id, ad_name, ad_hp, ad_email, ad_zip, ad_addr1, ad_addr2, ad_datetime)
+        values ('$mb_e', '$nm_e', '$hp_e', '$em_e', '$zip_e', '$a1_e', '$a2_e', '".G5_TIME_YMDHIS."') ", true);
 
     // 오래된 것부터 정리 — 최근 10개 유지
     $result = sql_query(" select ad_id from `{$g5['ycart_address_table']}`
@@ -266,6 +271,32 @@ function cart_address_save($mb_id, $name, $hp, $zip, $addr1, $addr2)
     while ($r = sql_fetch_array($result)) {
         sql_query(" delete from `{$g5['ycart_address_table']}` where ad_id = '".(int)$r['ad_id']."' ", true);
     }
+}
+
+// 주소록에서 한 건 지운다 — 반드시 자기 것만. mb_id 를 조건에 함께 넣어
+// 남의 ad_id 를 보내도 아무 행에 닿지 않게 한다. 지운 행이 있으면 true.
+function cart_address_delete($mb_id, $ad_id)
+{
+    global $g5;
+    $mb_id = trim($mb_id);
+    $ad_id = (int)$ad_id;
+    if ($mb_id === '' || $ad_id < 1) return false;
+    sql_query(" delete from `{$g5['ycart_address_table']}`
+        where ad_id = '$ad_id' and mb_id = '".sql_real_escape_string($mb_id)."' ", true);
+    return (bool)get_sql_affected_rows();
+}
+
+// 주문서 기본값 한 칸 — 가장 최근 주소록 값이 있으면 그것, 없으면 회원 정보.
+// 주소록 조회는 한 요청에 한 번만 한다(칸마다 부르지 않게 캐시).
+function cart_address_default($member, $ad_key, $mb_key)
+{
+    static $recent = null;
+    if ($recent === null) {
+        $list = !empty($member['mb_id']) ? cart_address_list($member['mb_id'], 1) : array();
+        $recent = count($list) ? $list[0] : array();
+    }
+    if (!empty($recent[$ad_key])) return $recent[$ad_key];
+    return isset($member[$mb_key]) ? $member[$mb_key] : '';
 }
 
 function cart_address_list($mb_id, $limit = 10)

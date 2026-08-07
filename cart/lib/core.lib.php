@@ -110,6 +110,10 @@ function cart_column_upgrades()
         // UNIQUE 는 여기 안 넣는다 — 기존 행이 전부 빈 값이라 채운 뒤 cart_install() 이 붙인다.
         array('ycart_category_table', 'ca_code',
             " ADD `ca_code` varchar(30) NOT NULL DEFAULT '' AFTER `ca_parent` "),
+        // 2026-08-07 주소록 이메일 — 주문서에서 이메일만 바꾸면 다음 주문서가 회원가입 주소로
+        // 되돌아갔다. 이름·연락처와 같은 자리에 담아 불러오기가 세 값을 함께 채운다.
+        array('ycart_address_table', 'ad_email',
+            " ADD `ad_email` varchar(100) NOT NULL DEFAULT '' AFTER `ad_hp` "),
     );
 }
 
@@ -390,6 +394,7 @@ function cart_table_ddl()
         `mb_id` varchar(20) NOT NULL DEFAULT '',
         `ad_name` varchar(50) NOT NULL DEFAULT '',
         `ad_hp` varchar(20) NOT NULL DEFAULT '',
+        `ad_email` varchar(100) NOT NULL DEFAULT '',
         `ad_zip` varchar(10) NOT NULL DEFAULT '',
         `ad_addr1` varchar(255) NOT NULL DEFAULT '',
         `ad_addr2` varchar(255) NOT NULL DEFAULT '',
