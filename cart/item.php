@@ -51,6 +51,55 @@ foreach (cart_item_skus($it_id, true) as $s) {
 // 빵부스러기 대표 분류 — 연결 분류(ca_order 순) 중 캐스케이드-노출인 첫 번째
 $category = $visible_cats ? $visible_cats[0] : null;
 
+// 추천 — 같은 분류의 다른 상품을 먼저 보여 주고, 모자라면 최신 상품으로 채운다.
+// 숨김 의미론은 목록과 같은 기준(cart_item_hidden_where)을 그대로 쓴다.
+$reco = array();
+$reco_ids = array();
+$ca_ids = array();
+foreach ($visible_cats as $c) $ca_ids[] = (int)$c['ca_id'];
+
+$reco_fetch = function ($where, $limit) use ($g5, $it_id, &$reco_ids) {
+    if ($limit < 1) return array();
+    $skip = array_merge(array($it_id), $reco_ids);
+    $rows = array();
+    $result = sql_query(" select it_id, it_name, it_price, it_stock
+        from `{$g5['ycart_item_table']}`
+        where it_show = 1 and it_id not in (".implode(',', $skip).")
+          and ".cart_item_hidden_where('').$where."
+        order by it_id desc limit ".(int)$limit);
+    while ($r = sql_fetch_array($result)) { $rows[] = $r; $reco_ids[] = (int)$r['it_id']; }
+    return $rows;
+};
+if ($ca_ids) {
+    $reco = $reco_fetch(" and it_id in (select it_id from `{$g5['ycart_item_category_table']}`
+        where ca_id in (".implode(',', $ca_ids).")) ", 8);
+}
+if (count($reco) < 8) {
+    $reco = array_merge($reco, $reco_fetch('', 8 - count($reco)));
+}
+$reco_images = cart_item_main_images(array_column($reco, 'it_id'));
+foreach ($reco as $i => $r) {
+    $rid = (int)$r['it_id'];
+    $reco[$i]['img'] = isset($reco_images[$rid]) ? cart_item_image_url($reco_images[$rid]) : '';
+    $reco[$i]['href'] = cart_url('item.php', array('it_id' => $rid));
+}
+
+// 판매자 정보 — 회사 정보는 환경설정 값이 비어 있을 수 있으니 있는 것만 넘긴다
+$cc = cart_config();
+$seller = array(
+    'company' => isset($config['cf_company_name']) ? $config['cf_company_name'] : '',
+    'owner' => isset($config['cf_company_owner']) ? $config['cf_company_owner'] : '',
+    'saupja_no' => isset($config['cf_company_saupja_no']) ? $config['cf_company_saupja_no'] : '',
+    'tongsin_no' => isset($config['cf_company_tongsin_no']) ? $config['cf_company_tongsin_no'] : '',
+    'tel' => isset($config['cf_company_tel']) ? $config['cf_company_tel'] : '',
+    'addr' => isset($config['cf_company_addr']) ? $config['cf_company_addr'] : '',
+    'email' => isset($config['cf_admin_email']) ? $config['cf_admin_email'] : '',
+    'ship_base' => (int)$cc['cc_ship_base'],
+    'ship_free' => (int)$cc['cc_ship_free'],
+    'ship_jeju' => (int)$cc['cc_ship_jeju'],
+    'bank' => $cc['cc_bank'],
+);
+
 // 관리자 바로가기 — super 판정은 여기서 끝내고 뷰에는 URL 만 (부킹 room.php 관례)
 $admin_edit_url = ($is_admin === 'super')
     ? G5_CART_ADMIN_URL.'/item_form.php?w=u&it_id='.$it_id : '';
@@ -72,6 +121,11 @@ g5_view('cart.item', array(
     'list_href' => $category ? cart_url('list.php', array('ca' => $category['ca_code'])) : cart_url('list.php'),
     'admin_edit_url' => $admin_edit_url,
     'admin_notice' => $admin_notice,
+    'reco' => $reco,
+    'seller' => $seller,
+    // 후기·문의는 4단계 기능 — 지금은 개수만(0) 넘겨 탭 자리를 잡아 둔다
+    'review_cnt' => (int)$item['it_review_cnt'],
+    'qa_cnt' => 0,
     'token' => get_token(),
     'cart_action' => cart_url('cart_update.php'),
     'cart_href' => cart_url('cart.php'),

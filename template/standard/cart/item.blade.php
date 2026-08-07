@@ -105,9 +105,98 @@
         </div>
     </div>
 
-    <div class="shop-item-content">
-        {!! $item['it_content'] !!}
-    </div>
+    {{-- 상세 아래는 탭으로 나눈다 — 스마트스토어식 배치. 후기·문의는 4단계에 열리므로
+         지금은 빈 상태를 정직하게 보여 준다(개수도 0으로 표시). --}}
+    <nav class="shop-tabs" id="shop_tabs">
+        <a href="#tab-detail" class="shop-tab is-on">상세정보</a>
+        <a href="#tab-review" class="shop-tab">리뷰 <span class="shop-tab-n">{{ number_format($review_cnt) }}</span></a>
+        <a href="#tab-qa" class="shop-tab">문의 <span class="shop-tab-n">{{ number_format($qa_cnt) }}</span></a>
+        <a href="#tab-seller" class="shop-tab">판매자정보</a>
+
+        @if (count($reco))
+        <a href="#tab-reco" class="shop-tab">추천</a>
+        @endif
+
+    </nav>
+
+    <section class="shop-panel is-on" id="tab-detail">
+        <div class="shop-item-content">
+            {!! $item['it_content'] !!}
+        </div>
+    </section>
+
+    <section class="shop-panel" id="tab-review">
+        <p class="shop-empty">아직 등록된 리뷰가 없습니다.</p>
+    </section>
+
+    <section class="shop-panel" id="tab-qa">
+        <p class="shop-empty">등록된 문의가 없습니다. 궁금한 점은 판매자정보의 연락처로 문의해 주세요.</p>
+    </section>
+
+    <section class="shop-panel" id="tab-seller">
+        <table class="shop-seller">
+            <tbody>
+
+            @if ($seller['company'] !== '')
+            <tr><th>상호</th><td>{{ $seller['company'] }}{{ $seller['owner'] !== '' ? ' · '.$seller['owner'] : '' }}</td></tr>
+            @endif
+
+            @if ($seller['saupja_no'] !== '')
+            <tr><th>사업자등록번호</th><td>{{ $seller['saupja_no'] }}</td></tr>
+            @endif
+
+            @if ($seller['tongsin_no'] !== '')
+            <tr><th>통신판매업 신고</th><td>{{ $seller['tongsin_no'] }}</td></tr>
+            @endif
+
+            @if ($seller['addr'] !== '')
+            <tr><th>주소</th><td>{{ $seller['addr'] }}</td></tr>
+            @endif
+
+            @if ($seller['tel'] !== '')
+            <tr><th>전화</th><td>{{ $seller['tel'] }}</td></tr>
+            @endif
+
+            @if ($seller['email'] !== '')
+            <tr><th>문의</th><td>{{ $seller['email'] }}</td></tr>
+            @endif
+
+            <tr>
+                <th>배송비</th>
+                <td>{{ number_format($seller['ship_base']) }}원 · {{ number_format($seller['ship_free']) }}원 이상 무료{{ $seller['ship_jeju'] > 0 ? ' · 제주·도서 '.number_format($seller['ship_jeju']).'원 추가' : '' }}</td>
+            </tr>
+            <tr><th>교환·반품</th><td>받으신 날부터 7일 안에 신청할 수 있습니다. 사용했거나 포장을 훼손한 상품은 어렵습니다.</td></tr>
+
+            @if ($seller['bank'] !== '')
+            <tr><th>무통장 입금</th><td>{{ $seller['bank'] }}</td></tr>
+            @endif
+
+            </tbody>
+        </table>
+    </section>
+
+    @if (count($reco))
+    <section class="shop-panel" id="tab-reco">
+        <div class="shop-grid">
+
+            @foreach ($reco as $r)
+            <a class="shop-card" href="{{ $r['href'] }}">
+
+                @if ($r['img'] !== '')
+                <img src="{{ $r['img'] }}" alt="{{ $r['it_name'] }}">
+                @else
+                <span class="shop-card-noimg">{{ mb_substr($r['it_name'], 0, 1, 'utf-8') }}</span>
+                @endif
+
+                <strong class="shop-card-name">{{ $r['it_name'] }}</strong>
+                <span class="shop-price">{{ number_format($r['it_price']) }}원</span>
+            </a>
+            @endforeach
+
+        </div>
+    </section>
+    @endif
+
 </article>
 
 @if (count($images) > 1)
@@ -117,5 +206,27 @@ $('.shop-item-thumbs img').on('click', function () {
 });
 </script>
 @endif
+
+<script>
+// 탭 — 주소에 #tab-… 이 남아 새로고침·뒤로가기에도 보던 탭이 유지된다
+$(function () {
+    function showTab(id) {
+        var $tab = $('.shop-tab[href="' + id + '"]');
+        if (!$tab.length) return;
+        $('.shop-tab').removeClass('is-on');
+        $tab.addClass('is-on');
+        $('.shop-panel').removeClass('is-on');
+        $(id).addClass('is-on');
+    }
+    $('.shop-tab').on('click', function (e) {
+        e.preventDefault();
+        var id = $(this).attr('href');
+        showTab(id);
+        if (window.history && history.replaceState) history.replaceState(null, '', id);
+        else location.hash = id;
+    });
+    if (location.hash) showTab(location.hash);
+});
+</script>
 
 @endsection
