@@ -21,6 +21,10 @@
 .ca-item.selected { background: #E5EFFF; box-shadow: inset 3px 0 0 #2563EB; }
 .ca-item .ca-handle { cursor: grab; margin-right: 2px; color: #b3bac2; user-select: none; }
 .ca-item .ca-cnt { color: #888; font-size: 0.92em; }
+/* 분류코드는 20자까지 자유 입력이라 길이를 통제할 수 없다 — 자리 예산을 고정해
+   긴 코드가 뒤따르는 하위·상품 개수를 밀어내지 못하게 한다(전체 값은 title 로) */
+.ca-item .ca-code { display: inline-block; max-width: 110px; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap; vertical-align: -3px; }
 .ca-item .ca-off { display: inline-block; margin-left: 5px; padding: 0 6px; border-radius: 9px;
     background: #e9edf2; color: #6b7683; font-size: 0.78em; vertical-align: 1px; }
 .ca-item.off > strong { color: #98a1ab; font-weight: 600; }
@@ -78,14 +82,14 @@
              data-id="{{ $c['ca_id'] }}" data-parent="{{ $c['ca_parent'] }}"
              data-depth="{{ $c['ca_depth'] }}" data-path="{{ $c['ca_path'] }}"
              data-href="{{ $self_url }}?ca_id={{ $c['ca_id'] }}"
-             style="padding-left:{{ ($c['ca_depth'] - 1) * 22 + 8 }}px">
+             style="padding-left:{{ ($c['ca_depth'] - 1) * 18 + 8 }}px">
             <span class="ca-handle" title="끌어서 이동">⠿</span>
             <span class="ca-toggle {{ $kid ? '' : 'leaf' }}"
                   data-id="{{ $c['ca_id'] }}" title="하위 분류 접기/펼치기">▼</span>
             <strong>{{ $c['ca_name'] }}</strong>
             {{-- 코드는 글자로만 둔다 — 줄 클릭(분류 선택)과 겹치지 않게, 사용자 화면 이동은
                  오른쪽 패널의 바로가기 버튼 하나로 모은다 --}}
-            <span class="ca-cnt">[{{ $c['ca_code'] }}] · {{ $kid ? '하위 '.$kid.' · ' : '' }}상품 {{ number_format($items) }}개</span>
+            <span class="ca-cnt"><span class="ca-code" title="{{ $c['ca_code'] }}">[{{ $c['ca_code'] }}]</span> · {{ $kid ? '하위 '.$kid.' · ' : '' }}상품 {{ number_format($items) }}개</span>
 
             @if (!(int)$c['ca_show'])
             <span class="ca-off">숨김</span>
