@@ -607,6 +607,76 @@ function cart_item_cache_refresh($it_id)
         set it_price = '$price', it_stock = '$stock' where it_id = '$it_id' ", true);
 }
 
+// ---------- 옵션 조합 프리셋 ----------
+// 상품 폼에서 만든 옵션명·값 묶음("색상: 빨강,파랑 / 사이즈: S,M,L")을 이름 붙여 저장해 두고
+// 다음 상품에서 그대로 불러 쓴다. 조합 생성 입력칸을 채워 줄 뿐이라 SKU 와 연결하지 않는다.
+
+// 저장 형태로 정규화 — [{name, vals[]}, ...]. 빈 이름·빈 값은 버리고, 형식이 아니면 빈 배열
+function cart_option_preset_normalize($sets)
+{
+    $out = array();
+    if (!is_array($sets)) return $out;
+    foreach ($sets as $set) {
+        if (!is_array($set) || !isset($set['name']) || !isset($set['vals'])) continue;
+        $name = trim(strip_tags((string)$set['name']));
+        if ($name === '' || !is_array($set['vals'])) continue;
+        $vals = array();
+        foreach ($set['vals'] as $v) {
+            $v = trim(strip_tags((string)$v));
+            // 같은 값이 두 번 들어가면 조합이 중복 생성된다 — 여기서 한 번 걸러 둔다
+            if ($v !== '' && !in_array($v, $vals, true)) $vals[] = $v;
+        }
+        if ($vals) $out[] = array('name' => $name, 'vals' => $vals);
+    }
+    return $out;
+}
+
+function cart_option_preset_list()
+{
+    global $g5;
+    $rows = array();
+    $result = sql_query(" select * from `{$g5['ycart_option_preset_table']}` order by op_name ", false);
+    if (!$result) return $rows;   // 아직 설치 전(옛 설치본)이면 조용히 빈 목록
+    while ($r = sql_fetch_array($result)) {
+        $sets = cart_option_preset_normalize(json_decode($r['op_data'], true));
+        if (!$sets) continue;
+        $r['sets'] = $sets;
+        $rows[] = $r;
+    }
+    return $rows;
+}
+
+// 같은 이름이면 덮어쓴다(이름이 곧 식별자 — 관리자가 "의류 기본" 을 갱신하는 흐름).
+// 빈 문자열이면 성공, 아니면 사용자에게 보여줄 사유
+function cart_option_preset_save($name, $sets)
+{
+    global $g5;
+    $name = trim(strip_tags((string)$name));
+    if ($name === '') return '조합 이름을 입력하세요.';
+    if (mb_strlen($name, 'utf-8') > 50) return '조합 이름은 50자까지입니다.';
+    $sets = cart_option_preset_normalize($sets);
+    if (!$sets) return '저장할 옵션이 없습니다. 옵션명과 값을 먼저 입력하세요.';
+
+    $esc_name = sql_real_escape_string($name);
+    $data = sql_real_escape_string(json_encode($sets, JSON_UNESCAPED_UNICODE));
+    $now = G5_TIME_YMDHIS;
+    $row = sql_fetch(" select op_id from `{$g5['ycart_option_preset_table']}` where op_name = '$esc_name' ");
+    if ($row) {
+        sql_query(" update `{$g5['ycart_option_preset_table']}`
+            set op_data = '$data', op_datetime = '$now' where op_id = '".(int)$row['op_id']."' ", true);
+        return '';
+    }
+    sql_query(" insert into `{$g5['ycart_option_preset_table']}` (op_name, op_data, op_datetime)
+        values ('$esc_name', '$data', '$now') ", true);
+    return '';
+}
+
+function cart_option_preset_delete($op_id)
+{
+    global $g5;
+    sql_query(" delete from `{$g5['ycart_option_preset_table']}` where op_id = '".(int)$op_id."' ", true);
+}
+
 // ---------- 검색 ----------
 
 // 관리자 목록 검색 — 프론트(cart_item_search_where)와 달리 상품코드도 함께 본다.

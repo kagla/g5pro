@@ -29,6 +29,7 @@ function cart_table_defaults()
         'ycart_item_image_table' => 'ycart_item_image',
         'ycart_item_category_table' => 'ycart_item_category',
         'ycart_sku_table'        => 'ycart_sku',
+        'ycart_option_preset_table' => 'ycart_option_preset',
         'ycart_stock_log_table'  => 'ycart_stock_log',
         'ycart_cart_table'       => 'ycart_cart',
         'ycart_order_table'      => 'ycart_order',
@@ -297,6 +298,17 @@ function cart_table_ddl()
         PRIMARY KEY (`sk_id`),
         UNIQUE KEY `sk_code` (`sk_code`),
         KEY `it_id` (`it_id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
+    // 옵션 조합 프리셋 — 상품 폼의 옵션명·값 묶음을 이름 붙여 두고 다음 상품에서 불러 쓴다.
+    // op_data 는 [{"name":"색상","vals":["빨강","파랑"]}, ...] JSON. 상품과 무관한 몰 공용 자산이라
+    // 상품·SKU 와 연결하지 않는다(프리셋을 지워도 이미 만든 SKU 는 그대로).
+    'ycart_option_preset_table' => " CREATE TABLE IF NOT EXISTS `{$g5['ycart_option_preset_table']}` (
+        `op_id` int(11) NOT NULL AUTO_INCREMENT,
+        `op_name` varchar(100) NOT NULL DEFAULT '',
+        `op_data` text NOT NULL,
+        `op_datetime` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+        PRIMARY KEY (`op_id`),
+        UNIQUE KEY `op_name` (`op_name`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
     'ycart_stock_log_table' => " CREATE TABLE IF NOT EXISTS `{$g5['ycart_stock_log_table']}` (
         `sl_id` int(11) NOT NULL AUTO_INCREMENT,

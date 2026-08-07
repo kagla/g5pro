@@ -36,7 +36,15 @@ foreach ($skus as $i => $s) {
 
 $ca_ids_now = $w === 'u' ? cart_item_ca_ids($it_id) : array();
 
+// 저장해 둔 옵션 조합 — 화면 JS 가 그대로 쓰도록 이름·묶음만 추려 넘긴다
+$presets = array();
+foreach (cart_option_preset_list() as $p) {
+    $presets[] = array('id' => (int)$p['op_id'], 'name' => $p['op_name'], 'sets' => $p['sets']);
+}
+
 cadm_view('item_form', array(
+    'presets' => $presets,
+    'preset_url' => G5_CART_ADMIN_URL.'/option_preset.php',
     'w' => $w,
     'item' => $item,
     'skus' => $skus,
