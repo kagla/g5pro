@@ -2,8 +2,15 @@
 include_once('./_common.php');
 define('G5_PRO_PAGE', true); // g5pro 직통 화면
 
-$it_id = (isset($_GET['it_id']) && !is_array($_GET['it_id'])) ? (int)$_GET['it_id'] : 0;
-$item = cart_item_get($it_id);
+// 주소는 상품코드(?code=코드)가 정식 — 파라미터 이름만 보고 상품코드임이 읽히게.
+// ?it_id=숫자 는 옛 링크·북마크를 위한 하위호환으로 계속 받는다.
+$code = (isset($_GET['code']) && !is_array($_GET['code'])) ? trim($_GET['code']) : '';
+$item = $code !== '' ? cart_item_get_by_code($code) : null;
+if (!$item) {
+    $it_id = (isset($_GET['it_id']) && !is_array($_GET['it_id'])) ? (int)$_GET['it_id'] : 0;
+    $item = cart_item_get($it_id);
+}
+$it_id = $item ? (int)$item['it_id'] : 0;
 // 연결 분류는 한 번만 읽어 숨김 판정과 빵부스러기가 같은 데이터를 쓴다
 // (판정 규칙은 cart_item_is_hidden 과 동일: 연결이 있는데 전부 숨김이면 숨김)
 $item_cats = $item ? cart_item_categories($it_id) : array();
@@ -11,9 +18,18 @@ $visible_cats = array();
 foreach ($item_cats as $c) {
     if (!in_array((int)$c['ca_id'], cart_hidden_category_ids(), true)) $visible_cats[] = $c;
 }
-// 상품 자신이 안 숨었어도 전 연결 분류가 숨김이면 상세도 막는다(목록과 같은 의미론)
-if (!$item || !$item['it_show'] || ($item_cats && !$visible_cats)) {
+// 상품 자신이 안 숨었어도 전 연결 분류가 숨김이면 상세도 막는다(목록과 같은 의미론).
+// 다만 최고관리자는 막는 대신 화면을 보여 준다 — 등록·수정 직후 "손님에게 어떻게 보이나"를
+// 확인하려는데 alert 로 튕기면 확인할 방법이 없다. 대신 왜 안 보이는지 배너로 알린다.
+$admin_notice = '';
+if (!$item) {
     alert('없는 상품입니다.', cart_url('list.php'));
+}
+if (!$item['it_show'] || ($item_cats && !$visible_cats)) {
+    if ($is_admin !== 'super') alert('없는 상품입니다.', cart_url('list.php'));
+    $admin_notice = !$item['it_show']
+        ? '노출이 중지된 상품입니다. 관리자에게만 보입니다.'
+        : '소속 분류가 모두 숨김이라 손님에게는 보이지 않습니다. 관리자에게만 보입니다.';
 }
 
 $images = array();
@@ -55,6 +71,7 @@ g5_view('cart.item', array(
     'category' => $category,
     'list_href' => $category ? cart_url('list.php', array('ca' => $category['ca_code'])) : cart_url('list.php'),
     'admin_edit_url' => $admin_edit_url,
+    'admin_notice' => $admin_notice,
     'token' => get_token(),
     'cart_action' => cart_url('cart_update.php'),
     'cart_href' => cart_url('cart.php'),

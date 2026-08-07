@@ -2420,6 +2420,9 @@ input[type=checkbox], input[type=radio] {
 /* .shop-price·.shop-soldout 은 목록 카드(.shop-card)의 규칙을 물려받는다. .shop-soldout 은
    카드에서 썸네일 위 오버레이(position:absolute)라, 상세 화면에서는 평범한 안내 문단으로
    쓰이므로 .shop-item-info 안에서만 오버레이를 해제한다 */
+/* 관리자만 보는 비노출 안내 — 손님 화면에는 아예 출력되지 않는다(뷰에서 건너뜀) */
+.shop-item-offnotice { margin: 0 0 var(--s5); padding: var(--s3) var(--s4); border-radius: var(--r2);
+    background: #FFF4E5; color: #8A5300; border: 1px solid #F5D9A8; font-weight: 600; }
 .shop-item-top { display: flex; gap: var(--s6); flex-wrap: wrap; margin-bottom: var(--s6); }
 .shop-item-gallery { flex: 1 1 360px; min-width: 280px; max-width: 480px; }
 .shop-item-gallery img#cart_main_img {

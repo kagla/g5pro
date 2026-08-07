@@ -1,6 +1,12 @@
 @extends('layout.default')
 @section('content')
 <article class="shop-item">
+
+    {{-- 관리자만 보는 안내 — 손님에게 안 보이는 상품을 관리자가 열었을 때 그 이유를 알린다 --}}
+    @if ($admin_notice !== '')
+    <p class="shop-item-offnotice">{{ $admin_notice }}</p>
+    @endif
+
     <header class="bbs-head">
         <h2>{{ $item['it_name'] }}</h2>
         <div class="bbs-meta">
