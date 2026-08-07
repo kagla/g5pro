@@ -21,11 +21,8 @@
 .ca-item.selected { background: #E5EFFF; box-shadow: inset 3px 0 0 #2563EB; }
 .ca-item .ca-handle { cursor: grab; margin-right: 2px; color: #b3bac2; user-select: none; }
 .ca-item .ca-cnt { color: #888; font-size: 0.92em; }
-/* 분류코드는 길이를 통제할 수 없다(사람이 최대 CART_CA_CODE_MAX 자까지 정한다) — 자리 예산을
-   고정해 긴 코드가 뒤따르는 하위·상품 개수를 밀어내지 못하게 한다(전체 값은 title 로).
-   대괄호는 이 칸 밖에 둬야 잘려도 닫는 괄호가 남는다: [abcdefghij012345…] */
-.ca-item .ca-code { display: inline-block; max-width: 105px; overflow: hidden;
-    text-overflow: ellipsis; white-space: nowrap; vertical-align: -3px; }
+/* 분류코드는 아래 루프에서 글자 수로 잘라 넣는다 — CSS 말줄임은 칸 너비를 고정하는 방식이라
+   마지막 글자가 딱 안 맞으면 남는 여백만큼 닫는 대괄호가 떨어져 보인다. 전체 값은 title 로. */
 .ca-item .ca-off { display: inline-block; margin-left: 5px; padding: 0 6px; border-radius: 9px;
     background: #e9edf2; color: #6b7683; font-size: 0.78em; vertical-align: 1px; }
 .ca-item.off > strong { color: #98a1ab; font-weight: 600; }
@@ -76,6 +73,8 @@
         @php
             $kid = isset($child_count[$c['ca_id']]) ? (int)$child_count[$c['ca_id']] : 0;
             $items = isset($counts[$c['ca_id']]) ? (int)$counts[$c['ca_id']] : 0;
+            // 코드가 길면 16자까지만 — 자동 생성 코드(10자)는 그대로 다 보인다
+            $code_view = strlen($c['ca_code']) > 16 ? substr($c['ca_code'], 0, 16).'…' : $c['ca_code'];
         @endphp
 
         <div class="ca-item {{ (int)$c['ca_id'] === $sel_id ? 'selected' : '' }} {{ (int)$c['ca_show'] ? '' : 'off' }}"
@@ -90,7 +89,7 @@
             <strong>{{ $c['ca_name'] }}</strong>
             {{-- 코드는 글자로만 둔다 — 줄 클릭(분류 선택)과 겹치지 않게, 사용자 화면 이동은
                  오른쪽 패널의 바로가기 버튼 하나로 모은다 --}}
-            <span class="ca-cnt">[<span class="ca-code" title="{{ $c['ca_code'] }}">{{ $c['ca_code'] }}</span>] · {{ $kid ? '하위 '.$kid.' · ' : '' }}상품 {{ number_format($items) }}개</span>
+            <span class="ca-cnt" title="{{ $c['ca_code'] }}">[{{ $code_view }}] · {{ $kid ? '하위 '.$kid.' · ' : '' }}상품 {{ number_format($items) }}개</span>
 
             @if (!(int)$c['ca_show'])
             <span class="ca-off">숨김</span>
