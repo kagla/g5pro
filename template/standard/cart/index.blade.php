@@ -9,6 +9,9 @@
 
 <nav class="cart-home-links">
     <a href="{{ $cart_href }}">장바구니</a>
+    <a href="{{ $wish_href }}">찜한 상품
+        @if ($wish_count)<b>{{ number_format($wish_count) }}</b>@endif
+    </a>
     <a href="{{ $orders_href }}">주문 조회</a>
 </nav>
 
