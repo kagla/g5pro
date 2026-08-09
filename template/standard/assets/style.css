@@ -180,6 +180,14 @@
 
 /* ── 기본 ── */
 * { box-sizing: border-box; }
+/* hidden 속성이 화면 규칙에 지지 않게.
+   브라우저 기본 [hidden]{display:none} 은 특이도가 가장 낮아, 컴포넌트에 display:flex 나
+   display:grid 를 주는 순간 hidden 을 걸어도 그대로 보인다. 이 파일에는 그때마다 한 곳씩
+   막은 규칙이 다섯 개(.search-modal·.lightbox·.tab-con·.odv-modal·.cart-lb) 쌓여 있었고,
+   그러고도 .cart-picks-total 이 빈 상자로 남아 있었다. 한 줄로 전부 막는다.
+   (아래 개별 [hidden] 규칙들은 지우지 않는다 — 이 줄이 있으면 무해하고, 지우는 편이
+    되레 다른 화면을 건드릴 위험이 있다) */
+[hidden] { display: none !important; }
 body {
     margin: 0;
     background: var(--bg);
