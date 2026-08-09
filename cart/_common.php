@@ -4,6 +4,7 @@ include_once(G5_PATH.'/cart/lib/core.lib.php'); // 상수를 여기서 정의하
 include_once(G5_CART_LIB_PATH.'/item.lib.php');
 include_once(G5_CART_LIB_PATH.'/stock.lib.php');
 include_once(G5_CART_LIB_PATH.'/order.lib.php');
+include_once(G5_CART_LIB_PATH.'/delivery.lib.php');
 include_once(G5_CART_LIB_PATH.'/cart.lib.php');
 include_once(G5_CART_LIB_PATH.'/wish.lib.php');
 include_once(G5_CART_LIB_PATH.'/return.lib.php');

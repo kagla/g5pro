@@ -446,30 +446,6 @@ function cart_order_is_mine($order)
     return false;
 }
 
-// 송장 조회 주소 — 택배사 이름이 알아볼 만하면 조회 페이지로 잇고, 아니면 빈 문자열.
-// 택배사는 관리자가 자유 입력하는 값이라 못 알아보는 이름이 들어올 수 있다. 그때는 링크를
-// 만들지 않는다 — 엉뚱한 곳으로 가는 링크는 없느니만 못하다(화면은 번호만 보여 준다).
-// 조회 주소는 택배사 사정으로 바뀔 수 있는 값이라 여기 한 곳에만 적는다.
-function cart_delivery_track_url($company, $invoice)
-{
-    $invoice = preg_replace('/[^0-9]/', '', (string)$invoice);
-    if ($invoice === '') return '';
-
-    $company = str_replace(' ', '', (string)$company);
-    $map = array(
-        'CJ' => 'https://trace.cjlogistics.com/next/tracking.html?wblNo=',
-        '대한통운' => 'https://trace.cjlogistics.com/next/tracking.html?wblNo=',
-        '우체국' => 'https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=',
-        '한진' => 'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&schLang=KR&wblnumText2=',
-        '롯데' => 'https://www.lotteglogis.com/home/reservation/tracking/linkView?InvNo=',
-        '로젠' => 'https://www.ilogen.com/web/personal/trace/',
-    );
-    foreach ($map as $key => $url) {
-        if ($company !== '' && stripos($company, $key) !== false) return $url.$invoice;
-    }
-    return '';
-}
-
 // 무통장 입금 기한 초과 자동취소.
 // 무통장 주문은 생성 즉시 재고를 차감하므로(cart_order_create), 기한이 없으면 입금하지 않은
 // 주문이 재고를 무기한 잠근다 — 팔 수 있는 물건이 장부에만 없는 상태가 된다.
@@ -504,15 +480,6 @@ function cart_order_expire_unpaid()
         $done[] = $t['od_no'];
     }
     return $done;
-}
-
-function cart_order_set_invoice($od_id, $company, $invoice)
-{
-    global $g5;
-    sql_query(" update `{$g5['ycart_order_table']}`
-        set od_dc_name = '".sql_real_escape_string(mb_substr(trim($company), 0, 50, 'utf-8'))."',
-            od_invoice = '".sql_real_escape_string(mb_substr(trim($invoice), 0, 50, 'utf-8'))."'
-        where od_id = '".(int)$od_id."' ", true);
 }
 
 // 결제 확정 직후 마무리 — 초안이 예약해 둔 장바구니 행을 비우고 세션 표식을 정리한다.

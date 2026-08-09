@@ -8,6 +8,7 @@ include_once(G5_CART_LIB_PATH.'/item.lib.php');
 include_once(G5_CART_LIB_PATH.'/stock.lib.php');
 include_once(G5_CART_LIB_PATH.'/csv.lib.php');
 include_once(G5_CART_LIB_PATH.'/order.lib.php');
+include_once(G5_CART_LIB_PATH.'/delivery.lib.php');
 include_once(G5_CART_LIB_PATH.'/cart.lib.php');
 include_once(G5_CART_LIB_PATH.'/return.lib.php');
 include_once(G5_CART_LIB_PATH.'/coupon.lib.php');
