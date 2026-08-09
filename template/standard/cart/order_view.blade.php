@@ -46,17 +46,23 @@
     {{-- 배송 정보 — 발송한 뒤에만. 관리자가 송장을 넣어도 고객이 볼 곳이 없으면
          "보냈다는데 어디쯤인가" 를 전화로 물어야 한다. 택배사를 알아본 경우에만 조회 링크를
          걸고, 못 알아보면 번호만 보여 준다(엉뚱한 곳으로 가는 링크는 없느니만 못하다) --}}
-    @if (in_array($order['od_status'], array('shipping', 'delivered', 'confirmed'), true) && $order['od_invoice'] !== '')
+    @if (in_array($order['od_status'], array('shipping', 'delivered', 'confirmed'), true) && $order['od_dc_name'] !== '')
     <section class="cart-co-sec">
         <h3>배송 조회</h3>
         <div class="cart-complete-line">
-            <span>{{ $order['od_dc_name'] !== '' ? $order['od_dc_name'] : '택배' }}</span>
+            <span>{{ $order['od_dc_name'] }}</span>
             <span>
-                @if ($track_url !== '')
-                <a href="{{ $track_url }}" target="_blank" rel="noopener">{{ $order['od_invoice'] }}</a>
-                @else
-                {{ $order['od_invoice'] }}
+
+                @if ($order['od_invoice'] !== '')
+                    @if ($track_url !== '')
+                    <a href="{{ $track_url }}" target="_blank" rel="noopener">{{ $order['od_invoice'] }}</a>
+                    @else
+                    {{ $order['od_invoice'] }}
+                    @endif
+                @elseif ($order['od_delivery_note'] !== '')
+                {{ $order['od_delivery_note'] }}
                 @endif
+
             </span>
         </div>
 

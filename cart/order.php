@@ -16,6 +16,9 @@ if ($od_no !== '') {
     }
 
     $cc = cart_config();
+    // 내부메모는 관리자만 보는 값이다. 템플릿이 안 쓰는 것과 값이 도달하지 못하는 것은 다르다 —
+    // 나중에 누가 이 배열을 통째로 뿌려도 기사 연락처가 따라가지 않게 여기서 뺀다.
+    unset($order['od_delivery_admin_memo']);
     $g5['title'] = '주문 상세';
     g5_view('cart.order_view', array(
         'order' => $order,

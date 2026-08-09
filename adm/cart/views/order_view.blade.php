@@ -109,22 +109,70 @@
     <tbody>
     <tr>
         <th scope="row">택배사</th>
-        <td><input type="text" name="od_dc_name" value="{{ $order['od_dc_name'] }}" class="frm_input" size="16"></td>
-        <th scope="row">송장번호</th>
         <td>
-            <input type="text" name="od_invoice" value="{{ $order['od_invoice'] }}" class="frm_input" size="24">
-            <button type="submit" class="btn_submit btn">송장 저장</button>
+            <select name="od_dc_id" class="frm_input" id="adm_dc">
+                <option value="">택배사 선택</option>
 
-            @if (substr($order['od_shipped_at'], 0, 4) !== '1970')
-            <span>발송 {{ $order['od_shipped_at'] }}</span>
+                @foreach ($companies as $c)
+                <option value="{{ $c['dc_id'] }}" data-invoice="{{ (int)$c['dc_invoice'] }}" {{ (int)$order['od_dc_id'] === (int)$c['dc_id'] ? 'selected' : '' }}>{{ $c['dc_name'] }}</option>
+                @endforeach
+
+                @if ($extra_dc && (int)$extra_dc['dc_use'] === 0)
+                <option value="{{ $extra_dc['dc_id'] }}" data-invoice="{{ (int)$extra_dc['dc_invoice'] }}" selected>{{ $extra_dc['dc_name'] }} (사용 안 함)</option>
+                @endif
+
+            </select>
+
+            @if ((int)$order['od_dc_id'] === 0 && $order['od_dc_name'] !== '')
+            <span class="txt_id">이전 기록: {{ $order['od_dc_name'] }}</span>
             @endif
 
+        </td>
+        <th scope="row">송장번호</th>
+        <td>
+            <input type="text" name="od_invoice" value="{{ $order['od_invoice'] }}" class="frm_input" size="24" id="adm_invoice">
+
+            @if (substr($order['od_shipped_at'], 0, 4) !== '1970')
+            <span class="txt_id">발송 {{ $order['od_shipped_at'] }}</span>
+            @endif
+
+        </td>
+    </tr>
+    <tr>
+        <th scope="row">배송안내</th>
+        <td>
+            <input type="text" name="od_delivery_note" value="{{ $order['od_delivery_note'] }}" class="frm_input" size="30" id="adm_note" placeholder="예: 8/12 오후 2~4시 도착 예정">
+            <span class="txt_id">손님에게 보입니다. 송장번호가 없는 수단(직배·퀵·방문수령)에 적습니다.</span>
+        </td>
+        <th scope="row">내부메모</th>
+        <td>
+            <input type="text" name="od_delivery_admin_memo" value="{{ $order['od_delivery_admin_memo'] }}" class="frm_input" size="30" placeholder="예: 기사 박○○ 010-…">
+            <span class="txt_id">관리자만 봅니다.</span>
+            <button type="submit" class="btn_submit btn">배송 저장</button>
         </td>
     </tr>
     </tbody>
     </table>
 </div>
 </form>
+
+<script>
+// 한 건짜리 폼이라 칸을 감추지 않고 안 쓰는 쪽만 흐리게 둔다 — 어느 칸에 적어야 하는지
+// 보이는 편이 낫다. 실제 정리(한쪽 비우기)는 서버가 한다.
+$(function () {
+    function sync() {
+        var $sel = $('#adm_dc');
+        var picked = $sel.val() !== '';
+        var takes = $sel.find('option:selected').data('invoice') === 1;
+        $('#adm_invoice').prop('readonly', !picked || !takes)
+            .css('background', (picked && takes) ? '' : '#f2f2f2');
+        $('#adm_note').prop('readonly', !picked || takes)
+            .css('background', (picked && !takes) ? '' : '#f2f2f2');
+    }
+    sync();
+    $('#adm_dc').on('change', sync);
+});
+</script>
 
 <h2 class="h2_frm">주문 처리</h2>
 
