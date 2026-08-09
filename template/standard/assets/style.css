@@ -2645,13 +2645,8 @@ input[type=checkbox], input[type=radio] {
 /* 담긴 줄에도 재고를 적어 둔다 — 수량을 올릴 때 어디까지 되는지 알 수 있게 */
 .cart-pick-stock { font-size: var(--t-xs); font-weight: 600; color: var(--muted);
     font-variant-numeric: tabular-nums; }
-.cart-pick-qty { display: inline-flex; align-items: center; border: 1px solid var(--btn-line);
-    border-radius: var(--r2); overflow: hidden; }
-.cart-qty-btn { width: 34px; height: 32px; border: 0; background: transparent; cursor: pointer;
-    font-size: 1.1em; line-height: 1; color: var(--fg); }
-.cart-qty-btn:hover { background: var(--row-hover); }
-.cart-pick-qty input { width: 48px; height: 32px; border: 0; border-left: 1px solid var(--line);
-    border-right: 1px solid var(--line); text-align: center; background: transparent; }
+/* 상세의 고른 옵션 줄도 장바구니와 같은 .cart-qty 를 쓴다 — 규칙은 아래 '수량 조절' 한 곳에만
+   둔다. 예전에는 여기 따로 있어 두 화면의 수량칸이 크기도 테두리도 달랐다 */
 .cart-pick-price { min-width: 5em; text-align: right; font-weight: 700; }
 /* ✕ 아이콘 버튼 — 글자가 아니라 기호라서 밑줄을 긋지 않는다 */
 .cart-pick-del { display: inline-flex; align-items: center; justify-content: center;

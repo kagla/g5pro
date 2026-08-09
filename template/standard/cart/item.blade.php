@@ -653,9 +653,9 @@ $(function () {
                 .text(s.path.join(' / '))
                 .append($('<span class="cart-pick-stock"></span>').text('재고 ' + won(s.qty) + '개')));
             $li.append(
-                '<span class="cart-pick-qty">' +
+                '<span class="cart-qty" data-max="' + s.qty + '">' +
                 '<button type="button" class="cart-qty-btn" data-d="-1" aria-label="수량 줄이기">−</button>' +
-                '<input type="number" name="qty[]" value="1" min="1" max="' + Math.max(1, s.qty) + '">' +
+                '<input type="number" class="cart-qty-input" name="qty[]" value="1" min="1" max="' + Math.max(1, s.qty) + '">' +
                 '<button type="button" class="cart-qty-btn" data-d="1" aria-label="수량 늘리기">+</button>' +
                 '</span>' +
                 '<span class="cart-pick-price">' + won(s.price) + '원</span>' +
@@ -664,6 +664,7 @@ $(function () {
             // 방금 고른 조합이 맨 위 — 목록이 길어져도 손이 간 줄이 눈앞에 있다.
             // sk_id[]·qty[] 는 짝으로 읽히므로 순서가 바뀌어도 짝은 그대로다.
             $('#cart_picks').prepend($li);
+            paintQty($li.find('.cart-qty'));
             retotal();
         }
 
@@ -684,15 +685,37 @@ $(function () {
         if (done) settle();
     });
 
+    // 수량 한계 — 장바구니 화면과 같은 규칙이다. 재고에서 멈추고, 흐리게 칠하되 누를 수는 있게 두고
+    // (disabled 면 브라우저가 클릭을 안 넘겨줘 이유를 말할 기회가 없다), 왜 안 되는지는 누른 자리에 띄운다.
+    function limitMsg(max) {
+        return max > 0 ? '재고가 ' + won(max) + '개뿐이라 더 담을 수 없습니다'
+                       : '품절된 상품이라 더 담을 수 없습니다';
+    }
+    function paintQty($box) {
+        var max = parseInt($box.data('max'), 10) || 0,
+            v = parseInt($box.find('.cart-qty-input').val(), 10) || 1;
+        function mark($b, off) { $b.toggleClass('is-limit', off).attr('aria-disabled', off ? 'true' : 'false'); }
+        mark($box.find('[data-d="-1"]'), v <= 1);
+        mark($box.find('[data-d="1"]'), max > 0 && v >= max);
+    }
+
     $('#cart_picks').on('click', '.cart-qty-btn', function () {
-        var $q = $(this).siblings('input[name="qty[]"]'),
-            max = parseInt($q.attr('max'), 10),
-            next = (parseInt($q.val(), 10) || 1) + parseInt($(this).data('d'), 10);
-        $q.val(Math.min(max, Math.max(1, next)));
+        var $box = $(this).closest('.cart-qty'), $q = $box.find('.cart-qty-input'),
+            max = parseInt($box.data('max'), 10) || 0,
+            v = parseInt($q.val(), 10) || 1, d = parseInt($(this).data('d'), 10);
+
+        if (d > 0 && (max <= 0 || v >= max)) { g5Toast(limitMsg(max), { anchor: this }); return; }
+        if (d < 0 && v <= 1) { g5Toast('수량은 1개부터입니다. 빼시려면 ✕ 를 눌러 주세요', { anchor: this }); return; }
+        $q.val(v + d);
+        paintQty($box);
         retotal();
-    }).on('change input', 'input[name="qty[]"]', function () {
-        var max = parseInt($(this).attr('max'), 10);
-        $(this).val(Math.min(max, Math.max(1, parseInt($(this).val(), 10) || 1)));
+    }).on('change', '.cart-qty-input', function () {
+        var $box = $(this).closest('.cart-qty'),
+            max = parseInt($box.data('max'), 10) || 0,
+            v = Math.max(1, parseInt($(this).val(), 10) || 1);
+        if (max > 0 && v > max) { v = max; g5Toast(limitMsg(max), { anchor: this }); }
+        $(this).val(v);
+        paintQty($box);
         retotal();
     }).on('click', '.cart-pick-del', function () {
         $(this).closest('.cart-pick').remove();
