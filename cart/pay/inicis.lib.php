@@ -67,10 +67,15 @@ function cart_inicis_ready($od)
     );
 }
 
-// 관리자 환불(전체취소) — INIAPI refund. 결제창(signkey)과 별개의 INIAPI key 를 쓴다.
+// 관리자 환불 — INIAPI refund. 결제창(signkey)과 별개의 INIAPI key 를 쓴다.
 // INIpayTest 는 이니시스가 공개한 테스트 키·stg 엔드포인트 고정(순정 shop 과 같은 규칙).
 // 성공 시 빈 문자열, 실패 시 사유 문자열.
-function cart_inicis_refund($od, $tid, $reason)
+//
+// $part 가 배열이면 부분취소다: array('price' => 이번에 취소할 금액, 'confirm' => 취소 후 남을 금액).
+// 규격은 순정 shop/inicis/libs/inicis_youngcart_fn.php 의 inicis_tid_cancel() 을 그대로 따랐다 —
+// type 이 PartialRefund 로 바뀌고 price·confirmPrice 두 값이 요청과 해시에 함께 들어간다.
+// (해시 순서: key + type + paymethod + timestamp + clientIp + mid + tid + price + confirmPrice)
+function cart_inicis_refund($od, $tid, $reason, $part = null)
 {
     $conf = cart_inicis_conf();
     $cc = cart_config();
@@ -79,12 +84,13 @@ function cart_inicis_refund($od, $tid, $reason)
     if ($key === '') return '이니시스 INIAPI 키가 설정되지 않았습니다. 환경설정에서 등록하세요.';
     $url = $is_test ? 'https://stginiapi.inicis.com/api/v1/refund' : 'https://iniapi.inicis.com/api/v1/refund';
 
-    $type = 'Refund';
+    $is_part = is_array($part);
+    $type = $is_part ? 'PartialRefund' : 'Refund';
     $paymethod = 'Card';
     $timestamp = date('YmdHis', G5_SERVER_TIME);
     $client_ip = isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR'] : '127.0.0.1';
 
-    list($code, $res, $raw) = cart_http_post_form($url, array(
+    $body = array(
         'type' => $type,
         'paymethod' => $paymethod,
         'timestamp' => $timestamp,
@@ -92,8 +98,20 @@ function cart_inicis_refund($od, $tid, $reason)
         'mid' => $conf['mid'],
         'tid' => $tid,
         'msg' => mb_substr($reason, 0, 100, 'utf-8'),
-        'hashData' => hash('sha512', $key.$type.$paymethod.$timestamp.$client_ip.$conf['mid'].$tid),
-    ));
+    );
+    if ($is_part) {
+        $price = (int)$part['price'];
+        $confirm = (int)$part['confirm'];
+        $body['price'] = $price;
+        $body['confirmPrice'] = $confirm;
+        // 문자열로 이어 붙인다 — 숫자를 그대로 넣으면 PHP 판마다 표기가 달라져 해시가 어긋난다
+        $body['hashData'] = hash('sha512', $key.$type.$paymethod.$timestamp.$client_ip
+            .$conf['mid'].$tid.(string)$price.(string)$confirm);
+    } else {
+        $body['hashData'] = hash('sha512', $key.$type.$paymethod.$timestamp.$client_ip.$conf['mid'].$tid);
+    }
+
+    list($code, $res, $raw) = cart_http_post_form($url, $body);
 
     if ($code !== 200 || !is_array($res)) return '이니시스 환불 통신에 실패했습니다. (http '.$code.')';
     $rc = cart_pay_res($res, 'resultCode');
