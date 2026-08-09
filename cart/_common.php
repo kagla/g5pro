@@ -7,6 +7,7 @@ include_once(G5_CART_LIB_PATH.'/order.lib.php');
 include_once(G5_CART_LIB_PATH.'/cart.lib.php');
 include_once(G5_CART_LIB_PATH.'/wish.lib.php');
 include_once(G5_CART_LIB_PATH.'/return.lib.php');
+include_once(G5_CART_LIB_PATH.'/coupon.lib.php');
 include_once(G5_CART_LIB_PATH.'/pay.lib.php');
 
 // 프론트도 첫 접근이 설치를 대신하지 않게 — 미설치면 안내만 하고 끝낸다

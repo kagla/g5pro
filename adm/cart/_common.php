@@ -10,6 +10,7 @@ include_once(G5_CART_LIB_PATH.'/csv.lib.php');
 include_once(G5_CART_LIB_PATH.'/order.lib.php');
 include_once(G5_CART_LIB_PATH.'/cart.lib.php');
 include_once(G5_CART_LIB_PATH.'/return.lib.php');
+include_once(G5_CART_LIB_PATH.'/coupon.lib.php');
 include_once(G5_CART_LIB_PATH.'/pay.lib.php');
 
 if (function_exists('g5_check_data_htaccess')) {

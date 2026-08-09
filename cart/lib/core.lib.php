@@ -38,6 +38,8 @@ function cart_table_defaults()
         'ycart_address_table'    => 'ycart_address',
         'ycart_wish_table'       => 'ycart_wish',
         'ycart_return_table'     => 'ycart_return',
+        'ycart_coupon_table'     => 'ycart_coupon',
+        'ycart_coupon_mb_table'  => 'ycart_coupon_mb',
     );
     foreach ($tables as $key => $name) {
         if (!isset($g5[$key])) $g5[$key] = G5_TABLE_PREFIX.$name;
@@ -141,6 +143,10 @@ function cart_column_upgrades()
         // 발송 시각(od_shipped_at)으로 대신하면 배송이 오래 걸린 손님이 기한을 손해 본다.
         array('ycart_order_table', 'od_delivered_at',
             " ADD `od_delivered_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00' AFTER `od_shipped_at` "),
+        // 2026-08-09 쿠폰 — 깎인 금액은 od_coupon 에 이미 자리가 있고, "어느 장을 썼는지" 만 없었다.
+        // 취소·전체반품 때 그 장을 되살리려면 장을 가리켜야 한다(0 = 안 썼음).
+        array('ycart_order_table', 'od_cm_id',
+            " ADD `od_cm_id` int(11) NOT NULL DEFAULT '0' AFTER `od_coupon` "),
     );
 }
 
@@ -479,6 +485,46 @@ function cart_table_ddl()
         PRIMARY KEY (`rt_id`),
         KEY `od_id` (`od_id`, `rt_id`),
         KEY `live` (`rt_status`, `rt_id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
+    // 쿠폰 종류(정의). 발급 경로가 코드 입력·관리자 지급·가입·첫구매로 갈리지만
+    // 어느 길로 왔든 결과는 하나다 — 회원 쿠폰함에 한 장이 들어온다(ycart_coupon_mb).
+    // cp_target 은 '' 전체 / 'ca:분류코드' / 'it:상품id' 세 꼴만 쓴다.
+    'ycart_coupon_table' => " CREATE TABLE IF NOT EXISTS `{$g5['ycart_coupon_table']}` (
+        `cp_id` int(11) NOT NULL AUTO_INCREMENT,
+        `cp_name` varchar(100) NOT NULL DEFAULT '',
+        `cp_code` varchar(30) NOT NULL DEFAULT '',
+        `cp_issue` varchar(10) NOT NULL DEFAULT 'code',
+        `cp_type` varchar(10) NOT NULL DEFAULT 'rate',
+        `cp_value` int(11) NOT NULL DEFAULT '0',
+        `cp_max` int(11) NOT NULL DEFAULT '0',
+        `cp_min` int(11) NOT NULL DEFAULT '0',
+        `cp_target` varchar(40) NOT NULL DEFAULT '',
+        `cp_begin` date NOT NULL DEFAULT '1970-01-01',
+        `cp_end` date NOT NULL DEFAULT '1970-01-01',
+        `cp_days` smallint(6) NOT NULL DEFAULT '0',
+        `cp_use` tinyint(4) NOT NULL DEFAULT '1',
+        `cp_memo` varchar(255) NOT NULL DEFAULT '',
+        `cp_datetime` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+        PRIMARY KEY (`cp_id`),
+        KEY `code_live` (`cp_code`, `cp_use`),
+        KEY `issue_live` (`cp_issue`, `cp_use`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
+    // 회원이 손에 쥔 한 장. 보유와 사용을 한 행이 겸한다(cm_od_id = 0 이면 아직 안 씀).
+    // UNIQUE (cp_id, mb_id) 가 "한 쿠폰은 회원당 한 장" 을 DB 에서 지킨다 —
+    // 가입·첫구매 쿠폰을 화면에 들어올 때 지연 발급하는 방식이 이 제약 위에서만 안전하다.
+    'ycart_coupon_mb_table' => " CREATE TABLE IF NOT EXISTS `{$g5['ycart_coupon_mb_table']}` (
+        `cm_id` int(11) NOT NULL AUTO_INCREMENT,
+        `cp_id` int(11) NOT NULL DEFAULT '0',
+        `mb_id` varchar(20) NOT NULL DEFAULT '',
+        `cm_end` date NOT NULL DEFAULT '1970-01-01',
+        `cm_od_id` int(11) NOT NULL DEFAULT '0',
+        `cm_amount` int(11) NOT NULL DEFAULT '0',
+        `cm_issued_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+        `cm_used_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+        PRIMARY KEY (`cm_id`),
+        UNIQUE KEY `one_per_mb` (`cp_id`, `mb_id`),
+        KEY `mine` (`mb_id`, `cm_od_id`),
+        KEY `od_id` (`cm_od_id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
     );
 }
