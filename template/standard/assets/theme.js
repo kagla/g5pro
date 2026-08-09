@@ -696,68 +696,74 @@
             function () { location.href = a.href; });
     });
 })();
-
 // ── 토스트 ────────────────────────────────────────────────────
-// g5Toast('재고가 3개뿐입니다')  — 스스로 사라진다. 확인을 누를 필요가 없다.
-// alert() 은 스크립트를 멈추고 손을 쓰게 만든다. "알기만 하면 되는 말"에는 과하다.
-// 눌러서 먼저 없앨 수 있고, 같은 말이 연달아 오면 새로 쌓지 않고 시간만 늘린다
-// (+ 를 재고 끝에서 여러 번 눌러도 같은 쪽지가 줄줄이 쌓이지 않게).
+// g5Toast('저장했습니다')                        — 화면 아래 가운데(일반 알림)
+// g5Toast('재고가 9개뿐입니다', {anchor: btn})    — 누른 것 바로 위(그 자리에서 설명)
+//
+// alert() 은 스크립트를 멈추고 손을 쓰게 만든다. "알기만 하면 되는 말" 에는 과하다.
+// 아래 가운데는 일반적인 알림 자리지만, 누른 곳이 화면 위쪽이면 눈이 거기 있어서 못 본다 —
+// 무엇 때문에 나온 말인지 분명하면 그 곁에 붙인다.
+//
+// 규칙 둘:
+//  · **붙인 쪽지는 한 번에 하나** — 여러 줄에서 눌러 여기저기 쪽지가 남으면 화면이 지저분해지고
+//    서로 겹친다. 새로 띄울 때 앞의 것을 먼저 거둔다.
+//  · **타이머는 제 쪽지만 닫는다** — 예전에는 "가장 최근 쪽지" 를 닫게 해 두어, 그 사이 다른
+//    쪽지가 뜨면 먼저 것이 영영 안 사라졌다.
 (function () {
     if (!window.jQuery) return;
-    var $ = window.jQuery, $box = null, last = null;
+    var $ = window.jQuery, $box = null, shown = {};   // key -> {$t, timer}
 
-    function close($t) {
+    function close($t, key) {
+        if (key && shown[key]) { clearTimeout(shown[key].timer); delete shown[key]; }
         $t.addClass('is-out');
-        setTimeout(function () {
-            if (last && last.$t[0] === $t[0]) last = null;
-            $t.remove();
-        }, 180);
+        setTimeout(function () { $t.remove(); }, 180);
     }
 
-    // g5Toast('저장했습니다')                     — 화면 아래 가운데
-    // g5Toast('재고가 9개뿐입니다', {anchor: btn})  — **누른 것 바로 위**
-    //
-    // 아래 가운데는 일반적인 알림 자리지만, 누른 자리가 화면 위쪽이면 눈이 거기 있어서
-    // 아래에 뜬 쪽지를 못 본다. 무엇 때문에 나온 말인지 분명할 때는 그 옆에 붙인다.
+    function arm(key, $t, ms) {
+        // 타이머는 제 쪽지($t)만 닫는다 — 전역 상태를 보지 않는다
+        if (shown[key]) clearTimeout(shown[key].timer);
+        shown[key] = { $t: $t, timer: setTimeout(function () { close($t, key); }, ms) };
+    }
+
     window.g5Toast = function (message, opts) {
         if (typeof opts === 'number') opts = { ms: opts };
         opts = opts || {};
         var ms = opts.ms || 2600, anchor = opts.anchor ? $(opts.anchor) : null;
+        var anchored = !!(anchor && anchor.length);
+        var key = anchored ? 'anchored' : ('c:' + message);   // 붙인 쪽지는 자리를 하나만 쓴다
+
+        // 같은 쪽지가 이미 떠 있으면 새로 만들지 않고 시간만 늘린다
+        if (shown[key] && shown[key].$t.parent().length && shown[key].$t.data('msg') === message
+            && (!anchored || shown[key].$t.data('anchor') === anchor[0])) {
+            arm(key, shown[key].$t, ms);
+            return;
+        }
+        // 자리를 넘겨받는다 — 붙인 쪽지는 한 번에 하나뿐이라 앞의 것을 거둔다
+        if (shown[key]) close(shown[key].$t, key);
 
         var $t = $('<div class="g5-toast"></div>')
+            .data('msg', message)
             .append($('<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8.2v4.4M12 15.6h.01"/></svg>'))
             .append($('<span></span>').text(message));
 
-        if (anchor && anchor.length) {
-            // 같은 곳에서 같은 말이 또 나오면 새로 띄우지 않고 시간만 늘린다
-            var key = message + '@' + (anchor.attr('data-toast-key') || (anchor.attr('data-toast-key', 'k' + (+new Date())), anchor.attr('data-toast-key')));
-            if (last && last.msg === key && last.$t.parent().length) {
-                clearTimeout(last.timer);
-                last.timer = setTimeout(function () { close(last.$t); }, ms);
-                return;
-            }
-            $t.addClass('is-anchored').attr('role', 'status').appendTo('body');
-
+        if (anchored) {
+            $t.addClass('is-anchored').attr('role', 'status').data('anchor', anchor[0]).appendTo('body');
             var r = anchor[0].getBoundingClientRect(), w = $t.outerWidth(), h = $t.outerHeight(),
                 pad = 8, vw = document.documentElement.clientWidth;
-            var left = r.left + r.width / 2 - w / 2;
-            left = Math.max(pad, Math.min(left, vw - w - pad));      // 화면 밖으로 나가지 않게
+            var left = Math.max(pad, Math.min(r.left + r.width / 2 - w / 2, vw - w - pad));
             var top = r.top - h - 10;
-            if (top < pad) top = r.bottom + 10;                       // 위가 좁으면 아래로 뒤집는다
+            if (top < pad) top = r.bottom + 10;                 // 위가 좁으면 아래로 뒤집는다
             $t.css({ left: Math.round(left) + 'px', top: Math.round(top) + 'px' });
-
-            $t.on('click', function () { close($t); });
-            last = { msg: key, $t: $t, timer: setTimeout(function () { close($t); }, ms) };
-            return;
+            // 꼬리는 쪽지가 좌우로 밀렸어도 누른 것을 가리켜야 한다
+            var tail = Math.max(12, Math.min(r.left + r.width / 2 - left, w - 12));
+            $t.css('--tail', Math.round(tail) + 'px')
+              .toggleClass('is-below', top > r.top);
+        } else {
+            if (!$box) $box = $('<div class="g5-toasts" role="status" aria-live="polite"></div>').appendTo('body');
+            $t.appendTo($box);
         }
 
-        if (!$box) $box = $('<div class="g5-toasts" role="status" aria-live="polite"></div>').appendTo('body');
-        if (last && last.msg === message && last.$t.parent().length) {
-            clearTimeout(last.timer);
-            last.timer = setTimeout(function () { close(last.$t); }, ms);
-            return;
-        }
-        $t.appendTo($box).on('click', function () { close($t); });
-        last = { msg: message, $t: $t, timer: setTimeout(function () { close($t); }, ms) };
+        $t.on('click', function () { close($t, key); });
+        arm(key, $t, ms);
     };
 })();

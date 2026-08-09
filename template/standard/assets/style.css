@@ -3251,9 +3251,13 @@ body.cart-lb-lock { overflow: hidden; }
     position: fixed; z-index: 1300; max-width: min(300px, calc(100vw - 24px));
     animation: g5-toast-pin .14s cubic-bezier(.2, .8, .3, 1);
 }
+/* 꼬리 — 쪽지가 화면 안으로 밀렸어도 누른 것을 가리키게 JS 가 --tail 로 자리를 준다 */
 .g5-toast.is-anchored::after {
-    content: ""; position: absolute; left: 50%; bottom: -5px; transform: translateX(-50%) rotate(45deg);
+    content: ""; position: absolute; left: var(--tail, 50%); bottom: -5px;
+    transform: translateX(-50%) rotate(45deg);
     width: 10px; height: 10px; background: inherit;
 }
+/* 위가 좁아 아래로 뒤집힌 쪽지는 꼬리도 위를 향한다 */
+.g5-toast.is-anchored.is-below::after { bottom: auto; top: -5px; }
 @media (prefers-reduced-motion: reduce) { .g5-toast.is-anchored { animation: none; } }
 @keyframes g5-toast-pin { from { opacity: 0; transform: translateY(4px); } }
