@@ -22,9 +22,11 @@ $total_page = max(1, (int)ceil($total / $rows_per));
 if ($page > $total_page) $page = $total_page;
 $offset = ($page - 1) * $rows_per;
 
+// 최근 주문이 위로 — 방금 들어온 것을 먼저 보내게 된다. 오래된 것부터 처리하려면
+// 오름차순이 맞지만, 밀린 주문이 쌓이면 오늘 것이 몇 페이지 뒤로 밀려 안 보인다.
 $orders = array();
 $result = sql_query(" select * from `{$g5['ycart_order_table']}`
-    where $where order by od_id asc limit $offset, $rows_per ");
+    where $where order by od_id desc limit $offset, $rows_per ");
 while ($r = sql_fetch_array($result)) {
     $first = sql_fetch(" select min(oi_name) as oi_name, count(*) as cnt
         from `{$g5['ycart_order_item_table']}` where od_id = '".(int)$r['od_id']."' group by od_id ");
