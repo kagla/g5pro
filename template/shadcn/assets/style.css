@@ -3010,10 +3010,19 @@ body.cart-lb-lock { overflow: hidden; }
 .cart-cart { display: flex; flex-direction: column; gap: var(--s4); margin-bottom: var(--s5); }
 .cart-cart-row {
     display: flex; gap: var(--s4); align-items: center;
-    padding: var(--s4); border: 1px solid var(--line); border-radius: 14px;
+    padding: var(--s4); border: 1px solid var(--line); border-radius: var(--r-xl);
 }
+/* 주문서 안에서는 줄이 테두리를 두르지 않는다 — 바깥 카드(.cart-co-sec)가 이미 상자라
+   두 겹이 겹쳐 답답해진다. 줄 사이는 선 하나로 충분하다 */
+.cart-co-sec .cart-cart { gap: 0; margin-bottom: 0; }
+.cart-co-sec .cart-cart-row {
+    border: 0; border-radius: 0; border-top: 1px solid var(--line);
+    padding: var(--s4) 0;
+}
+.cart-co-sec .cart-cart-row:first-child { border-top: 0; padding-top: 0; }
+.cart-co-sec .cart-cart-row:last-child { padding-bottom: 0; }
 .cart-cart-row.is-blocked { opacity: .55; }
-.cart-cart-thumb { flex: none; width: 84px; height: 84px; border-radius: 10px; overflow: hidden; background: var(--bg); }
+.cart-cart-thumb { flex: none; width: 84px; height: 84px; border-radius: var(--r-md); overflow: hidden; background: var(--row-hover); }
 .cart-cart-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .cart-cart-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .cart-cart-name { font-size: var(--t-md); font-weight: 600; }
@@ -3035,12 +3044,15 @@ body.cart-lb-lock { overflow: hidden; }
 .cart-cart-line { font-weight: 800; min-width: 90px; text-align: right; }
 
 .cart-cart-sum {
-    border: 1px solid var(--line); border-radius: 14px; padding: var(--s5);
+    border: 1px solid var(--line); border-radius: var(--r-xl); padding: var(--s5);
     display: flex; align-items: center; justify-content: space-between; gap: var(--s4); flex-wrap: wrap;
 }
-.cart-cart-sum dl { display: flex; gap: var(--s5); margin: 0; }
+.cart-cart-sum dl { display: flex; align-items: baseline; gap: var(--s5); margin: 0; flex-wrap: wrap; }
 .cart-cart-sum dt { font-size: var(--t-sm); color: var(--muted); }
-.cart-cart-sum dd { font-weight: 800; margin: 0; }
+.cart-cart-sum dd { font-weight: 700; margin: 0; font-variant-numeric: tabular-nums; }
+/* 마지막 값이 실제로 낼 돈이다 — 앞의 상품합계·배송비와 같은 크기면 눈이 그냥 지나간다.
+   금액만 키우고 딸린 이름표는 그대로 둬서, 큰 숫자 하나가 줄의 결론이 되게 한다 */
+.cart-cart-sum dd:last-of-type { font-size: var(--t-xl); font-weight: 800; letter-spacing: -.02em; }
 
 @media (max-width: 640px) {
     .cart-cart-row { flex-wrap: wrap; }
