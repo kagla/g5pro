@@ -507,13 +507,14 @@ function cart_order_transition($od_id, $action, $who = 'admin', $memo = '')
     return $fail;
 }
 
-// 주문 한 건의 상태 변경 이력 — 오래된 것부터. 관리자 주문상세가 표로 보여 준다.
+// 주문 한 건의 상태 변경 이력 — 최근 것부터. 관리자 주문상세가 표로 보여 준다.
+// 방금 무엇을 눌렀는지가 가장 자주 찾는 정보라 맨 위에 둔다(배송관리 목록과 같은 방향).
 function cart_order_log_rows($od_id)
 {
     global $g5;
     $rows = array();
     $result = sql_query(" select * from `{$g5['ycart_order_log_table']}`
-        where od_id = '".(int)$od_id."' order by ol_id ");
+        where od_id = '".(int)$od_id."' order by ol_id desc ");
     while ($r = sql_fetch_array($result)) {
         $r['action_label'] = cart_order_action_label($r['ol_action']);
         // 누가 눌렀나 — 시스템·손님은 그렇게 적고, 나머지는 관리자 아이디 그대로
