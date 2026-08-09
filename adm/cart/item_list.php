@@ -43,6 +43,16 @@ while ($r = sql_fetch_array($result)) {
     $items[] = $r;
 }
 
+// 목록 썸네일 — 대표 사진 한 장씩, 한 방에 읽는다(행마다 묻던 것을 없앤다).
+// 56x46 칸에 원본을 내려보내면 20행짜리 목록 하나가 수십 MB 가 된다.
+// 자르지 않고 맞추는 쪽($crop=false)이라 지금처럼 사진 전체가 보인다 — 순정 thumbnail() 이
+// 채우는 흰 여백은 칸 배경이 흰색이라 묻힌다. 크기는 칸의 2배(고해상도 화면 대비).
+$main_images = cart_item_main_images(array_map(function ($r) { return (int)$r['it_id']; }, $items));
+foreach ($items as $i => $r) {
+    $file = isset($main_images[(int)$r['it_id']]) ? $main_images[(int)$r['it_id']] : '';
+    $items[$i]['thumb_url'] = $file !== '' ? cart_item_thumb_url($file, 112, 92, false) : '';
+}
+
 cadm_view('item_list', array(
     'items' => $items,
     'q' => $q,
