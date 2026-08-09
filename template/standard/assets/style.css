@@ -940,6 +940,28 @@ a.view_image:hover::after, a.view_image:focus-visible::after { opacity: 1; }
 .file-now:has(.file-del input:checked) .file-del { color: var(--danger); font-weight: 700; }
 .field-inline { display: flex; gap: var(--s4); flex-wrap: wrap; font-size: var(--t-sm); }
 
+/* 비밀번호 눈 — 칸 오른쪽 안에 앉는다. 감싸개를 블록으로 두어 원래의 100% 폭을 지키고,
+   글자가 아이콘 밑으로 들어가지 않게 그만큼 오른쪽 여백을 준다.
+   동작은 theme.js 가 .pw-wrap 단위로 맡는다 — 다른 화면도 이 두 조각만 그대로 옮기면 된다. */
+.pw-wrap { position: relative; display: block; }
+.pw-wrap > input { width: 100%; padding-right: 42px; }
+.pw-eye {
+    position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+    display: flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; padding: 0; cursor: pointer;
+    background: none; border: 0; border-radius: var(--r-full); color: var(--muted);
+    transition: color .15s ease, background .15s ease;
+}
+.pw-eye:hover { color: var(--fg); background: var(--bg); }
+.pw-eye:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.pw-eye-i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8;
+    stroke-linecap: round; stroke-linejoin: round; }
+/* 가려진 상태에서는 '보기(눈)' 를, 드러난 상태에서는 '숨기기(눈 가림)' 를 보여 준다 */
+.pw-eye .pw-eye-hide { display: none; }
+.pw-eye.is-on .pw-eye-show { display: none; }
+.pw-eye.is-on .pw-eye-hide { display: block; }
+.pw-eye.is-on { color: var(--accent); }
+
 .member-box { max-width: 420px; margin: var(--s5) auto; display: flex; flex-direction: column; gap: var(--s4); }
 .member-box.wide { max-width: 680px; }
 .member-box.center {
@@ -2570,8 +2592,18 @@ input[type=checkbox], input[type=radio] {
     box-shadow: 0 0 0 3px rgba(46, 124, 246, .2); }
 @media (prefers-reduced-motion: reduce) { .cart-pick-del { transition: none; } }
 .cart-picks-empty { margin: 0 0 var(--s3); color: var(--muted); font-size: .95em; }
+/* 고른 것 합계 — 개수와 금액은 한 값이므로 붙여 두되 사이는 벌린다.
+   붙여만 두면 "총 1개111원" 으로 읽히고, 양 끝으로 벌리면 눈이 상자를 가로질러야 해
+   한 덩어리로 안 읽힌다. 둘 다 오른쪽에 모으고 사이만 12px — 금액이 상자 끝선에 맞아
+   (돈은 오른쪽 정렬이 관례) 개수는 그 앞에 붙는 꼬리말이 된다.
+   금액은 결정을 좌우하는 값이라 한 급 크게 둔다 */
 .cart-picks-total { margin: 0 0 var(--s4); padding: var(--s3) var(--s4); border-radius: var(--r2);
-    background: var(--bg); border: 1px solid var(--line); font-weight: 800; text-align: right; }
+    background: var(--bg); border: 1px solid var(--line);
+    display: flex; align-items: baseline; justify-content: flex-end; gap: var(--s3);
+    font-size: var(--t-md); font-weight: 700; }
+.cart-picks-total > span { color: var(--muted); font-variant-numeric: tabular-nums; }
+.cart-total-sum { font-size: var(--t-xl); font-weight: 800; color: var(--fg);
+    font-variant-numeric: tabular-nums; }
 
 /* ── 상세 아래 탭(상세정보·리뷰·문의·판매자정보·추천) ── */
 /* 가로로만 스크롤한다 — overflow-x 만 주면 overflow-y 의 visible 이 auto 로 계산돼
@@ -2606,21 +2638,151 @@ input[type=checkbox], input[type=radio] {
     aspect-ratio: 1 / 1; border-radius: var(--r-xl); background: var(--bg);
     display: flex; align-items: center; justify-content: center; color: var(--muted);
 }
-/* 썸네일 줄 — 한 줄로 두고 넘치면 옆으로 민다. 줄바꿈으로 쌓으면 사진이 열 장만 돼도
-   화면 한 판을 잡아먹는다. overflow-x 만 주면 세로 스크롤바가 따라붙으므로
+/* 썸네일 줄 — 한 줄로 두고 넘치면 좌우 화살표로 민다. 줄바꿈으로 쌓으면 사진이 열 장만
+   돼도 화면 한 판을 잡아먹는다. overflow-x 만 주면 세로 스크롤바가 따라붙으므로
    (이 파일 위쪽 .shop-tabs 와 같은 함정) overflow-y 를 눌러 둔다 */
-.shop-item-thumbs {
-    display: flex; gap: var(--s2); margin-top: var(--s3); flex-wrap: nowrap;
-    overflow-x: auto; overflow-y: hidden; padding: 2px 2px var(--s2);
-    scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+.shop-thumbnav { display: flex; align-items: center; gap: var(--s2); margin-top: var(--s3); }
+.shop-thumbnav-btn {
+    flex: none; width: 30px; height: 30px; padding: 0; border-radius: 50%;
+    border: 1px solid var(--btn-line); background: var(--card); color: var(--fg);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    box-shadow: var(--sh-sm); transition: border-color .15s, color .15s, opacity .15s;
 }
+.shop-thumbnav-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor;
+    stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.shop-thumbnav-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.shop-thumbnav-btn:disabled { opacity: .3; cursor: default; box-shadow: none; }
+/* 사진이 몇 장 없어 밀 것이 없으면 화살표를 아예 두지 않는다 */
+.shop-thumbnav.is-static .shop-thumbnav-btn { display: none; }
+.shop-item-thumbs {
+    flex: 1; min-width: 0;
+    display: flex; gap: var(--s2); flex-wrap: nowrap;
+    overflow-x: auto; overflow-y: hidden; padding: 2px;
+    /* scroll-snap 은 넣지 않는다 — 화살표가 미는 동안 브라우저가 가까운 칸으로 도로
+       끌어당겨 제자리에 머문다(실제로 한 칸도 안 움직였다).
+       화살표는 값만 바꾸고, 부드럽게 미끄러지는 일은 여기서 브라우저가 맡는다 */
+    scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
+    /* 화살표가 있으니 스크롤바는 감춘다(손가락·휠로 미는 것은 그대로 된다) */
+    scrollbar-width: none; -ms-overflow-style: none;
+}
+.shop-item-thumbs::-webkit-scrollbar { display: none; }
+@media (prefers-reduced-motion: reduce) { .shop-item-thumbs { scroll-behavior: auto; } }
 .shop-item-thumbs img {
     flex: none; width: 64px; height: 64px; object-fit: cover; border-radius: var(--r-md);
-    cursor: pointer; box-shadow: var(--sh-sm); scroll-snap-align: start;
+    cursor: pointer; box-shadow: var(--sh-sm);
     border: 2px solid transparent; background: var(--bg);
 }
 /* 지금 큰 자리에 걸린 사진 — 어느 장을 보고 있는지 표시한다 */
 .shop-item-thumbs img.is-on { border-color: var(--accent); }
+/* 큰 사진 — 눌러서 확대해 볼 수 있음을 커서·살짝 뜨는 움직임으로 알린다 */
+#cart_main_img.is-zoomable { cursor: zoom-in; transition: transform .18s ease, box-shadow .18s ease; }
+#cart_main_img.is-zoomable:hover { transform: translateY(-2px); box-shadow: var(--sh-md); }
+#cart_main_img.is-zoomable:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+/* ── 확대해 보기(라이트박스) ── 화면을 덮고 원본을 보여 준다.
+   바탕은 늘 어둡게 둔다 — 사진을 볼 때만큼은 밝은 테마에서도 사진에 눈이 가야 한다. */
+.cart-lb {
+    position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column;
+    background: rgba(9, 13, 20, .92); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    opacity: 0; transition: opacity .2s ease;
+}
+.cart-lb.is-open { opacity: 1; }
+.cart-lb[hidden] { display: none; }
+/* 위 줄 — 몇 번째 장인지와 닫기 */
+.cart-lb-bar {
+    flex: none; display: flex; align-items: center; justify-content: space-between;
+    padding: var(--s3) var(--s4); color: #fff;
+}
+.cart-lb-count { font-size: var(--t-sm); font-weight: 600; opacity: .85; letter-spacing: .02em; }
+.cart-lb-x {
+    width: 40px; height: 40px; font-size: 26px; line-height: 1; color: #fff; cursor: pointer;
+    background: rgba(255, 255, 255, .1); border: 0; border-radius: var(--r-full);
+    transition: background .15s ease;
+}
+.cart-lb-x:hover { background: rgba(255, 255, 255, .22); }
+/* 사진 자리 — 남는 공간을 다 쓰고, 사진은 그 안에 통째로 들어간다(잘리지 않게 contain) */
+.cart-lb-stage {
+    flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center;
+    padding: 0 var(--s4); overflow: hidden;
+}
+.cart-lb-stage img {
+    max-width: 100%; max-height: 100%; object-fit: contain; display: block;
+    border-radius: var(--r-md); cursor: zoom-in;
+    /* 확대·이동은 JS 가 transform 으로 준다. 손가락 조작을 우리가 직접 다루므로
+       브라우저 기본 제스처(스크롤·핀치)는 꺼 둔다 — 안 그러면 둘이 서로 밀친다 */
+    touch-action: none; -webkit-user-select: none; user-select: none;
+    will-change: transform;
+}
+/* 버튼·두 번 누르기처럼 단번에 바뀔 때만 부드럽게. 끌거나 휠을 굴리는 동안에는
+   전환을 걸지 않는다 — 손을 따라오지 않고 뒤늦게 미끄러진다 */
+.cart-lb-stage img.is-anim { transition: transform .2s ease; }
+.cart-lb-stage img.is-zoom { cursor: grab; }
+.cart-lb-stage img.is-grabbing { cursor: grabbing; }
+/* 확대 중에는 바깥을 눌러 닫기 쉽도록 사진 밖 여백을 넉넉히 둔다 */
+.cart-lb.is-zoomed .cart-lb-stage { padding: 0; }
+
+/* 배율 조절 — 모바일에서는 손가락 벌리기 말고도 눌러서 키울 수단이 필요하다 */
+.cart-lb-tools { display: flex; align-items: center; gap: var(--s1); }
+.cart-lb-tool, .cart-lb-pct {
+    height: 34px; color: #fff; cursor: pointer; border: 0;
+    background: rgba(255, 255, 255, .1); border-radius: var(--r-full);
+    transition: background .15s ease;
+}
+.cart-lb-tool { width: 34px; font-size: 20px; line-height: 1; }
+.cart-lb-pct { min-width: 62px; padding: 0 var(--s2); font-size: var(--t-xs); font-weight: 700; }
+.cart-lb-tool:hover, .cart-lb-pct:hover { background: rgba(255, 255, 255, .22); }
+/* 조작 안내 — 잠깐 보여 주고 스스로 사라진다 */
+.cart-lb-hint {
+    flex: none; margin: 0; padding: 0 var(--s4) var(--s2); text-align: center;
+    font-size: var(--t-xs); color: rgba(255, 255, 255, .7);
+    transition: opacity .4s ease;
+}
+.cart-lb-hint.is-gone { opacity: 0; }
+/* 좌우 넘기기 — 사진 위가 아니라 화면 가장자리에 둔다(사진을 가리지 않게) */
+.cart-lb-nav {
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 1;
+    width: 48px; height: 48px; font-size: 30px; line-height: 44px; color: #fff; cursor: pointer;
+    background: rgba(255, 255, 255, .1); border: 0; border-radius: var(--r-full);
+    transition: background .15s ease;
+}
+.cart-lb-nav:hover { background: rgba(255, 255, 255, .22); }
+.cart-lb-prev { left: var(--s3); }
+.cart-lb-next { right: var(--s3); }
+/* 아래 썸네일 줄 — 지금 보는 장을 표시하고, 바로 건너뛸 수 있게 */
+.cart-lb-thumbs {
+    flex: none; display: flex; gap: var(--s2); justify-content: center; flex-wrap: nowrap;
+    padding: var(--s3) var(--s4) var(--s4); overflow-x: auto; overflow-y: hidden;
+}
+.cart-lb-thumbs img {
+    flex: none; width: 56px; height: 56px; object-fit: cover; border-radius: var(--r-md);
+    cursor: pointer; opacity: .5; border: 2px solid transparent; background: #000;
+    transition: opacity .15s ease, border-color .15s ease;
+}
+.cart-lb-thumbs img:hover { opacity: .85; }
+.cart-lb-thumbs img.is-on { opacity: 1; border-color: #fff; }
+/* 덮개가 떠 있는 동안 뒤 문서가 함께 스크롤되지 않게 */
+body.cart-lb-lock { overflow: hidden; }
+
+/* 좁은 화면 — 사진에 자리를 최대한 내준다. 넘기기 화살표는 손가락으로 밀면 되므로 감추고,
+   썸네일 줄도 줄여 사진이 세로로 더 크게 들어가게 한다 */
+@media (max-width: 640px) {
+    .cart-lb-bar { padding: var(--s2) var(--s3); }
+    .cart-lb-x { width: 36px; height: 36px; font-size: 23px; }
+    .cart-lb-tool { width: 32px; height: 32px; }
+    .cart-lb-pct { height: 32px; min-width: 56px; }
+    .cart-lb-nav { display: none; }
+    .cart-lb-stage { padding: 0 var(--s2); }
+    .cart-lb-thumbs { padding: var(--s2) var(--s3) var(--s3); }
+    .cart-lb-thumbs img { width: 40px; height: 40px; }
+    /* 확대해서 보는 중에는 썸네일 줄까지 접어 사진에 화면을 다 준다 */
+    .cart-lb.is-zoomed .cart-lb-thumbs, .cart-lb.is-zoomed .cart-lb-hint { display: none; }
+}
+/* 움직임을 줄여 달라는 설정이면 전환만 끈다(확대·이동 자체는 그대로 동작해야 한다) */
+@media (prefers-reduced-motion: reduce) {
+    .cart-lb, .cart-lb-stage img.is-anim, #cart_main_img.is-zoomable { transition: none; }
+    #cart_main_img.is-zoomable:hover { transform: none; }
+}
+
 .shop-item-info { flex: 1 1 320px; min-width: 280px; }
 .shop-item-info .shop-price { margin: 0 0 var(--s4); font-size: var(--t-2xl); }
 .shop-sku-table { width: 100%; border-collapse: collapse; margin-bottom: var(--s4); }
@@ -2722,6 +2884,77 @@ input[type=checkbox], input[type=radio] {
 .cart-buy-label input[type=number] { width: 90px; padding: var(--s2); text-align: right; }
 .cart-buy-btns { display: flex; gap: var(--s3); }
 .cart-buy-btns .cart-cta { flex: 1; }
+/* 구매 폼이 없는(품절) 상품에서 하트만 있는 줄 — 폼의 margin-top 을 대신 받는다 */
+.cart-buy-btns-alone { margin-top: var(--s4); }
+
+/* ── 찜 하트 — 바로구매 오른쪽. 사는 버튼과 색을 나눠 쓴다(파랑=산다, 빨강=담아 둔다).
+   flex:none 이라 장바구니·바로구매가 나눠 갖는 폭을 빼앗지 않는다. 채운 하트가 "찜함" 이다 ── */
+.wish-btn {
+    flex: none; display: flex; align-items: center; gap: var(--s2);
+    padding: var(--s3) var(--s4); border: 1px solid var(--btn-line); border-radius: 10px;
+    background: var(--card); color: var(--muted);
+    font-size: var(--t-sm); font-weight: 700; line-height: 1; cursor: pointer;
+    transition: color .15s, border-color .15s;
+}
+.wish-btn svg {
+    width: 19px; height: 19px; fill: none; stroke: currentColor;
+    stroke-width: 1.8; stroke-linejoin: round;
+}
+.wish-btn:hover { color: #E5484D; border-color: #E5484D; }
+.wish-btn.is-on { color: #E5484D; border-color: #E5484D; }
+.wish-btn.is-on svg { fill: currentColor; }
+.wish-btn-n { font-variant-numeric: tabular-nums; opacity: .75; }
+/* 좁은 화면에서는 글자를 접고 하트만 남긴다 — 세 버튼이 한 줄에 들어가야 구매 흐름이 안 끊긴다 */
+@media (max-width: 420px) {
+    .wish-btn-label { display: none; }
+}
+
+/* ── 반품 ── */
+/* 주문 상품 줄에 붙는 상태 딱지 — 3개 중 1개만 반품된 주문이 그렇게 읽히도록 줄마다 단다 */
+.cart-oi-flag {
+    display: inline-block; margin-left: var(--s2); padding: 1px var(--s2);
+    border-radius: 999px; background: var(--accent-soft); color: var(--accent);
+    font-size: var(--t-xs); font-weight: 700; vertical-align: middle;
+}
+.cart-return-row { padding: var(--s3) 0; border-top: 1px solid var(--line); }
+.cart-return-row:first-of-type { border-top: 0; }
+.cart-return-head {
+    display: flex; align-items: baseline; gap: var(--s3); flex-wrap: wrap;
+    margin: 0 0 var(--s2); font-size: var(--t-sm); color: var(--muted);
+}
+.cart-return-head b { color: var(--fg); font-size: var(--t-md); }
+/* 반품할 품목 고르기 — 글자만이 아니라 줄 전체가 눌리게 label 로 감싼다 */
+.cart-return-pick { margin: var(--s3) 0; }
+.cart-return-pick li { border-top: 1px solid var(--line); }
+.cart-return-pick label {
+    display: flex; align-items: center; gap: var(--s3); padding: var(--s3) 0;
+    cursor: pointer; font-size: var(--t-sm);
+}
+.cart-return-pick label span { flex: 1; min-width: 0; }
+.cart-return-pick label em { font-style: normal; font-weight: 700; font-variant-numeric: tabular-nums; }
+.cart-return-field {
+    display: flex; align-items: center; gap: var(--s3);
+    margin-bottom: var(--s3); font-size: var(--t-sm); font-weight: 600;
+}
+.cart-return-field input { flex: 1; min-width: 0; padding: var(--s2); }
+
+/* 찜한 일시 — 가격 아래 한 줄. 카드에서 가장 약한 정보라 제일 작고 흐리게 둔다 */
+.wish-date {
+    display: block; margin-top: var(--s1);
+    font-size: var(--t-xs); color: var(--muted); font-variant-numeric: tabular-nums;
+}
+
+/* 찜 목록 카드의 빼기 — 카드 링크 위에 얹는다(형제 요소라 링크와 눌림이 겹치지 않는다) */
+.wish-card { position: relative; }
+.wish-del {
+    position: absolute; top: var(--s2); right: var(--s2); z-index: 1;
+    width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    background: rgba(255,255,255,.9); color: #E5484D; box-shadow: var(--sh-sm);
+}
+.wish-del svg { width: 17px; height: 17px; fill: currentColor; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; }
+.wish-del:hover { background: #fff; }
+.wish-del:disabled { opacity: .5; cursor: default; }
 
 /* 주문 단계로 못 넘어가는 이유 — 버튼 바로 위에 한 줄로. 상자를 치지 않는다(줄 안내와 같은 톤).
    클래스 이름을 .cart-cart-warn 과 다르게 둔다 — 그 이름은 장바구니 줄 안내가 이미 쓰고 있어
@@ -2815,3 +3048,4 @@ input[type=checkbox], input[type=radio] {
 .cart-home-links { display: flex; gap: var(--s4); justify-content: center; margin-bottom: var(--s4); font-size: var(--t-sm); font-weight: 700; }
 .cart-home-links a { color: var(--muted); }
 .cart-home-links a:hover { color: #35C5F0; }
+.cart-home-links b { color: #35C5F0; }
