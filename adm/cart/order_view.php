@@ -25,6 +25,25 @@ while ($r = sql_fetch_array($result)) {
     $payments[] = $r;
 }
 
+// 주문 상품 → 상품 수정 화면 바로가기.
+// 주문서는 스냅샷(oi_name·oi_price)이라 상품 행이 없어도 읽힌다 — 판매 이력이 있으면
+// cart_item_delete 가 삭제를 막지만 옛 자료·수동 삭제는 있을 수 있다. 그래서 살아 있는
+// 상품만 링크한다(없는 상품으로 보내면 수정 화면이 '없는 상품입니다' 로 튕긴다).
+// 존재 확인은 행마다 묻지 않고 한 방에 — 주문 한 건에 상품이 여럿이다.
+$items = cart_order_items($od_id);
+$alive = array();
+$it_ids = array_filter(array_map(function ($r) { return (int)$r['it_id']; }, $items));
+if ($it_ids) {
+    $res = sql_query(" select it_id from `{$g5['ycart_item_table']}`
+        where it_id in (".implode(',', array_unique($it_ids)).") ");
+    while ($r = sql_fetch_array($res)) $alive[(int)$r['it_id']] = true;
+}
+foreach ($items as $i => $r) {
+    $iid = (int)$r['it_id'];
+    $items[$i]['edit_url'] = isset($alive[$iid])
+        ? G5_CART_ADMIN_URL.'/item_form.php?w=u&it_id='.$iid : '';
+}
+
 // 이 상태에서 가능한 처리 — 라이브러리 화이트리스트(cart_order_transition)와 같은 규칙만 노출
 $actions = array();
 $s = $order['od_status'];
@@ -32,14 +51,29 @@ if ($s === 'unpaid' && $order['od_pay_method'] === 'bank') $actions['deposit'] =
 if ($s === 'paid') $actions['preparing'] = '배송준비로';
 if ($s === 'paid' || $s === 'preparing') $actions['shipping'] = '배송중으로 (발송)';
 if ($s === 'shipping') $actions['delivered'] = '배송완료로';
+// 구매확정은 원래 고객이 누르는 것이지만, 안 누르고 넘어가는 주문이 대부분이라
+// 관리자도 대신 찍을 수 있게 둔다(전화로 "잘 받았다" 는 확인을 받은 경우 등)
+if ($s === 'delivered') $actions['confirm'] = '구매확정으로';
 
 // 취소는 별도 흐름 — 모달에서 사유·관리자 비밀번호를 받고, PG 결제는 자동 환불까지 나간다
 $can_cancel = in_array($s, array('unpaid', 'paid', 'preparing'), true);
 $pg_paid = ($order['od_pay_method'] !== 'bank' && in_array($s, array('paid', 'preparing'), true));
 
+// 반품 — 처리 대기 신청이 있으면 상세 위에 카드로 띄운다. 환불 기본값은 신청 품목 합계지만
+// 최종 금액은 관리자가 정한다(왕복 배송비 공제 같은 실무 변수를 사람이 흡수한다).
+$returns = cart_return_rows($od_id);
+foreach ($returns as $i => $rt) {
+    $returns[$i]['item_total'] = cart_return_item_total($rt);
+    $returns[$i]['status_label'] = cart_return_status_label($rt['rt_status']);
+}
+$refundable = cart_return_refundable($order);
+
 cadm_view('order_view', array(
     'order' => $order,
-    'items' => cart_order_items($od_id),
+    'items' => $items,
+    'returns' => $returns,
+    'refundable' => $refundable,
+    'is_bank' => ($order['od_pay_method'] === 'bank'),
     'status_label' => cart_order_status_label($order['od_status'], $order['od_pay_method']),
     'payments' => $payments,
     'actions' => $actions,
