@@ -296,7 +296,7 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 }
 .area-link {
     display: inline-flex; align-items: center; justify-content: center; flex: none;
-    width: 38px; height: 38px; border-radius: calc(var(--r-btn) - 2px);
+    width: 32px; height: 32px; border-radius: calc(var(--r-btn) - 2px);
     color: var(--muted);
 }
 .area-link:hover { color: var(--fg); }
@@ -493,7 +493,8 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 
 /* ── 본문·푸터 ── */
 .site-main { padding: var(--s5) var(--s5) var(--s7); min-height: 60vh; }
-.site-footer { color: var(--muted); font-size: var(--t-sm); }
+/* 본문과 갈라 주는 선 하나 — 그림자를 안 쓰는 템플릿이라 경계는 선이 맡는다 */
+.site-footer { color: var(--muted); font-size: var(--t-sm); border-top: 1px solid var(--line); margin-top: var(--s7); }
 .site-footer .wrap { padding: var(--s5); text-align: left; }
 .site-footer p { margin: 0; }
 
@@ -555,15 +556,20 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .hero h2 { font-size: var(--t-2xl); letter-spacing: -.025em; margin-bottom: var(--s2); }
 .hero p { margin: 0; font-size: var(--t-md); color: var(--muted); }
 .hero-stats {
-    display: flex; gap: var(--s6); margin-top: var(--s4);
+    display: flex; gap: var(--s7); margin-top: var(--s5);
     font-variant-numeric: tabular-nums;
 }
 .hero-stats > div { display: flex; flex-direction: column; }
-.hero-stats b { font-size: var(--t-xl); font-weight: 700; letter-spacing: -.02em; }
+.hero-stats b { font-size: var(--t-2xl); font-weight: 700; letter-spacing: -.03em; line-height: 1.2; }
 .hero-stats span { font-size: var(--t-xs); color: var(--muted); }
 
 /* 카드 그리드 (L1) */
-.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--s4); }
+/* 카드는 제 내용만큼만 차지한다 — 격자 기본값(stretch)에 두면 글이 하나뿐인 공지 카드가
+   옆 카드 키에 맞춰 늘어나 큰 빈칸이 생긴다. 아랫단이 들쭉날쭉해도 그게 정직하다 */
+.card-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--s4); align-items: start;
+}
 .card {
     background: var(--card); border-radius: var(--r-xl);
     padding: var(--s4) var(--s5); box-shadow: var(--sh-md);
@@ -572,10 +578,15 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
     display: flex; align-items: center; gap: var(--s2);
     font-size: var(--t-md); margin-bottom: var(--s3);
 }
+/* 줄마다 옅은 선 — 없으면 다섯 줄이 한 덩어리로 뭉쳐 어디까지가 한 글인지 안 읽힌다 */
 .card li {
     display: flex; align-items: center; gap: var(--s2);
-    padding: 6.5px 0; font-size: var(--t-base);
+    padding: 8px 0; font-size: var(--t-base); border-top: 1px solid var(--line);
 }
+.card li:first-child { border-top: 0; padding-top: 2px; }
+/* 선은 "글 목록" 에만 — 설문 보기·접속자 칩은 목록이 아니라 폼과 요약이라 선을 그으면
+   고를 수 있는 항목이 표의 행처럼 읽힌다 */
+.poll-card li, .connect-card li { border-top: 0; padding: 5px 0; }
 .card li > a { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .card li .n { margin-left: auto; }
 .card li .muted { font-size: var(--t-xs); white-space: nowrap; }

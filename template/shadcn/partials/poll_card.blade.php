@@ -5,7 +5,6 @@
 @if ($poll)
 <section class="card poll-card">
     <h3>
-        <span class="chip c2">투표</span>
         <span>설문조사</span>
         @if ($poll['admin_href'])
         <a class="poll-admin" href="{{ $poll['admin_href'] }}" title="설문관리">설문관리</a>
