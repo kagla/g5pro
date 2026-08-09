@@ -72,7 +72,7 @@ if ($mode === 'add') {
 // 화면이 경고와 선택 가능 여부를 다시 칠할 근거다.
 if ($mode === 'set') {
     $ct_id = (int)$post('ct_id');
-    cart_cart_set_qty($ct_id, (int)$post('qty'));
+    $set = cart_cart_set_qty($ct_id, (int)$post('qty'));
 
     if ($is_ajax) {
         $row = null;
@@ -83,6 +83,9 @@ if ($mode === 'set') {
         if (!$row) $out(array('ok' => true, 'removed' => true, 'ct_id' => $ct_id));
         $out(array(
             'ok' => true, 'ct_id' => $ct_id,
+            // 재고까지만 담겼으면 화면이 그 자리에서 이유를 알린다(확인을 누를 필요 없는 알림)
+            'clamped' => !empty($set['clamped']),
+            'max' => (int)$row['sk_qty'],
             'qty' => (int)$row['ct_qty'],
             'line_total' => (int)$row['sk_price'] * (int)$row['ct_qty'],
             'avail' => (bool)$row['avail'],

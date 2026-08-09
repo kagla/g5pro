@@ -89,20 +89,35 @@ function cart_cart_items($owner = null)
     return $rows;
 }
 
+// 수량 바꾸기. **재고보다 많이는 담기지 않는다** — 넘긴 채로 두었다가 주문 단계에서 막으면
+// 손님은 담을 때가 아니라 결제하려 할 때 문제를 만난다. 넘겨 달라고 하면 재고까지만 담고
+// 얼마로 잘렸는지 돌려준다(화면이 그 자리에서 이유를 알린다).
+// 반환: array('qty' => 실제 담긴 수량, 'clamped' => 잘렸나, 'max' => 재고)
 function cart_cart_set_qty($ct_id, $qty, $owner = null)
 {
     global $g5;
     $owner = cart_cart_owner($owner);
     $ct_id = (int)$ct_id;
     $qty = (int)$qty;
-    if ($qty <= 0) return cart_cart_remove($ct_id, $owner);
+    if ($qty <= 0) { cart_cart_remove($ct_id, $owner); return array('qty' => 0, 'clamped' => false, 'max' => 0); }
+
+    // 이 줄이 가리키는 SKU 의 지금 재고. 담은 뒤 관리자가 재고를 줄였을 수도 있어 그때그때 읽는다.
+    $row = sql_fetch(" select sk_id from `{$g5['ycart_cart_table']}`
+        where ct_id = '$ct_id' and ".cart_cart_where($owner));
+    $max = 0;
+    if ($row) {
+        $sku = cart_sku_get((int)$row['sk_id']);
+        $max = $sku ? (int)$sku['sk_qty'] : 0;
+    }
+    $clamped = false;
+    if ($max > 0 && $qty > $max) { $qty = $max; $clamped = true; }
     // ct_datetime 은 건드리지 않는다 — 그 값이 목록 정렬 기준이라, 수량만 고쳤는데도 그 줄이
     // 맨 위로 튀어 오른다. 여러 줄을 차례로 고치면 순서가 계속 뒤집혀 어디를 고쳤는지 잃는다.
     // ct_datetime 은 "담은 시각" 이고, 수량 변경은 담는 행위가 아니다.
     sql_query(" update `{$g5['ycart_cart_table']}`
         set ct_qty = '$qty'
         where ct_id = '$ct_id' and ".cart_cart_where($owner), true);
-    return '';
+    return array('qty' => $qty, 'clamped' => $clamped, 'max' => $max);
 }
 
 function cart_cart_remove($ct_id, $owner = null)

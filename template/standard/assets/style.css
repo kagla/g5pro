@@ -3092,7 +3092,9 @@ body.cart-lb-lock { overflow: hidden; }
     width: 32px; height: 34px; border: 0; background: none; color: var(--fg);
     font-size: var(--t-lg); line-height: 1; cursor: pointer; font-family: inherit;
 }
-.cart-qty-btn:hover { background: var(--row-hover); color: var(--accent); }
+.cart-qty-btn:hover:not(:disabled) { background: var(--row-hover); color: var(--accent); }
+/* 한계에 닿은 버튼 — 눌러도 안 되는 것이 손보다 눈에 먼저 보여야 한다 */
+.cart-qty-btn:disabled { color: var(--muted); opacity: .45; cursor: default; }
 .cart-qty-input {
     width: 46px; height: 34px; padding: 0; border: 0; border-radius: 0; background: none;
     text-align: center; font-size: var(--t-base); font-variant-numeric: tabular-nums;
@@ -3213,4 +3215,29 @@ body.cart-lb-lock { overflow: hidden; }
     .g5-dlg-panel { animation: g5-dlg-pop .14s cubic-bezier(.2, .8, .3, 1); }
     @keyframes g5-dlg-in { from { opacity: 0; } }
     @keyframes g5-dlg-pop { from { opacity: 0; transform: translateY(6px) scale(.985); } }
+}
+
+/* ═══════════ 토스트 (스스로 사라지는 알림) ═══════════
+   alert() 은 확인을 눌러야 없어진다 — "재고가 3개뿐입니다" 처럼 알기만 하면 되는 말에
+   손을 쓰게 하면 흐름이 끊긴다. 스스로 사라지고, 급하면 눌러서 먼저 없앨 수 있다.
+   화면 아래 가운데 — 손이 닿는 자리(모바일 하단 버튼)를 가리지 않게 살짝 띄운다 */
+.g5-toasts {
+    position: fixed; left: 50%; bottom: var(--s5); transform: translateX(-50%);
+    z-index: 1300; display: flex; flex-direction: column-reverse; align-items: center;
+    gap: var(--s2); pointer-events: none; width: max-content; max-width: calc(100vw - var(--s5) * 2);
+}
+.g5-toast {
+    pointer-events: auto; cursor: pointer;
+    background: var(--fg); color: var(--bg);
+    padding: 10px var(--s4); border-radius: var(--r-btn);
+    font-size: var(--t-base); font-weight: 550; line-height: 1.4;
+    box-shadow: 0 8px 24px rgba(2, 6, 23, .28);
+    display: flex; align-items: center; gap: var(--s2); text-align: left;
+}
+.g5-toast svg { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@media (prefers-reduced-motion: no-preference) {
+    .g5-toast { animation: g5-toast-in .16s cubic-bezier(.2, .8, .3, 1); }
+    .g5-toast.is-out { animation: g5-toast-out .16s ease-in forwards; }
+    @keyframes g5-toast-in { from { opacity: 0; transform: translateY(8px); } }
+    @keyframes g5-toast-out { to { opacity: 0; transform: translateY(6px); } }
 }

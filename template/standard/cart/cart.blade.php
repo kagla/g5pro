@@ -54,10 +54,10 @@
         <div class="cart-cart-ctrl">
             {{-- 수량은 누르는 즉시 저장된다 — '변경' 버튼을 두었더니 수량만 고치고 누르지 않은 채
                  주문해서 옛 수량으로 나갔다. 버튼을 없애고 저장을 자동으로 옮긴다. --}}
-            <div class="cart-qty" data-ct="{{ $it['ct_id'] }}">
+            <div class="cart-qty" data-ct="{{ $it['ct_id'] }}" data-max="{{ (int)$it['sk_qty'] }}">
                 <button type="button" class="cart-qty-btn" data-d="-1" aria-label="수량 줄이기">−</button>
-                <input type="number" class="cart-qty-input" value="{{ $it['ct_qty'] }}" min="1" max="999"
-                       aria-label="{{ $it['it_name'] }} 수량">
+                <input type="number" class="cart-qty-input" value="{{ $it['ct_qty'] }}" min="1"
+                       max="{{ max(1, (int)$it['sk_qty']) }}" aria-label="{{ $it['it_name'] }} 수량">
                 <button type="button" class="cart-qty-btn" data-d="1" aria-label="수량 늘리기">+</button>
             </div>
             <form method="post" action="{{ $action_url }}" data-confirm="이 상품을 장바구니에서 뺄까요?" data-confirm-danger>
@@ -154,11 +154,26 @@ $(function () {
     // 연타를 매번 보내면 요청이 줄줄이 밀리고 마지막 응답이 먼저 온 것을 덮을 수 있다.
     // 잠깐 기다렸다가 마지막 값 한 번만 보낸다.
     var timers = {};
-    function saveQty($row) {
+
+    // 재고에 닿으면 + 를 눌러도 더 늘지 않는다 — 넘긴 뒤에 꾸짖는 것보다 아예 못 넘게 하는 쪽이 낫다.
+    // 버튼 모양으로도 한계를 알리고(비활성), 왜 안 늘어나는지는 토스트가 잠깐 말해 준다.
+    function paintQty($box) {
+        var max = parseInt($box.data('max'), 10) || 0,
+            v = parseInt($box.find('.cart-qty-input').val(), 10) || 1;
+        $box.find('[data-d="-1"]').prop('disabled', v <= 1);
+        $box.find('[data-d="1"]').prop('disabled', max > 0 && v >= max);
+    }
+
+    function saveQty($row, hitMax) {
         var $box = $row.find('.cart-qty'), ct = $box.data('ct'),
             $in = $box.find('.cart-qty-input'),
-            qty = Math.max(1, Math.min(999, parseInt($in.val(), 10) || 1));
+            max = parseInt($box.data('max'), 10) || 0,
+            qty = Math.max(1, parseInt($in.val(), 10) || 1);
+
+        if (max > 0 && qty > max) { qty = max; hitMax = true; }
+        if (hitMax) g5Toast('재고가 ' + won(max) + '개뿐입니다');
         $in.val(qty);
+        paintQty($box);
 
         clearTimeout(timers[ct]);
         timers[ct] = setTimeout(function () {
@@ -166,10 +181,14 @@ $(function () {
             $.post('{{ $action_url }}', { token: '{{ $token }}', mode: 'set', ajax: '1', ct_id: ct, qty: qty },
                 null, 'json')
             .done(function (res) {
-                if (!res || !res.ok) { alert('수량을 바꾸지 못했습니다. 새로고침해 주세요.'); return; }
+                if (!res || !res.ok) { g5Toast('수량을 바꾸지 못했습니다. 새로고침해 주세요.'); return; }
                 if (res.removed) { $row.remove(); paint(); return; }
 
                 $row.find('[data-role=line]').html(won(res.line_total) + '<em>원</em>');
+                // 담은 뒤 관리자가 재고를 줄였을 수 있다 — 서버가 알려 준 지금 재고로 한계를 다시 심는다
+                $box.data('max', res.max).find('.cart-qty-input').val(res.qty).attr('max', Math.max(1, res.max));
+                paintQty($box);
+                if (res.clamped) g5Toast('재고가 ' + won(res.max) + '개뿐입니다');
                 var $chk = $row.find('.cart-pick');
                 $chk.data('total', res.line_total);
 
@@ -184,23 +203,29 @@ $(function () {
                     .prop('hidden', !blocked);
                 paint();
             })
-            .fail(function () { alert('수량을 바꾸지 못했습니다. 새로고침해 주세요.'); })
+            .fail(function () { g5Toast('수량을 바꾸지 못했습니다. 새로고침해 주세요.'); })
             .always(function () { $box.removeClass('is-saving'); });
         }, 350);
     }
 
     $(document).on('click', '.cart-qty-btn', function () {
-        var $box = $(this).closest('.cart-qty'), $in = $box.find('.cart-qty-input');
-        $in.val((parseInt($in.val(), 10) || 1) + parseInt($(this).data('d'), 10));
+        var $box = $(this).closest('.cart-qty'), $in = $box.find('.cart-qty-input'),
+            max = parseInt($box.data('max'), 10) || 0,
+            v = parseInt($in.val(), 10) || 1, d = parseInt($(this).data('d'), 10);
+
+        if (d > 0 && max > 0 && v >= max) { g5Toast('재고가 ' + won(max) + '개뿐입니다'); return; }
+        if (d < 0 && v <= 1) return;
+        $in.val(v + d);
         saveQty($box.closest('.cart-cart-row'));
     });
+    // 직접 쳐 넣은 값도 같은 규칙으로 자른다
     $(document).on('change', '.cart-qty-input', function () {
         saveQty($(this).closest('.cart-cart-row'));
     });
 
     $('#cart_seldel').on('click', function () {
         var ids = checked().map(function () { return this.value; }).get();
-        if (!ids.length) { alert('삭제할 상품을 선택해 주세요.'); return; }
+        if (!ids.length) { g5Toast('삭제할 상품을 선택해 주세요.'); return; }
         g5Confirm({
             title: '선택한 상품을 뺄까요?',
             message: ids.length + '개를 장바구니에서 뺍니다.',
@@ -218,6 +243,7 @@ $(function () {
         });
     });
 
+    $('.cart-qty').each(function () { paintQty($(this)); });
     paint();
 });
 </script>

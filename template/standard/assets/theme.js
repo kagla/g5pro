@@ -696,3 +696,38 @@
             function () { location.href = a.href; });
     });
 })();
+
+// ── 토스트 ────────────────────────────────────────────────────
+// g5Toast('재고가 3개뿐입니다')  — 스스로 사라진다. 확인을 누를 필요가 없다.
+// alert() 은 스크립트를 멈추고 손을 쓰게 만든다. "알기만 하면 되는 말"에는 과하다.
+// 눌러서 먼저 없앨 수 있고, 같은 말이 연달아 오면 새로 쌓지 않고 시간만 늘린다
+// (+ 를 재고 끝에서 여러 번 눌러도 같은 쪽지가 줄줄이 쌓이지 않게).
+(function () {
+    if (!window.jQuery) return;
+    var $ = window.jQuery, $box = null, last = null;
+
+    function close($t) {
+        $t.addClass('is-out');
+        setTimeout(function () {
+            if (last && last.$t[0] === $t[0]) last = null;
+            $t.remove();
+        }, 180);
+    }
+
+    window.g5Toast = function (message, ms) {
+        ms = ms || 2600;
+        if (!$box) $box = $('<div class="g5-toasts" role="status" aria-live="polite"></div>').appendTo('body');
+
+        if (last && last.msg === message && last.$t.parent().length) {
+            clearTimeout(last.timer);
+            last.timer = setTimeout(function () { close(last.$t); }, ms);
+            return;
+        }
+        var $t = $('<div class="g5-toast"></div>')
+            .append($('<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8.2v4.4M12 15.6h.01"/></svg>'))
+            .append($('<span></span>').text(message))
+            .appendTo($box);
+        $t.on('click', function () { close($t); });
+        last = { msg: message, $t: $t, timer: setTimeout(function () { close($t); }, ms) };
+    };
+})();
