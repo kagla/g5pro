@@ -1,203 +1,192 @@
 /* ═══════════════════════════════════════════════════════════
-   g5pro template/standard — Slate 중성 + 소다 블루 강조 (shadcn 계열)
-   옛 기본(old-standard)을 복사해 토큰을 갈아 끼운 뒤 글자·여백 눈금까지 올린 템플릿.
-   지향: 그림자로 띄우지 않고 실선으로 나눈다 · 색은 상태에만 · 포커스는 항상 보인다.
-
-   그림자 토큰을 "1px 링"으로 바꾼 것이 이 템플릿의 핵심 장치다 —
-   컴포넌트 규칙 32곳의 box-shadow: var(--sh-md) 를 한 줄도 안 고치고
-   전부 실선 테두리로 바꾼다. 진짜 그림자는 떠 있어야 하는 것(--sh-lg)만 남긴다.
+   g5pro template/standard — 소다 블루 · L1 클래식 카드 기준
+   메인은 그라디언트 히어로 + 카드 그리드(L1),
+   게시판은 포털 매거진(L2)·소셜 피드(L3) 요소를 섞는다.
+   설계: docs/superpowers/specs/2026-07-29-g5pro-ui-design.md (저장소에 없음 — 작성자 로컬 문서)
    ═══════════════════════════════════════════════════════════ */
 
 :root {
-    /* 바탕 — 슬레이트 50. 순백으로 두면 흰 카드가 배경과 붙어 버린다(테두리 하나에만 기대게 된다) */
-    --bg: #F8FAFC;
+    /* 바탕 — 흰색이 아니라 옅은 블루. 카드가 떠 보이게 하는 핵심 */
+    --bg: #F0F7FF;
     --card: #FFFFFF;
-    --fg: #020617;
-    --muted: #64748B;          /* 흰 바탕 4.76:1 */
-    --line: #E2E8F0;           /* 장식용 실선 — 면을 나누기만 한다 */
-    --btn-line: #7C8EA6;       /* 조작 요소 경계 — 흰 바탕 3.35:1(WCAG 1.4.11) */
-    --row-hover: #F1F5F9;
-    --chip-off: #E2E8F0;
-    --chip-off-fg: #475569;    /* 채움 위 6.42:1 */
+    --fg: #23303F;
+    --muted: #64748B;
+    --line: #E2ECF8;
+    --btn-line: #7C8EA6;   /* 버튼 테두리 — 카드 위에서 3:1 이상 보이게 (--line 은 1.19:1 이라 안 보인다) */
+    --row-hover: #F5FAFF;
+    /* 고를 수 없는 옵션 칩 — 흐리게 지우지 않고 "눌리지 않는 버튼" 으로 칠한다.
+       글자는 채움 위에서 5.29:1 이라 무엇이 품절인지 읽을 수 있다 */
+    --chip-off: #DFE7F1;
+    --chip-off-fg: #4F5E74;
 
-    /* 강조는 하나뿐 — 사는 곳·고른 것·내 것 */
+    /* 소다 블루 */
     --accent: #2E7CF6;
     --accent-fg: #FFFFFF;
     --accent-deep: #1D5FD1;
-    --accent-soft: #EFF6FF;
+    --accent-soft: #D8E9FF;
 
-    /* 칩 — 이름표는 중성, 봐야 할 것만 앰버.
-       분류는 관리자가 얼마든지 늘리므로 색으로 가를 수 없다(8개가 되면 반드시 깨진다) */
-    --chip-bg: #F1F5F9;
-    --chip-fg: #475569;        /* 6.92:1 */
-    --notice-bg: #FEF3C7;
-    --notice-fg: #B45309;      /* 4.51:1 */
-
-    /* 보조색은 남겨 둔다 — standard 의 규칙들이 이름으로 참조하므로 지우면 화면이 깨진다.
-       다만 값은 전부 중성으로 접어 실제로는 색이 나타나지 않는다 */
-    --teal: #64748B;
-    --teal-soft: #F1F5F9;
-    --teal-deep: #475569;
-    --shop-on: #2E7CF6;
-    --shop-off: #64748B;
-    --indigo: #475569;
-    --indigo-soft: #F1F5F9;
-    --danger: #DC2626;
+    /* 보조색 — 카테고리 칩 구분용 */
+    --teal: #14B8A6;
+    --teal-soft: #CCF5EE;
+    --teal-deep: #0B8577;
+    /* 헤더 영역 전환의 쇼핑몰 칸 — 켜졌을 때 알약 색(on), 꺼졌을 때 선 아이콘 색(off).
+       커뮤니티(--accent 파랑)와 갈라 보이는 것이 목적이라 색상환 반대쪽 주황으로 간다.
+       청록(--teal 계열)은 파랑과 색상차가 43° 뿐이라 나란히 두면 구분이 안 됐다. 주황은 161°.
+       흰 아이콘이 얹히므로 그래픽 최소 대비 3:1 을 넘는 진한 쪽을 골랐다 */
+    --shop-on: #C2410C;          /* 흰 아이콘과 5.18:1 */
+    --shop-off: #C2410C;         /* 트랙 배경과 4.80:1 */
+    --indigo: #4F46E5;
+    --indigo-soft: #E0E7FF;
+    --danger: #EF4444;
     --danger-soft: #FEE2E2;
     --danger-deep: #B91C1C;
 
-    /* 그라디언트를 쓰던 자리는 단색 강조로 — 흰 굵은 글자가 얹히는 자리들이다 */
-    --grad: var(--accent);
+    --grad: linear-gradient(115deg, #38BDF8, #3B82F6 55%, #14B8A6);
 
-    /* 그림자 — sm·md 는 1px 링(실선), lg 만 진짜로 떠 있는 것(메뉴·모달·확대) */
-    --sh-sm: 0 0 0 1px var(--line);
-    --sh-md: 0 0 0 1px var(--line);
-    --sh-lg: 0 10px 30px rgba(2, 6, 23, .10), 0 0 0 1px var(--line);
-    --sh-btn: none;
+    /* 그림자 — 푸른 기운을 띤 부드러운 그림자 */
+    --sh-sm: 0 4px 12px rgba(50,100,180,.08);
+    --sh-md: 0 8px 22px rgba(50,100,180,.10);
+    --sh-lg: 0 12px 32px rgba(20,20,40,.10);
+    --sh-btn: 0 6px 16px rgba(46,124,246,.35);
 
     /* 여백 */
     --s1: 4px;  --s2: 8px;  --s3: 12px; --s4: 16px;
     --s5: 24px; --s6: 32px; --s7: 48px;
 
     /* 글자 */
-    --t-xs: 12px; --t-sm: 13px; --t-base: 14px; --t-md: 15px;
-    --t-lg: 17px; --t-xl: 22px; --t-2xl: 30px;
+    --t-xs: 11px; --t-sm: 12.5px; --t-base: 13.5px; --t-md: 14.5px;
+    --t-lg: 16px; --t-xl: 20px; --t-2xl: 25px;
 
-    /* 모서리 — standard 보다 한 단계씩 조인다(카드 20→12) */
-    --r-sm: 6px; --r-md: 8px; --r-lg: 10px; --r-xl: 12px; --r-2xl: 14px; --r-full: 999px;
-    --r-btn: 8px;
-    --r-input: 8px;
+    /* 모서리 — 넉넉하게 */
+    --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px; --r-2xl: 24px; --r-full: 999px;
+    --r-btn: 8px;   /* 버튼·페이징·필터 — 알약이 아니라 살짝 둥근 사각 */
+    --r-input: 8px; /* 입력칸·텍스트에리어 — 나란히 놓이는 버튼(--r-btn)과 모서리를 맞춘다.
+                       카드(--r-xl)처럼 둥글면 입력칸이 아니라 알약처럼 읽힌다 */
 
+    /* 떠 있는 메뉴의 표면 — 카드 위에 겹칠 때 구분되어야 한다.
+       밝은 모드는 흰 배경에 그림자가 잘 보이므로 카드색 그대로 두고 얇은 테두리만 더한다. */
     --pop: var(--card);
-    --pop-line: #CBD5E1;
+    --pop-line: var(--line);
 }
-
 @media (prefers-color-scheme: dark) {
     :root {
-        --bg: #020617;
-        --card: #0F172A;
-        --fg: #F8FAFC;
-        --muted: #94A3B8;          /* 카드 위 6.96:1 */
-        --line: #1E293B;
-        --btn-line: #5F7288;       /* 카드 위 3.4:1 */
-        --row-hover: #1E293B;
-        --chip-off: #1E293B;
-        --chip-off-fg: #CBD5E1;
+        --bg: #0F1621;
+        --card: #16202E;
+        --fg: #E6EDF5;
+        --muted: #8B9BB0;
+        --line: #23303F;
+        --btn-line: #57718E;
+        --row-hover: #1B2837;
+        --chip-off: #202C3C;
+        --chip-off-fg: #9BADC4;   /* 채움 위 6.17:1 */
 
         --accent: #4A90FF;
-        --accent-fg: #04121F;      /* 파랑 위 6.05:1 — 어두운 모드 강조는 밝아서 검은 글자가 맞다 */
+        --accent-fg: #FFFFFF;
         --accent-deep: #8FBCFF;
-        --accent-soft: #14243D;
+        --accent-soft: #1A2C4A;
 
-        --chip-bg: #1E293B;
-        --chip-fg: #CBD5E1;        /* 9.85:1 */
-        --notice-bg: #382B0B;
-        --notice-fg: #FBBF24;      /* 8.28:1 */
-
-        --teal: #94A3B8;
-        --teal-soft: #1E293B;
-        --teal-deep: #CBD5E1;
-        --shop-on: #4A90FF;
-        --shop-off: #94A3B8;
-        --indigo: #CBD5E1;
-        --indigo-soft: #1E293B;
+        --teal: #2DD4BF;
+        --teal-soft: #0E3B36;
+        --teal-deep: #5EEAD4;
+        --shop-on: #EA6A0C;          /* 흰 아이콘과 3.20:1 */
+        --shop-off: #F97316;         /* 트랙 배경과 6.48:1 */
+        --indigo: #A5A0FF;
+        --indigo-soft: #262850;
         --danger: #F87171;
-        --danger-soft: #3B1414;
+        --danger-soft: #4A1E1E;
         --danger-deep: #FCA5A5;
 
-        --grad: var(--accent);
+        --sh-sm: 0 4px 12px rgba(0,0,0,.30);
+        --sh-md: 0 8px 22px rgba(0,0,0,.36);
+        --sh-lg: 0 12px 32px rgba(0,0,0,.44);
+        --sh-btn: 0 6px 16px rgba(74,144,255,.30);
 
-        --sh-sm: 0 0 0 1px var(--line);
-        --sh-md: 0 0 0 1px var(--line);
-        --sh-lg: 0 10px 30px rgba(0, 0, 0, .55), 0 0 0 1px var(--line);
-        --sh-btn: none;
-
-        --pop: #1E293B;
-        --pop-line: #334155;
+        /* 어두운 배경에서는 그림자가 거의 안 보인다. 밝기를 한 단계 올려 떠 보이게 한다 */
+        --pop: #1E2A3A;
+        --pop-line: #35485E;
     }
 }
-
-
-/* 테마 토글 — 사용자가 고른 값은 OS 설정(위 미디어쿼리)을 양방향으로 이긴다.
-   값은 위 두 블록과 같아야 하므로 손으로 적지 않고 그대로 옮겨 적었다 */
 :root[data-theme="dark"] {
-    --bg: #020617;
-    --card: #0F172A;
-    --fg: #F8FAFC;
-    --muted: #94A3B8;
-    --line: #1E293B;
-    --btn-line: #5F7288;
-    --row-hover: #1E293B;
-    --chip-off: #1E293B;
-    --chip-off-fg: #CBD5E1;
+    /* 어두운 배경에서는 그림자가 거의 안 보인다. 밝기를 한 단계 올려 떠 보이게 한다 */
+    --pop: #1E2A3A;
+    --pop-line: #35485E;
+    --bg: #0F1621;
+    --card: #16202E;
+    --fg: #E6EDF5;
+    --muted: #8B9BB0;
+    --line: #23303F;
+    --btn-line: #57718E;
+    --row-hover: #1B2837;
+    --chip-off: #202C3C;
+    --chip-off-fg: #9BADC4;   /* 채움 위 6.17:1 */
+
     --accent: #4A90FF;
-    --accent-fg: #04121F;
+    --accent-fg: #FFFFFF;
     --accent-deep: #8FBCFF;
-    --accent-soft: #14243D;
-    --chip-bg: #1E293B;
-    --chip-fg: #CBD5E1;
-    --notice-bg: #382B0B;
-    --notice-fg: #FBBF24;
-    --teal: #94A3B8;
-    --teal-soft: #1E293B;
-    --teal-deep: #CBD5E1;
-    --shop-on: #4A90FF;
-    --shop-off: #94A3B8;
-    --indigo: #CBD5E1;
-    --indigo-soft: #1E293B;
+    --accent-soft: #1A2C4A;
+
+    --teal: #2DD4BF;
+    --teal-soft: #0E3B36;
+    --teal-deep: #5EEAD4;
+    --shop-on: #EA6A0C;          /* 흰 아이콘과 3.20:1 */
+    --shop-off: #F97316;         /* 트랙 배경과 6.48:1 */
+    --indigo: #A5A0FF;
+    --indigo-soft: #262850;
     --danger: #F87171;
-    --danger-soft: #3B1414;
+    --danger-soft: #4A1E1E;
     --danger-deep: #FCA5A5;
-    --grad: var(--accent);
-    --sh-sm: 0 0 0 1px var(--line);
-    --sh-md: 0 0 0 1px var(--line);
-    --sh-lg: 0 10px 30px rgba(0, 0, 0, .55), 0 0 0 1px var(--line);
-    --sh-btn: none;
-    --pop: #1E293B;
-    --pop-line: #334155;
+
+    --sh-sm: 0 4px 12px rgba(0,0,0,.30);
+    --sh-md: 0 8px 22px rgba(0,0,0,.36);
+    --sh-lg: 0 12px 32px rgba(0,0,0,.44);
+    --sh-btn: 0 6px 16px rgba(74,144,255,.30);
 }
 :root[data-theme="light"] {
-    --bg: #F8FAFC;
+    --pop: var(--card);
+    --pop-line: var(--line);
+    --bg: #F0F7FF;
     --card: #FFFFFF;
-    --fg: #020617;
+    --fg: #23303F;
     --muted: #64748B;
-    --line: #E2E8F0;
-    --btn-line: #7C8EA6;
-    --row-hover: #F1F5F9;
-    --chip-off: #E2E8F0;
-    --chip-off-fg: #475569;
+    --line: #E2ECF8;
+    --btn-line: #7C8EA6;   /* 버튼 테두리 — 카드 위에서 3:1 이상 보이게 (--line 은 1.19:1 이라 안 보인다) */
+    --row-hover: #F5FAFF;
+    /* 고를 수 없는 옵션 칩 — 흐리게 지우지 않고 "눌리지 않는 버튼" 으로 칠한다.
+       글자는 채움 위에서 5.29:1 이라 무엇이 품절인지 읽을 수 있다 */
+    --chip-off: #DFE7F1;
+    --chip-off-fg: #4F5E74;
+
     --accent: #2E7CF6;
     --accent-fg: #FFFFFF;
     --accent-deep: #1D5FD1;
-    --accent-soft: #EFF6FF;
-    --chip-bg: #F1F5F9;
-    --chip-fg: #475569;
-    --notice-bg: #FEF3C7;
-    --notice-fg: #B45309;
-    --teal: #64748B;
-    --teal-soft: #F1F5F9;
-    --teal-deep: #475569;
-    --shop-on: #2E7CF6;
-    --shop-off: #64748B;
-    --indigo: #475569;
-    --indigo-soft: #F1F5F9;
-    --danger: #DC2626;
+    --accent-soft: #D8E9FF;
+
+    --teal: #14B8A6;
+    --teal-soft: #CCF5EE;
+    --teal-deep: #0B8577;
+    --shop-on: #C2410C;          /* 흰 아이콘과 5.18:1 */
+    --shop-off: #C2410C;         /* 트랙 배경과 4.80:1 */
+    --indigo: #4F46E5;
+    --indigo-soft: #E0E7FF;
+    --danger: #EF4444;
     --danger-soft: #FEE2E2;
     --danger-deep: #B91C1C;
-    --grad: var(--accent);
-    --sh-sm: 0 0 0 1px var(--line);
-    --sh-md: 0 0 0 1px var(--line);
-    --sh-lg: 0 10px 30px rgba(2, 6, 23, .10), 0 0 0 1px var(--line);
-    --sh-btn: none;
-    --pop: var(--card);
-    --pop-line: #CBD5E1;
+
+    --sh-sm: 0 4px 12px rgba(50,100,180,.08);
+    --sh-md: 0 8px 22px rgba(50,100,180,.10);
+    --sh-lg: 0 12px 32px rgba(20,20,40,.10);
+    --sh-btn: 0 6px 16px rgba(46,124,246,.35);
 }
 
 /* ── 기본 ── */
 * { box-sizing: border-box; }
-/* hidden 속성이 화면 규칙에 지지 않게 — 브라우저 기본은 display:none 이지만 그건 특이도가
-   가장 낮아, 컴포넌트에 display:flex 를 주면 hidden 을 걸어도 그대로 보인다.
-   (합계 상자가 비어 있는 채로 테두리만 남아 있던 원인) */
+/* hidden 속성이 화면 규칙에 지지 않게.
+   브라우저 기본 [hidden]{display:none} 은 특이도가 가장 낮아, 컴포넌트에 display:flex 나
+   display:grid 를 주는 순간 hidden 을 걸어도 그대로 보인다. 이 파일에는 그때마다 한 곳씩
+   막은 규칙이 다섯 개(.search-modal·.lightbox·.tab-con·.odv-modal·.cart-lb) 쌓여 있었고,
+   그러고도 .cart-picks-total 이 빈 상자로 남아 있었다. 한 줄로 전부 막는다.
+   (아래 개별 [hidden] 규칙들은 지우지 않는다 — 이 줄이 있으면 무해하고, 지우는 편이
+    되레 다른 화면을 건드릴 위험이 있다) */
 [hidden] { display: none !important; }
 body {
     margin: 0;
@@ -205,33 +194,13 @@ body {
     color: var(--fg);
     font-family: Pretendard, "Apple SD Gothic Neo", "Nanum Gothic", "Malgun Gothic", -apple-system, sans-serif;
     font-size: var(--t-base);
-    line-height: 1.6;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
 }
-/* 링크 기본은 물려받은 색이다 — 목록 줄·메뉴·카드처럼 "덩어리 전체가 링크" 인 자리가 대부분이라,
-   거기에 색을 주면 화면이 온통 파래진다.
-   그 대신 **글 속에 섞여 있는 링크**는 반드시 갈라 보여야 한다 — 아래 자리들이 그렇다.
-   여기 없는 자리에 문장 속 링크를 새로 만들면 이 목록에 함께 적는다 */
 a { color: inherit; text-decoration: none; }
 a:hover { color: var(--accent); }
-.post-content a,
-.post-files a,
-.post-links a,
-.cart-co-sec a,
-.cart-complete-line a,
-.wish-msg a {
-    color: var(--accent-deep); text-decoration: underline;
-    text-underline-offset: 3px; text-decoration-thickness: 1px;
-}
-.post-content a:hover,
-.post-files a:hover,
-.post-links a:hover,
-.cart-co-sec a:hover,
-.cart-complete-line a:hover,
-.wish-msg a:hover { color: var(--accent); }
 img { max-width: 100%; height: auto; }
-h1, h2, h3, h4, h5 { margin: 0; line-height: 1.3; letter-spacing: -.021em; font-weight: 700; }
+h1, h2, h3, h4, h5 { margin: 0; line-height: 1.35; letter-spacing: -.01em; }
 ul { list-style: none; margin: 0; padding: 0; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .wrap { max-width: 1080px; margin: 0 auto; padding: 0 var(--s5); }
@@ -239,28 +208,22 @@ ul { list-style: none; margin: 0; padding: 0; }
 .muted { color: var(--muted); }
 
 /* ── 칩 (카테고리·상태) ── */
-/* 칩은 이름표다 — 글자가 이미 이름을 말하므로 색이 할 일이 없다.
-   분류는 관리자가 게시판마다 얼마든지 늘리는데, 여덟 개가 되는 순간 서로 구별되면서
-   대비도 맞는 색 여덟 개를 골라야 한다. 그건 불가능하다. 그래서 전부 중성으로 접는다.
-   색은 "무엇인가" 가 아니라 "봐야 하는가" 에만 쓴다 — .chip.notice 하나뿐이다. */
 .chip {
-    display: inline-block; font-size: var(--t-xs); font-weight: 700;
+    display: inline-block; font-size: var(--t-xs); font-weight: 800;
     border-radius: var(--r-full); padding: 2px var(--s2); white-space: nowrap;
-    background: var(--chip-bg); color: var(--chip-fg);
+    background: var(--accent-soft); color: var(--accent-deep);
 }
-.chip.c2, .chip.c3, .chip.c4 { background: var(--chip-bg); color: var(--chip-fg); }
-/* 공지 — 목록에서 위에 고정되는 글. 색이 곧 "먼저 보라" 는 뜻이라 여기만 유색이다 */
-.chip.notice { background: var(--notice-bg); color: var(--notice-fg); }
-/* 지금 내가 있는 자리 — 열람 중인 글. 이름표와 갈라 보이도록 강조색 옅은 면 */
-.chip.here { background: var(--accent-soft); color: var(--accent-deep); }
+.chip.c2 { background: var(--teal-soft); color: var(--teal-deep); }
+.chip.c3 { background: var(--indigo-soft); color: var(--indigo); }
+.chip.c4 { background: var(--line); color: var(--muted); }
 .n { font-size: var(--t-xs); color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
 .badge-new { color: var(--danger); font-size: var(--t-xs); font-weight: 800; }
 
 /* ── 버튼·입력 ── */
 .btn {
     display: inline-block; text-align: center;   /* <a class="btn"> 이 늘어날 때 글자가 왼쪽에 붙지 않게 */
-    font-size: var(--t-base); font-weight: 600;
-    padding: 9px var(--s4); line-height: 1.25; border-radius: var(--r-btn);
+    font-size: var(--t-sm); font-weight: 700;
+    padding: var(--s2) var(--s4); border-radius: var(--r-btn);
     background: var(--card); color: var(--fg); border: 1px solid var(--line);
     cursor: pointer; white-space: nowrap; font-family: inherit;
     transition: border-color .15s, color .15s, box-shadow .15s;
@@ -293,15 +256,12 @@ input[type=text], input[type=password], input[type=email], input[type=file],
 input[type=number], input[type=tel], input[type=search], input[type=url],
 select, textarea {
     background: var(--bg); color: var(--fg);
-    border: 1px solid var(--btn-line); border-radius: var(--r-input);
-    padding: 9px var(--s3); line-height: 1.25;
+    border: 1px solid var(--line); border-radius: var(--r-input);
+    padding: var(--s2) var(--s3);
     font: inherit; font-size: var(--t-base); max-width: 100%;
     transition: border-color .15s, background .15s;
 }
-input:focus, select:focus, textarea:focus {
-    background: var(--card); border-color: var(--accent);
-    outline: 2px solid var(--accent-soft); outline-offset: 0;
-}
+input:focus, select:focus, textarea:focus { background: var(--card); border-color: var(--accent); outline: none; }
 textarea { line-height: 1.6; border-radius: var(--r-input); }
 
 /* ── 헤더 (L1 pill nav + L2 검색) ── */
@@ -317,27 +277,24 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 
 /* 커뮤니티 ↔ 쇼핑몰 전환 — 쇼핑몰 설치 시에만. 두 영역을 모두 표시, 현재 위치가 on.
    글자 없이 큰 아이콘만 (말풍선 ↔ 카트라 모양으로 구분된다). 메뉴 밖이라 햄버거로 접히지 않는다 */
-/* 영역 전환(커뮤니티 · 쇼핑몰) — 눌린 칸이 색 블록이 되던 것을, 회색 트랙 위에 뜨는
-   흰 알약으로 바꿨다. standard 는 두 칸을 파랑·주황으로 갈라 어느 쪽이 켜졌는지 알렸는데,
-   강조색이 하나뿐인 이 템플릿에서는 색이 아니라 "떠 있음" 이 켜진 칸을 가리킨다.
-   덕분에 쇼핑몰 칸에 주황을 따로 둘 필요가 없어졌다 */
 .area-switch {
     display: inline-flex; flex: none; gap: 2px;
-    padding: 3px; border-radius: var(--r-btn); background: var(--row-hover);
-    box-shadow: 0 0 0 1px var(--line);
+    padding: 3px; border-radius: var(--r-btn); background: var(--bg);
 }
 .area-link {
     display: inline-flex; align-items: center; justify-content: center; flex: none;
-    width: 32px; height: 32px; border-radius: calc(var(--r-btn) - 2px);
+    width: 38px; height: 38px; border-radius: calc(var(--r-btn) - 2px);
     color: var(--muted);
 }
-.area-link:hover { color: var(--fg); }
-.area-link.on { background: var(--card); color: var(--accent); box-shadow: var(--sh-sm); }
-.area-link.on:hover { color: var(--accent); }
+.area-link:hover { color: var(--accent); }
+.area-link.on { background: var(--accent); color: var(--accent-fg); box-shadow: var(--sh-sm); }
+.area-link.on:hover { color: var(--accent-fg); }
+/* 쇼핑몰 쪽은 다른 색으로 — 두 칸이 같은 파랑이면 어느 쪽이 켜졌는지 색으로 못 읽는다.
+   꺼졌을 때도 회색이 아니라 제 색을 옅게 지녀, 가기 전에 어느 칸이 쇼핑몰인지 알 수 있다 */
 .area-link.area-bag { color: var(--shop-off); }
-.area-link.area-bag.on { background: var(--card); color: var(--shop-on); }
-.area-link.area-bag:hover { color: var(--fg); }
-.area-link.area-bag.on:hover { color: var(--shop-on); }
+.area-link.area-bag.on { background: var(--shop-on); color: var(--accent-fg); }
+.area-link.area-bag:hover { color: var(--shop-on); }
+.area-link.area-bag.on:hover { color: var(--accent-fg); }
 .area-link svg {
     width: 21px; height: 21px; fill: none;
     stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
@@ -525,8 +482,7 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 
 /* ── 본문·푸터 ── */
 .site-main { padding: var(--s5) var(--s5) var(--s7); min-height: 60vh; }
-/* 본문과 갈라 주는 선 하나 — 그림자를 안 쓰는 템플릿이라 경계는 선이 맡는다 */
-.site-footer { color: var(--muted); font-size: var(--t-sm); border-top: 1px solid var(--line); margin-top: var(--s7); }
+.site-footer { color: var(--muted); font-size: var(--t-sm); }
 .site-footer .wrap { padding: var(--s5); text-align: left; }
 .site-footer p { margin: 0; }
 
@@ -581,44 +537,36 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 }
 
 /* ═══════════ 메인 히어로 (L1) ═══════════ */
-/* 머리말 — 그라디언트 띠를 걷어냈다. 화면에서 가장 강한 요소였는데 담고 있던 것은
-   인사말 한 줄뿐이었다. 같은 자리를 숫자로 채우면 "이 커뮤니티가 살아 있다" 는 근거가 된다.
-   띠가 사라지므로 아래 카드 그리드가 첫 화면의 주인공이 된다 */
-.hero { margin-bottom: var(--s6); padding: var(--s4) 0 0; }
-.hero h2 { font-size: var(--t-2xl); letter-spacing: -.025em; margin-bottom: var(--s2); }
-.hero p { margin: 0; font-size: var(--t-md); color: var(--muted); }
-.hero-stats {
-    display: flex; gap: var(--s7); margin-top: var(--s5);
-    font-variant-numeric: tabular-nums;
+.hero {
+    margin-bottom: var(--s5); padding: var(--s6) var(--s5);
+    border-radius: var(--r-2xl); background: var(--grad); color: #fff;
+    position: relative; overflow: hidden;
 }
-.hero-stats > div { display: flex; flex-direction: column; }
-.hero-stats b { font-size: var(--t-2xl); font-weight: 700; letter-spacing: -.03em; line-height: 1.2; }
-.hero-stats span { font-size: var(--t-xs); color: var(--muted); }
+.hero::after {
+    content: ""; position: absolute; right: -40px; top: -50px;
+    width: 190px; height: 190px; border-radius: 50%; background: rgba(255,255,255,.18);
+}
+.hero::before {
+    content: ""; position: absolute; inset: 0; z-index: 1;
+    background: linear-gradient(100deg, rgba(4,26,48,.42), rgba(4,26,48,.18) 55%, rgba(4,26,48,0));
+}
+.hero h2 { font-size: var(--t-2xl); letter-spacing: -.02em; margin-bottom: var(--s2); position: relative; z-index: 2; }
+.hero p { margin: 0; font-size: var(--t-md); position: relative; z-index: 2; }
 
 /* 카드 그리드 (L1) */
-/* 카드는 제 내용만큼만 차지한다 — 격자 기본값(stretch)에 두면 글이 하나뿐인 공지 카드가
-   옆 카드 키에 맞춰 늘어나 큰 빈칸이 생긴다. 아랫단이 들쭉날쭉해도 그게 정직하다 */
-.card-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: var(--s4); align-items: start;
-}
+.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--s4); }
 .card {
     background: var(--card); border-radius: var(--r-xl);
-    padding: var(--s5); box-shadow: var(--sh-md);
+    padding: var(--s4) var(--s5); box-shadow: var(--sh-md);
 }
 .card > h3 {
     display: flex; align-items: center; gap: var(--s2);
-    font-size: var(--t-md); margin-bottom: var(--s3); letter-spacing: -.015em;
+    font-size: var(--t-md); margin-bottom: var(--s3);
 }
-/* 줄마다 옅은 선 — 없으면 다섯 줄이 한 덩어리로 뭉쳐 어디까지가 한 글인지 안 읽힌다 */
 .card li {
     display: flex; align-items: center; gap: var(--s2);
-    padding: 8px 0; font-size: var(--t-base); border-top: 1px solid var(--line);
+    padding: 6.5px 0; font-size: var(--t-base);
 }
-.card li:first-child { border-top: 0; padding-top: 2px; }
-/* 선은 "글 목록" 에만 — 설문 보기·접속자 칩은 목록이 아니라 폼과 요약이라 선을 그으면
-   고를 수 있는 항목이 표의 행처럼 읽힌다 */
-.poll-card li, .connect-card li { border-top: 0; padding: 5px 0; }
 .card li > a { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .card li .n { margin-left: auto; }
 .card li .muted { font-size: var(--t-xs); white-space: nowrap; }
@@ -671,16 +619,6 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .bbs-search select { border: 0; background: none; font-size: var(--t-sm); padding: var(--s1); }
 .bbs-search input[type=text] { flex: 1; min-width: 0; border: 0; background: none; padding: var(--s1); }
 .bbs-search input:focus, .bbs-search select:focus { background: none; }
-/* 검색 버튼 — 흰 상자 안에 흰 버튼을 두면 어디를 눌러야 하는지 안 보인다.
-   검색줄에서는 이 버튼이 유일한 조작점이므로 채워서 둔다 */
-/* .btn 이 아니라 button 을 잡는다 — 스토어홈 검색은 클래스 없는 맨 button 이라
-   .btn 기준으로 두면 브라우저 기본 회색 버튼이 그대로 남는다 */
-.bbs-search button {
-    background: var(--accent); border: 1px solid var(--accent); color: var(--accent-fg);
-    font: inherit; font-size: var(--t-sm); font-weight: 600; white-space: nowrap;
-    padding: 8px var(--s4); border-radius: var(--r-btn); cursor: pointer;
-}
-.bbs-search button:hover { background: var(--accent-deep); border-color: var(--accent-deep); }
 /* 장바구니 목록 아래 버튼 줄 — 목록 왼쪽 끝(체크박스 열)에 맞춘다 */
 .cart-acts { display: flex; justify-content: flex-start; gap: var(--s2); margin-top: var(--s3); }
 
@@ -735,20 +673,20 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .list-table-wrap { overflow-x: auto; overflow-y: hidden; }
 .list-table { width: 100%; border-collapse: collapse; }
 .list-table th {
-    font-size: var(--t-sm); font-weight: 600; color: var(--muted); letter-spacing: .02em;
+    font-size: var(--t-sm); font-weight: 700; color: var(--muted); letter-spacing: .03em;
     padding: var(--s3) var(--s4); text-align: center; white-space: nowrap;
     border-bottom: 1px solid var(--line);
 }
 .list-table th.col-subject { text-align: left; }
 .list-table td {
-    padding: 14px var(--s4); text-align: center; white-space: nowrap;
-    font-size: var(--t-sm); color: var(--muted); font-variant-numeric: tabular-nums;
+    padding: var(--s3) var(--s4); text-align: center; white-space: nowrap;
+    font-size: var(--t-md); color: var(--muted); font-variant-numeric: tabular-nums;
     border-top: 1px solid var(--line);
 }
 .list-table tbody tr:first-child td { border-top: 0; }
 .list-table tr:hover td { background: var(--row-hover); }
 .list-table td.col-subject {
-    text-align: left; color: var(--fg); font-size: var(--t-md); font-weight: 500; letter-spacing: -.01em;
+    text-align: left; color: var(--fg); font-size: var(--t-md); font-weight: 500;
     width: 100%; max-width: 1px; overflow: hidden; text-overflow: ellipsis;
 }
 .list-table .col-no { width: 60px; }
@@ -793,7 +731,7 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .list-card .ava {
     flex: none; width: 38px; height: 38px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    background: var(--chip-bg); color: var(--chip-fg); font-size: var(--t-sm); font-weight: 700;
+    background: var(--grad); color: #fff; font-size: var(--t-sm); font-weight: 800;
 }
 .list-card .thumb { flex: none; width: 72px; height: 72px; border-radius: var(--r-lg); overflow: hidden; background: var(--bg); }
 .list-card .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -809,7 +747,7 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
     box-shadow: var(--sh-md); transition: transform .15s, box-shadow .15s;
 }
 .gallery-card:hover { transform: translateY(-3px); box-shadow: var(--sh-lg); }
-.gallery-thumb { display: block; aspect-ratio: 4 / 3; background: var(--row-hover); }
+.gallery-thumb { display: block; aspect-ratio: 4 / 3; background: var(--grad); }
 .gallery-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .gallery-noimg { display: flex; align-items: center; justify-content: center; height: 100%; color: #fff; font-size: var(--t-sm); font-weight: 700; opacity: .85; }
 .gallery-info { padding: var(--s3) var(--s4) var(--s4); }
@@ -1125,9 +1063,8 @@ a.view_image:hover::after, a.view_image:focus-visible::after { opacity: 1; }
 }
 .search-summary h2 { font-size: var(--t-xl); font-weight: 700; margin-bottom: var(--s1); position: relative; z-index: 2; }
 .search-summary p { margin: 0; font-size: var(--t-md); position: relative; z-index: 2; }
-/* 단색 강조 배너 안에서는 흰 글씨를 강제한다 — 뷰에서 .muted 등이 섞여도 흐려지지 않게.
-   머리말(.hero)은 이 템플릿에서 배너가 아니라 평범한 글이므로 여기서 뺀다 */
-.search-summary, .search-summary * { color: #fff; }
+/* 그라디언트 배너 안에서는 흰 글씨를 강제한다 — 뷰에서 .muted 등이 섞여도 흐려지지 않게 */
+.hero, .hero *, .search-summary, .search-summary * { color: #fff; }
 .search-group { margin-bottom: var(--s6); }
 .search-group-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); margin-bottom: var(--s3); }
 .search-group-head h3 { display: flex; align-items: center; gap: var(--s2); font-size: var(--t-md); font-weight: 700; }
@@ -1465,8 +1402,8 @@ a.view_image:hover::after, a.view_image:focus-visible::after { opacity: 1; }
 .board-extra img { border-radius: var(--r-md); }
 
 /* 카테고리 칩 — 목록·읽기 공용, 누르면 그 분류만 본다 */
-.chip.cate { background: var(--chip-bg); color: var(--chip-fg); }
-a.chip.cate:hover { background: var(--accent-soft); color: var(--accent-deep); }
+.chip.cate { background: var(--teal-soft); color: var(--teal-deep); }
+a.chip.cate:hover { background: var(--teal); color: #fff; }
 
 /* 답변글 */
 .reply-arrow { color: var(--muted); font-weight: 700; margin-right: 2px; }
@@ -2425,17 +2362,13 @@ input[type=checkbox], input[type=radio] {
 /* ── 헤더 장바구니 — 아이콘 + 담긴 개수 배지 ── */
 .cart-btn { position: relative; color: var(--fg); }
 .cart-btn:hover { color: var(--accent); }
-/* 담긴 개수 — 10px 로는 읽으려면 눈을 가까이 대야 했다. 화면에서 가장 작은 글자인데
-   숫자라 모양으로 짐작할 수도 없다. 12px 로 올리고 배지도 그만큼 키운다.
-   아이콘을 덜 가리도록 오른쪽 위로 조금 밀어 올린다(테두리는 아이콘과 겹쳐도 배지를 떼어 놓는다) */
 .cart-count {
-    position: absolute; top: -3px; right: -4px;
-    min-width: 19px; height: 19px; padding: 0 5px;
+    position: absolute; top: 1px; right: 0;
+    min-width: 16px; height: 16px; padding: 0 4px;
     display: flex; align-items: center; justify-content: center;
     border-radius: var(--r-full); border: 2px solid var(--card);
     background: var(--danger); color: #fff;
-    font-size: 12px; font-weight: 700; line-height: 1;
-    font-variant-numeric: tabular-nums;
+    font-size: 10px; font-weight: 800; line-height: 1;
     font-variant-numeric: tabular-nums;
 }
 
@@ -2643,7 +2576,7 @@ input[type=checkbox], input[type=radio] {
     border-color: var(--line); }
 /* 같은 옵션을 또 고른 경우처럼 '막을 일은 아니지만 알려야 하는' 안내 */
 .cart-pick-msg { margin: 0 0 var(--s3); padding: var(--s3) var(--s4); border-radius: var(--r2);
-    background: var(--notice-bg); color: var(--notice-fg); border: 1px solid transparent; font-weight: 700; }
+    background: #FFF4E5; color: #8A5300; border: 1px solid #F5D9A8; font-weight: 700; }
 /* 고른 옵션 줄 — 여러 조합을 담고 줄마다 수량을 조절한다 */
 .cart-picks { list-style: none; margin: 0 0 var(--s3); padding: 0; display: grid; gap: 8px; }
 .cart-pick { display: flex; align-items: center; gap: var(--s3); flex-wrap: wrap;
@@ -2707,7 +2640,7 @@ input[type=checkbox], input[type=radio] {
 
 /* 관리자만 보는 비노출 안내 — 손님 화면에는 아예 출력되지 않는다(뷰에서 건너뜀) */
 .shop-item-offnotice { margin: 0 0 var(--s5); padding: var(--s3) var(--s4); border-radius: var(--r2);
-    background: var(--notice-bg); color: var(--notice-fg); border: 1px solid transparent; font-weight: 600; }
+    background: #FFF4E5; color: #8A5300; border: 1px solid #F5D9A8; font-weight: 600; }
 .shop-item-top { display: flex; gap: var(--s6); flex-wrap: wrap; margin-bottom: var(--s6); }
 .shop-item-gallery { flex: 1 1 360px; min-width: 280px; max-width: 480px; }
 .shop-item-gallery img#cart_main_img {
@@ -2879,15 +2812,14 @@ body.cart-lb-lock { overflow: hidden; }
 .shop-item-content { margin-top: var(--s6); line-height: 1.7; }
 
 /* ---------- 카트 메인(/cart/) — 오늘의집풍 스토어홈 ---------- */
-/* standard 는 쇼핑몰에 시그니처 민트를 따로 썼는데, 강조색이 하나뿐인 이 템플릿에서는
-   그 색이 사이트 어디에도 없어 되레 붕 뜬다. 스코프 변수는 남기되 값은 강조색을 받는다 */
-.cart-home { --oh: var(--accent); }
+/* 시그니처 민트(#35C5F0)는 스토어홈 스코프 변수로만 쓴다 — 사이트 전체 액센트와 싸우지 않게 */
+.cart-home { --oh: #35C5F0; }
 
 .cart-home-search { max-width: 560px; margin: var(--s4) auto var(--s5); }
 
 /* 큰 라운드 사진 배너 + 좌하단 카피 + 민트 CTA */
 .cart-banner {
-    position: relative; display: block; border-radius: var(--r-xl); overflow: hidden;
+    position: relative; display: block; border-radius: 20px; overflow: hidden;
     aspect-ratio: 16 / 6; margin-bottom: var(--s6); background: var(--bg);
 }
 .cart-banner img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -2895,7 +2827,7 @@ body.cart-lb-lock { overflow: hidden; }
     content: ''; position: absolute; inset: 0;
     background: linear-gradient(75deg, rgba(10,16,24,.62) 0%, rgba(10,16,24,.25) 45%, rgba(10,16,24,0) 70%);
 }
-.cart-banner.no-photo { background: var(--accent); }
+.cart-banner.no-photo { background: linear-gradient(135deg, #35C5F0, #1E7FB8); }
 .cart-banner.no-photo::after { content: none; }
 .cart-banner-text {
     position: absolute; left: 6%; bottom: 14%; z-index: 1; color: #fff; max-width: 70%;
@@ -2903,10 +2835,10 @@ body.cart-lb-lock { overflow: hidden; }
 .cart-banner-text strong { display: block; font-size: var(--t-2xl); font-weight: 800; margin-bottom: var(--s2); }
 .cart-banner-text em { display: block; font-style: normal; font-size: var(--t-sm); opacity: .9; margin-bottom: var(--s3); }
 .cart-banner-cta {
-    display: inline-block; background: var(--oh); color: var(--accent-fg); font-weight: 650; font-size: var(--t-sm);
-    padding: var(--s2) var(--s4); border-radius: var(--r-btn);
+    display: inline-block; background: var(--oh); color: #fff; font-weight: 700; font-size: var(--t-sm);
+    padding: var(--s2) var(--s4); border-radius: 999px;
 }
-.cart-banner:hover .cart-banner-cta { background: var(--accent-deep); }
+.cart-banner:hover .cart-banner-cta { filter: brightness(1.08); }
 
 /* 카테고리 — 사진 라운드 타일 + 라벨(오늘의집 카테고리 아이콘 자리) */
 .cart-cats {
@@ -2951,15 +2883,12 @@ body.cart-lb-lock { overflow: hidden; }
 
 /* ---------- 카트 구매 폼·장바구니 ---------- */
 .cart-cta {
-    display: inline-block; background: var(--accent); color: var(--accent-fg); font-weight: 650;
-    font-size: var(--t-md); padding: var(--s3) var(--s5); border-radius: var(--r-btn);
-    border: 1px solid var(--accent); cursor: pointer; text-align: center;
+    display: inline-block; background: #35C5F0; color: #fff; font-weight: 700;
+    font-size: var(--t-md); padding: var(--s3) var(--s5); border-radius: 10px;
+    border: 0; cursor: pointer; text-align: center;
 }
-.cart-cta:hover { background: var(--accent-deep); border-color: var(--accent-deep); color: var(--accent-fg); }
-/* 곁들이 버튼(장바구니)은 강조색 테두리가 아니라 중성 테두리 — 주 버튼과 나란히 놓였을 때
-   무엇을 눌러야 하는지가 색 하나로 갈린다 */
-.cart-cta.is-line { background: var(--card); border-color: var(--btn-line); color: var(--fg); }
-.cart-cta.is-line:hover { background: var(--row-hover); border-color: var(--btn-line); color: var(--fg); }
+.cart-cta:hover { filter: brightness(1.06); color: #fff; }
+.cart-cta.is-line { background: none; border: 1px solid #35C5F0; color: #35C5F0; }
 .cart-cta.is-disabled { background: var(--line); color: var(--muted); cursor: default; }
 
 .cart-buy { margin-top: var(--s4); display: flex; flex-direction: column; gap: var(--s3); }
@@ -2984,8 +2913,8 @@ body.cart-lb-lock { overflow: hidden; }
     width: 19px; height: 19px; fill: none; stroke: currentColor;
     stroke-width: 1.8; stroke-linejoin: round;
 }
-.wish-btn:hover { color: var(--danger); border-color: var(--danger); }
-.wish-btn.is-on { color: var(--danger); border-color: var(--danger); }
+.wish-btn:hover { color: #E5484D; border-color: #E5484D; }
+.wish-btn.is-on { color: #E5484D; border-color: #E5484D; }
 .wish-btn.is-on svg { fill: currentColor; }
 .wish-btn-n { font-variant-numeric: tabular-nums; opacity: .75; }
 /* 좁은 화면에서는 글자를 접고 하트만 남긴다 — 세 버튼이 한 줄에 들어가야 구매 흐름이 안 끊긴다 */
@@ -3030,63 +2959,35 @@ body.cart-lb-lock { overflow: hidden; }
 
 /* 찜 목록 카드의 빼기 — 카드 링크 위에 얹는다(형제 요소라 링크와 눌림이 겹치지 않는다) */
 .wish-card { position: relative; }
-/* 찜 빼기 — 채운 빨간 하트로 뒀더니 목록에 빨간 점이 줄줄이 박혔다.
-   찜 목록 안에서 "찜했다" 는 이미 자명하므로 그 색이 나르는 정보가 없다.
-   평소엔 윤곽선 하트로 조용히 두고, 손이 닿았을 때 비로소 빨강 — 그때가 지우려는 순간이다 */
 .wish-del {
     position: absolute; top: var(--s2); right: var(--s2); z-index: 1;
     width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%;
     display: flex; align-items: center; justify-content: center; cursor: pointer;
-    background: var(--card); color: var(--muted);
-    box-shadow: var(--sh-sm); transition: color .12s, background .12s;
+    background: rgba(255,255,255,.9); color: #E5484D; box-shadow: var(--sh-sm);
 }
-.wish-del svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
-.wish-del:hover, .wish-del:focus-visible { background: var(--card); color: var(--danger); }
-.wish-del:hover svg, .wish-del:focus-visible svg { fill: currentColor; }
+.wish-del svg { width: 17px; height: 17px; fill: currentColor; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; }
+.wish-del:hover { background: #fff; }
 .wish-del:disabled { opacity: .5; cursor: default; }
 
 /* 주문 단계로 못 넘어가는 이유 — 버튼 바로 위에 한 줄로. 상자를 치지 않는다(줄 안내와 같은 톤).
    클래스 이름을 .cart-cart-warn 과 다르게 둔다 — 그 이름은 장바구니 줄 안내가 이미 쓰고 있어
    같이 쓰면 줄 안내에까지 상자가 번진다 */
-.cart-order-block { margin: 0 0 var(--s3); color: var(--danger-deep); font-weight: 700; }
-
-/* 고르기 도구 줄 — 목록 위에 전체 선택과 선택 삭제 */
-.cart-tools {
-    display: flex; align-items: center; justify-content: space-between; gap: var(--s3);
-    margin-bottom: var(--s3); flex-wrap: wrap;
-}
-.cart-chk-all { display: flex; align-items: center; gap: var(--s2); font-size: var(--t-base); font-weight: 600; cursor: pointer; }
-.cart-chk-all b { color: var(--accent-deep); font-variant-numeric: tabular-nums; }
-/* 체크박스는 브라우저 기본을 쓰되 크기와 색만 맞춘다 — 직접 그리면 접근성 동작을 다시 만들어야 한다 */
-.cart-pick, .cart-chk-all input { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; flex: none; }
-.cart-pick-box { display: flex; align-items: center; align-self: flex-start; padding-top: 2px; }
-/* 고른 줄 — 계산에 든 것이 눈으로 보이게 테두리만 강조한다(면을 칠하면 사진이 죽는다) */
-.cart-cart-row.is-picked { border-color: var(--accent); }
-.cart-cart-row.is-blocked .cart-pick-box { opacity: .4; }
+.cart-order-block { margin: 0 0 var(--s3); color: #C2452D; font-weight: 700; }
 
 .cart-cart { display: flex; flex-direction: column; gap: var(--s4); margin-bottom: var(--s5); }
 .cart-cart-row {
     display: flex; gap: var(--s4); align-items: center;
-    padding: var(--s4); border: 1px solid var(--line); border-radius: var(--r-xl);
+    padding: var(--s4); border: 1px solid var(--line); border-radius: 14px;
 }
-/* 주문서 안에서는 줄이 테두리를 두르지 않는다 — 바깥 카드(.cart-co-sec)가 이미 상자라
-   두 겹이 겹쳐 답답해진다. 줄 사이는 선 하나로 충분하다 */
-.cart-co-sec .cart-cart { gap: 0; margin-bottom: 0; }
-.cart-co-sec .cart-cart-row {
-    border: 0; border-radius: 0; border-top: 1px solid var(--line);
-    padding: var(--s4) 0;
-}
-.cart-co-sec .cart-cart-row:first-child { border-top: 0; padding-top: 0; }
-.cart-co-sec .cart-cart-row:last-child { padding-bottom: 0; }
 .cart-cart-row.is-blocked { opacity: .55; }
-.cart-cart-thumb { flex: none; width: 84px; height: 84px; border-radius: var(--r-md); overflow: hidden; background: var(--row-hover); }
+.cart-cart-thumb { flex: none; width: 84px; height: 84px; border-radius: 10px; overflow: hidden; background: var(--bg); }
 .cart-cart-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .cart-cart-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .cart-cart-name { font-size: var(--t-md); font-weight: 600; }
 /* 옵션·안내는 --t-xs(11px) 로 뒀더니 무엇을 담았는지, 왜 못 사는지가 읽히지 않았다.
    담은 옵션은 상품명 다음으로 확인하는 값이고 안내는 손을 대야 할 곳이라 더 키운다 */
 .cart-cart-opt { font-size: var(--t-base); color: var(--muted); }
-.cart-cart-warn { font-size: var(--t-base); color: var(--danger-deep); font-weight: 700; }
+.cart-cart-warn { font-size: var(--t-base); color: #D93A2B; font-weight: 700; }
 .cart-cart-price { font-size: var(--t-base); font-weight: 700; }
 .cart-cart-price em, .cart-cart-line em { font-style: normal; font-weight: 600; font-size: var(--t-sm); }
 .cart-cart-ctrl { flex: none; display: flex; align-items: center; gap: var(--s3); }
@@ -3101,16 +3002,12 @@ body.cart-lb-lock { overflow: hidden; }
 .cart-cart-line { font-weight: 800; min-width: 90px; text-align: right; }
 
 .cart-cart-sum {
-    border: 1px solid var(--line); border-radius: var(--r-xl); padding: var(--s5);
+    border: 1px solid var(--line); border-radius: 14px; padding: var(--s5);
     display: flex; align-items: center; justify-content: space-between; gap: var(--s4); flex-wrap: wrap;
 }
-.cart-cart-sum dl { display: flex; align-items: baseline; gap: var(--s5); margin: 0; flex-wrap: wrap; }
+.cart-cart-sum dl { display: flex; gap: var(--s5); margin: 0; }
 .cart-cart-sum dt { font-size: var(--t-sm); color: var(--muted); }
-.cart-cart-sum dd { font-weight: 700; margin: 0; font-variant-numeric: tabular-nums; }
-/* 줄의 결론이 되는 값 하나만 키운다 — 장바구니는 상품 합계, 주문서는 결제 예정.
-   "마지막 dd" 로 잡았더니 장바구니에서는 마지막이 배송비 안내 문구라 그 글이 커졌다.
-   위치가 아니라 뜻으로 집어야 한다(화면이 is-total 을 달아 준다) */
-.cart-cart-sum dd.is-total { font-size: var(--t-xl); font-weight: 800; letter-spacing: -.02em; }
+.cart-cart-sum dd { font-weight: 800; margin: 0; }
 
 @media (max-width: 640px) {
     .cart-cart-row { flex-wrap: wrap; }
@@ -3140,8 +3037,8 @@ body.cart-lb-lock { overflow: hidden; }
 .cart-complete { max-width: 640px; margin: 0 auto; }
 .cart-complete-head { text-align: center; margin: var(--s6) 0; }
 .cart-complete-head h2 { font-size: var(--t-2xl); margin-bottom: var(--s2); }
-.cart-complete-bank { border-color: var(--accent); }
-.cart-complete-amount strong { font-size: var(--t-xl); color: var(--accent-deep); }
+.cart-complete-bank { border-color: #35C5F0; }
+.cart-complete-amount strong { font-size: var(--t-xl); color: #1E9CC9; }
 .cart-complete-line { display: flex; justify-content: space-between; padding: var(--s2) 0; font-size: var(--t-sm); }
 .cart-complete-line.is-sub { color: var(--muted); border-top: 1px dashed var(--line); margin-top: var(--s2); padding-top: var(--s3); }
 .cart-complete-line.is-total { font-weight: 800; font-size: var(--t-md); }
@@ -3152,49 +3049,16 @@ body.cart-lb-lock { overflow: hidden; }
     display: flex; align-items: center; gap: var(--s4);
     padding: var(--s4); border: 1px solid var(--line); border-radius: 12px;
 }
-.cart-order-row:hover { border-color: var(--btn-line); }
+.cart-order-row:hover { border-color: #35C5F0; }
 .cart-order-date { flex: none; font-size: var(--t-sm); color: var(--muted); }
 .cart-order-summary { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cart-order-total { flex: none; font-weight: 800; }
-.cart-order-status { flex: none; font-size: var(--t-sm); color: var(--accent-deep); font-weight: 700; }
-.cart-status { color: var(--accent-deep); font-weight: 700; }
+.cart-order-status { flex: none; font-size: var(--t-sm); color: #1E9CC9; font-weight: 700; }
+.cart-status { color: #1E9CC9; font-weight: 700; }
 .cart-guest-form { display: flex; flex-direction: column; gap: var(--s3); max-width: 420px; margin: 0 auto; }
 .cart-guest-form label { display: flex; align-items: center; gap: var(--s3); font-size: var(--t-sm); font-weight: 600; }
 .cart-guest-form input { flex: 1; min-width: 0; padding: var(--s2); }
 .cart-home-links { display: flex; gap: var(--s4); justify-content: center; margin-bottom: var(--s4); font-size: var(--t-sm); font-weight: 700; }
 .cart-home-links a { color: var(--muted); }
-.cart-home-links a:hover { color: var(--accent-deep); }
-.cart-home-links b { color: var(--accent-deep); }
-
-/* ═══════════ 대화상자 (확인·경고) ═══════════
-   브라우저 confirm() 은 운영체제가 그리는 창이라 CSS 가 한 줄도 안 먹는다 —
-   공들여 만든 화면 위에 회색 시스템 창이 뜨면 거기서 디자인이 끊긴다.
-   shadcn 의 AlertDialog 자리를 대신하는 최소 구현: 덮개 + 카드 + 버튼 두 개.
-   동작은 theme.js 의 g5Confirm() 이 맡는다 */
-.g5-dlg {
-    position: fixed; inset: 0; z-index: 1200;
-    display: flex; align-items: center; justify-content: center; padding: var(--s4);
-    background: rgba(2, 6, 23, .55);
-}
-.g5-dlg-panel {
-    width: 100%; max-width: 420px; background: var(--card); color: var(--fg);
-    border: 1px solid var(--line); border-radius: var(--r-xl);
-    box-shadow: var(--sh-lg); padding: var(--s5);
-    display: flex; flex-direction: column; gap: var(--s3);
-}
-.g5-dlg-title { font-size: var(--t-lg); font-weight: 700; letter-spacing: -.02em; margin: 0; }
-/* 줄바꿈이 든 문장을 그대로 살린다 — confirm() 에 쓰던 \n 이 그대로 넘어온다 */
-.g5-dlg-body { margin: 0; color: var(--muted); font-size: var(--t-base); line-height: 1.65; white-space: pre-line; }
-.g5-dlg-foot { display: flex; justify-content: flex-end; gap: var(--s2); margin-top: var(--s2); }
-.g5-dlg-foot .btn { min-width: 84px; }
-/* 되돌릴 수 없는 처리 — 확인 버튼을 빨강으로. 누르기 전에 무게가 다르다는 것이 보여야 한다 */
-.g5-dlg-foot .btn-danger {
-    background: var(--danger); border-color: var(--danger); color: #fff;
-}
-.g5-dlg-foot .btn-danger:hover { background: var(--danger-deep); border-color: var(--danger-deep); color: #fff; }
-@media (prefers-reduced-motion: no-preference) {
-    .g5-dlg { animation: g5-dlg-in .12s ease-out; }
-    .g5-dlg-panel { animation: g5-dlg-pop .14s cubic-bezier(.2, .8, .3, 1); }
-    @keyframes g5-dlg-in { from { opacity: 0; } }
-    @keyframes g5-dlg-pop { from { opacity: 0; transform: translateY(6px) scale(.985); } }
-}
+.cart-home-links a:hover { color: #35C5F0; }
+.cart-home-links b { color: #35C5F0; }

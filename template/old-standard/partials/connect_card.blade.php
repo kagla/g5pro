@@ -3,6 +3,7 @@
 @php $conn = g5_connect_summary(); @endphp
 <section class="card connect-card">
     <h3>
+        <span class="chip c3">접속</span>
         <a href="{{ $conn['href'] }}">현재접속자</a>
     </h3>
 

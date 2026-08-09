@@ -48,7 +48,7 @@
     @if ($is_admin && $links['answer_update'])
     <div class="post-files">
         <a href="{!! $links['answer_update'] !!}">답변수정</a>
-        <a href="{!! $links['answer_delete'] !!}" data-confirm="답변을 삭제하시겠습니까?" data-confirm-danger>답변삭제</a>
+        <a href="{!! $links['answer_delete'] !!}" onclick="return confirm('답변을 삭제하시겠습니까?');">답변삭제</a>
     </div>
     @endif
 </article>
@@ -128,7 +128,7 @@
     </div>
     <div class="qa-acts">
         @if ($links['update'])<a class="btn" href="{!! $links['update'] !!}">수정</a>@endif
-        @if ($links['delete'])<a class="btn" href="{!! $links['delete'] !!}" data-confirm="이 문의를 삭제하시겠습니까?" data-confirm-danger>삭제</a>@endif
+        @if ($links['delete'])<a class="btn" href="{!! $links['delete'] !!}" onclick="return confirm('이 문의를 삭제하시겠습니까?');">삭제</a>@endif
         <a class="btn" href="{{ $links['list'] }}">목록</a>
         <a class="btn btn-primary" href="{{ $links['write'] }}">문의하기</a>
     </div>

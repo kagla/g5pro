@@ -13,7 +13,7 @@
         </a>
         <div class="gallery-info">
             <div class="gallery-subject">
-                @if ($it['is_notice'])<span class="chip notice">공지</span>@endif
+                @if ($it['is_notice'])<span class="chip c3">공지</span>@endif
                 @if ($it['ca_name'])<a class="chip cate" href="{!! $it['ca_href'] !!}">{{ $it['ca_name'] }}</a>@endif
                 <a href="{{ $it['href'] }}">{!! $it['subject'] !!}</a>
                 @include('partials.list_flags', ['it' => $it])

@@ -64,7 +64,7 @@
                 @if ($is_checkbox)<td class="col-chk"><label class="chk-cell"><input type="checkbox" name="chk_wr_id[]" value="{{ $it['wr_id'] }}" aria-label="선택"></label></td>@endif
                 <td class="col-no">
                     @if ($it['is_notice'])공지
-                    @elseif ($it['is_current'])<span class="chip here">열람중</span>
+                    @elseif ($it['is_current'])<span class="chip c2">열람중</span>
                     @else {{ $it['num'] }}
                     @endif
                 </td>
@@ -102,7 +102,7 @@
     <li class="{{ $cls }}" style="padding-left: {{ 16 + min($it['depth'], 5) * 12 }}px">
         <div class="s">
             @if ($is_checkbox)<input type="checkbox" name="chk_wr_id[]" value="{{ $it['wr_id'] }}" aria-label="선택">@endif
-            @if ($it['is_notice'])<span class="chip notice">공지</span>@endif
+            @if ($it['is_notice'])<span class="chip c3">공지</span>@endif
             @if ($it['ca_name'])<a class="chip cate" href="{!! $it['ca_href'] !!}">{{ $it['ca_name'] }}</a>@endif
             <span class="t"><a href="{{ $it['href'] }}">{!! $it['subject'] !!}</a></span>
             @include('partials.list_flags', ['it' => $it])

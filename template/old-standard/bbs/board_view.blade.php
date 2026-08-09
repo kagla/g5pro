@@ -102,7 +102,7 @@
             <span class="comment-acts">
                 @if ($is_member && $c['is_reply'])<button type="button" class="linklike c-reply" data-id="{{ $c['id'] }}">답글</button>@endif
                 @if ($c['is_edit'])<button type="button" class="linklike c-edit" data-id="{{ $c['id'] }}" data-raw="{{ $c['raw'] }}">수정</button>@endif
-                @if ($c['del_link'])<a class="linklike" href="{!! $c['del_link'] !!}" data-confirm="이 댓글을 삭제하시겠습니까?" data-confirm-danger>삭제</a>@endif
+                @if ($c['del_link'])<a class="linklike" href="{!! $c['del_link'] !!}" onclick="return confirm('이 댓글을 삭제하시겠습니까?');">삭제</a>@endif
             </span>
         </div>
         <div class="comment-body">{!! $c['content'] !!}</div>
@@ -225,7 +225,7 @@
                 </a>
                 @endif
                 @if ($delete_href)
-                <a href="{!! $delete_href !!}" role="menuitem" class="danger" data-confirm="삭제하시겠습니까?" data-confirm-danger>
+                <a href="{!! $delete_href !!}" role="menuitem" class="danger" onclick="return confirm('삭제하시겠습니까?');">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 7h15"/><path d="M9.5 7V5h5v2"/><path d="M6.5 7 7.6 20h8.8L17.5 7"/></svg>
                     삭제
                 </a>
@@ -304,11 +304,7 @@
         return (c - 0xAC00) % 28 ? '은' : '는';
     }
     function askLogin(href, label) {
-        g5Confirm({
-            title: '로그인이 필요합니다',
-            message: label + josaEun(label) + ' 회원만 할 수 있습니다.',
-            okText: '로그인', cancelText: '나중에'
-        }, function () { location.href = href; });
+        if (confirm(label + josaEun(label) + ' 회원만 할 수 있습니다.\n로그인하시겠습니까?')) location.href = href;
     }
     document.querySelectorAll('a.react-login[data-login-href], a.react-login').forEach(function (a) {
         a.addEventListener('click', function (e) {

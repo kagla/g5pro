@@ -21,7 +21,7 @@
             @if ($reply_href)<a class="btn btn-primary" href="{!! $reply_href !!}">답장</a>@endif
         </div>
         <div class="bbs-actions">
-            <a class="btn" href="{!! $del_href !!}" data-confirm="이 쪽지를 삭제하시겠습니까?" data-confirm-danger>삭제</a>
+            <a class="btn" href="{!! $del_href !!}" onclick="return confirm('이 쪽지를 삭제하시겠습니까?');">삭제</a>
         </div>
     </div>
 

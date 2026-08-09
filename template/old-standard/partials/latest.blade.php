@@ -5,8 +5,6 @@
 @endphp
 @if ($lt['board'])
 <section class="card">
-    {{-- 라벨 칩을 두지 않는다 — 칩과 제목이 같은 말을 한다("[공지] 공지사항").
-         칩을 부르는 화면이 있을 수 있으므로 $label 을 넘기면 그때만 붙는다(기본은 없음) --}}
     <h3>
         @if ($label)<span class="chip {{ $chip }}">{{ $label }}</span>@endif
         <a href="{{ G5_BBS_URL }}/board.php?bo_table={{ $lt['board']['bo_table'] }}">{{ $lt['board']['bo_subject'] }}</a>

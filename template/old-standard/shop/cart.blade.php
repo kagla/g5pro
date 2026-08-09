@@ -155,15 +155,7 @@ function form_check(act) {
         alert('삭제하실 상품을 하나이상 선택해 주십시오.');
         return false;
     }
-    // 비우기는 되돌릴 수 없어 한 번 묻는다. 대화상자는 값을 돌려주지 않으므로
-    // 일단 멈추고, 확인을 받으면 이 함수를 다시 부른다(플래그로 두 번 묻지 않게).
-    if (act === 'alldelete' && f.dataset.confirmed !== '1') {
-        g5Confirm({ title: '장바구니를 비울까요?', message: '담아 둔 상품이 모두 빠집니다.',
-                    okText: '비우기', danger: true },
-            function () { f.dataset.confirmed = '1'; form_check(act); });
-        return false;
-    }
-    f.dataset.confirmed = '';
+    if (act === 'alldelete' && !confirm('장바구니를 비우시겠습니까?')) return false;
 
     // 안 보이는 쪽 체크는 전송에서 뺀다 — 그래야 화면에서 푼 체크가 반영된다
     boxes.forEach(function (c) { c.disabled = (c.offsetParent === null); });

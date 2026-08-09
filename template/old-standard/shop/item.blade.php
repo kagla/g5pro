@@ -112,13 +112,7 @@
 // 마크업(javascript: href)은 그대로 두고 클릭을 가로채 한 번 묻는다.
 document.querySelectorAll('.sit_btn_wish').forEach(function (a) {
     a.addEventListener('click', function (e) {
-        if (a.dataset.confirmed === '1') { a.dataset.confirmed = ''; return; }
-        e.preventDefault();
-        g5Confirm({
-            title: '위시리스트에 보관할까요?',
-            message: '나중에 마이페이지에서 다시 볼 수 있습니다.',
-            okText: '보관하기'
-        }, function () { a.dataset.confirmed = '1'; a.click(); });
+        if (!confirm('이 상품을 위시리스트에 보관하시겠습니까?')) e.preventDefault();
     });
 });
 </script>

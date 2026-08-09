@@ -4,7 +4,7 @@
     @php $cls = trim(($it['is_notice'] ? 'notice ' : '').($it['is_current'] ? 'current' : '')); @endphp
     <li class="{{ $cls }}" style="padding-left: {{ 24 + min($it['depth'], 6) * 14 }}px">
         <div class="s">
-            @if ($it['is_notice'])<span class="chip notice">공지</span>@endif
+            @if ($it['is_notice'])<span class="chip c3">공지</span>@endif
             @if ($it['ca_name'])<a class="chip cate" href="{!! $it['ca_href'] !!}">{{ $it['ca_name'] }}</a>@endif
             @if ($it['depth'])<span class="reply-arrow" aria-hidden="true">↳</span>@endif
             <span class="t"><a href="{{ $it['href'] }}">{!! $it['subject'] !!}</a></span>
