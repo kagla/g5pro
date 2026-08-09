@@ -105,4 +105,7 @@ g5_view('cart.index', array(
     'all_href' => cart_url('list.php'),
     'cart_href' => cart_url('cart.php'),
     'orders_href' => $is_member ? cart_url('order.php') : cart_url('guest.php'),
+    // 찜은 회원 것이라 목록도 회원만 연다 — 비회원이 눌러도 wish.php 가 로그인으로 안내한다
+    'wish_href' => cart_url('wish.php'),
+    'wish_count' => $is_member ? cart_wish_total($member['mb_id']) : 0,
 ));
