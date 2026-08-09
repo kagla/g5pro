@@ -81,7 +81,10 @@
         <dt>배송비</dt>
         <dd>주문서에서 계산 (기본 {{ number_format($ship_base) }}원)</dd>
     </dl>
-    <a href="{{ $checkout_href }}" class="cart-cta" id="cart_order">주문하기</a>
+    <div class="cart-sum-act">
+        <p class="cart-order-block" id="cart_left_out" hidden></p>
+        <a href="{{ $checkout_href }}" class="cart-cta" id="cart_order">주문하기</a>
+    </div>
 </aside>
 @else
 <p class="empty">장바구니가 비어 있습니다.</p>
@@ -131,9 +134,18 @@ $(function () {
             return;
         }
         var ids = $on.map(function () { return this.value; }).get();
-        // 전부 골랐으면 스코프를 붙이지 않는다 — 주소가 짧고, 그 사이 담긴 것도 함께 간다
+        // 스코프를 생략해도 되는 때는 **장바구니 전체 줄**을 고른 때뿐이다.
+        // "고를 수 있는 것을 전부" 골랐다고 생략하면, 막힌 줄이 있을 때 주문서가 장바구니
+        // 전체를 보고 그 줄 때문에 거절한다 — 화면은 주문된다고 하고 서버는 막는 어긋남이 난다.
+        var allRows = $('.cart-cart-row').length;
         $order.removeClass('is-disabled').text('주문하기 (' + $on.length + ')')
-              .attr('href', ids.length === picks().length ? base : base + '?buy=' + ids.join(','));
+              .attr('href', ids.length === allRows ? base : base + '?buy=' + ids.join(','));
+
+        // 못 고른 줄이 있으면 그 사실을 버튼 옆에 적어 둔다 — 조용히 빼고 보내면
+        // 손님은 무엇이 빠졌는지 모른 채 결제한다
+        var off = allRows - picks().length;
+        $('#cart_left_out').text(off ? '재고·판매중지로 주문할 수 없는 상품 ' + off + '개는 빠집니다.' : '')
+                           .prop('hidden', !off);
     }
 
     $(document).on('change', '.cart-pick', paint);

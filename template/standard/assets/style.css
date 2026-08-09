@@ -3095,6 +3095,9 @@ body.cart-lb-lock { overflow: hidden; }
     border: 1px solid var(--line); border-radius: var(--r-xl); padding: var(--s5);
     display: flex; align-items: center; justify-content: space-between; gap: var(--s4); flex-wrap: wrap;
 }
+/* 합계 오른쪽 — 주문 버튼과 그 위 안내를 한 덩어리로 세운다 */
+.cart-sum-act { display: flex; flex-direction: column; align-items: flex-end; gap: var(--s2); }
+.cart-sum-act .cart-order-block { margin: 0; font-size: var(--t-sm); text-align: right; }
 .cart-cart-sum dl { display: flex; align-items: baseline; gap: var(--s5); margin: 0; flex-wrap: wrap; }
 .cart-cart-sum dt { font-size: var(--t-sm); color: var(--muted); }
 .cart-cart-sum dd { font-weight: 700; margin: 0; font-variant-numeric: tabular-nums; }
