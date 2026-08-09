@@ -46,13 +46,15 @@ function cart_toss_ready($od)
     );
 }
 
-// 관리자 환불(전체취소) — 승인 확정과 같은 cancel API. 성공 시 빈 문자열, 실패 시 사유.
-function cart_toss_refund($od, $tid, $reason)
+// 관리자 환불 — 승인 확정과 같은 cancel API. 성공 시 빈 문자열, 실패 시 사유.
+// $amount 가 0 보다 크면 그 금액만 취소한다(부분취소). 빼면 남은 금액 전부가 취소된다.
+function cart_toss_refund($od, $tid, $reason, $amount = 0)
 {
     $conf = cart_toss_conf();
+    $body = array('cancelReason' => mb_substr($reason, 0, 100, 'utf-8'));
+    if ((int)$amount > 0) $body['cancelAmount'] = (int)$amount;
     list($code, $res, $raw) = cart_http_post_json($conf['api'].'/'.$tid.'/cancel',
-        array('cancelReason' => mb_substr($reason, 0, 100, 'utf-8')),
-        array(cart_toss_auth_header($conf['skey'])));
+        $body, array(cart_toss_auth_header($conf['skey'])));
     if ($code === 200) return '';
     $msg = is_array($res) ? cart_pay_res($res, 'message') : '';
     return '토스 환불 거절: '.($msg !== '' ? $msg : 'http '.$code);
