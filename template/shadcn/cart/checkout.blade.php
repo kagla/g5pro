@@ -11,7 +11,8 @@
 
 <div class="cart-checkout">
 {{-- novalidate: 우편번호·주소가 readonly 라 브라우저 required 검증에서 빠진다 — 검증은 아래 스크립트가 한 곳에서 --}}
-<form method="post" action="{{ $action_url }}" class="cart-checkout-form" novalidate>
+<form method="post" action="{{ $action_url }}" class="cart-checkout-form" novalidate
+      data-confirm="이 내용대로 주문하시겠습니까?">
     <input type="hidden" name="token" value="{{ $token }}">
     <input type="hidden" name="expect_ct_ids" value="{{ $expect_ct_ids }}">
     <input type="hidden" name="expect_item_total" value="{{ $item_total }}">
@@ -248,9 +249,15 @@ $(function () {
     $('#cart_addr_del').on('click', function () {
         var $sel = $('#cart_addr_pick'), id = $sel.val();
         if (!id) { alert('지울 배송지를 고르세요.'); return; }
-        if (!confirm('저장된 배송지를 목록에서 지울까요?\n' + $.trim($sel.find(':selected').text()))) return;
-
-        var $btn = $(this).prop('disabled', true);
+        // 지우기는 되돌릴 수 없어 빨간 버튼으로 묻는다.
+        // 실제 삭제는 확인 뒤에 콜백에서 — $sel·id·$btn 이 그대로 잡혀 있다.
+        var $btn = $(this);
+        g5Confirm({
+            title: '배송지를 지울까요?',
+            message: $.trim($sel.find(':selected').text()),
+            okText: '지우기', danger: true
+        }, function () {
+        $btn.prop('disabled', true);
         $.ajax({
             type: 'POST',
             url: '{{ $address_url }}',
@@ -273,6 +280,7 @@ $(function () {
             alert('지우지 못했습니다. 로그인 상태를 확인해 주세요.');
         }).always(function () {
             $btn.prop('disabled', false);
+        });
         });
     });
 
@@ -300,7 +308,8 @@ $(function () {
 
         // 무통장은 확인창으로 한 번 물은 뒤 일반 제출(완료 페이지로 이동)
         if ($('input[name="pay"]:checked').val() === 'bank') {
-            return confirm('이 내용대로 주문하시겠습니까?');
+            // 최종 확인은 화면에 적어 둔다(data-confirm) — 여기서는 검사만 통과시킨다
+            return true;
         }
 
         // PG — 초안 접수부터 결제창까지 이 화면에서. 주문서는 결제가 끝나야 저장된다.

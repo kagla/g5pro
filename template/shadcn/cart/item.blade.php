@@ -774,9 +774,11 @@ $(function () {
                 }
                 if (window.cartClearPicks) window.cartClearPicks();
                 var n = res.count ? ' (장바구니 ' + res.count + '개)' : '';
-                if (confirm('장바구니에 담았습니다.' + n + '\n장바구니로 이동하시겠습니까?')) {
-                    location.href = res.href;
-                }
+                g5Confirm({
+                    title: '장바구니에 담았습니다',
+                    message: '지금 담은 것까지 장바구니에' + (n ? n.replace(' (장바구니 ', ' ').replace('개)', '개') : '') + ' 있습니다.\n장바구니로 이동하시겠습니까?',
+                    okText: '장바구니 보기', cancelText: '계속 둘러보기'
+                }, function () { location.href = res.href; });
             })
             .fail(function () { alert('잠시 후 다시 시도해 주세요.'); })
             .always(function () { $btn.prop('disabled', false); });
@@ -809,15 +811,21 @@ $(function () {
                 $btn.find('.wish-btn-label').text(res.on ? '찜함' : '찜하기');
                 $btn.find('.wish-btn-n').text(res.count).prop('hidden', !res.count);
                 // 담았을 때만 묻는다 — 뺀 사람에게 목록으로 갈지 묻는 건 하려던 일과 반대다
-                if (res.on && confirm('찜 목록에 담았습니다.\n찜 목록으로 이동하시겠습니까?')) {
-                    location.href = '{!! $wish_href !!}';
+                if (res.on) {
+                    g5Confirm({
+                        title: '찜 목록에 담았습니다',
+                        message: '찜한 상품은 나중에 모아서 볼 수 있습니다.\n찜 목록으로 이동하시겠습니까?',
+                        okText: '찜 목록 보기', cancelText: '계속 둘러보기'
+                    }, function () { location.href = '{!! $wish_href !!}'; });
                 }
                 return;
             }
             if (res && res.login) {
-                if (confirm('찜은 로그인 후 이용할 수 있습니다. 로그인하시겠어요?')) {
-                    location.href = '{!! $wish_login_url !!}';
-                }
+                g5Confirm({
+                    title: '로그인이 필요합니다',
+                    message: '찜한 상품을 다음에도 보시려면 로그인해 주세요.',
+                    okText: '로그인', cancelText: '나중에'
+                }, function () { location.href = '{!! $wish_login_url !!}'; });
                 return;
             }
             alert(res && res.msg ? res.msg : '잠시 후 다시 시도해 주세요.');

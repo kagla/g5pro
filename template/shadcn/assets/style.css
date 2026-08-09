@@ -60,8 +60,8 @@
     --s5: 24px; --s6: 32px; --s7: 48px;
 
     /* 글자 */
-    --t-xs: 11px; --t-sm: 12.5px; --t-base: 13.5px; --t-md: 14.5px;
-    --t-lg: 16px; --t-xl: 20px; --t-2xl: 25px;
+    --t-xs: 12px; --t-sm: 13px; --t-base: 14px; --t-md: 15px;
+    --t-lg: 17px; --t-xl: 22px; --t-2xl: 30px;
 
     /* 모서리 — standard 보다 한 단계씩 조인다(카드 20→12) */
     --r-sm: 6px; --r-md: 8px; --r-lg: 10px; --r-xl: 12px; --r-2xl: 14px; --r-full: 999px;
@@ -205,8 +205,9 @@ body {
     color: var(--fg);
     font-family: Pretendard, "Apple SD Gothic Neo", "Nanum Gothic", "Malgun Gothic", -apple-system, sans-serif;
     font-size: var(--t-base);
-    line-height: 1.55;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
 }
 /* 링크 기본은 물려받은 색이다 — 목록 줄·메뉴·카드처럼 "덩어리 전체가 링크" 인 자리가 대부분이라,
    거기에 색을 주면 화면이 온통 파래진다.
@@ -230,7 +231,7 @@ a:hover { color: var(--accent); }
 .cart-complete-line a:hover,
 .wish-msg a:hover { color: var(--accent); }
 img { max-width: 100%; height: auto; }
-h1, h2, h3, h4, h5 { margin: 0; line-height: 1.35; letter-spacing: -.01em; }
+h1, h2, h3, h4, h5 { margin: 0; line-height: 1.3; letter-spacing: -.021em; font-weight: 700; }
 ul { list-style: none; margin: 0; padding: 0; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .wrap { max-width: 1080px; margin: 0 auto; padding: 0 var(--s5); }
@@ -258,8 +259,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* ── 버튼·입력 ── */
 .btn {
     display: inline-block; text-align: center;   /* <a class="btn"> 이 늘어날 때 글자가 왼쪽에 붙지 않게 */
-    font-size: var(--t-sm); font-weight: 700;
-    padding: var(--s2) var(--s4); border-radius: var(--r-btn);
+    font-size: var(--t-base); font-weight: 600;
+    padding: 9px var(--s4); line-height: 1.25; border-radius: var(--r-btn);
     background: var(--card); color: var(--fg); border: 1px solid var(--line);
     cursor: pointer; white-space: nowrap; font-family: inherit;
     transition: border-color .15s, color .15s, box-shadow .15s;
@@ -292,12 +293,15 @@ input[type=text], input[type=password], input[type=email], input[type=file],
 input[type=number], input[type=tel], input[type=search], input[type=url],
 select, textarea {
     background: var(--bg); color: var(--fg);
-    border: 1px solid var(--line); border-radius: var(--r-input);
-    padding: var(--s2) var(--s3);
+    border: 1px solid var(--btn-line); border-radius: var(--r-input);
+    padding: 9px var(--s3); line-height: 1.25;
     font: inherit; font-size: var(--t-base); max-width: 100%;
     transition: border-color .15s, background .15s;
 }
-input:focus, select:focus, textarea:focus { background: var(--card); border-color: var(--accent); outline: none; }
+input:focus, select:focus, textarea:focus {
+    background: var(--card); border-color: var(--accent);
+    outline: 2px solid var(--accent-soft); outline-offset: 0;
+}
 textarea { line-height: 1.6; border-radius: var(--r-input); }
 
 /* ── 헤더 (L1 pill nav + L2 검색) ── */
@@ -600,11 +604,11 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 }
 .card {
     background: var(--card); border-radius: var(--r-xl);
-    padding: var(--s4) var(--s5); box-shadow: var(--sh-md);
+    padding: var(--s5); box-shadow: var(--sh-md);
 }
 .card > h3 {
     display: flex; align-items: center; gap: var(--s2);
-    font-size: var(--t-md); margin-bottom: var(--s3);
+    font-size: var(--t-md); margin-bottom: var(--s3); letter-spacing: -.015em;
 }
 /* 줄마다 옅은 선 — 없으면 다섯 줄이 한 덩어리로 뭉쳐 어디까지가 한 글인지 안 읽힌다 */
 .card li {
@@ -3137,3 +3141,36 @@ body.cart-lb-lock { overflow: hidden; }
 .cart-home-links a { color: var(--muted); }
 .cart-home-links a:hover { color: var(--accent-deep); }
 .cart-home-links b { color: var(--accent-deep); }
+
+/* ═══════════ 대화상자 (확인·경고) ═══════════
+   브라우저 confirm() 은 운영체제가 그리는 창이라 CSS 가 한 줄도 안 먹는다 —
+   공들여 만든 화면 위에 회색 시스템 창이 뜨면 거기서 디자인이 끊긴다.
+   shadcn 의 AlertDialog 자리를 대신하는 최소 구현: 덮개 + 카드 + 버튼 두 개.
+   동작은 theme.js 의 g5Confirm() 이 맡는다 */
+.g5-dlg {
+    position: fixed; inset: 0; z-index: 1200;
+    display: flex; align-items: center; justify-content: center; padding: var(--s4);
+    background: rgba(2, 6, 23, .55);
+}
+.g5-dlg-panel {
+    width: 100%; max-width: 420px; background: var(--card); color: var(--fg);
+    border: 1px solid var(--line); border-radius: var(--r-xl);
+    box-shadow: var(--sh-lg); padding: var(--s5);
+    display: flex; flex-direction: column; gap: var(--s3);
+}
+.g5-dlg-title { font-size: var(--t-lg); font-weight: 700; letter-spacing: -.02em; margin: 0; }
+/* 줄바꿈이 든 문장을 그대로 살린다 — confirm() 에 쓰던 \n 이 그대로 넘어온다 */
+.g5-dlg-body { margin: 0; color: var(--muted); font-size: var(--t-base); line-height: 1.65; white-space: pre-line; }
+.g5-dlg-foot { display: flex; justify-content: flex-end; gap: var(--s2); margin-top: var(--s2); }
+.g5-dlg-foot .btn { min-width: 84px; }
+/* 되돌릴 수 없는 처리 — 확인 버튼을 빨강으로. 누르기 전에 무게가 다르다는 것이 보여야 한다 */
+.g5-dlg-foot .btn-danger {
+    background: var(--danger); border-color: var(--danger); color: #fff;
+}
+.g5-dlg-foot .btn-danger:hover { background: var(--danger-deep); border-color: var(--danger-deep); color: #fff; }
+@media (prefers-reduced-motion: no-preference) {
+    .g5-dlg { animation: g5-dlg-in .12s ease-out; }
+    .g5-dlg-panel { animation: g5-dlg-pop .14s cubic-bezier(.2, .8, .3, 1); }
+    @keyframes g5-dlg-in { from { opacity: 0; } }
+    @keyframes g5-dlg-pop { from { opacity: 0; transform: translateY(6px) scale(.985); } }
+}

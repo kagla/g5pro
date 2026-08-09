@@ -73,7 +73,7 @@
     <section class="cart-co-sec">
         <h3>잘 받으셨나요?</h3>
         <p class="cart-co-note">구매확정을 누르시면 주문이 마무리됩니다. 확정한 뒤에는 되돌릴 수 없습니다.</p>
-        <form method="post" action="{{ $action_url }}" onsubmit="return confirm('구매확정하시겠습니까?\n확정한 뒤에는 되돌릴 수 없습니다.');">
+        <form method="post" action="{{ $action_url }}" data-confirm="구매확정하시겠습니까?&#10;확정한 뒤에는 되돌릴 수 없습니다.">
             <input type="hidden" name="token" value="{{ $token }}">
             <input type="hidden" name="mode" value="confirm">
             <input type="hidden" name="od_no" value="{{ $order['od_no'] }}">
@@ -158,7 +158,7 @@
     <section class="cart-co-sec">
         <h3>반품 신청</h3>
         <p class="cart-co-note">받으신 날부터 {{ $return_days }}일 안에 신청할 수 있습니다. 판매자 확인 후 처리됩니다.</p>
-        <form method="post" action="{{ $action_url }}" onsubmit="return confirm('반품을 신청하시겠습니까?');">
+        <form method="post" action="{{ $action_url }}" data-confirm="반품을 신청하시겠습니까?&#10;판매자 확인 후 처리됩니다.">
             <input type="hidden" name="token" value="{{ $token }}">
             <input type="hidden" name="mode" value="return">
             <input type="hidden" name="od_no" value="{{ $order['od_no'] }}">

@@ -622,3 +622,77 @@
         try { el.focus(); if (s !== null) el.setSelectionRange(s, e); } catch (err) {}
     });
 })();
+
+// ── 확인 대화상자 ────────────────────────────────────────────────
+// 브라우저 confirm() 을 대신한다. 시스템 창은 CSS 가 안 먹어서 화면이 거기서 끊긴다.
+//
+// 쓰는 법 두 가지 —
+//   g5Confirm('정말 지울까요?', function () { ... })            // 코드에서 부를 때
+//   <form data-confirm="정말 지울까요?">                          // 화면에 적어 둘 때
+//   <a href="…" data-confirm="…" data-confirm-danger>            // 되돌릴 수 없는 처리
+//
+// confirm() 과 달리 **기다려 주지 않는다**(값을 돌려주지 않는다). 눌렀을 때 할 일을
+// 콜백으로 넘겨야 한다 — 시스템 창처럼 스크립트를 멈춰 세울 방법이 브라우저에 없다.
+(function () {
+    if (!window.jQuery) return;
+    var $ = window.jQuery;
+
+    window.g5Confirm = function (opts, onOk) {
+        if (typeof opts === 'string') opts = { message: opts };
+        opts = opts || {};
+
+        var $prev = $(document.activeElement);   // 닫은 뒤 원래 있던 자리로 초점을 돌려준다
+        var $dlg = $('<div class="g5-dlg" role="dialog" aria-modal="true"></div>');
+        var $panel = $('<div class="g5-dlg-panel"></div>').appendTo($dlg);
+
+        if (opts.title) $('<h2 class="g5-dlg-title"></h2>').text(opts.title).appendTo($panel);
+        $('<p class="g5-dlg-body"></p>').text(opts.message || '').appendTo($panel);
+
+        var $foot = $('<div class="g5-dlg-foot"></div>').appendTo($panel);
+        var $cancel = $('<button type="button" class="btn"></button>')
+            .text(opts.cancelText || '취소').appendTo($foot);
+        var $ok = $('<button type="button" class="btn"></button>')
+            .addClass(opts.danger ? 'btn-danger' : 'btn-primary')
+            .text(opts.okText || '확인').appendTo($foot);
+
+        function close() {
+            $dlg.remove();
+            $(document).off('keydown.g5dlg');
+            try { $prev.trigger('focus'); } catch (e) {}
+        }
+        $cancel.on('click', close);
+        $ok.on('click', function () { close(); if (typeof onOk === 'function') onOk(); });
+        // 덮개를 눌러도 닫는다 — 확인이 아니라 취소다(실수로 진행되면 안 된다)
+        $dlg.on('click', function (e) { if (e.target === $dlg[0]) close(); });
+        $(document).on('keydown.g5dlg', function (e) {
+            if (e.which === 27) { close(); return; }
+            // Tab 을 두 버튼 안에 가둔다 — 뒤 화면으로 초점이 새면 어디 있는지 알 수 없다
+            if (e.which === 9) {
+                var a = $panel.find('button').toArray();
+                var i = a.indexOf(document.activeElement);
+                var n = e.shiftKey ? (i <= 0 ? a.length - 1 : i - 1) : (i === a.length - 1 ? 0 : i + 1);
+                a[n].focus();
+                e.preventDefault();
+            }
+        });
+
+        $('body').append($dlg);
+        $ok.trigger('focus');
+    };
+
+    // 화면에 적어 두는 방식 — 폼과 링크에 data-confirm 만 달면 된다.
+    // 확인하면 같은 동작을 다시 일으키되, 이번에는 플래그를 보고 그냥 지나가게 한다.
+    $(document).on('submit', 'form[data-confirm]', function (e) {
+        var f = this;
+        if (f.dataset.confirmed === '1') return;
+        e.preventDefault();
+        g5Confirm({ message: f.dataset.confirm, danger: f.hasAttribute('data-confirm-danger') },
+            function () { f.dataset.confirmed = '1'; f.submit(); });
+    });
+    $(document).on('click', 'a[data-confirm]', function (e) {
+        var a = this;
+        e.preventDefault();
+        g5Confirm({ message: a.dataset.confirm, danger: a.hasAttribute('data-confirm-danger') },
+            function () { location.href = a.href; });
+    });
+})();
