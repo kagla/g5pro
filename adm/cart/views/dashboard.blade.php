@@ -1,12 +1,19 @@
 {{-- 카트 대시보드 — 순정 관리자 어휘만 쓴다: btn_ov01 요약 칩, shop_admin 의 sidx 그래프,
-     tbl_head01 표. 전용 CSS 없음(기존 관리자 디자인을 그대로 따른다는 결정). --}}
+     tbl_head01 표. 전용 CSS 없음. 요약 칩의 글자 크기는 전 관리자 화면 공통으로 올렸다
+     (adm/css/admin_extend_chip.css — 여기서만 키우면 다른 화면 칩과 어긋난다). --}}
 
-<div class="local_ov01 local_ov">
+<div class="local_ov01 local_ov" id="cart_dash_ov">
     <span class="btn_ov01"><span class="ov_txt">오늘 매출</span><span class="ov_num">{{ number_format($today_sales) }}원 · {{ number_format($today_paid_cnt) }}건</span></span>
     <span class="btn_ov01"><span class="ov_txt">오늘 주문</span><span class="ov_num">{{ number_format($today_orders) }}건</span></span>
     <span class="btn_ov01"><span class="ov_txt">판매 중 상품</span><span class="ov_num">{{ number_format($item_cnt) }}</span></span>
     <span class="btn_ov01"><span class="ov_txt">담긴 장바구니</span><span class="ov_num">{{ number_format($cart_cnt) }}행</span></span>
     <span class="btn_ov01"><span class="ov_txt">재고 임박</span><span class="ov_num">{{ number_format($low_total) }} SKU</span></span>
+
+    {{-- 반품 신청 — 기다리는 사람이 있는 일이라 0 이 아닐 때만, 대신 눌러서 바로 갈 수 있게 --}}
+    @if ($return_pending)
+    <a class="btn_ov01" href="{{ $return_url }}"><span class="ov_txt">반품 신청</span><span class="ov_num">{{ number_format($return_pending) }}건 대기</span></a>
+    @endif
+
 </div>
 
 <div class="sidx">
