@@ -9,15 +9,11 @@ $is_member = isset($member['mb_id']) && $member['mb_id'] !== '';
 if ($od_no !== '') {
     $order = cart_order_get_by_no($od_no);
 
-    // 회원 본인, 방금 주문 세션, 비회원 조회 인증 세션 — 셋 중 하나
-    $is_mine = false;
-    if ($order) {
-        if ($is_member && $member['mb_id'] === $order['mb_id']) $is_mine = true;
-        elseif (!empty($_SESSION['ss_cart_last_od_no']) && $_SESSION['ss_cart_last_od_no'] === $order['od_no']) $is_mine = true;
-        elseif (!empty($_SESSION['ss_cart_guest_od_no']) && $_SESSION['ss_cart_guest_od_no'] === $order['od_no']) $is_mine = true;
-    }
+    // 회원 본인, 방금 주문 세션, 비회원 조회 인증 세션 — 셋 중 하나 (처리 화면과 같은 판정)
     // 초안(draft)은 결제 전이라 아직 주문이 아니다 — 어디에도 보이지 않는다
-    if (!$order || !$is_mine || $order['od_status'] === 'draft') alert('주문을 찾을 수 없습니다.', cart_url('guest.php'));
+    if (!$order || !cart_order_is_mine($order) || $order['od_status'] === 'draft') {
+        alert('주문을 찾을 수 없습니다.', cart_url('guest.php'));
+    }
 
     $cc = cart_config();
     $g5['title'] = '주문 상세';
@@ -29,6 +25,19 @@ if ($od_no !== '') {
         'pay_href' => '',
         'list_href' => $is_member ? cart_url('order.php') : cart_url(''),
         'is_member' => $is_member,
+        // 배송 정보 — 발송한 뒤에만 보여 준다. 송장 조회 주소는 택배사를 알아본 경우에만 채워진다.
+        'track_url' => cart_delivery_track_url($order['od_delivery_company'], $order['od_invoice']),
+        // 구매확정 — 배송완료에서만. 반품이 걸린 주문은 처리가 끝날 때까지 감춘다:
+        // 확정은 "다 잘 받았다" 는 매듭이라 반품이 진행 중일 때 누르면 말이 어긋난다.
+        'can_confirm' => ($order['od_status'] === 'delivered' && !cart_return_blocks_confirm((int)$order['od_id'])),
+        'action_url' => cart_url('order_update.php'),
+        'token' => get_token(),
+        // 반품 — 고를 수 있는 품목이 있을 때만 신청 칸을 연다. 못 여는 이유는 화면이 말해 준다.
+        'return_items' => cart_return_available_items((int)$order['od_id']),
+        'return_why_not' => cart_return_why_not($order),
+        'returns' => cart_return_rows((int)$order['od_id']),
+        'return_days' => cart_return_days(),
+        'is_bank' => ($order['od_pay_method'] === 'bank'),
     ));
     return;
 }
