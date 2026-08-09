@@ -129,25 +129,62 @@ foreach ($im_dels as $imid) {
     if ($irow && (int)$irow['it_id'] === $it_id) cart_item_image_delete($imid);
 }
 
+// 화면이 보낸 타일 순서. 'e:12' = 이미 있는 im_id 12, 'n:0' = im_files[] 의 0번 파일.
+// 남은 사진과 새로 올릴 파일이 한 줄에 섞여 오므로 순서를 이 배열 하나로 표현한다.
+// 배열이 아예 없으면(JS 를 끈 브라우저) 아래 업로드는 예전처럼 파일 순서대로 하고
+// 순서·대표 손질은 건너뛴다 — 화면이 순서를 정하지 않았는데 서버가 뒤엎지 않게.
+$im_seq = (isset($_POST['im_seq']) && is_array($_POST['im_seq'])) ? $_POST['im_seq'] : array();
+$has_seq = count($im_seq) > 0;
+
 // 업로드 실패는 즉시 alert 로 끊지 않는다 — 이미 저장된 SKU·성공한 이미지가 날아가지 않게
 // 실패 파일만 건너뛰며 오류를 모으고, 전부 처리한 뒤 한 번에 안내한다.
 $img_errors = array();
+$uploaded = array();   // 파일 인덱스 => 몇 번째 자리에 놓을지. 순서 배열이 있을 때만 채운다
+
+if ($has_seq) {
+    // 자리 번호를 먼저 정해 둔다 — 기존 사진은 UPDATE, 새 파일은 INSERT 로 갈리지만
+    // 두 갈래가 같은 번호 체계를 써야 한 줄로 이어진다.
+    foreach ($im_seq as $pos => $tok) {
+        if (!is_string($tok) || strlen($tok) < 3) continue;
+        $kind = $tok[0];
+        $num = (int)substr($tok, 2);
+        if ($kind === 'e') {
+            // 소유권 확인은 삭제와 같은 이유 — im_id 만으로 오므로 남의 상품 사진을 못 옮기게
+            sql_query(" update `{$g5['ycart_item_image_table']}` set im_order = '".(int)$pos."'
+                where im_id = '$num' and it_id = '$it_id' ", true);
+        } elseif ($kind === 'n') {
+            $uploaded[$num] = (int)$pos;
+        }
+    }
+}
+
 if (isset($_FILES['im_files']) && is_array($_FILES['im_files']['name'])) {
     foreach ($_FILES['im_files']['name'] as $i => $name) {
         if ($_FILES['im_files']['error'][$i] === UPLOAD_ERR_NO_FILE) continue;
+        // 순서 배열이 온 제출은 파일마다 자리가 반드시 있다(화면이 둘을 한 순회로 만든다).
+        // 자리가 없다는 건 순서 배열 자체가 없는 제출(무JS)이라는 뜻 — 예전처럼 파일 순서를 쓴다.
+        $order = isset($uploaded[$i]) ? $uploaded[$i] : $i;
         $err = cart_item_image_add($it_id, array(
             'name' => $name,
             'tmp_name' => $_FILES['im_files']['tmp_name'][$i],
             'error' => $_FILES['im_files']['error'][$i],
-        ), $i);
+        ), $order);
         if ($err) $img_errors[] = $name.': '.$err;
     }
 }
-$im_main = (isset($_POST['im_main']) && !is_array($_POST['im_main'])) ? (int)$_POST['im_main'] : 0;
-if ($im_main) {
+
+// 대표는 맨 앞 사진이다 — 화면에서도 첫 칸이 대표 배지를 달고 있다.
+// 방금 올린 파일이 첫 칸일 수 있는데 cart_item_image_add 는 새 im_id 를 돌려주지 않는다.
+// 그래서 미리 정하지 않고 전부 반영한 뒤 첫 행을 다시 읽는다 — 첫 장 업로드가 실패해도
+// 남은 것 중 맨 앞이 대표가 되어 대표 없는 상품이 생기지 않는다.
+if ($has_seq) {
+    $first = sql_fetch(" select im_id from `{$g5['ycart_item_image_table']}`
+        where it_id = '$it_id' order by im_order, im_id limit 1 ");
     sql_query(" update `{$g5['ycart_item_image_table']}` set im_main = 0 where it_id = '$it_id' ", true);
-    sql_query(" update `{$g5['ycart_item_image_table']}` set im_main = 1
-        where im_id = '$im_main' and it_id = '$it_id' ", true);
+    if ($first) {
+        sql_query(" update `{$g5['ycart_item_image_table']}` set im_main = 1
+            where im_id = '".(int)$first['im_id']."' and it_id = '$it_id' ", true);
+    }
 }
 
 $back = G5_CART_ADMIN_URL.'/item_form.php?w=u&it_id='.$it_id;
