@@ -149,6 +149,10 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
                     @if ($cart)
                     <a href="{{ $cart['orders_href'] }}" class="sep">주문내역</a>
                     @endif
+                    @if ($cart && $cart['wish_href'] !== '')
+                    <a href="{{ $cart['wish_href'] }}">찜한 상품</a>
+                    <a href="{{ $cart['coupon_href'] }}">쿠폰함</a>
+                    @endif
                     @if ($me['mb_level'] >= 10)
                     <a href="{{ G5_ADMIN_URL }}/">관리자</a>
                     @endif

@@ -953,6 +953,9 @@ function g5_pro_cart()
         'href'  => G5_CART_URL.'/cart.php',
         // 비회원은 주문번호로 찾는 화면이 따로 있다 — 회원 주문내역으로 보내면 로그인 벽을 만난다
         'orders_href' => G5_CART_URL.($mb_id !== '' ? '/order.php' : '/guest.php'),
+        // 찜·쿠폰함은 회원 계정에 붙는 화면이라 회원일 때만 준다(빈 값이면 화면이 줄을 안 그린다)
+        'wish_href' => $mb_id !== '' ? G5_CART_URL.'/wish.php' : '',
+        'coupon_href' => $mb_id !== '' ? G5_CART_URL.'/coupon.php' : '',
     );
 }
 

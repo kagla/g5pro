@@ -104,6 +104,12 @@
             <span>배송비</span>
             <span>{{ number_format($order['od_ship_fee']) }}원</span>
         </div>
+        @if ((int)$order['od_coupon'] > 0)
+        <div class="cart-complete-line is-sub">
+            <span>쿠폰 할인</span>
+            <span>-{{ number_format($order['od_coupon']) }}원</span>
+        </div>
+        @endif
         <div class="cart-complete-line is-total">
             <span>결제 금액</span>
             <span>{{ number_format($order['od_total']) }}원</span>

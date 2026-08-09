@@ -108,6 +108,33 @@
 
     </section>
 
+    {{-- 쿠폰 — 회원만. 여기서 고르는 것은 "어느 장을 쓸지" 뿐이고, 깎일 금액은 서버가
+         주문 확정 때 다시 계산한다. 아래 숫자는 안내다. 못 쓰는 장도 이유와 함께 남긴다 —
+         목록에서 빼면 "내 쿠폰이 사라졌다" 가 되고 왜 못 쓰는지는 어디에도 안 보인다. --}}
+    <section class="cart-co-sec">
+        <h3>쿠폰</h3>
+
+        @if (!$is_member)
+        <p class="cpn-pick-none">쿠폰은 회원만 사용할 수 있습니다.</p>
+        @elseif (!count($coupons))
+        <p class="cpn-pick-none">쓸 수 있는 쿠폰이 없습니다. <a href="{{ $coupon_href }}">쿠폰함에서 코드 등록</a></p>
+        @else
+        <div class="cpn-pick">
+            <select name="cm_id" id="cart_coupon">
+                <option value="0" data-amount="0">쿠폰을 사용하지 않음</option>
+
+                @foreach ($coupons as $c)
+                <option value="{{ $c['cm_id'] }}" data-amount="{{ $c['amount'] }}"
+                        {{ $c['why_not'] !== '' ? 'disabled' : '' }}>{{ $c['name'] }} — {{ $c['label'] }}{{ $c['why_not'] !== '' ? ' (' . $c['why_not'] . ')' : ' · ' . number_format($c['amount']) . '원 할인' }}</option>
+                @endforeach
+
+            </select>
+            <p class="cpn-pick-none">한 주문에 한 장을 쓸 수 있습니다. <a href="{{ $coupon_href }}">쿠폰함</a></p>
+        </div>
+        @endif
+
+    </section>
+
     <section class="cart-co-sec">
         <h3>결제 수단</h3>
 
@@ -124,6 +151,8 @@
             <dd>{{ number_format($item_total) }}원</dd>
             <dt>배송비</dt>
             <dd id="cart_ship_fee">계산 중</dd>
+            <dt id="cart_coupon_dt" hidden>쿠폰 할인</dt>
+            <dd id="cart_coupon_dd" hidden>0원</dd>
             <dt>결제 예정</dt>
             <dd id="cart_pay_total" class="is-total">{{ number_format($item_total) }}원</dd>
         </dl>
@@ -140,13 +169,24 @@
 // 배송비 미리보기 — 서버 규칙(cart_shipping_fee)의 JS 거울. 확정은 항상 서버가 한다.
 var CART_SHIP = { base: {{ $ship['base'] }}, free: {{ $ship['free'] }}, jeju: {{ $ship['jeju'] }}, itemTotal: {{ $item_total }} };
 
+// 고른 쿠폰이 깎는 금액. 서버가 심어 둔 값을 그대로 읽는다 — 화면이 규칙을 다시 구현하면
+// 정률·상한·대상 분류를 두 곳에서 관리하게 되고, 그중 하나가 반드시 틀어진다.
+function cartCouponAmount() {
+    var $sel = $('#cart_coupon');
+    if (!$sel.length) return 0;
+    return parseInt($sel.find('option:selected').data('amount'), 10) || 0;
+}
+
 function cartShipPreview() {
     var zip = $('#od_zip').val().replace(/[^0-9]/g, '');
     var fee = CART_SHIP.base;
     if (CART_SHIP.free > 0 && CART_SHIP.itemTotal >= CART_SHIP.free) fee = 0;
     if (zip.length === 5 && zip.substring(0, 2) === '63') fee += CART_SHIP.jeju;
+    var cou = cartCouponAmount();
     $('#cart_ship_fee').text(fee.toLocaleString() + '원');
-    $('#cart_pay_total').text((CART_SHIP.itemTotal + fee).toLocaleString() + '원');
+    $('#cart_coupon_dt').prop('hidden', cou <= 0);
+    $('#cart_coupon_dd').prop('hidden', cou <= 0).text('-' + cou.toLocaleString() + '원');
+    $('#cart_pay_total').text(Math.max(0, CART_SHIP.itemTotal + fee - cou).toLocaleString() + '원');
 }
 
 function cartSearchZip() {
@@ -323,6 +363,8 @@ $(function () {
             .fail(function () { alert('결제를 시작하지 못했습니다. 잠시 후 다시 시도해 주세요.'); });
         return false;
     });
+
+    $('#cart_coupon').on('change', cartShipPreview);
 
     cartShipPreview();
     cartPayToggle();

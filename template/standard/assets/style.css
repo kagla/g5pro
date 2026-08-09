@@ -3265,3 +3265,32 @@ body.cart-lb-lock { overflow: hidden; }
 .g5-toast.is-anchored.is-below::after { bottom: auto; top: -5px; }
 @media (prefers-reduced-motion: reduce) { .g5-toast.is-anchored { animation: none; } }
 @keyframes g5-toast-pin { from { opacity: 0; transform: translateY(4px); } }
+
+/* ---------- 쿠폰함 (cart/coupon.php) · 주문서 쿠폰 고르기 ----------
+   .cou-* 는 순정 영카트 쿠폰 팝업이 쓰는 이름이라 겹치지 않게 .cpn-* 로 짓는다
+   (한 파일이 커뮤니티·쇼핑몰을 다 그리므로 화면 안에서만 유일한 이름은 없다) */
+.cpn-redeem { display: flex; align-items: center; gap: var(--s3); flex-wrap: wrap;
+    margin-bottom: var(--s5); padding: var(--s4); border-radius: var(--r-lg);
+    background: var(--card); box-shadow: var(--sh-md); }
+.cpn-redeem label { font-weight: 700; font-size: var(--t-sm); }
+.cpn-redeem input { flex: 1 1 12em; min-width: 0; text-transform: uppercase; }
+
+.cpn-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s3); }
+/* 쿠폰 한 장 — 금액이 먼저 읽혀야 한다. 왼쪽 칸을 고정폭으로 두어 여러 장이 세로로 정렬된다 */
+.cpn-card { display: flex; align-items: center; gap: var(--s4); flex-wrap: wrap;
+    padding: var(--s4); border-radius: var(--r-lg); background: var(--card); box-shadow: var(--sh-md); }
+.cpn-card.is-dead { opacity: .55; }
+.cpn-amount { flex: none; min-width: 8.5em; font-size: var(--t-lg); font-weight: 800;
+    color: var(--accent-deep); font-variant-numeric: tabular-nums; }
+.cpn-card.is-dead .cpn-amount { color: var(--muted); }
+.cpn-body { flex: 1 1 12em; display: grid; gap: 2px; min-width: 0; }
+.cpn-name { font-weight: 700; }
+.cpn-cond { font-size: var(--t-xs); color: var(--muted); }
+.cpn-side { flex: none; display: flex; align-items: center; gap: var(--s2); margin-left: auto; }
+.cpn-date { font-size: var(--t-xs); color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* 주문서의 쿠폰 줄 — 고르는 칸과 "얼마 깎였는지" 가 붙어 있어야 고른 결과가 바로 읽힌다 */
+.cpn-pick { display: grid; gap: var(--s2); }
+.cpn-pick select { width: 100%; }
+.cpn-pick-none { font-size: var(--t-sm); color: var(--muted); }
+.cpn-pick-none a { color: var(--accent-deep); }
