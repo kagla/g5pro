@@ -113,8 +113,13 @@
             <select name="od_dc_id" class="frm_input" id="adm_dc">
                 <option value="">택배사 선택</option>
 
+                {{-- 배송관리와 같은 규칙 — 아직 아무것도 안 적힌 주문에만 기본 택배사를 미리 고른다.
+                     옛 자유입력 주문(od_dc_id 는 0 인데 이름은 있다)에 걸면, 못 보고 저장했을 때
+                     그때 찍힌 이름이 엉뚱한 택배사로 덮인다. --}}
+                @php $preselect = ((int)$order['od_dc_id'] === 0 && $order['od_dc_name'] === '' && $default_dc) ? (int)$default_dc['dc_id'] : (int)$order['od_dc_id']; @endphp
+
                 @foreach ($companies as $c)
-                <option value="{{ $c['dc_id'] }}" data-invoice="{{ (int)$c['dc_invoice'] }}" {{ (int)$order['od_dc_id'] === (int)$c['dc_id'] ? 'selected' : '' }}>{{ $c['dc_name'] }}</option>
+                <option value="{{ $c['dc_id'] }}" data-invoice="{{ (int)$c['dc_invoice'] }}" {{ $preselect === (int)$c['dc_id'] ? 'selected' : '' }}>{{ $c['dc_name'] }}</option>
                 @endforeach
 
                 @if ($extra_dc && (int)$extra_dc['dc_use'] === 0)

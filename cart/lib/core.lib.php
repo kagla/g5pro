@@ -159,6 +159,10 @@ function cart_column_upgrades()
         // 기사 연락처 같은 내부 기록. 이름에 admin 을 박아 둔다 — 고객 화면에 가면 안 되는 값이다.
         array('ycart_order_table', 'od_delivery_admin_memo',
             " ADD `od_delivery_admin_memo` varchar(255) NOT NULL DEFAULT '' AFTER `od_delivery_note` "),
+        // 2026-08-10 택배사 대표 연락처 — 배송이 늦거나 물건이 안 보일 때 걸 곳.
+        // 조회주소와 같은 성격의 값이라 택배사 행에 함께 둔다.
+        array('ycart_delivery_company_table', 'dc_tel',
+            " ADD `dc_tel` varchar(30) NOT NULL DEFAULT '' AFTER `dc_name` "),
     );
 }
 
@@ -559,6 +563,7 @@ function cart_table_ddl()
     'ycart_delivery_company_table' => " CREATE TABLE IF NOT EXISTS `{$g5['ycart_delivery_company_table']}` (
         `dc_id` int(11) NOT NULL AUTO_INCREMENT,
         `dc_name` varchar(50) NOT NULL DEFAULT '',
+        `dc_tel` varchar(30) NOT NULL DEFAULT '',
         `dc_url` varchar(255) NOT NULL DEFAULT '',
         `dc_invoice` tinyint(4) NOT NULL DEFAULT '1',
         `dc_order` int(11) NOT NULL DEFAULT '0',
@@ -576,23 +581,26 @@ function cart_table_ddl()
 function cart_delivery_company_seed()
 {
     global $g5;
+    // 대표 연락처는 널리 알려진 고객센터 번호를 적어 두되, 바뀔 수 있는 값이라
+    // 관리자가 택배사관리에서 언제든 고칠 수 있다(조회주소와 같은 성격).
     $seed = array(
-        // 이름, 조회주소, 송장받음, 사용, 기본
-        array('CJ대한통운', 'https://trace.cjlogistics.com/next/tracking.html?wblNo=', 1, 1, 1),
-        array('우체국택배', 'https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=', 1, 1, 0),
-        array('한진택배', 'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&schLang=KR&wblnumText2=', 1, 1, 0),
-        array('롯데택배', 'https://www.lotteglogis.com/home/reservation/tracking/linkView?InvNo=', 1, 1, 0),
-        array('로젠택배', 'https://www.ilogen.com/web/personal/trace/', 1, 1, 0),
-        array('직접배송', '', 0, 0, 0),
-        array('퀵서비스', '', 0, 0, 0),
-        array('방문수령', '', 0, 0, 0),
+        // 이름, 대표 연락처, 조회주소, 송장받음, 사용, 기본
+        array('CJ대한통운', '1588-1255', 'https://trace.cjlogistics.com/next/tracking.html?wblNo=', 1, 1, 1),
+        array('우체국택배', '1588-1300', 'https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=', 1, 1, 0),
+        array('한진택배', '1588-0011', 'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&schLang=KR&wblnumText2=', 1, 1, 0),
+        array('롯데택배', '1588-2121', 'https://www.lotteglogis.com/home/reservation/tracking/linkView?InvNo=', 1, 1, 0),
+        array('로젠택배', '1588-9988', 'https://www.ilogen.com/web/personal/trace/', 1, 1, 0),
+        array('직접배송', '', '', 0, 0, 0),
+        array('퀵서비스', '', '', 0, 0, 0),
+        array('방문수령', '', '', 0, 0, 0),
     );
     $order = 0;
     foreach ($seed as $s) {
-        list($name, $url, $invoice, $use, $default) = $s;
+        list($name, $tel, $url, $invoice, $use, $default) = $s;
         $order += 1;
         sql_query(" insert into `{$g5['ycart_delivery_company_table']}`
             set dc_name = '".sql_real_escape_string($name)."',
+                dc_tel = '".sql_real_escape_string($tel)."',
                 dc_url = '".sql_real_escape_string($url)."',
                 dc_invoice = '$invoice', dc_order = '$order',
                 dc_use = '$use', dc_default = '$default' ", true);

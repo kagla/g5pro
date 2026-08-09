@@ -71,6 +71,7 @@ $refundable = cart_return_refundable($order);
 cadm_view('order_view', array(
     'order' => $order,
     'companies' => cart_delivery_company_list(),
+    'default_dc' => cart_delivery_company_default(),
     // 나중에 사용을 끈 택배사로 잡아 둔 주문 — 그 하나를 목록에 끼워 넣어야 select 가 안 빈다
     'extra_dc' => ((int)$order['od_dc_id'] > 0) ? cart_delivery_company_get((int)$order['od_dc_id']) : null,
     'coupon' => cart_coupon_of_order($order),

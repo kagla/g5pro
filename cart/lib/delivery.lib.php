@@ -102,10 +102,12 @@ function cart_order_set_delivery($od_id, $dc_id, $invoice, $note, $memo)
 }
 
 // 관리 화면 저장 — 행 배열을 통째로 받아 한 번에 반영한다.
-// $rows        : array(행키 => array('name','url','invoice','order','use')). 행키는 dc_id 또는 'new1'
-// $default_key : 기본으로 고른 행키
-// $del_ids     : 지울 dc_id 배열
-function cart_delivery_company_save($rows, $default_key, $del_ids)
+// $rows    : array(행키 => array('name','tel','url','invoice','use')). 행키는 dc_id 또는 'new1'.
+//            **배열 순서가 곧 화면 순서다** — dc_order 를 위에서부터 1,2,3… 으로 매긴다.
+//            화면은 늘 목록 전체를 보낸다. 일부만 넘기면 넘긴 것들만 1부터 다시 매겨져
+//            안 넘긴 행과 번호가 겹친다(깨지지는 않고 dc_id 로 갈린다).
+// $del_ids : 지울 dc_id 배열
+function cart_delivery_company_save($rows, $del_ids)
 {
     global $g5;
     $table = $g5['ycart_delivery_company_table'];
@@ -116,7 +118,7 @@ function cart_delivery_company_save($rows, $default_key, $del_ids)
         if ($id > 0) sql_query(" delete from `$table` where dc_id = '$id' ", true);
     }
 
-    $default_id = 0;
+    $ord = 0;
     foreach ((array)$rows as $key => $row) {
         $name = mb_substr(trim((string)(isset($row['name']) ? $row['name'] : '')), 0, 50, 'utf-8');
         // 이름이 빈 줄은 없는 셈 친다 — 새 줄이면 안 만들고, 기존 행이면 건드리지 않는다.
@@ -134,30 +136,26 @@ function cart_delivery_company_save($rows, $default_key, $del_ids)
         if (!$takes) $url = '';
         $url = mb_substr($url, 0, 255, 'utf-8');
         $use = (isset($row['use']) && $row['use'] !== '') ? 1 : 0;
-        $ord = (int)(isset($row['order']) ? $row['order'] : 0);
+        // 연락처는 모양을 강제하지 않는다 — 1588-0000·02-000-0000·내선 안내가 섞여 들어온다.
+        // 숫자만 남기면 "1588-1255 (내선 2)" 같은 실제 안내가 뭉개진다.
+        $tel = mb_substr(trim((string)(isset($row['tel']) ? $row['tel'] : '')), 0, 30, 'utf-8');
+        $ord += 1;                                  // 화면에 놓인 순서가 그대로 정렬값이다
 
         $set = " dc_name = '".sql_real_escape_string($name)."',
+                 dc_tel = '".sql_real_escape_string($tel)."',
                  dc_url = '".sql_real_escape_string($url)."',
                  dc_invoice = '$takes', dc_order = '$ord', dc_use = '$use' ";
         if ($id > 0) {
             sql_query(" update `$table` set $set where dc_id = '$id' ", true);
         } else {
             sql_query(" insert into `$table` set $set ", true);
-            $id = sql_insert_id();
         }
-        if ((string)$key === (string)$default_key) $default_id = (int)$id;
     }
 
-    // 기본은 전체에서 하나. 고른 행이 지워졌거나 사용을 껐으면 남은 것 중 첫 줄로 넘긴다 —
-    // 기본이 없으면 배송관리에서 매번 택배사를 고르게 되고, 그게 이 화면을 만든 이유를 없앤다.
+    // 기본은 고르는 것이 아니라 **사용 켠 것 중 맨 위**다. 라디오를 따로 두면 순서와 기본이
+    // 어긋날 수 있고("첫 줄인데 기본이 아닌" 상태), 무엇보다 안 쓰는 택배사가 기본이 되어
+    // 배송관리 select 에 뜨지도 않는 것이 미리 골라지는 일이 생긴다.
     sql_query(" update `$table` set dc_default = 0 ", true);
-    if ($default_id > 0) {
-        $row = sql_fetch(" select dc_use from `$table` where dc_id = '$default_id' ");
-        if (!$row || (int)$row['dc_use'] !== 1) $default_id = 0;
-    }
-    if ($default_id < 1) {
-        $row = sql_fetch(" select dc_id from `$table` where dc_use = 1 order by dc_order, dc_id limit 1 ");
-        $default_id = $row ? (int)$row['dc_id'] : 0;
-    }
-    if ($default_id > 0) sql_query(" update `$table` set dc_default = 1 where dc_id = '$default_id' ", true);
+    $row = sql_fetch(" select dc_id from `$table` where dc_use = 1 order by dc_order, dc_id limit 1 ");
+    if ($row) sql_query(" update `$table` set dc_default = 1 where dc_id = '".(int)$row['dc_id']."' ", true);
 }
