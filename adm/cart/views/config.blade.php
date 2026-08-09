@@ -33,6 +33,18 @@
         <th scope="row">입금 계좌 안내</th>
         <td><input type="text" name="cc_bank" value="{{ $cc['cc_bank'] }}" size="60" placeholder="예) 국민은행 000-00-0000-000 (주)데모"> </td>
     </tr>
+    <tr>
+        <th scope="row">입금 기한</th>
+        <td><input type="text" name="cc_unpaid_days" value="{{ $cc['cc_unpaid_days'] }}" size="5" style="text-align:right"> 일
+            <span class="txt_id">지나면 자동 취소하고 재고를 되돌립니다. 무통장 주문은 접수 즉시 재고를 빼 두므로,
+            기한이 없으면 입금하지 않은 주문이 재고를 계속 잡고 있습니다. (0 이면 자동 취소하지 않음)</span></td>
+    </tr>
+    <tr>
+        <th scope="row">반품 신청 기간</th>
+        <td><input type="text" name="cc_return_days" value="{{ $cc['cc_return_days'] }}" size="5" style="text-align:right"> 일
+            <span class="txt_id">배송완료된 날부터 이 기간 안에만 고객이 반품을 신청할 수 있습니다.
+            구매확정한 주문은 기간과 상관없이 신청을 받지 않습니다. (0 이면 기간 제한 없음)</span></td>
+    </tr>
     </tbody>
 </table>
 </div>
