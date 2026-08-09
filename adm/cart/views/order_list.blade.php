@@ -10,9 +10,29 @@
     <input type="text" name="from" value="{{ $from }}" placeholder="시작일 2026-01-01" class="frm_input" size="12">
     <input type="text" name="to" value="{{ $to }}" placeholder="종료일" class="frm_input" size="12">
     <input type="text" name="q" value="{{ $q }}" placeholder="주문번호·주문자·연락처·회원ID" class="frm_input" size="24">
+    {{-- 반품 대기는 검색 조건과 함께 유지된다 — 필터를 걸어 둔 채 날짜를 바꿔도 안 풀린다 --}}
+    @if ($rt_only)
+    <input type="hidden" name="rt" value="1">
+    @endif
+
     <button type="submit" class="btn_submit btn">검색</button>
     <span class="btn_ov01"><span class="ov_txt">전체 {{ number_format($total) }}건 · {{ $page }}/{{ $total_page }}</span></span>
 </form>
+
+{{-- 반품 대기 걸러 보기 — 부분 반품 주문은 상태가 '배송완료' 그대로라 상태 선택으로는 못 찾는다 --}}
+@if ($rt_pending || $rt_only)
+<div class="local_desc01 local_desc">
+    <p>
+
+        @if ($rt_only)
+        반품 신청이 처리를 기다리는 주문만 보고 있습니다. <a href="{{ $self_url }}">전체 주문 보기</a>
+        @else
+        반품 신청 <strong>{{ number_format($rt_pending) }}건</strong>이 처리를 기다립니다. <a href="{{ $self_url }}?rt=1">모아 보기</a>
+        @endif
+
+    </p>
+</div>
+@endif
 
 <div class="tbl_head01 tbl_wrap">
     <table>
