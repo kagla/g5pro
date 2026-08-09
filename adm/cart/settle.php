@@ -12,22 +12,29 @@ $to = (isset($_GET['to']) && !is_array($_GET['to'])) ? trim($_GET['to']) : '';
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)) $from = date('Y-m-d', G5_SERVER_TIME - 29 * 86400);
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) $to = date('Y-m-d', G5_SERVER_TIME);
 
-$paid_in = " od_status in ('paid', 'preparing', 'shipping', 'delivered', 'confirmed') ";
+$paid_in = cart_order_paid_where();   // 대시보드와 같은 판정 — order.lib 한 곳에서 정한다
 $range = " od_paid_at >= '$from 00:00:00' and od_paid_at <= '$to 23:59:59' ";
 
 // 일별 매출 — 건수·상품합계·배송비·총액
 $daily = array();
 $sum = array('cnt' => 0, 'item' => 0, 'ship' => 0, 'total' => 0);
+// 환불(반품)은 결제일 기준으로 그 주문 줄에서 뺀다 — 순매출 = 총액 - 환불.
+// 반품은 결제와 다른 날 일어나지만, 여기서 보려는 것은 "이날 판 것이 결국 얼마였나" 다.
+$sum = array('cnt' => 0, 'item' => 0, 'ship' => 0, 'total' => 0, 'refund' => 0, 'net' => 0);
 $result = sql_query(" select date(od_paid_at) d, count(*) cnt,
-        sum(od_item_total) item_amt, sum(od_ship_fee) ship_amt, sum(od_total) total_amt
+        sum(od_item_total) item_amt, sum(od_ship_fee) ship_amt, sum(od_total) total_amt,
+        sum(od_refund) refund_amt
     from `{$g5['ycart_order_table']}`
     where $paid_in and $range group by date(od_paid_at) order by d desc ");
 while ($r = sql_fetch_array($result)) {
+    $r['net_amt'] = (int)$r['total_amt'] - (int)$r['refund_amt'];
     $daily[] = $r;
     $sum['cnt'] += (int)$r['cnt'];
     $sum['item'] += (int)$r['item_amt'];
     $sum['ship'] += (int)$r['ship_amt'];
     $sum['total'] += (int)$r['total_amt'];
+    $sum['refund'] += (int)$r['refund_amt'];
+    $sum['net'] += (int)$r['net_amt'];
 }
 
 // 수단별 합계 — 같은 기간·같은 기준
