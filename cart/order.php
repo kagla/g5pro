@@ -26,7 +26,7 @@ if ($od_no !== '') {
         'list_href' => $is_member ? cart_url('order.php') : cart_url(''),
         'is_member' => $is_member,
         // 배송 정보 — 발송한 뒤에만 보여 준다. 송장 조회 주소는 택배사를 알아본 경우에만 채워진다.
-        'track_url' => cart_delivery_track_url($order['od_delivery_company'], $order['od_invoice']),
+        'track_url' => cart_delivery_track_url($order['od_dc_name'], $order['od_invoice']),
         // 구매확정 — 배송완료에서만. 반품이 걸린 주문은 처리가 끝날 때까지 감춘다:
         // 확정은 "다 잘 받았다" 는 매듭이라 반품이 진행 중일 때 누르면 말이 어긋난다.
         'can_confirm' => ($order['od_status'] === 'delivered' && !cart_return_blocks_confirm((int)$order['od_id'])),

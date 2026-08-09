@@ -50,7 +50,7 @@
     <section class="cart-co-sec">
         <h3>배송 조회</h3>
         <div class="cart-complete-line">
-            <span>{{ $order['od_delivery_company'] !== '' ? $order['od_delivery_company'] : '택배' }}</span>
+            <span>{{ $order['od_dc_name'] !== '' ? $order['od_dc_name'] : '택배' }}</span>
             <span>
                 @if ($track_url !== '')
                 <a href="{{ $track_url }}" target="_blank" rel="noopener">{{ $order['od_invoice'] }}</a>

@@ -510,7 +510,7 @@ function cart_order_set_invoice($od_id, $company, $invoice)
 {
     global $g5;
     sql_query(" update `{$g5['ycart_order_table']}`
-        set od_delivery_company = '".sql_real_escape_string(mb_substr(trim($company), 0, 50, 'utf-8'))."',
+        set od_dc_name = '".sql_real_escape_string(mb_substr(trim($company), 0, 50, 'utf-8'))."',
             od_invoice = '".sql_real_escape_string(mb_substr(trim($invoice), 0, 50, 'utf-8'))."'
         where od_id = '".(int)$od_id."' ", true);
 }

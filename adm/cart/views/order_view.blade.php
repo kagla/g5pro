@@ -109,7 +109,7 @@
     <tbody>
     <tr>
         <th scope="row">택배사</th>
-        <td><input type="text" name="od_delivery_company" value="{{ $order['od_delivery_company'] }}" class="frm_input" size="16"></td>
+        <td><input type="text" name="od_dc_name" value="{{ $order['od_dc_name'] }}" class="frm_input" size="16"></td>
         <th scope="row">송장번호</th>
         <td>
             <input type="text" name="od_invoice" value="{{ $order['od_invoice'] }}" class="frm_input" size="24">

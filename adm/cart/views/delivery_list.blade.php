@@ -18,7 +18,7 @@
 <input type="hidden" name="od_id" id="dlv_od_id" value="">
 <input type="hidden" name="mode" id="dlv_mode" value="">
 <input type="hidden" name="action" id="dlv_action" value="">
-<input type="hidden" name="od_delivery_company" id="dlv_company" value="">
+<input type="hidden" name="od_dc_name" id="dlv_company" value="">
 <input type="hidden" name="od_invoice" id="dlv_invoice" value="">
 <input type="hidden" name="ret" value="delivery">
 </form>
@@ -40,7 +40,7 @@
         <td>{{ $o['od_recv_name'] !== '' ? $o['od_recv_name'] : $o['od_name'] }}</td>
         <td class="td_left">{{ $o['summary'] }}</td>
         <td>{{ $o['status_label'] }}</td>
-        <td><input type="text" data-role="company" value="{{ $o['od_delivery_company'] }}" size="10"></td>
+        <td><input type="text" data-role="company" value="{{ $o['od_dc_name'] }}" size="10"></td>
         <td><input type="text" data-role="invoice" value="{{ $o['od_invoice'] }}" size="16"></td>
         <td><button type="button" class="btn btn_02" data-save="{{ $o['od_id'] }}">송장 저장</button></td>
         <td><button type="button" class="btn_submit btn" data-next="{{ $o['od_id'] }}" data-action="{{ $o['next_action'] }}">{{ $o['next_label'] }}</button></td>

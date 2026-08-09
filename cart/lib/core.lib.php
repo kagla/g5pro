@@ -40,6 +40,7 @@ function cart_table_defaults()
         'ycart_return_table'     => 'ycart_return',
         'ycart_coupon_table'     => 'ycart_coupon',
         'ycart_coupon_mb_table'  => 'ycart_coupon_mb',
+        'ycart_delivery_company_table' => 'ycart_delivery_company',
     );
     foreach ($tables as $key => $name) {
         if (!isset($g5[$key])) $g5[$key] = G5_TABLE_PREFIX.$name;
@@ -104,10 +105,11 @@ function cart_column_upgrades()
         array('ycart_order_table', 'od_recv_hp',
             " ADD `od_recv_hp` varchar(20) NOT NULL DEFAULT '' AFTER `od_recv_name` "),
         // 2026-08-06 3단계 배송 — 택배사·송장·발송 시각
-        array('ycart_order_table', 'od_delivery_company',
-            " ADD `od_delivery_company` varchar(50) NOT NULL DEFAULT '' AFTER `od_ct_ids` "),
+        // (2026-08-10 od_delivery_company → od_dc_name 개명. 개명은 $ct_renames 가 먼저 한다)
+        array('ycart_order_table', 'od_dc_name',
+            " ADD `od_dc_name` varchar(50) NOT NULL DEFAULT '' AFTER `od_ct_ids` "),
         array('ycart_order_table', 'od_invoice',
-            " ADD `od_invoice` varchar(50) NOT NULL DEFAULT '' AFTER `od_delivery_company` "),
+            " ADD `od_invoice` varchar(50) NOT NULL DEFAULT '' AFTER `od_dc_name` "),
         array('ycart_order_table', 'od_shipped_at',
             " ADD `od_shipped_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00' AFTER `od_invoice` "),
         // 2026-08-07 분류코드 — 사람이 쓰는 식별자(프론트 URL·CSV). 내부 키·FK 는 ca_id 그대로.
@@ -147,6 +149,16 @@ function cart_column_upgrades()
         // 취소·전체반품 때 그 장을 되살리려면 장을 가리켜야 한다(0 = 안 썼음).
         array('ycart_order_table', 'od_cm_id',
             " ADD `od_cm_id` int(11) NOT NULL DEFAULT '0' AFTER `od_coupon` "),
+        // 2026-08-10 택배사 관리 — 어느 택배사였나(od_dc_id)와 그때 그 이름(od_dc_name)을
+        // 함께 남긴다. 택배사 이름을 고치거나 행을 지워도 옛 주문의 장부는 그때 것이어야 한다.
+        array('ycart_order_table', 'od_dc_id',
+            " ADD `od_dc_id` int(11) NOT NULL DEFAULT '0' AFTER `od_ct_ids` "),
+        // 송장번호가 없는 수단(직배·퀵·방문수령)에서 송장번호 자리를 대신한다. 고객에게 보인다.
+        array('ycart_order_table', 'od_delivery_note',
+            " ADD `od_delivery_note` varchar(255) NOT NULL DEFAULT '' AFTER `od_invoice` "),
+        // 기사 연락처 같은 내부 기록. 이름에 admin 을 박아 둔다 — 고객 화면에 가면 안 되는 값이다.
+        array('ycart_order_table', 'od_delivery_admin_memo',
+            " ADD `od_delivery_admin_memo` varchar(255) NOT NULL DEFAULT '' AFTER `od_delivery_note` "),
     );
 }
 
@@ -175,7 +187,15 @@ function cart_install()
         }
     }
 
+    // 택배사 기본 목록은 테이블이 "방금 생겼을 때" 만 넣는다. "행이 0개면" 으로 하면
+    // 관리자가 일부러 다 지운 뒤 업그레이드를 눌렀을 때 지운 것이 되살아난다.
+    $dc_existed = (bool)sql_query(" DESC `{$g5['ycart_delivery_company_table']}` ", false);
+
     $created = cart_create_tables();
+
+    if (!$dc_existed && sql_query(" DESC `{$g5['ycart_delivery_company_table']}` ", false)) {
+        cart_delivery_company_seed();
+    }
 
     // 2026-08-07 컬럼 접두사 개명(bk_* → ct_*) — 테이블 개명과 짝. 컬럼 추가(위 upgrades)보다
     // 먼저 돌아야 od_ct_ids 가 "없는 컬럼"으로 오인돼 중복 생성되지 않는다.
@@ -187,6 +207,10 @@ function cart_install()
             " CHANGE `bk_datetime` `ct_datetime` datetime NOT NULL DEFAULT '1970-01-01 00:00:00' "),
         array('ycart_order_table', 'od_bk_ids',
             " CHANGE `od_bk_ids` `od_ct_ids` varchar(255) NOT NULL DEFAULT '' "),
+        // 2026-08-10 od_delivery_company → od_dc_name. 같은 짝인 od_dc_id 와 접두사를 맞추고,
+        // 순정 g5_shop_order 의 같은 이름과 갈라 놓는다(테이블은 달라도 읽을 때 부딪힌다).
+        array('ycart_order_table', 'od_delivery_company',
+            " CHANGE `od_delivery_company` `od_dc_name` varchar(50) NOT NULL DEFAULT '' "),
     );
     foreach ($ct_renames as $rn) {
         list($table_key, $old_col, $change) = $rn;
@@ -397,8 +421,11 @@ function cart_table_ddl()
         `od_depositor` varchar(50) NOT NULL DEFAULT '',
         `od_guest_pw` varchar(255) NOT NULL DEFAULT '',
         `od_ct_ids` varchar(255) NOT NULL DEFAULT '',
-        `od_delivery_company` varchar(50) NOT NULL DEFAULT '',
+        `od_dc_id` int(11) NOT NULL DEFAULT '0',
+        `od_dc_name` varchar(50) NOT NULL DEFAULT '',
         `od_invoice` varchar(50) NOT NULL DEFAULT '',
+        `od_delivery_note` varchar(255) NOT NULL DEFAULT '',
+        `od_delivery_admin_memo` varchar(255) NOT NULL DEFAULT '',
         `od_shipped_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
         `od_delivered_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
         `od_confirmed_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
@@ -526,7 +553,50 @@ function cart_table_ddl()
         KEY `mine` (`mb_id`, `cm_od_id`),
         KEY `od_id` (`cm_od_id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
+    // 2026-08-10 택배사 마스터 — 몰마다 거래처가 다르므로 코드가 아니라 데이터로 둔다.
+    // dc_invoice 가 이 택배사의 성격을 정한다: 1 이면 송장번호, 0 이면 배송안내(직배·퀵·방문수령).
+    // dc_url 은 송장번호가 뒤에 붙는 조회주소 앞부분. 비면 번호만 보여 주고 링크는 안 건다.
+    'ycart_delivery_company_table' => " CREATE TABLE IF NOT EXISTS `{$g5['ycart_delivery_company_table']}` (
+        `dc_id` int(11) NOT NULL AUTO_INCREMENT,
+        `dc_name` varchar(50) NOT NULL DEFAULT '',
+        `dc_url` varchar(255) NOT NULL DEFAULT '',
+        `dc_invoice` tinyint(4) NOT NULL DEFAULT '1',
+        `dc_order` int(11) NOT NULL DEFAULT '0',
+        `dc_use` tinyint(4) NOT NULL DEFAULT '1',
+        `dc_default` tinyint(4) NOT NULL DEFAULT '0',
+        PRIMARY KEY (`dc_id`),
+        KEY `list` (`dc_use`, `dc_order`, `dc_id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
     );
+}
+
+// 택배사 기본 목록 — 테이블이 방금 만들어졌을 때 한 번만 넣는다(cart_install 참고).
+// 아래 셋(직접배송·퀵서비스·방문수령)은 송장번호가 없는 수단이라 dc_invoice = 0 이고,
+// 쓰는 몰만 켜면 되도록 dc_use = 0 으로 넣어 둔다.
+function cart_delivery_company_seed()
+{
+    global $g5;
+    $seed = array(
+        // 이름, 조회주소, 송장받음, 사용, 기본
+        array('CJ대한통운', 'https://trace.cjlogistics.com/next/tracking.html?wblNo=', 1, 1, 1),
+        array('우체국택배', 'https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=', 1, 1, 0),
+        array('한진택배', 'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&schLang=KR&wblnumText2=', 1, 1, 0),
+        array('롯데택배', 'https://www.lotteglogis.com/home/reservation/tracking/linkView?InvNo=', 1, 1, 0),
+        array('로젠택배', 'https://www.ilogen.com/web/personal/trace/', 1, 1, 0),
+        array('직접배송', '', 0, 0, 0),
+        array('퀵서비스', '', 0, 0, 0),
+        array('방문수령', '', 0, 0, 0),
+    );
+    $order = 0;
+    foreach ($seed as $s) {
+        list($name, $url, $invoice, $use, $default) = $s;
+        $order += 1;
+        sql_query(" insert into `{$g5['ycart_delivery_company_table']}`
+            set dc_name = '".sql_real_escape_string($name)."',
+                dc_url = '".sql_real_escape_string($url)."',
+                dc_invoice = '$invoice', dc_order = '$order',
+                dc_use = '$use', dc_default = '$default' ", true);
+    }
 }
 
 // 설정 단일 행 — 없으면 기본 행을 만든다

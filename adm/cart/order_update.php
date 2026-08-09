@@ -24,7 +24,7 @@ if (!$order || $order['od_status'] === 'draft') {
 }
 
 if ($mode === 'invoice') {
-    cart_order_set_invoice($od_id, $post('od_delivery_company'), $post('od_invoice'));
+    cart_order_set_invoice($od_id, $post('od_dc_name'), $post('od_invoice'));
     goto_url($back);
 }
 
@@ -92,7 +92,7 @@ if ($mode === 'return_approve' || $mode === 'return_reject') {
 
 // 배송관리의 발송 버튼 — 행의 송장을 저장한 뒤 단계를 전환한다(버튼 하나로 묶음 처리)
 if ($mode === 'ship') {
-    cart_order_set_invoice($od_id, $post('od_delivery_company'), $post('od_invoice'));
+    cart_order_set_invoice($od_id, $post('od_dc_name'), $post('od_invoice'));
     $err = cart_order_transition($od_id, $post('action'), $member['mb_id']);
     if ($err !== '') alert($err, $back);
     goto_url($back);
