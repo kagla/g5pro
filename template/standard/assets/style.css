@@ -3116,7 +3116,9 @@ body.cart-lb-lock { overflow: hidden; }
 /* 주문 상품 줄에 붙는 상태 딱지 — 3개 중 1개만 반품된 주문이 그렇게 읽히도록 줄마다 단다 */
 .cart-oi-flag {
     display: inline-block; margin-left: var(--s2); padding: 1px var(--s2);
-    border-radius: 999px; background: var(--accent-soft); color: var(--accent);
+    /* 옅은 강조 면 위 글자는 --accent 가 아니라 --accent-deep 이다 —
+       --accent 는 이 면 위에서 3.62:1 로 얕고, --accent-deep 이면 5.35:1 / 어두운 모드 8.01:1 */
+    border-radius: 999px; background: var(--accent-soft); color: var(--accent-deep);
     font-size: var(--t-xs); font-weight: 700; vertical-align: middle;
 }
 .cart-return-row { padding: var(--s3) 0; border-top: 1px solid var(--line); }

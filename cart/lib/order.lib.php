@@ -92,6 +92,24 @@ function cart_order_paid_where($alias = '')
     return " $col in ('".implode("', '", cart_order_paid_statuses())."') ";
 }
 
+// 상태 뱃지의 갈래 — 색이 말하는 것은 "무엇인가" 가 아니라 "봐야 하는가" 다.
+// 여덟 가지에 색 여덟을 주면 어느 색도 뜻을 갖지 못하므로 다섯 갈래로 접는다.
+// 화면(목록·상세·주문완료)이 모두 여기를 보므로 같은 상태가 화면마다 다른 색이 되지 않는다.
+function cart_order_status_tone($status)
+{
+    switch ($status) {
+        case 'unpaid':                       // 손님이 아직 할 일이 남았다 — 여기만 튄다
+            return 'wait';
+        case 'paid': case 'preparing': case 'shipping':
+            return 'go';                     // 가게가 움직이는 중 — 기다리면 된다
+        case 'delivered': case 'confirmed':
+            return 'done';                   // 잘 받았다
+        case 'returned':
+            return 'bad';                    // 되돌아갔다
+    }
+    return 'end';                            // 취소·그 밖 — 끝났고 할 일이 없다
+}
+
 function cart_order_status_label($status, $pay_method = '')
 {
     // unpaid 는 수단에 따라 말이 다르다 — 무통장은 입금을 기다리고, 카드는 결제를 기다린다

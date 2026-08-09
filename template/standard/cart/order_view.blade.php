@@ -3,7 +3,7 @@
 <div class="cart-complete">
     <header class="cart-complete-head">
         <h2>주문 상세</h2>
-        <p>주문번호 <strong>{{ $order['od_no'] }}</strong> · <span class="cart-status">{{ $status_label }}</span> · {{ substr($order['od_datetime'], 0, 10) }}</p>
+        <p>주문번호 <strong>{{ $order['od_no'] }}</strong> · <span class="cart-status is-{{ cart_order_status_tone($order['od_status']) }}">{{ $status_label }}</span> · {{ substr($order['od_datetime'], 0, 10) }}</p>
     </header>
 
     @if ($order['od_status'] === 'canceled')
