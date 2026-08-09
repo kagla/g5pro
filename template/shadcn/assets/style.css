@@ -195,6 +195,10 @@
 
 /* ── 기본 ── */
 * { box-sizing: border-box; }
+/* hidden 속성이 화면 규칙에 지지 않게 — 브라우저 기본은 display:none 이지만 그건 특이도가
+   가장 낮아, 컴포넌트에 display:flex 를 주면 hidden 을 걸어도 그대로 보인다.
+   (합계 상자가 비어 있는 채로 테두리만 남아 있던 원인) */
+[hidden] { display: none !important; }
 body {
     margin: 0;
     background: var(--bg);
@@ -639,6 +643,10 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .bbs-search select { border: 0; background: none; font-size: var(--t-sm); padding: var(--s1); }
 .bbs-search input[type=text] { flex: 1; min-width: 0; border: 0; background: none; padding: var(--s1); }
 .bbs-search input:focus, .bbs-search select:focus { background: none; }
+/* 검색 버튼 — 흰 상자 안에 흰 버튼을 두면 어디를 눌러야 하는지 안 보인다.
+   검색줄에서는 이 버튼이 유일한 조작점이므로 채워서 둔다 */
+.bbs-search .btn { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.bbs-search .btn:hover { background: var(--accent-deep); border-color: var(--accent-deep); color: var(--accent-fg); }
 /* 장바구니 목록 아래 버튼 줄 — 목록 왼쪽 끝(체크박스 열)에 맞춘다 */
 .cart-acts { display: flex; justify-content: flex-start; gap: var(--s2); margin-top: var(--s3); }
 
@@ -2597,7 +2605,7 @@ input[type=checkbox], input[type=radio] {
     border-color: var(--line); }
 /* 같은 옵션을 또 고른 경우처럼 '막을 일은 아니지만 알려야 하는' 안내 */
 .cart-pick-msg { margin: 0 0 var(--s3); padding: var(--s3) var(--s4); border-radius: var(--r2);
-    background: #FFF4E5; color: #8A5300; border: 1px solid #F5D9A8; font-weight: 700; }
+    background: var(--notice-bg); color: var(--notice-fg); border: 1px solid transparent; font-weight: 700; }
 /* 고른 옵션 줄 — 여러 조합을 담고 줄마다 수량을 조절한다 */
 .cart-picks { list-style: none; margin: 0 0 var(--s3); padding: 0; display: grid; gap: 8px; }
 .cart-pick { display: flex; align-items: center; gap: var(--s3); flex-wrap: wrap;
@@ -2661,7 +2669,7 @@ input[type=checkbox], input[type=radio] {
 
 /* 관리자만 보는 비노출 안내 — 손님 화면에는 아예 출력되지 않는다(뷰에서 건너뜀) */
 .shop-item-offnotice { margin: 0 0 var(--s5); padding: var(--s3) var(--s4); border-radius: var(--r2);
-    background: #FFF4E5; color: #8A5300; border: 1px solid #F5D9A8; font-weight: 600; }
+    background: var(--notice-bg); color: var(--notice-fg); border: 1px solid transparent; font-weight: 600; }
 .shop-item-top { display: flex; gap: var(--s6); flex-wrap: wrap; margin-bottom: var(--s6); }
 .shop-item-gallery { flex: 1 1 360px; min-width: 280px; max-width: 480px; }
 .shop-item-gallery img#cart_main_img {
@@ -2833,14 +2841,15 @@ body.cart-lb-lock { overflow: hidden; }
 .shop-item-content { margin-top: var(--s6); line-height: 1.7; }
 
 /* ---------- 카트 메인(/cart/) — 오늘의집풍 스토어홈 ---------- */
-/* 시그니처 민트(#35C5F0)는 스토어홈 스코프 변수로만 쓴다 — 사이트 전체 액센트와 싸우지 않게 */
-.cart-home { --oh: #35C5F0; }
+/* standard 는 쇼핑몰에 시그니처 민트를 따로 썼는데, 강조색이 하나뿐인 이 템플릿에서는
+   그 색이 사이트 어디에도 없어 되레 붕 뜬다. 스코프 변수는 남기되 값은 강조색을 받는다 */
+.cart-home { --oh: var(--accent); }
 
 .cart-home-search { max-width: 560px; margin: var(--s4) auto var(--s5); }
 
 /* 큰 라운드 사진 배너 + 좌하단 카피 + 민트 CTA */
 .cart-banner {
-    position: relative; display: block; border-radius: 20px; overflow: hidden;
+    position: relative; display: block; border-radius: var(--r-xl); overflow: hidden;
     aspect-ratio: 16 / 6; margin-bottom: var(--s6); background: var(--bg);
 }
 .cart-banner img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -2848,7 +2857,7 @@ body.cart-lb-lock { overflow: hidden; }
     content: ''; position: absolute; inset: 0;
     background: linear-gradient(75deg, rgba(10,16,24,.62) 0%, rgba(10,16,24,.25) 45%, rgba(10,16,24,0) 70%);
 }
-.cart-banner.no-photo { background: linear-gradient(135deg, #35C5F0, #1E7FB8); }
+.cart-banner.no-photo { background: var(--accent); }
 .cart-banner.no-photo::after { content: none; }
 .cart-banner-text {
     position: absolute; left: 6%; bottom: 14%; z-index: 1; color: #fff; max-width: 70%;
@@ -2856,10 +2865,10 @@ body.cart-lb-lock { overflow: hidden; }
 .cart-banner-text strong { display: block; font-size: var(--t-2xl); font-weight: 800; margin-bottom: var(--s2); }
 .cart-banner-text em { display: block; font-style: normal; font-size: var(--t-sm); opacity: .9; margin-bottom: var(--s3); }
 .cart-banner-cta {
-    display: inline-block; background: var(--oh); color: #fff; font-weight: 700; font-size: var(--t-sm);
-    padding: var(--s2) var(--s4); border-radius: 999px;
+    display: inline-block; background: var(--oh); color: var(--accent-fg); font-weight: 650; font-size: var(--t-sm);
+    padding: var(--s2) var(--s4); border-radius: var(--r-btn);
 }
-.cart-banner:hover .cart-banner-cta { filter: brightness(1.08); }
+.cart-banner:hover .cart-banner-cta { background: var(--accent-deep); }
 
 /* 카테고리 — 사진 라운드 타일 + 라벨(오늘의집 카테고리 아이콘 자리) */
 .cart-cats {
@@ -2904,12 +2913,15 @@ body.cart-lb-lock { overflow: hidden; }
 
 /* ---------- 카트 구매 폼·장바구니 ---------- */
 .cart-cta {
-    display: inline-block; background: #35C5F0; color: #fff; font-weight: 700;
-    font-size: var(--t-md); padding: var(--s3) var(--s5); border-radius: 10px;
-    border: 0; cursor: pointer; text-align: center;
+    display: inline-block; background: var(--accent); color: var(--accent-fg); font-weight: 650;
+    font-size: var(--t-md); padding: var(--s3) var(--s5); border-radius: var(--r-btn);
+    border: 1px solid var(--accent); cursor: pointer; text-align: center;
 }
-.cart-cta:hover { filter: brightness(1.06); color: #fff; }
-.cart-cta.is-line { background: none; border: 1px solid #35C5F0; color: #35C5F0; }
+.cart-cta:hover { background: var(--accent-deep); border-color: var(--accent-deep); color: var(--accent-fg); }
+/* 곁들이 버튼(장바구니)은 강조색 테두리가 아니라 중성 테두리 — 주 버튼과 나란히 놓였을 때
+   무엇을 눌러야 하는지가 색 하나로 갈린다 */
+.cart-cta.is-line { background: var(--card); border-color: var(--btn-line); color: var(--fg); }
+.cart-cta.is-line:hover { background: var(--row-hover); border-color: var(--btn-line); color: var(--fg); }
 .cart-cta.is-disabled { background: var(--line); color: var(--muted); cursor: default; }
 
 .cart-buy { margin-top: var(--s4); display: flex; flex-direction: column; gap: var(--s3); }
@@ -2934,8 +2946,8 @@ body.cart-lb-lock { overflow: hidden; }
     width: 19px; height: 19px; fill: none; stroke: currentColor;
     stroke-width: 1.8; stroke-linejoin: round;
 }
-.wish-btn:hover { color: #E5484D; border-color: #E5484D; }
-.wish-btn.is-on { color: #E5484D; border-color: #E5484D; }
+.wish-btn:hover { color: var(--danger); border-color: var(--danger); }
+.wish-btn.is-on { color: var(--danger); border-color: var(--danger); }
 .wish-btn.is-on svg { fill: currentColor; }
 .wish-btn-n { font-variant-numeric: tabular-nums; opacity: .75; }
 /* 좁은 화면에서는 글자를 접고 하트만 남긴다 — 세 버튼이 한 줄에 들어가야 구매 흐름이 안 끊긴다 */
@@ -2984,7 +2996,7 @@ body.cart-lb-lock { overflow: hidden; }
     position: absolute; top: var(--s2); right: var(--s2); z-index: 1;
     width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%;
     display: flex; align-items: center; justify-content: center; cursor: pointer;
-    background: rgba(255,255,255,.9); color: #E5484D; box-shadow: var(--sh-sm);
+    background: rgba(255,255,255,.9); color: var(--danger); box-shadow: var(--sh-sm);
 }
 .wish-del svg { width: 17px; height: 17px; fill: currentColor; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; }
 .wish-del:hover { background: #fff; }
@@ -2993,7 +3005,7 @@ body.cart-lb-lock { overflow: hidden; }
 /* 주문 단계로 못 넘어가는 이유 — 버튼 바로 위에 한 줄로. 상자를 치지 않는다(줄 안내와 같은 톤).
    클래스 이름을 .cart-cart-warn 과 다르게 둔다 — 그 이름은 장바구니 줄 안내가 이미 쓰고 있어
    같이 쓰면 줄 안내에까지 상자가 번진다 */
-.cart-order-block { margin: 0 0 var(--s3); color: #C2452D; font-weight: 700; }
+.cart-order-block { margin: 0 0 var(--s3); color: var(--danger-deep); font-weight: 700; }
 
 .cart-cart { display: flex; flex-direction: column; gap: var(--s4); margin-bottom: var(--s5); }
 .cart-cart-row {
@@ -3008,7 +3020,7 @@ body.cart-lb-lock { overflow: hidden; }
 /* 옵션·안내는 --t-xs(11px) 로 뒀더니 무엇을 담았는지, 왜 못 사는지가 읽히지 않았다.
    담은 옵션은 상품명 다음으로 확인하는 값이고 안내는 손을 대야 할 곳이라 더 키운다 */
 .cart-cart-opt { font-size: var(--t-base); color: var(--muted); }
-.cart-cart-warn { font-size: var(--t-base); color: #D93A2B; font-weight: 700; }
+.cart-cart-warn { font-size: var(--t-base); color: var(--danger-deep); font-weight: 700; }
 .cart-cart-price { font-size: var(--t-base); font-weight: 700; }
 .cart-cart-price em, .cart-cart-line em { font-style: normal; font-weight: 600; font-size: var(--t-sm); }
 .cart-cart-ctrl { flex: none; display: flex; align-items: center; gap: var(--s3); }
@@ -3058,8 +3070,8 @@ body.cart-lb-lock { overflow: hidden; }
 .cart-complete { max-width: 640px; margin: 0 auto; }
 .cart-complete-head { text-align: center; margin: var(--s6) 0; }
 .cart-complete-head h2 { font-size: var(--t-2xl); margin-bottom: var(--s2); }
-.cart-complete-bank { border-color: #35C5F0; }
-.cart-complete-amount strong { font-size: var(--t-xl); color: #1E9CC9; }
+.cart-complete-bank { border-color: var(--accent); }
+.cart-complete-amount strong { font-size: var(--t-xl); color: var(--accent-deep); }
 .cart-complete-line { display: flex; justify-content: space-between; padding: var(--s2) 0; font-size: var(--t-sm); }
 .cart-complete-line.is-sub { color: var(--muted); border-top: 1px dashed var(--line); margin-top: var(--s2); padding-top: var(--s3); }
 .cart-complete-line.is-total { font-weight: 800; font-size: var(--t-md); }
@@ -3070,16 +3082,16 @@ body.cart-lb-lock { overflow: hidden; }
     display: flex; align-items: center; gap: var(--s4);
     padding: var(--s4); border: 1px solid var(--line); border-radius: 12px;
 }
-.cart-order-row:hover { border-color: #35C5F0; }
+.cart-order-row:hover { border-color: var(--btn-line); }
 .cart-order-date { flex: none; font-size: var(--t-sm); color: var(--muted); }
 .cart-order-summary { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cart-order-total { flex: none; font-weight: 800; }
-.cart-order-status { flex: none; font-size: var(--t-sm); color: #1E9CC9; font-weight: 700; }
-.cart-status { color: #1E9CC9; font-weight: 700; }
+.cart-order-status { flex: none; font-size: var(--t-sm); color: var(--accent-deep); font-weight: 700; }
+.cart-status { color: var(--accent-deep); font-weight: 700; }
 .cart-guest-form { display: flex; flex-direction: column; gap: var(--s3); max-width: 420px; margin: 0 auto; }
 .cart-guest-form label { display: flex; align-items: center; gap: var(--s3); font-size: var(--t-sm); font-weight: 600; }
 .cart-guest-form input { flex: 1; min-width: 0; padding: var(--s2); }
 .cart-home-links { display: flex; gap: var(--s4); justify-content: center; margin-bottom: var(--s4); font-size: var(--t-sm); font-weight: 700; }
 .cart-home-links a { color: var(--muted); }
-.cart-home-links a:hover { color: #35C5F0; }
-.cart-home-links b { color: #35C5F0; }
+.cart-home-links a:hover { color: var(--accent-deep); }
+.cart-home-links b { color: var(--accent-deep); }
