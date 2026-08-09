@@ -156,22 +156,8 @@ $(function () {
     var timers = {};
 
     // 재고에 닿으면 + 를 눌러도 더 늘지 않는다 — 넘긴 뒤에 꾸짖는 것보다 아예 못 넘게 하는 쪽이 낫다.
-    // 버튼 모양으로도 한계를 알리고(비활성), 왜 안 늘어나는지는 토스트가 잠깐 말해 준다.
-    function paintQty($box) {
-        var max = parseInt($box.data('max'), 10) || 0,
-            v = parseInt($box.find('.cart-qty-input').val(), 10) || 1;
-        // disabled 를 쓰지 않는다 — 브라우저가 클릭 자체를 안 넘겨줘서 "왜 안 되는지" 를 말할 수 없다.
-        // 흐리게만 칠하고(is-limit) 누르면 이유를 알려 준다. aria-disabled 로 낭독기에도 같은 뜻을 준다.
-        function mark($b, off) { $b.toggleClass('is-limit', off).attr('aria-disabled', off ? 'true' : 'false'); }
-        mark($box.find('[data-d="-1"]'), v <= 1);
-        mark($box.find('[data-d="1"]'), max > 0 && v >= max);
-    }
-
-    // 한계에서 눌렀을 때 하는 말 — 숫자를 넣어 "얼마까지" 가 바로 읽히게
-    function limitMsg(max) {
-        return max > 0 ? '재고가 ' + won(max) + '개뿐이라 더 담을 수 없습니다'
-                       : '품절된 상품이라 더 담을 수 없습니다';
-    }
+    // 칠하기와 말투는 theme.js 에 한 벌만 둔다(상품 상세도 같은 것을 쓴다).
+    var paintQty = g5QtyPaint, limitMsg = g5QtyLimitMsg;
 
     function saveQty($row, hitMax) {
         var $box = $row.find('.cart-qty'), ct = $box.data('ct'),
@@ -220,13 +206,10 @@ $(function () {
     }
 
     $(document).on('click', '.cart-qty-btn', function () {
-        var $box = $(this).closest('.cart-qty'), $in = $box.find('.cart-qty-input'),
-            max = parseInt($box.data('max'), 10) || 0,
-            v = parseInt($in.val(), 10) || 1, d = parseInt($(this).data('d'), 10);
-
-        if (d > 0 && (max <= 0 || v >= max)) { g5Toast(limitMsg(max), { anchor: this }); return; }
-        if (d < 0 && v <= 1) { g5Toast('수량은 1개부터입니다. 빼시려면 삭제를 눌러 주세요', { anchor: this }); return; }
-        $in.val(v + d);
+        var $box = $(this).closest('.cart-qty'),
+            next = g5QtyNext(this, '빼시려면 삭제를 눌러 주세요');
+        if (next === null) return;
+        $box.find('.cart-qty-input').val(next);
         saveQty($box.closest('.cart-cart-row'));
     });
     // 직접 쳐 넣은 값도 같은 규칙으로 자른다

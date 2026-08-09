@@ -2951,7 +2951,11 @@ body.cart-lb-lock { overflow: hidden; }
 .cart-buy { margin-top: var(--s4); display: flex; flex-direction: column; gap: var(--s3); }
 .cart-buy-label { display: flex; align-items: center; gap: var(--s3); font-size: var(--t-sm); font-weight: 600; }
 .cart-buy-label select { flex: 1; min-width: 0; padding: var(--s2); }
-.cart-buy-label input[type=number] { width: 90px; padding: var(--s2); text-align: right; }
+/* 자식 선택자여야 한다 — 옵션 없는 상품의 수량은 이제 .cart-qty 안의 .cart-qty-input 이고,
+   그 안까지 훑으면 이 폭·정렬이 스테퍼의 가운데 칸을 이겨 모양이 어긋난다 */
+.cart-buy-label > input[type=number] { width: 90px; padding: var(--s2); text-align: right; }
+/* 수량 이름과 칸이 한 줄에 나란히 — .cart-buy-label 의 flex 를 그대로 쓴다 */
+.cart-buy-qty > label { margin: 0; }
 .cart-buy-btns { display: flex; gap: var(--s3); }
 .cart-buy-btns .cart-cta { flex: 1; }
 /* 구매 폼이 없는(품절) 상품에서 하트만 있는 줄 — 폼의 margin-top 을 대신 받는다 */
@@ -3234,6 +3238,8 @@ body.cart-lb-lock { overflow: hidden; }
     font-size: var(--t-base); font-weight: 550; line-height: 1.4;
     box-shadow: 0 8px 24px rgba(2, 6, 23, .28);
     display: flex; align-items: center; gap: var(--s2); text-align: left;
+    /* 한국어는 어절 안에서 끊으면 안 읽힌다 — "없습니 / 다" 처럼 갈라지던 것을 막는다 */
+    word-break: keep-all;
 }
 .g5-toast svg { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 @media (prefers-reduced-motion: no-preference) {
@@ -3246,7 +3252,7 @@ body.cart-lb-lock { overflow: hidden; }
 /* 누른 것 바로 위에 뜨는 쪽지 — 화면 아래 가운데는 눈이 안 가는 자리일 때가 있다.
    무엇 때문에 나온 말인지 분명할 때는 그 곁에 붙여야 읽힌다 */
 .g5-toast.is-anchored {
-    position: fixed; z-index: 1300; max-width: min(300px, calc(100vw - 24px));
+    position: fixed; z-index: 1300; max-width: min(340px, calc(100vw - 24px));
     animation: g5-toast-pin .14s cubic-bezier(.2, .8, .3, 1);
 }
 /* 꼬리 — 쪽지가 화면 안으로 밀렸어도 누른 것을 가리키게 JS 가 --tail 로 자리를 준다 */

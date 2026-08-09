@@ -767,3 +767,61 @@
         arm(key, $t, ms);
     };
 })();
+
+/* 수량칸(.cart-qty) — 장바구니와 상품 상세가 같은 규칙을 쓴다.
+   재고에서 멈추고, 더 못 가는 버튼은 흐리게 칠하되 disabled 로 막지는 않는다
+   (막으면 브라우저가 클릭을 안 넘겨줘 왜 안 되는지 말할 기회가 없다).
+   화면마다 저장하는 방법은 다르므로(장바구니는 ajax, 상세는 폼) 여기엔 칠하기와
+   말투만 둔다. data-max 가 0 이면 품절, 음수면 "아직 모름"(옵션을 안 골랐을 때). */
+(function ($) {
+    function num(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+
+    // .attr 이 아니라 .data 로 읽는다 — 장바구니는 저장 뒤 서버가 알려 준 재고를
+    // $box.data('max', n) 으로 다시 심는데, 그건 속성을 안 고친다. 속성만 보면 옛 값이 남는다.
+    window.g5QtyMax = function (box) {
+        var v = parseInt($(box).data('max'), 10);
+        return isNaN(v) ? -1 : v;
+    };
+
+    window.g5QtyLimitMsg = function (max) {
+        if (max < 0) return '옵션을 먼저 고르세요';
+        return max > 0 ? '재고가 ' + num(max) + '개뿐이라 더 담을 수 없습니다'
+                       : '품절된 상품이라 더 담을 수 없습니다';
+    };
+
+    window.g5QtyPaint = function (box) {
+        var $box = $(box), max = window.g5QtyMax($box),
+            v = parseInt($box.find('.cart-qty-input').val(), 10) || 1;
+        function mark($b, off) { $b.toggleClass('is-limit', off).attr('aria-disabled', off ? 'true' : 'false'); }
+        mark($box.find('[data-d="-1"]'), v <= 1);
+        mark($box.find('[data-d="1"]'), max >= 0 && v >= max);
+    };
+
+    // 누른 결과의 다음 값 — 한계면 이유를 그 자리에 띄우고 null 을 준다(부르는 쪽은 저장을 건너뛴다).
+    window.g5QtyNext = function (btn, minusHint) {
+        var $box = $(btn).closest('.cart-qty'),
+            max = window.g5QtyMax($box),
+            v = parseInt($box.find('.cart-qty-input').val(), 10) || 1,
+            d = parseInt($(btn).attr('data-d'), 10);
+
+        if (d > 0 && max >= 0 && v >= max) { g5Toast(window.g5QtyLimitMsg(max), { anchor: btn }); return null; }
+        if (d < 0 && v <= 1) {
+            // 뺄 자리가 있는 화면(장바구니·고른 옵션 줄)에서만 어떻게 빼는지 덧붙인다.
+            // 구매 폼처럼 뺄 것이 없는 곳에는 '' 를 넘겨 한 마디로 끝낸다.
+            g5Toast('수량은 1개부터입니다' + (minusHint ? '. ' + minusHint : ''), { anchor: btn });
+            return null;
+        }
+        return v + d;
+    };
+
+    // 직접 쳐 넣은 값 자르기 — 한계까지 깎였으면 이유를 말한다
+    window.g5QtyClamp = function (box) {
+        var $box = $(box), $in = $box.find('.cart-qty-input'),
+            max = window.g5QtyMax($box),
+            v = Math.max(1, parseInt($in.val(), 10) || 1);
+        if (max >= 0 && v > max) { v = Math.max(1, max); g5Toast(window.g5QtyLimitMsg(max), { anchor: $in }); }
+        $in.val(v);
+        window.g5QtyPaint($box);
+        return v;
+    };
+})(jQuery);

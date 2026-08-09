@@ -112,18 +112,30 @@
                         <option value="">옵션을 선택하세요</option>
 
                         @foreach ($buyable_skus as $s)
-                        <option value="{{ $s['sk_id'] }}">{{ $s['opt_label'] }} — {{ number_format($s['sk_price']) }}원</option>
+                        <option value="{{ $s['sk_id'] }}" data-qty="{{ (int)$s['sk_qty'] }}">{{ $s['opt_label'] }} — {{ number_format($s['sk_price']) }}원</option>
                         @endforeach
 
                     </select>
                 </label>
                 @endif
 
-                {{-- 옵션 단계 선택일 때는 수량을 줄마다 따로 조절하므로 여기 수량칸이 없다 --}}
+                {{-- 옵션 단계 선택일 때는 수량을 줄마다 따로 조절하므로 여기 수량칸이 없다.
+                     옵션이 없는 상품은 여기 하나뿐이고, 장바구니·옵션 줄과 같은 −/+ 를 쓴다.
+                     label 이 아니라 div 다 — 안에 버튼이 둘 있어 label 로 감싸면 어느 쪽을 눌러도
+                     입력칸이 잡히고, 낭독기에는 "수량 − +" 가 통째로 이름으로 읽힌다. --}}
                 @if ($single || !count($opt_names))
-                <label class="cart-buy-label">수량
-                    <input type="number" name="qty" value="1" min="1" max="999">
-                </label>
+                <div class="cart-buy-label cart-buy-qty">
+                    <label for="cart_qty_one">수량</label>
+                    {{-- 단일 SKU 면 재고를 지금 알 수 있다. 선택칸이 있는 상품은 고르기 전엔 모르므로
+                         -1(아직 모름)로 두고, 고른 뒤에 아래 스크립트가 그 SKU 의 재고를 심는다 --}}
+                    <span class="cart-qty" id="cart_qty_box"
+                          data-max="{{ $single ? (int)$buyable_skus[0]['sk_qty'] : -1 }}">
+                        <button type="button" class="cart-qty-btn" data-d="-1" aria-label="수량 줄이기">−</button>
+                        <input type="number" class="cart-qty-input" id="cart_qty_one" name="qty" value="1" min="1"
+                               max="{{ $single ? max(1, (int)$buyable_skus[0]['sk_qty']) : 999 }}">
+                        <button type="button" class="cart-qty-btn" data-d="1" aria-label="수량 늘리기">+</button>
+                    </span>
+                </div>
                 @endif
 
                 <div class="cart-buy-btns">
@@ -685,37 +697,19 @@ $(function () {
         if (done) settle();
     });
 
-    // 수량 한계 — 장바구니 화면과 같은 규칙이다. 재고에서 멈추고, 흐리게 칠하되 누를 수는 있게 두고
-    // (disabled 면 브라우저가 클릭을 안 넘겨줘 이유를 말할 기회가 없다), 왜 안 되는지는 누른 자리에 띄운다.
-    function limitMsg(max) {
-        return max > 0 ? '재고가 ' + won(max) + '개뿐이라 더 담을 수 없습니다'
-                       : '품절된 상품이라 더 담을 수 없습니다';
-    }
-    function paintQty($box) {
-        var max = parseInt($box.data('max'), 10) || 0,
-            v = parseInt($box.find('.cart-qty-input').val(), 10) || 1;
-        function mark($b, off) { $b.toggleClass('is-limit', off).attr('aria-disabled', off ? 'true' : 'false'); }
-        mark($box.find('[data-d="-1"]'), v <= 1);
-        mark($box.find('[data-d="1"]'), max > 0 && v >= max);
-    }
+    // 수량 한계 — 장바구니 화면과 같은 규칙이다(theme.js 의 g5Qty*). 재고에서 멈추고,
+    // 흐리게 칠하되 누를 수는 있게 둔 뒤, 왜 안 되는지는 누른 자리에 띄운다.
+    var paintQty = g5QtyPaint;
 
     $('#cart_picks').on('click', '.cart-qty-btn', function () {
-        var $box = $(this).closest('.cart-qty'), $q = $box.find('.cart-qty-input'),
-            max = parseInt($box.data('max'), 10) || 0,
-            v = parseInt($q.val(), 10) || 1, d = parseInt($(this).data('d'), 10);
-
-        if (d > 0 && (max <= 0 || v >= max)) { g5Toast(limitMsg(max), { anchor: this }); return; }
-        if (d < 0 && v <= 1) { g5Toast('수량은 1개부터입니다. 빼시려면 ✕ 를 눌러 주세요', { anchor: this }); return; }
-        $q.val(v + d);
+        var $box = $(this).closest('.cart-qty'),
+            next = g5QtyNext(this, '빼시려면 ✕ 를 눌러 주세요');
+        if (next === null) return;
+        $box.find('.cart-qty-input').val(next);
         paintQty($box);
         retotal();
     }).on('change', '.cart-qty-input', function () {
-        var $box = $(this).closest('.cart-qty'),
-            max = parseInt($box.data('max'), 10) || 0,
-            v = Math.max(1, parseInt($(this).val(), 10) || 1);
-        if (max > 0 && v > max) { v = max; g5Toast(limitMsg(max), { anchor: this }); }
-        $(this).val(v);
-        paintQty($box);
+        g5QtyClamp($(this).closest('.cart-qty'));
         retotal();
     }).on('click', '.cart-pick-del', function () {
         $(this).closest('.cart-pick').remove();
@@ -766,6 +760,32 @@ $(function () {
 </script>
 
 @if (count($buyable_skus))
+<script>
+// 옵션 없는 상품의 수량칸 — 옵션 줄·장바구니와 같은 규칙(theme.js 의 g5Qty*)을 쓴다.
+// 선택칸이 있는 상품은 고르기 전엔 재고를 모른다. 고르면 그 SKU 의 재고를 심고,
+// 이미 쳐 넣은 수량이 그보다 많으면 그 자리에서 잘라 준다(주문서까지 가서 퇴짜 맞지 않게).
+$(function () {
+    var $box = $('#cart_qty_box');
+    if (!$box.length) return;
+
+    $box.on('click', '.cart-qty-btn', function () {
+        var next = g5QtyNext(this, '');
+        if (next === null) return;
+        $box.find('.cart-qty-input').val(next);
+        g5QtyPaint($box);
+    });
+    $box.on('change', '.cart-qty-input', function () { g5QtyClamp($box); });
+
+    $('.cart-buy select[name=sk_id]').on('change', function () {
+        var q = parseInt($(this).find('option:selected').data('qty'), 10);
+        $box.data('max', isNaN(q) ? -1 : q)
+            .find('.cart-qty-input').attr('max', Math.max(1, isNaN(q) ? 999 : q));
+        g5QtyClamp($box);
+    });
+
+    g5QtyPaint($box);
+});
+</script>
 <script>
 // 장바구니 담기 — 담고 나서 "장바구니로 갈까요?" 를 묻는다. 그러려면 서버가 이동시키면 안 되므로
 // ajax=1 로 보내 결과만 받는다(cart_update.php 가 그때만 JSON 으로 답한다).
