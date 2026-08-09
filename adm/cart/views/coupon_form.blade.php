@@ -1,0 +1,173 @@
+{{-- 쿠폰 등록·수정. 발급 방법에 따라 필요한 칸이 달라지므로(코드 입력만 코드가 필요하다)
+     아래 스크립트가 해당 없는 칸을 감춘다 — 안 쓰는 칸이 남아 있으면 뭘 채워야 할지 헷갈린다. --}}
+<div class="local_desc01 local_desc">
+    <p>할인은 <b>대상 상품 합계</b>에만 적용됩니다(배송비는 깎지 않습니다).
+       정률 할인은 10원 단위로 절사합니다. 한 쿠폰은 회원당 한 장, 한 주문에 한 장만 쓸 수 있습니다.</p>
+</div>
+
+<form method="post" action="{{ $action_url }}" id="cpn_form">
+<input type="hidden" name="token" value="{{ $token }}">
+<input type="hidden" name="mode" value="save">
+<input type="hidden" name="cp_id" value="{{ $cp_id }}">
+
+<div class="tbl_frm01 tbl_wrap">
+<table>
+    <caption>쿠폰 정보</caption>
+    <tbody>
+    <tr>
+        <th scope="row">쿠폰 이름</th>
+        <td><input type="text" name="cp_name" value="{{ $cp['cp_name'] }}" size="50" required
+                   placeholder="예) 첫 주문 감사 10% 할인">
+            <span class="txt_id">회원 쿠폰함과 주문서에 이 이름이 보입니다.</span></td>
+    </tr>
+    <tr>
+        <th scope="row">발급 방법</th>
+        <td><select name="cp_issue" id="cp_issue">
+
+            @foreach ($issues as $key => $label)
+            <option value="{{ $key }}" {{ $cp['cp_issue'] === $key ? 'selected' : '' }}>{{ $label }}</option>
+            @endforeach
+
+            </select>
+            <span class="txt_id">가입 축하·첫 구매는 자격이 되는 회원이 쿠폰함·주문서를 열 때 자동 발급됩니다.
+            첫 구매 쿠폰의 자격은 <b>구매확정한 주문이 한 건 이상</b>입니다.</span></td>
+    </tr>
+    <tr id="cpn_code_row">
+        <th scope="row">쿠폰 코드</th>
+        <td><input type="text" name="cp_code" value="{{ $cp['cp_code'] }}" size="24" maxlength="30"
+                   style="text-transform:uppercase" placeholder="WELCOME10">
+            <span class="txt_id">영문 대문자·숫자·- _ 로 3~30자. 코드 입력 쿠폰에만 씁니다.</span></td>
+    </tr>
+    <tr>
+        <th scope="row">할인</th>
+        <td><select name="cp_type" id="cp_type">
+
+            @foreach ($types as $key => $label)
+            <option value="{{ $key }}" {{ $cp['cp_type'] === $key ? 'selected' : '' }}>{{ $label }}</option>
+            @endforeach
+
+            </select>
+            <input type="text" name="cp_value" value="{{ $cp['cp_value'] }}" size="8" style="text-align:right">
+            <span id="cpn_unit">%</span>
+        </td>
+    </tr>
+    <tr id="cpn_max_row">
+        <th scope="row">최대 할인액</th>
+        <td><input type="text" name="cp_max" value="{{ $cp['cp_max'] }}" size="10" style="text-align:right"> 원
+            <span class="txt_id">정률 할인의 상한입니다. 0 이면 상한 없음.</span></td>
+    </tr>
+    <tr>
+        <th scope="row">최소 주문금액</th>
+        <td><input type="text" name="cp_min" value="{{ $cp['cp_min'] }}" size="10" style="text-align:right"> 원 이상
+            <span class="txt_id">할인 전 상품 합계 기준입니다. 0 이면 제한 없음.</span></td>
+    </tr>
+    <tr>
+        <th scope="row">사용 대상</th>
+        <td><select name="cp_target">
+            <option value="" {{ $cp['cp_target'] === '' ? 'selected' : '' }}>전체 상품</option>
+
+            @foreach ($categories as $ca)
+            <option value="ca:{{ $ca['ca_code'] }}" {{ $cp['cp_target'] === 'ca:'.$ca['ca_code'] ? 'selected' : '' }}>{{ str_repeat('　', max(0, (int)$ca['ca_depth'] - 1)) }}{{ $ca['ca_name'] }} 분류</option>
+            @endforeach
+
+            </select>
+            <span class="txt_id">분류를 고르면 그 아래 하위 분류의 상품까지 대상입니다.</span></td>
+    </tr>
+    <tr>
+        <th scope="row">발급 기간</th>
+        <td><input type="date" name="cp_begin" value="{{ $cp['cp_begin'] }}"> ~
+            <input type="date" name="cp_end" value="{{ $cp['cp_end'] }}">
+            <span class="txt_id">이 기간에만 발급됩니다.</span></td>
+    </tr>
+    <tr>
+        <th scope="row">사용 기한</th>
+        <td>받은 날부터 <input type="text" name="cp_days" value="{{ $cp['cp_days'] }}" size="5" style="text-align:right"> 일
+            <span class="txt_id">0 이면 위 발급 종료일까지 씁니다. 기한은 발급 시점에 굳어지므로,
+            나중에 기간을 줄여도 이미 받은 회원의 기한은 줄지 않습니다.</span></td>
+    </tr>
+    <tr>
+        <th scope="row">사용 여부</th>
+        <td><label><input type="radio" name="cp_use" value="1" {{ (int)$cp['cp_use'] === 1 ? 'checked' : '' }}> 사용</label>
+            <label><input type="radio" name="cp_use" value="0" {{ (int)$cp['cp_use'] === 0 ? 'checked' : '' }}> 사용 안 함</label>
+            <span class="txt_id">사용 안 함으로 두면 새로 발급되지도, 이미 받은 장이 쓰이지도 않습니다.</span></td>
+    </tr>
+    <tr>
+        <th scope="row">관리 메모</th>
+        <td><input type="text" name="cp_memo" value="{{ $cp['cp_memo'] }}" size="60"
+                   placeholder="어떤 이벤트의 쿠폰인지 등 (관리자만 봅니다)"></td>
+    </tr>
+    </tbody>
+</table>
+</div>
+
+<div class="btn_confirm01 btn_confirm">
+    <a href="{{ $list_url }}" class="btn btn_02">목록</a>
+    <button type="submit" class="btn_submit btn">{{ $cp_id ? '수정' : '등록' }}</button>
+</div>
+</form>
+
+@if ($cp_id)
+<div class="tbl_frm01 tbl_wrap">
+<table>
+    <caption>발급 현황</caption>
+    <tbody>
+    <tr>
+        <th scope="row">발급 / 사용</th>
+        <td>{{ number_format($stats['issued']) }}장 발급 · {{ number_format($stats['used']) }}장 사용
+            @if ($stats['amount'] > 0)
+            · 할인 합계 {{ number_format($stats['amount']) }}원
+            @endif
+        </td>
+    </tr>
+    </tbody>
+</table>
+</div>
+
+{{-- 일괄 지급 — 회원 아이디를 붙여 넣는다. 이미 가진 사람은 조용히 건너뛴다(한 회원 한 장). --}}
+<form method="post" action="{{ $action_url }}">
+<input type="hidden" name="token" value="{{ $token }}">
+<input type="hidden" name="mode" value="grant">
+<input type="hidden" name="cp_id" value="{{ $cp_id }}">
+<div class="tbl_frm01 tbl_wrap">
+<table>
+    <caption>회원에게 지급</caption>
+    <tbody>
+    <tr>
+        <th scope="row">회원 아이디</th>
+        <td><textarea name="mb_ids" rows="4" style="width:100%" placeholder="아이디를 줄바꿈이나 쉼표로 구분해 붙여 넣으세요"></textarea>
+            <span class="txt_id">이미 이 쿠폰을 가진 회원은 건너뜁니다. 발급 기간 안에서만 지급됩니다.</span></td>
+    </tr>
+    </tbody>
+</table>
+</div>
+<div class="btn_confirm01 btn_confirm">
+    <button type="submit" class="btn_submit btn">지급</button>
+</div>
+</form>
+
+{{-- 삭제는 아직 한 장도 안 나간 쿠폰만 — 발급된 장이 있으면 서버가 막고 이유를 알린다.
+     정의가 사라지면 회원 쿠폰함의 그 장이 이름도 조건도 없는 유령이 된다. --}}
+<form method="post" action="{{ $action_url }}" onsubmit="return confirm('이 쿠폰을 지울까요? 되돌릴 수 없습니다.');">
+<input type="hidden" name="token" value="{{ $token }}">
+<input type="hidden" name="mode" value="delete">
+<input type="hidden" name="cp_id" value="{{ $cp_id }}">
+<div class="btn_confirm01 btn_confirm">
+    <button type="submit" class="btn_submit btn btn_02">쿠폰 삭제</button>
+</div>
+</form>
+@endif
+
+<script>
+jQuery(function ($) {
+    // 발급 방법·할인 방식에 따라 해당 없는 칸을 감춘다 — 자동 지급 쿠폰에 코드 칸이 남아 있으면
+    // 채워 넣게 되고, 그러면 "가입 축하 쿠폰" 을 아무나 코드로 받아 갈 수 있다(서버도 비운다).
+    function paint() {
+        $('#cpn_code_row').toggle($('#cp_issue').val() === 'code');
+        var rate = $('#cp_type').val() === 'rate';
+        $('#cpn_max_row').toggle(rate);
+        $('#cpn_unit').text(rate ? '%' : '원');
+    }
+    $('#cp_issue, #cp_type').on('change', paint);
+    paint();
+});
+</script>
