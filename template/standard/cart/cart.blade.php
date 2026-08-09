@@ -180,7 +180,7 @@ $(function () {
             qty = Math.max(1, parseInt($in.val(), 10) || 1);
 
         if (max > 0 && qty > max) { qty = max; hitMax = true; }
-        if (hitMax) g5Toast(limitMsg(max));
+        if (hitMax) g5Toast(limitMsg(max), { anchor: $in });
         $in.val(qty);
         paintQty($box);
 
@@ -199,7 +199,7 @@ $(function () {
                 // 담은 뒤 관리자가 재고를 줄였을 수 있다 — 서버가 알려 준 지금 재고로 한계를 다시 심는다
                 $box.data('max', res.max).find('.cart-qty-input').val(res.qty).attr('max', Math.max(1, res.max));
                 paintQty($box);
-                if (res.clamped) g5Toast(limitMsg(res.max));
+                if (res.clamped) g5Toast(limitMsg(res.max), { anchor: $box });
                 var $chk = $row.find('.cart-pick');
                 $chk.data('total', res.line_total);
 
@@ -224,8 +224,8 @@ $(function () {
             max = parseInt($box.data('max'), 10) || 0,
             v = parseInt($in.val(), 10) || 1, d = parseInt($(this).data('d'), 10);
 
-        if (d > 0 && (max <= 0 || v >= max)) { g5Toast(limitMsg(max)); return; }
-        if (d < 0 && v <= 1) { g5Toast('수량은 1개부터입니다. 빼시려면 삭제를 눌러 주세요'); return; }
+        if (d > 0 && (max <= 0 || v >= max)) { g5Toast(limitMsg(max), { anchor: this }); return; }
+        if (d < 0 && v <= 1) { g5Toast('수량은 1개부터입니다. 빼시려면 삭제를 눌러 주세요', { anchor: this }); return; }
         $in.val(v + d);
         saveQty($box.closest('.cart-cart-row'));
     });

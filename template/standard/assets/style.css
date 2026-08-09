@@ -3244,3 +3244,16 @@ body.cart-lb-lock { overflow: hidden; }
     @keyframes g5-toast-in { from { opacity: 0; transform: translateY(8px); } }
     @keyframes g5-toast-out { to { opacity: 0; transform: translateY(6px); } }
 }
+
+/* 누른 것 바로 위에 뜨는 쪽지 — 화면 아래 가운데는 눈이 안 가는 자리일 때가 있다.
+   무엇 때문에 나온 말인지 분명할 때는 그 곁에 붙여야 읽힌다 */
+.g5-toast.is-anchored {
+    position: fixed; z-index: 1300; max-width: min(300px, calc(100vw - 24px));
+    animation: g5-toast-pin .14s cubic-bezier(.2, .8, .3, 1);
+}
+.g5-toast.is-anchored::after {
+    content: ""; position: absolute; left: 50%; bottom: -5px; transform: translateX(-50%) rotate(45deg);
+    width: 10px; height: 10px; background: inherit;
+}
+@media (prefers-reduced-motion: reduce) { .g5-toast.is-anchored { animation: none; } }
+@keyframes g5-toast-pin { from { opacity: 0; transform: translateY(4px); } }

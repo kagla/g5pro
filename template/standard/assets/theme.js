@@ -714,20 +714,50 @@
         }, 180);
     }
 
-    window.g5Toast = function (message, ms) {
-        ms = ms || 2600;
-        if (!$box) $box = $('<div class="g5-toasts" role="status" aria-live="polite"></div>').appendTo('body');
+    // g5Toast('저장했습니다')                     — 화면 아래 가운데
+    // g5Toast('재고가 9개뿐입니다', {anchor: btn})  — **누른 것 바로 위**
+    //
+    // 아래 가운데는 일반적인 알림 자리지만, 누른 자리가 화면 위쪽이면 눈이 거기 있어서
+    // 아래에 뜬 쪽지를 못 본다. 무엇 때문에 나온 말인지 분명할 때는 그 옆에 붙인다.
+    window.g5Toast = function (message, opts) {
+        if (typeof opts === 'number') opts = { ms: opts };
+        opts = opts || {};
+        var ms = opts.ms || 2600, anchor = opts.anchor ? $(opts.anchor) : null;
 
+        var $t = $('<div class="g5-toast"></div>')
+            .append($('<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8.2v4.4M12 15.6h.01"/></svg>'))
+            .append($('<span></span>').text(message));
+
+        if (anchor && anchor.length) {
+            // 같은 곳에서 같은 말이 또 나오면 새로 띄우지 않고 시간만 늘린다
+            var key = message + '@' + (anchor.attr('data-toast-key') || (anchor.attr('data-toast-key', 'k' + (+new Date())), anchor.attr('data-toast-key')));
+            if (last && last.msg === key && last.$t.parent().length) {
+                clearTimeout(last.timer);
+                last.timer = setTimeout(function () { close(last.$t); }, ms);
+                return;
+            }
+            $t.addClass('is-anchored').attr('role', 'status').appendTo('body');
+
+            var r = anchor[0].getBoundingClientRect(), w = $t.outerWidth(), h = $t.outerHeight(),
+                pad = 8, vw = document.documentElement.clientWidth;
+            var left = r.left + r.width / 2 - w / 2;
+            left = Math.max(pad, Math.min(left, vw - w - pad));      // 화면 밖으로 나가지 않게
+            var top = r.top - h - 10;
+            if (top < pad) top = r.bottom + 10;                       // 위가 좁으면 아래로 뒤집는다
+            $t.css({ left: Math.round(left) + 'px', top: Math.round(top) + 'px' });
+
+            $t.on('click', function () { close($t); });
+            last = { msg: key, $t: $t, timer: setTimeout(function () { close($t); }, ms) };
+            return;
+        }
+
+        if (!$box) $box = $('<div class="g5-toasts" role="status" aria-live="polite"></div>').appendTo('body');
         if (last && last.msg === message && last.$t.parent().length) {
             clearTimeout(last.timer);
             last.timer = setTimeout(function () { close(last.$t); }, ms);
             return;
         }
-        var $t = $('<div class="g5-toast"></div>')
-            .append($('<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8.2v4.4M12 15.6h.01"/></svg>'))
-            .append($('<span></span>').text(message))
-            .appendTo($box);
-        $t.on('click', function () { close($t); });
+        $t.appendTo($box).on('click', function () { close($t); });
         last = { msg: message, $t: $t, timer: setTimeout(function () { close($t); }, ms) };
     };
 })();
