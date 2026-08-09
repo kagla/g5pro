@@ -52,8 +52,10 @@ sql_query(" update `{$g5['ycart_item_image_table']}` set im_main = 0 where it_id
 sql_query(" update `{$g5['ycart_item_image_table']}` set im_main = 1
     where im_id = '".(int)$row['im_id']."' and it_id = '$it_id' ", true);
 
+// 목록 칸에 그대로 꽂히는 주소라 목록이 처음 그릴 때와 같은 썸네일을 돌려준다 —
+// 원본을 주면 방금 올린 그 한 줄만 수 MB 짜리가 된다(item_list.php 와 같은 크기·모드).
 echo json_encode(array(
     'ok'    => true,
     'im_id' => (int)$row['im_id'],
-    'url'   => G5_DATA_URL.'/cart/item/'.$row['im_file'],
+    'url'   => cart_item_thumb_url($row['im_file'], 112, 92, false),
 ), JSON_UNESCAPED_UNICODE);
