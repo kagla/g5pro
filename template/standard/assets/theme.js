@@ -595,3 +595,30 @@
     if (mq.addEventListener) mq.addEventListener('change', sync);
     else if (mq.addListener) mq.addListener(sync);   // 사파리 13 이하
 })();
+
+// 비밀번호 눈 — .pw-wrap 안의 버튼이 그 칸의 가림을 껐다 켠다.
+// 위임으로 걸어 나중에 어느 화면에 감싸개를 붙여도 그대로 동작한다.
+// jQuery 는 레이아웃이 <head> 에서 먼저 싣지만, 없는 환경에서도 조용히 지나가게 확인한다.
+(function () {
+    if (!window.jQuery) return;
+    var $ = window.jQuery;
+
+    $(document).on('click', '.pw-eye', function () {
+        var $btn = $(this), $inp = $btn.closest('.pw-wrap').find('input').first();
+        if (!$inp.length) return;
+
+        var el = $inp[0], show = ($inp.attr('type') === 'password');
+        // type 을 바꾸면 브라우저가 커서를 끝으로 보낸다 — 있던 자리를 기억했다 돌려놓는다
+        var s = null, e = null;
+        try { s = el.selectionStart; e = el.selectionEnd; } catch (err) {}
+
+        $inp.attr('type', show ? 'text' : 'password');
+        $btn.toggleClass('is-on', show).attr({
+            'aria-pressed': show ? 'true' : 'false',
+            'aria-label': show ? '비밀번호 숨기기' : '비밀번호 표시',
+            'title': show ? '비밀번호 숨기기' : '비밀번호 표시'
+        });
+
+        try { el.focus(); if (s !== null) el.setSelectionRange(s, e); } catch (err) {}
+    });
+})();
