@@ -327,8 +327,10 @@ $(function () {
         <input type="hidden" name="od_id" value="{{ $order['od_id'] }}">
         <input type="hidden" name="mode" value="transition">
 
+        <input type="hidden" name="memo" id="cart_undo_memo" value="">
+
         @foreach ($undo as $key => $label)
-        <button type="submit" name="action" value="{{ $key }}" class="btn btn_02" @if (isset($confirm_msg[$key])) data-confirm="{{ $confirm_msg[$key] }}" @endif>↩ {{ $label }}</button>
+        <button type="submit" name="action" value="{{ $key }}" class="btn btn_02" data-undo="1" @if (isset($confirm_msg[$key])) data-confirm="{{ $confirm_msg[$key] }}" @endif>↩ {{ $label }}</button>
         @endforeach
 
         </form>
@@ -340,9 +342,17 @@ $(function () {
 <script>
 // 결과가 무거운 처리에만 확인을 받는다(발송처럼 잦은 것에는 안 붙인다 — 무뎌지면 없는 것과 같다).
 // 문구는 서버가 지어 버튼에 실어 준다: 무엇이 열리고 무엇이 시작되는지 말한다.
+//
+// 되돌리기는 확인 대신 사유를 묻는다. 드문 일이고, 나중에 이 주문의 이력을 볼 이유가
+// 정확히 "왜 되돌렸나" 라서다. 안 적어도 진행한다 — 적으라고 막으면 빈칸에 점 하나 찍고 넘어간다.
+// prompt 는 [취소]를 null 로, 빈 입력을 '' 로 돌려주므로 둘을 갈라 쓴다.
 $(function () {
     $('.cart_step_form').on('click', 'button[data-confirm]', function () {
-        return confirm($(this).data('confirm'));
+        if (!$(this).data('undo')) return confirm($(this).data('confirm'));
+        var why = prompt($(this).data('confirm') + '\n\n왜 되돌리나요? (안 적어도 됩니다)', '');
+        if (why === null) return false;
+        $('#cart_undo_memo').val(why);
+        return true;
     });
 });
 </script>
@@ -434,7 +444,8 @@ $(function () {
 
     @foreach ($payments as $p)
     <tr class="bg{{ $loop->index % 2 }}{{ $p['alarm'] ? 'cancel' : '' }}">
-        <td class="td_datetime">{{ substr($p['pm_datetime'], 5, 11) }}</td>
+        {{-- 초까지 — 결제 시도는 몇 초 사이에 여러 줄이 쌓여서 분까지만 보면 순서가 안 갈린다 --}}
+        <td class="td_datetime">{{ substr($p['pm_datetime'], 2) }}</td>
         <td>{{ $p['pm_method'] }}</td>
         <td>{{ $p['pm_status'] }}{{ $p['alarm'] ? ' ⚠ 취소 미확인('.$p['sent'].')' : '' }}</td>
         <td class="td_num">{{ number_format($p['pm_amount']) }}원</td>

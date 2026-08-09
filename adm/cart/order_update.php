@@ -32,7 +32,8 @@ if ($mode === 'invoice') {
 if ($mode === 'transition') {
     // 취소는 여기로 못 온다 — 사유·관리자 비밀번호를 받는 cancel 모드만 취소할 수 있다
     if ($post('action') === 'cancel') alert('취소는 사유와 비밀번호 확인이 필요합니다.', $back);
-    $err = cart_order_transition($od_id, $post('action'), $member['mb_id']);
+    // 되돌리기는 화면이 사유를 한 줄 실어 보낸다(안 적었으면 빈 문자열). 이력의 비고가 된다.
+    $err = cart_order_transition($od_id, $post('action'), $member['mb_id'], $post('memo'));
     if ($err !== '') alert($err, $back);
     goto_url($back);
 }
