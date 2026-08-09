@@ -60,7 +60,7 @@
 <aside class="cart-cart-sum">
     <dl>
         <dt>상품 합계</dt>
-        <dd>{{ number_format($total) }}원</dd>
+        <dd class="is-total">{{ number_format($total) }}원</dd>
         <dt>배송비</dt>
         <dd>주문서에서 계산 (기본 {{ number_format($ship_base) }}원)</dd>
     </dl>

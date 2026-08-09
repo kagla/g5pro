@@ -124,7 +124,7 @@
             <dt>배송비</dt>
             <dd id="cart_ship_fee">계산 중</dd>
             <dt>결제 예정</dt>
-            <dd id="cart_pay_total">{{ number_format($item_total) }}원</dd>
+            <dd id="cart_pay_total" class="is-total">{{ number_format($item_total) }}원</dd>
         </dl>
         <button type="submit" class="cart-cta">주문하기</button>
     </aside>
