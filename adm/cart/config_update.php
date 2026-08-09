@@ -11,6 +11,9 @@ $post_int = function ($key) {
 $ship_base = max(0, $post_int('cc_ship_base'));
 $ship_free = max(0, $post_int('cc_ship_free'));
 $ship_jeju = max(0, $post_int('cc_ship_jeju'));
+// tinyint 라 127 을 넘으면 잘린다 — 화면에서 막지 말고 저장 지점에서 가둔다
+$unpaid_days = min(127, max(0, $post_int('cc_unpaid_days')));
+$return_days = min(127, max(0, $post_int('cc_return_days')));
 $post_key = function ($key) {
     // GPC addslashes 원복 후 저장 지점 이스케이프(이중 이스케이프 방지)
     return (isset($_POST[$key]) && !is_array($_POST[$key]))
@@ -27,6 +30,7 @@ cart_config(); // 행이 없으면 만들어 둔다
 sql_query(" update `{$g5['ycart_config_table']}`
     set cc_ship_base = '$ship_base', cc_ship_free = '$ship_free',
         cc_ship_jeju = '$ship_jeju', cc_bank = '$bank',
+        cc_unpaid_days = '$unpaid_days', cc_return_days = '$return_days',
         cc_inicis_mid = '$inicis_mid', cc_inicis_signkey = '$inicis_signkey',
         cc_inicis_apikey = '$inicis_apikey',
         cc_toss_ckey = '$toss_ckey', cc_toss_skey = '$toss_skey'
