@@ -3049,11 +3049,14 @@ body.cart-lb-lock { overflow: hidden; }
 .cart-chk-all { display: flex; align-items: center; gap: var(--s2); font-size: var(--t-base); font-weight: 600; cursor: pointer; }
 .cart-chk-all b { color: var(--accent-deep); font-variant-numeric: tabular-nums; }
 /* 체크박스는 브라우저 기본을 쓰되 크기와 색만 맞춘다 — 직접 그리면 접근성 동작을 다시 만들어야 한다 */
-.cart-pick, .cart-chk-all input { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; flex: none; }
-.cart-pick-box { display: flex; align-items: center; align-self: flex-start; padding-top: 2px; }
+/* 이름을 .cart-sel 로 둔다 — .cart-pick 은 상품 상세에서 "고른 옵션 줄"(li)이 이미 쓰고 있어서,
+   여기에 width:18px 을 주면 그 줄이 18px 로 찌그러진다. 실제로 그렇게 깨졌다.
+   한 템플릿이 커뮤니티·쇼핑몰·상세를 함께 그리므로 클래스 이름은 화면 밖에서도 유일해야 한다 */
+.cart-sel, .cart-chk-all input { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; flex: none; }
+.cart-sel-box { display: flex; align-items: center; align-self: flex-start; padding-top: 2px; }
 /* 고른 줄 — 계산에 든 것이 눈으로 보이게 테두리만 강조한다(면을 칠하면 사진이 죽는다) */
 .cart-cart-row.is-picked { border-color: var(--accent); }
-.cart-cart-row.is-blocked .cart-pick-box { opacity: .4; }
+.cart-cart-row.is-blocked .cart-sel-box { opacity: .4; }
 
 .cart-cart { display: flex; flex-direction: column; gap: var(--s4); margin-bottom: var(--s5); }
 .cart-cart-row {

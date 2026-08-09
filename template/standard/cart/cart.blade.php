@@ -25,8 +25,8 @@
     @foreach ($items as $it)
     @php $blocked = (!$it['avail'] || $it['over_stock']); @endphp
     <div class="cart-cart-row {{ $blocked ? 'is-blocked' : '' }}">
-        <label class="cart-pick-box">
-            <input type="checkbox" class="cart-pick" value="{{ $it['ct_id'] }}"
+        <label class="cart-sel-box">
+            <input type="checkbox" class="cart-sel" value="{{ $it['ct_id'] }}"
                    data-total="{{ $it['line_total'] }}"
                    {{ $blocked ? 'disabled' : 'checked' }}>
             <span class="sound_only">{{ $it['it_name'] }} 선택</span>
@@ -100,7 +100,7 @@ $(function () {
         base = '{{ $checkout_href }}', shipFree = {{ (int)$ship_free }};
 
     function won(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
-    function picks() { return $('.cart-pick:not(:disabled)'); }
+    function picks() { return $('.cart-sel:not(:disabled)'); }
     function checked() { return picks().filter(':checked'); }
 
     function paint() {
@@ -113,7 +113,7 @@ $(function () {
 
         // 고른 줄을 옅게 칠해 무엇이 계산에 들었는지 눈으로도 보이게
         $('.cart-cart-row').each(function () {
-            var $c = $(this).find('.cart-pick');
+            var $c = $(this).find('.cart-sel');
             $(this).toggleClass('is-picked', $c.length > 0 && $c.prop('checked'));
         });
 
@@ -147,7 +147,7 @@ $(function () {
                            .prop('hidden', !off);
     }
 
-    $(document).on('change', '.cart-pick', paint);
+    $(document).on('change', '.cart-sel', paint);
     $all.on('change', function () { picks().prop('checked', $all.prop('checked')); paint(); });
 
     // ── 수량 — 누르는 즉시 저장한다 ──
@@ -200,7 +200,7 @@ $(function () {
                 $box.data('max', res.max).find('.cart-qty-input').val(res.qty).attr('max', Math.max(1, res.max));
                 paintQty($box);
                 if (res.clamped) g5Toast(limitMsg(res.max), { anchor: $box });
-                var $chk = $row.find('.cart-pick');
+                var $chk = $row.find('.cart-sel');
                 $chk.data('total', res.line_total);
 
                 // 수량을 올리다 재고를 넘길 수 있다 — 넘긴 줄은 그 자리에서 못 고르게 막고 이유를 적는다
