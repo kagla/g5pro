@@ -37,6 +37,12 @@ while ($r = sql_fetch_array($result)) {
     // 이 상태에서 배송관리가 눌러줄 다음 단계 하나
     $r['next_action'] = ($r['od_status'] === 'shipping') ? 'delivered' : 'shipping';
     $r['next_label'] = ($r['od_status'] === 'shipping') ? '배송완료' : '발송(배송중)';
+    // 배송완료만 한 번 묻는다 — 그 한 번이 손님에게 구매확정 문을 열고 반품 기한을 시작시킨다.
+    // 발송은 하루에 수십 번 눌러야 하므로 확인을 두면 금방 무뎌지고, 무뎌진 확인은 없는 것과 같다.
+    $r['next_confirm'] = ($r['od_status'] === 'shipping')
+        ? "배송완료로 바꾸면\n· 손님 화면에 구매확정 버튼이 열립니다\n"
+          ."· 반품 신청 기한이 오늘부터 세기 시작합니다\n\n".$r['od_no']." 주문을 배송완료로 바꿀까요?"
+        : '';
     $r['view_url'] = G5_CART_ADMIN_URL.'/order_view.php?od_id='.(int)$r['od_id'];
     // 이 주문의 택배사가 목록에 없는데 행은 살아 있으면(나중에 사용을 끈 택배사) 그 하나를
     // 목록에 끼워 넣어야 select 가 빈 채로 뜨지 않는다. 옛 자유입력 주문(od_dc_id = 0)은

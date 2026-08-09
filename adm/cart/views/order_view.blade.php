@@ -292,17 +292,24 @@ $(function () {
 </div>
 @endif
 
-@if (count($actions) || $can_cancel)
-<div class="btn_confirm01 btn_confirm" style="text-align:left">
+@if (count($actions) || count($undo) || $can_cancel)
+{{-- 앞으로 보내는 버튼과 되돌리는 버튼을 줄로 갈라 둔다 — 붙여 놓으면 그게 오클릭의 자리다 --}}
+<style>
+#cart_steps .btn { margin-right: 8px; }
+#cart_undo { margin-top: 10px; padding-top: 10px; border-top: 1px solid #e6e6e6; }
+#cart_undo .cart_undo_desc { display: block; margin-bottom: 6px; color: #888; font-size: 0.92em; }
+</style>
+
+<div class="btn_confirm01 btn_confirm" id="cart_steps" style="text-align:left">
 
     @if (count($actions))
-    <form method="post" action="{{ $update_url }}" style="display:inline">
+    <form method="post" action="{{ $update_url }}" style="display:inline" class="cart_step_form">
     <input type="hidden" name="token" value="{{ $token }}">
     <input type="hidden" name="od_id" value="{{ $order['od_id'] }}">
     <input type="hidden" name="mode" value="transition">
 
     @foreach ($actions as $key => $label)
-    <button type="submit" name="action" value="{{ $key }}" class="btn_submit btn">{{ $label }}</button>
+    <button type="submit" name="action" value="{{ $key }}" class="btn_submit btn" @if (isset($confirm_msg[$key])) data-confirm="{{ $confirm_msg[$key] }}" @endif>{{ $label }}</button>
     @endforeach
 
     </form>
@@ -312,9 +319,63 @@ $(function () {
     <button type="button" class="btn btn_02" id="cart_cancel_open">주문 취소{{ $pg_paid ? ' (자동 환불)' : '' }}</button>
     @endif
 
+    @if (count($undo))
+    <div id="cart_undo">
+        <span class="cart_undo_desc">잘못 눌렀다면 여기서 되돌립니다. 되돌린 것도 아래 처리 이력에 남습니다.</span>
+        <form method="post" action="{{ $update_url }}" style="display:inline" class="cart_step_form">
+        <input type="hidden" name="token" value="{{ $token }}">
+        <input type="hidden" name="od_id" value="{{ $order['od_id'] }}">
+        <input type="hidden" name="mode" value="transition">
+
+        @foreach ($undo as $key => $label)
+        <button type="submit" name="action" value="{{ $key }}" class="btn btn_02" @if (isset($confirm_msg[$key])) data-confirm="{{ $confirm_msg[$key] }}" @endif>↩ {{ $label }}</button>
+        @endforeach
+
+        </form>
+    </div>
+    @endif
+
 </div>
+
+<script>
+// 결과가 무거운 처리에만 확인을 받는다(발송처럼 잦은 것에는 안 붙인다 — 무뎌지면 없는 것과 같다).
+// 문구는 서버가 지어 버튼에 실어 준다: 무엇이 열리고 무엇이 시작되는지 말한다.
+$(function () {
+    $('.cart_step_form').on('click', 'button[data-confirm]', function () {
+        return confirm($(this).data('confirm'));
+    });
+});
+</script>
 @else
 <div class="local_desc02 local_desc"><p>이 상태에서 할 수 있는 처리가 없습니다.</p></div>
+@endif
+
+@if (count($logs))
+<h2 class="h2_frm">처리 이력</h2>
+<div class="tbl_head01 tbl_wrap">
+    <table>
+    <caption>주문 상태가 바뀐 기록</caption>
+    <thead>
+    <tr>
+        <th scope="col">시각</th><th scope="col">처리</th>
+        <th scope="col">상태</th><th scope="col">누가</th><th scope="col">비고</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    @foreach ($logs as $l)
+    <tr class="bg{{ $loop->index % 2 }}">
+        <td>{{ substr($l['ol_datetime'], 0, 16) }}</td>
+        <td>{{ $l['action_label'] }}</td>
+        <td>{{ cart_order_status_label($l['ol_from'], $order['od_pay_method']) }} → {{ cart_order_status_label($l['ol_to'], $order['od_pay_method']) }}</td>
+        <td>{{ $l['who_label'] }}</td>
+        <td class="td_left">{{ $l['ol_memo'] }}</td>
+    </tr>
+    @endforeach
+
+    </tbody>
+    </table>
+</div>
 @endif
 
 @if ($can_cancel)

@@ -55,6 +55,23 @@ if ($s === 'shipping') $actions['delivered'] = '배송완료로';
 // 관리자도 대신 찍을 수 있게 둔다(전화로 "잘 받았다" 는 확인을 받은 경우 등)
 if ($s === 'delivered') $actions['confirm'] = '구매확정으로';
 
+// 되돌리는 처리 — 앞으로 가는 버튼과 섞지 않는다. 잘못 눌렀을 때 화면에서 고칠 길이
+// 있어야 오클릭이 사고가 아니라 번거로움으로 끝난다.
+// 반품 신청이 있는 주문의 배송완료 되돌리기는 라이브러리가 막는다(여기서도 미리 감춘다).
+$undo = array();
+if ($s === 'shipping') $undo['unship'] = '발송 되돌리기 (결제완료로)';
+if ($s === 'delivered' && !count(cart_return_rows($od_id))) $undo['undeliver'] = '배송완료 되돌리기 (배송중으로)';
+
+// 결과가 무거운 처리에만 확인을 받는다. 발송은 하루에 수십 번 눌러야 하므로 확인을 두면
+// 금방 무뎌지고, 무뎌진 확인은 없는 것과 같다. 문구는 "정말?" 이 아니라 결과를 말한다.
+$confirm_msg = array(
+    'delivered' => "배송완료로 바꾸면\n· 손님 화면에 구매확정 버튼이 열립니다\n"
+        ."· 반품 신청 기한이 오늘부터 세기 시작합니다\n\n계속할까요?",
+    'confirm' => "구매확정은 되돌릴 수 없습니다.\n확정한 뒤에는 손님이 반품을 신청할 수 없습니다.\n\n계속할까요?",
+    'unship' => "발송을 되돌립니다.\n발송 시각 기록이 지워지고 결제완료 상태로 돌아갑니다.\n\n계속할까요?",
+    'undeliver' => "배송완료를 되돌립니다.\n배송완료 시각이 지워지고 손님의 구매확정 버튼이 닫힙니다.\n\n계속할까요?",
+);
+
 // 취소는 별도 흐름 — 모달에서 사유·관리자 비밀번호를 받고, PG 결제는 자동 환불까지 나간다
 $can_cancel = in_array($s, array('unpaid', 'paid', 'preparing'), true);
 $pg_paid = ($order['od_pay_method'] !== 'bank' && in_array($s, array('paid', 'preparing'), true));
@@ -82,6 +99,9 @@ cadm_view('order_view', array(
     'status_label' => cart_order_status_label($order['od_status'], $order['od_pay_method']),
     'payments' => $payments,
     'actions' => $actions,
+    'undo' => $undo,
+    'confirm_msg' => $confirm_msg,
+    'logs' => cart_order_log_rows($od_id),
     'can_cancel' => $can_cancel,
     'pg_paid' => $pg_paid,
     'token' => get_token(),

@@ -275,6 +275,11 @@ function cart_order_create($input, $owner = null, $draft = false)
     cart_address_save($mb_id, $input['od_name'], $input['od_hp'], $input['od_email'],
         $input['od_zip'], $input['od_addr1'], $input['od_addr2']);
 
+    // 손님이 "회원정보에도 저장" 을 켰을 때만 회원 기록을 고친다(주소록 저장과 별개)
+    if ($mb_id !== '' && !empty($input['save_member'])) {
+        cart_member_profile_save($mb_id, $input);
+    }
+
     return array('od_id' => $od_id, 'od_no' => $od_no);
 }
 
@@ -331,6 +336,49 @@ function cart_address_delete($mb_id, $ad_id)
     return (bool)get_sql_affected_rows();
 }
 
+// 주문서에서 적은 연락처·배송지를 회원 기록에도 반영한다("회원정보에도 저장" 을 켰을 때만).
+//
+// 이름·이메일은 손대지 않는다. 이메일은 로그인·비밀번호 찾기에 쓰이고 회원끼리 겹치면 안 되는
+// 값이라 주문서에서 조용히 바꿀 것이 아니고, 이름은 본인확인(cf_cert_*)과 엮여 있다.
+// 휴대폰도 본인확인이 필수인 사이트에서는 인증으로 채워진 값이므로 건드리지 않는다.
+// 그래서 화면 문구도 "연락처와 배송지" 라고 정확히 적는다 — 더 저장하는 것처럼 말하지 않는다.
+function cart_member_profile_save($mb_id, $input)
+{
+    global $g5, $config;
+
+    $mb_id = trim($mb_id);
+    if ($mb_id === '') return;
+
+    $set = array();
+
+    $cert_locked = (!empty($config['cf_cert_use']) && !empty($config['cf_cert_req']));
+    $hp = isset($input['od_hp']) ? trim($input['od_hp']) : '';
+    if (!$cert_locked && $hp !== '') {
+        // 순정과 같은 모양으로 저장한다 — 관리자 목록·문자 발송이 이 형식을 전제한다
+        if (function_exists('hyphen_hp_number')) $hp = hyphen_hp_number($hp);
+        $set[] = " mb_hp = '".sql_real_escape_string(mb_substr($hp, 0, 20, 'utf-8'))."' ";
+    }
+
+    // 주소는 세 칸이 한 묶음이라 우편번호·기본주소가 다 있을 때만 통째로 옮긴다.
+    // 반쪽만 덮으면 옛 주소와 새 주소가 섞인 배송지가 회원 기록에 남는다.
+    $zip = preg_replace('/[^0-9]/', '', isset($input['od_zip']) ? $input['od_zip'] : '');
+    $addr1 = isset($input['od_addr1']) ? trim($input['od_addr1']) : '';
+    $addr2 = isset($input['od_addr2']) ? trim($input['od_addr2']) : '';
+    if ($zip !== '' && $addr1 !== '') {
+        $set[] = " mb_zip1 = '".sql_real_escape_string(substr($zip, 0, 3))."' ";
+        $set[] = " mb_zip2 = '".sql_real_escape_string(substr($zip, 3, 3))."' ";
+        $set[] = " mb_addr1 = '".sql_real_escape_string(mb_substr($addr1, 0, 255, 'utf-8'))."' ";
+        $set[] = " mb_addr2 = '".sql_real_escape_string(mb_substr($addr2, 0, 255, 'utf-8'))."' ";
+        // 주문서는 참고항목·지번여부를 받지 않는다 — 옛 주소의 흔적이 새 주소에 붙지 않게 비운다
+        $set[] = " mb_addr3 = '' ";
+        $set[] = " mb_addr_jibeon = '' ";
+    }
+
+    if (!count($set)) return;
+    sql_query(" update `{$g5['member_table']}` set ".implode(',', $set)."
+        where mb_id = '".sql_real_escape_string($mb_id)."' ", true);
+}
+
 // 주문서 기본값 한 칸 — 가장 최근 주소록 값이 있으면 그것, 없으면 회원 정보.
 // 주소록 조회는 한 요청에 한 번만 한다(칸마다 부르지 않게 캐시).
 function cart_address_default($member, $ad_key, $mb_key)
@@ -365,7 +413,7 @@ function cart_address_list($mb_id, $limit = 10)
 //   confirm  : delivered → confirmed (구매확정 — 고객이 직접 누르거나 관리자가 대신)
 // 행을 잠그고 잠긴 상태로 재검증한다 — 결제 리턴(confirm_paid)과 같은 규율.
 // 성공 시 빈 문자열, 실패 시 사유 문자열 반환.
-function cart_order_transition($od_id, $action, $who = 'admin')
+function cart_order_transition($od_id, $action, $who = 'admin', $memo = '')
 {
     global $g5;
     $od_id = (int)$od_id;
@@ -379,6 +427,12 @@ function cart_order_transition($od_id, $action, $who = 'admin')
         // 구매확정은 배송완료에서만 — 아직 안 받은 물건을 확정할 수는 없다.
         // 되돌리는 전이는 두지 않는다(확정은 매듭이고, 이후 포인트 적립·반품 마감의 기준이 된다)
         'confirm' => array('from' => array('delivered'), 'to' => 'confirmed'),
+        // 잘못 누른 것을 되돌린다. 앞으로 가는 길만 있으면 오클릭 한 번이 화면에서 고칠 수 없는
+        // 자리로 주문을 밀어 넣는다 — 특히 배송완료는 손님에게 구매확정 문을 열고 반품 기한을
+        // 시작시킨다. 되돌릴 때 그 시각들도 함께 지운다(안 지우면 기한이 헛 시각을 가리킨다).
+        // 구매확정된 주문은 대상이 아니다 — from 이 delivered 뿐이라 규칙만으로 막힌다.
+        'unship' => array('from' => array('shipping'), 'to' => 'paid'),
+        'undeliver' => array('from' => array('delivered'), 'to' => 'shipping'),
     );
     if (!isset($rules[$action])) return '허용되지 않는 처리입니다.';
     $rule = $rules[$action];
@@ -399,6 +453,10 @@ function cart_order_transition($od_id, $action, $who = 'admin')
         // 반품 진행 중에 찍히면 말이 어긋나고, 확정 뒤에는 반품 신청을 받지 않으므로
         // 손님의 신청이 그대로 묻힌다. 화면이 아니라 여기서 막는다 — 관리자 버튼도 같은 문을 쓴다.
         $fail = '반품 신청이 처리 중입니다. 처리를 마친 뒤에 구매확정할 수 있습니다.';
+    } elseif ($action === 'undeliver' && count(cart_return_rows($od_id))) {
+        // 반품은 배송완료 뒤에만 신청할 수 있다. 신청이 하나라도 있는 주문을 배송중으로
+        // 되돌리면 "아직 안 갔는데 반품 신청이 있는" 말이 안 되는 주문이 된다.
+        $fail = '반품 신청이 있는 주문은 되돌릴 수 없습니다. 반품을 먼저 처리하세요.';
     }
 
     // 취소는 재고를 원장에 남기며 되돌린다 — 주문 생성(차감)의 정확한 역연산.
@@ -419,6 +477,9 @@ function cart_order_transition($od_id, $action, $who = 'admin')
         // 반품 기한은 "받은 날부터" 세므로 배송완료 시각을 따로 남긴다
         if ($action === 'delivered') $set .= ", od_delivered_at = '".G5_TIME_YMDHIS."' ";
         if ($action === 'confirm') $set .= ", od_confirmed_at = '".G5_TIME_YMDHIS."' ";
+        // 되돌릴 때는 그 단계가 찍어 둔 시각도 지운다 — 남겨 두면 반품 기한이 헛 시각을 센다
+        if ($action === 'unship') $set .= ", od_shipped_at = '1970-01-01 00:00:00' ";
+        if ($action === 'undeliver') $set .= ", od_delivered_at = '1970-01-01 00:00:00' ";
         // 취소한 주문에 쓴 쿠폰은 손님에게 돌려준다. 기한이 이미 지났으면 되살려도 못 쓰지만
         // 기한을 늘려 주는 것은 쿠폰 정책을 바꾸는 일이라 사람이 정할 몫이다.
         if ($action === 'cancel') cart_coupon_release($od_id);
@@ -427,9 +488,50 @@ function cart_order_transition($od_id, $action, $who = 'admin')
         if (get_sql_affected_rows() < 1) $fail = '상태가 이미 바뀌었습니다. 다시 확인해 주세요.';
     }
 
+    // 이력은 상태 갱신과 같은 트랜잭션에 담는다 — 둘 중 하나만 남는 상태를 만들지 않는다.
+    // 이 함수가 상태를 바꾸는 유일한 문이라 여기 한 줄이면 빠지는 전이가 없다.
+    if ($fail === '') {
+        sql_query(" insert into `{$g5['ycart_order_log_table']}`
+            set od_id = '$od_id',
+                ol_action = '".sql_real_escape_string($action)."',
+                ol_from = '".sql_real_escape_string($cur['od_status'])."',
+                ol_to = '".sql_real_escape_string($rule['to'])."',
+                ol_who = '".sql_real_escape_string(mb_substr((string)$who, 0, 50, 'utf-8'))."',
+                ol_memo = '".sql_real_escape_string(mb_substr(trim((string)$memo), 0, 255, 'utf-8'))."',
+                ol_datetime = '".G5_TIME_YMDHIS."' ", true);
+    }
+
     sql_query($fail === '' ? " commit " : " rollback ", true);
     sql_query(" set autocommit = 1 ", true);
     return $fail;
+}
+
+// 주문 한 건의 상태 변경 이력 — 오래된 것부터. 관리자 주문상세가 표로 보여 준다.
+function cart_order_log_rows($od_id)
+{
+    global $g5;
+    $rows = array();
+    $result = sql_query(" select * from `{$g5['ycart_order_log_table']}`
+        where od_id = '".(int)$od_id."' order by ol_id ");
+    while ($r = sql_fetch_array($result)) {
+        $r['action_label'] = cart_order_action_label($r['ol_action']);
+        // 누가 눌렀나 — 시스템·손님은 그렇게 적고, 나머지는 관리자 아이디 그대로
+        $r['who_label'] = ($r['ol_who'] === 'system') ? '자동'
+            : (($r['ol_who'] === 'customer') ? '손님' : $r['ol_who']);
+        $rows[] = $r;
+    }
+    return $rows;
+}
+
+// 전이 이름을 사람 말로. 상태 이름표(cart_order_status_label)와 달리 "무엇을 했나" 를 적는다.
+function cart_order_action_label($action)
+{
+    $map = array(
+        'deposit' => '입금확인', 'preparing' => '배송준비', 'shipping' => '발송',
+        'delivered' => '배송완료', 'confirm' => '구매확정', 'cancel' => '주문취소',
+        'unship' => '발송 되돌림', 'undeliver' => '배송완료 되돌림',
+    );
+    return isset($map[$action]) ? $map[$action] : $action;
 }
 
 // 이 주문을 지금 요청자가 볼 수 있는가 — 회원 본인, 방금 주문한 세션, 비회원 조회 인증 세션.
@@ -472,7 +574,7 @@ function cart_order_expire_unpaid()
     $reason = '입금 기한('.$days.'일) 초과로 자동 취소되었습니다.';
     foreach ($targets as $t) {
         // 전이가 실패하면(그새 입금확인 등) 그 건만 건너뛴다 — 나머지는 계속 처리한다
-        if (cart_order_transition((int)$t['od_id'], 'cancel', 'system') !== '') continue;
+        if (cart_order_transition((int)$t['od_id'], 'cancel', 'system', $reason) !== '') continue;
         sql_query(" update `{$g5['ycart_order_table']}`
             set od_cancel_reason = '".sql_real_escape_string($reason)."',
                 od_canceled_at = '".G5_TIME_YMDHIS."', od_canceled_by = 'system'

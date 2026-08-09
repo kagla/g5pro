@@ -41,6 +41,7 @@ function cart_table_defaults()
         'ycart_coupon_table'     => 'ycart_coupon',
         'ycart_coupon_mb_table'  => 'ycart_coupon_mb',
         'ycart_delivery_company_table' => 'ycart_delivery_company',
+        'ycart_order_log_table'  => 'ycart_order_log',
     );
     foreach ($tables as $key => $name) {
         if (!isset($g5[$key])) $g5[$key] = G5_TABLE_PREFIX.$name;
@@ -571,6 +572,22 @@ function cart_table_ddl()
         `dc_default` tinyint(4) NOT NULL DEFAULT '0',
         PRIMARY KEY (`dc_id`),
         KEY `list` (`dc_use`, `dc_order`, `dc_id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
+    // 2026-08-10 주문 상태 변경 이력 — 누가 언제 무엇을 어디로 바꿨나.
+    // 상태는 cart_order_transition() 한 곳으로만 바뀌므로, 거기서 한 줄씩 적으면 빠짐이 없다
+    // (관리자 버튼·고객 구매확정·무통장 만료 자동취소가 모두 그 문을 쓴다).
+    // 되돌리는 처리가 생긴 이상 "왜 이 주문이 이 상태인가" 를 뒤에서 읽을 수 있어야 한다.
+    'ycart_order_log_table' => " CREATE TABLE IF NOT EXISTS `{$g5['ycart_order_log_table']}` (
+        `ol_id` int(11) NOT NULL AUTO_INCREMENT,
+        `od_id` int(11) NOT NULL DEFAULT '0',
+        `ol_action` varchar(20) NOT NULL DEFAULT '',
+        `ol_from` varchar(20) NOT NULL DEFAULT '',
+        `ol_to` varchar(20) NOT NULL DEFAULT '',
+        `ol_who` varchar(50) NOT NULL DEFAULT '',
+        `ol_memo` varchar(255) NOT NULL DEFAULT '',
+        `ol_datetime` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+        PRIMARY KEY (`ol_id`),
+        KEY `od_id` (`od_id`, `ol_id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
     );
 }

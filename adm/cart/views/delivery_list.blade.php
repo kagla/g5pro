@@ -79,7 +79,7 @@
         </td>
         <td><input type="text" data-role="memo" value="{{ $o['od_delivery_admin_memo'] }}" size="14" placeholder="관리자만 봅니다"></td>
         <td><button type="button" class="btn btn_02" data-save="{{ $o['od_id'] }}">송장 저장</button></td>
-        <td><button type="button" class="btn_submit btn" data-next="{{ $o['od_id'] }}" data-action="{{ $o['next_action'] }}">{{ $o['next_label'] }}</button></td>
+        <td><button type="button" class="btn_submit btn" data-next="{{ $o['od_id'] }}" data-action="{{ $o['next_action'] }}" @if ($o['next_confirm'] !== '') data-confirm="{{ $o['next_confirm'] }}" @endif>{{ $o['next_label'] }}</button></td>
     </tr>
     @endforeach
 
@@ -156,6 +156,9 @@ $(function () {
         $('#cart_dlv_form').trigger('submit');
     });
     $('button[data-next]').on('click', function () {
+        // 배송완료만 한 번 묻는다(서버가 문구를 실어 준다). 발송은 연속 처리라 안 묻는다.
+        var ask = $(this).data('confirm');
+        if (ask && !confirm(ask)) return;
         var $tr = $(this).closest('tr');
         if (!fill($(this).data('next'), $tr)) return;
         // 발송 처리 전에 송장부터 저장되도록 mode=ship 묶음 처리로 보낸다

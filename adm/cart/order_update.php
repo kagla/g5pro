@@ -54,7 +54,7 @@ if ($mode === 'cancel') {
         if ($err !== '') alert('전자결제 취소 실패 — 주문은 취소하지 않았습니다. '.$err, $back);
     }
 
-    $err = cart_order_transition($od_id, 'cancel', $member['mb_id']);
+    $err = cart_order_transition($od_id, 'cancel', $member['mb_id'], $reason);
     if ($err !== '') {
         // 환불은 나갔는데 전이가 실패한 드문 경우 — 이력이 남아 있으니 화면이 대사 근거가 된다
         alert($err.' (전자결제 취소 여부는 결제 이력을 확인하세요)', $back);
