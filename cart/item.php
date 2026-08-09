@@ -41,6 +41,10 @@ foreach (cart_item_images($it_id) as $img) {
     $images[] = array(
         'view' => cart_item_thumb_url($img['im_file'], 900, 900, true),
         'thumb' => cart_item_thumb_url($img['im_file'], 128, 128, true),
+        // 확대해 보기(라이트박스)용 — 폭 1600, 높이 0(원본 비율 유지, 잘림·여백 없음).
+        // 원본을 그대로 걸지 않는 이유: 4MB 짜리가 흔해 넘길 때마다 그만큼 내려받는다.
+        // 페이지 로딩에는 영향이 없다 — 화면이 라이트박스를 열 때 비로소 받는다.
+        'full' => cart_item_thumb_url($img['im_file'], 1600, 0, false),
     );
 }
 
@@ -156,6 +160,11 @@ foreach ($skus as $s) {
     if (!$s['soldout']) $buyable_skus[] = $s;
 }
 
+// 찜 — 회원만 담을 수 있다. 비회원에게도 하트는 보여 주되(있는 기능을 숨기면 못 찾는다)
+// 누르면 로그인으로 안내한다. 돌아올 자리는 지금 보고 있는 상품 상세다.
+$wish_mb_id = cart_wish_mb_id();
+$item_url = cart_url('item.php', array('code' => $item['it_code']));
+
 $g5['title'] = $item['it_name'];
 g5_view('cart.item', array(
     'item' => $item,
@@ -178,4 +187,9 @@ g5_view('cart.item', array(
     'token' => get_token(),
     'cart_action' => cart_url('cart_update.php'),
     'cart_href' => cart_url('cart.php'),
+    'wish_on' => cart_wish_has($it_id, $wish_mb_id),
+    'wish_count' => cart_wish_count($it_id),
+    'wish_action' => cart_url('wish_update.php'),
+    'wish_href' => cart_url('wish.php'),
+    'wish_login_url' => G5_BBS_URL.'/login.php?url='.urlencode($item_url),
 ));
