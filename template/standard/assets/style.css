@@ -249,7 +249,12 @@ ul { list-style: none; margin: 0; padding: 0; }
 }
 .linklike:hover { color: var(--accent); }
 
-input[type=text], input[type=password], input[type=email], input[type=file], select, textarea {
+/* type 을 하나씩 적는 목록이라 새 타입을 쓰면 여기 함께 적어야 한다 —
+   빠지면 브라우저 기본값(흰 바탕·검은 글자)으로 떨어져 어두운 모드에서 흰 상자가 된다.
+   장바구니·상품 상세의 수량칸(number)이 그렇게 남아 있었다 */
+input[type=text], input[type=password], input[type=email], input[type=file],
+input[type=number], input[type=tel], input[type=search], input[type=url],
+select, textarea {
     background: var(--bg); color: var(--fg);
     border: 1px solid var(--line); border-radius: var(--r-input);
     padding: var(--s2) var(--s3);
