@@ -77,10 +77,9 @@
              file 입력에 name 을 주지 않는 이유 — 이 표는 통째로 폼 하나라(cart_list_form),
              이름이 있으면 [선택 저장]에 딸려 나간다. 업로드는 아래 JS 가 따로 보낸다. --}}
         <td>
-            @php $imgs = cart_item_images((int)$it['it_id']); @endphp
-            <label class="it-img {{ count($imgs) ? '' : 'it-img-empty' }}" title="눌러서 사진 올리기">
-                @if (count($imgs))
-                <img src="{{ G5_DATA_URL }}/cart/item/{{ $imgs[0]['im_file'] }}" alt="{{ $it['it_name'] }}">
+            <label class="it-img {{ $it['thumb_url'] !== '' ? '' : 'it-img-empty' }}" title="눌러서 사진 올리기">
+                @if ($it['thumb_url'] !== '')
+                <img src="{{ $it['thumb_url'] }}" alt="{{ $it['it_name'] }}">
                 @else
                 <span class="it-img-none">사진<br>추가</span>
                 @endif
@@ -219,10 +218,12 @@ $(function () {
 /* 이미지 칸 — 라벨 전체가 파일 고르기 버튼이다 */
 .it-img {
     position: relative; display: inline-flex; align-items: center; justify-content: center;
-    width: 56px; height: 46px; cursor: pointer; border-radius: 4px;
+    width: 56px; height: 46px; cursor: pointer; border-radius: 6px;
     border: 1px solid #d5d9e0; background: #fff; overflow: hidden;
 }
-.it-img img { display: block; max-width: 100%; max-height: 44px; }
+/* 사진에도 따로 라운드를 준다 — 사진이 칸보다 작게 앉는 비율이면(가로로 긴 사진 등)
+   칸의 라운드가 사진 모서리를 깎지 못해 각진 채로 남는다 */
+.it-img img { display: block; max-width: 100%; max-height: 44px; border-radius: 4px; }
 .it-img:hover { border-color: #3b7ddd; }
 /* 사진이 없는 칸 — 여기를 누르면 된다는 것이 보이게 점선으로 비워 둔다 */
 .it-img-none { font-size: 11px; line-height: 1.25; color: #98a2b3; text-align: center; }
