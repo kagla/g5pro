@@ -10,7 +10,22 @@
         </div>
         <div class="field">
             <label for="login_pw">비밀번호</label>
-            <input type="password" id="login_pw" name="mb_password" required>
+            {{-- 눈 버튼으로 가림을 껐다 켰다 한다. 동작은 theme.js 가 .pw-wrap 단위로 맡으므로
+                 다른 화면에 붙일 때도 이 감싸개와 버튼만 그대로 옮기면 된다. --}}
+            <div class="pw-wrap">
+                <input type="password" id="login_pw" name="mb_password" required>
+                <button type="button" class="pw-eye" aria-label="비밀번호 표시" aria-pressed="false" title="비밀번호 표시">
+                    <svg class="pw-eye-i pw-eye-show" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    <svg class="pw-eye-i pw-eye-hide" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M2 12s3.6-6.5 10-6.5c1.7 0 3.2.4 4.5 1M22 12s-3.6 6.5-10 6.5c-1.7 0-3.2-.4-4.5-1"/>
+                        <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>
+                        <path d="M3 3l18 18"/>
+                    </svg>
+                </button>
+            </div>
         </div>
         <label class="auto-login"><input type="checkbox" name="auto_login" value="1"> 자동로그인</label>
         <button type="submit" class="btn btn-primary btn-block">로그인</button>
