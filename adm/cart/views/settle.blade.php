@@ -14,6 +14,7 @@
     <tr>
         <th scope="col">날짜</th><th scope="col">결제 건수</th><th scope="col">상품 합계</th>
         <th scope="col">배송비</th><th scope="col">총액</th>
+        <th scope="col">환불</th><th scope="col">순매출</th>
     </tr>
     </thead>
     <tbody>
@@ -25,6 +26,8 @@
         <td class="td_num">{{ number_format($d['item_amt']) }}</td>
         <td class="td_num">{{ number_format($d['ship_amt']) }}</td>
         <td class="td_num">{{ number_format($d['total_amt']) }}</td>
+        <td class="td_num">{{ (int)$d['refund_amt'] > 0 ? '-'.number_format($d['refund_amt']) : '-' }}</td>
+        <td class="td_num">{{ number_format($d['net_amt']) }}</td>
     </tr>
     @endforeach
 
@@ -35,9 +38,11 @@
         <td class="td_num"><strong>{{ number_format($sum['item']) }}</strong></td>
         <td class="td_num"><strong>{{ number_format($sum['ship']) }}</strong></td>
         <td class="td_num"><strong>{{ number_format($sum['total']) }}</strong></td>
+        <td class="td_num"><strong>{{ $sum['refund'] > 0 ? '-'.number_format($sum['refund']) : '-' }}</strong></td>
+        <td class="td_num"><strong>{{ number_format($sum['net']) }}</strong></td>
     </tr>
     @else
-    <tr><td colspan="5" class="empty_table">기간 내 결제 매출이 없습니다.</td></tr>
+    <tr><td colspan="7" class="empty_table">기간 내 결제 매출이 없습니다.</td></tr>
     @endif
 
     </tbody>
