@@ -208,8 +208,27 @@ body {
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;
 }
+/* 링크 기본은 물려받은 색이다 — 목록 줄·메뉴·카드처럼 "덩어리 전체가 링크" 인 자리가 대부분이라,
+   거기에 색을 주면 화면이 온통 파래진다.
+   그 대신 **글 속에 섞여 있는 링크**는 반드시 갈라 보여야 한다 — 아래 자리들이 그렇다.
+   여기 없는 자리에 문장 속 링크를 새로 만들면 이 목록에 함께 적는다 */
 a { color: inherit; text-decoration: none; }
 a:hover { color: var(--accent); }
+.post-content a,
+.post-files a,
+.post-links a,
+.cart-co-sec a,
+.cart-complete-line a,
+.wish-msg a {
+    color: var(--accent-deep); text-decoration: underline;
+    text-underline-offset: 3px; text-decoration-thickness: 1px;
+}
+.post-content a:hover,
+.post-files a:hover,
+.post-links a:hover,
+.cart-co-sec a:hover,
+.cart-complete-line a:hover,
+.wish-msg a:hover { color: var(--accent); }
 img { max-width: 100%; height: auto; }
 h1, h2, h3, h4, h5 { margin: 0; line-height: 1.35; letter-spacing: -.01em; }
 ul { list-style: none; margin: 0; padding: 0; }
@@ -2992,14 +3011,19 @@ body.cart-lb-lock { overflow: hidden; }
 
 /* 찜 목록 카드의 빼기 — 카드 링크 위에 얹는다(형제 요소라 링크와 눌림이 겹치지 않는다) */
 .wish-card { position: relative; }
+/* 찜 빼기 — 채운 빨간 하트로 뒀더니 목록에 빨간 점이 줄줄이 박혔다.
+   찜 목록 안에서 "찜했다" 는 이미 자명하므로 그 색이 나르는 정보가 없다.
+   평소엔 윤곽선 하트로 조용히 두고, 손이 닿았을 때 비로소 빨강 — 그때가 지우려는 순간이다 */
 .wish-del {
     position: absolute; top: var(--s2); right: var(--s2); z-index: 1;
     width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%;
     display: flex; align-items: center; justify-content: center; cursor: pointer;
-    background: rgba(255,255,255,.9); color: var(--danger); box-shadow: var(--sh-sm);
+    background: rgba(255,255,255,.92); color: var(--fg);
+    box-shadow: var(--sh-sm); transition: color .12s, background .12s;
 }
-.wish-del svg { width: 17px; height: 17px; fill: currentColor; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; }
-.wish-del:hover { background: #fff; }
+.wish-del svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+.wish-del:hover, .wish-del:focus-visible { background: #fff; color: var(--danger); }
+.wish-del:hover svg, .wish-del:focus-visible svg { fill: currentColor; }
 .wish-del:disabled { opacity: .5; cursor: default; }
 
 /* 주문 단계로 못 넘어가는 이유 — 버튼 바로 위에 한 줄로. 상자를 치지 않는다(줄 안내와 같은 톤).
