@@ -136,10 +136,17 @@ function cart_order_confirm_paid($od_id, $oid, $method, $tid, $amount)
     return $fail;
 }
 
-// 관리자 주문취소의 전자결제 자동취소(환불) — 승인된 결제(approved 이력)를 PG API 로 되돌린다.
-// 성공 시 빈 문자열, 실패 시 사유 문자열. 호출자는 실패하면 주문 취소 자체를 중단해야 한다
-// (돈이 안 돌아갔는데 주문만 취소되는 상태를 만들지 않는다). 결과는 'refund' 이력으로 남는다.
-function cart_pay_refund($od, $reason, $who = 'admin')
+// 전자결제 환불 — 승인된 결제(approved 이력)를 PG API 로 되돌린다.
+// 성공 시 빈 문자열, 실패 시 사유 문자열. 호출자는 실패하면 취소·반품 자체를 중단해야 한다
+// (돈이 안 돌아갔는데 주문만 바뀌는 상태를 만들지 않는다). 결과는 'refund' 이력으로 남는다.
+//
+// $amount: 이번에 돌려줄 금액. 0 이면 "남은 금액 전부"(주문취소가 쓰는 값).
+// 남은 금액은 결제액에서 이미 환불한 누계(od_refund)를 뺀 값이다 — 반품이 여러 번 쌓일 수 있다.
+//
+// 전체취소와 부분취소를 여기서 가른다. 한 번이라도 부분취소한 거래는 이후 전체취소 요청이
+// PG 에서 거부되므로(순정 adm/shop_admin/orderformcartupdate.php 주석에 같은 함정이 적혀 있다),
+// 이미 환불 이력이 있으면 남은 금액이라도 부분취소로 보낸다.
+function cart_pay_refund($od, $reason, $who = 'admin', $amount = 0)
 {
     global $g5;
     $od_id = (int)$od['od_id'];
@@ -149,17 +156,27 @@ function cart_pay_refund($od, $reason, $who = 'admin')
     if (!$appr || trim($appr['pm_tid']) === '') return '환불할 승인 이력(TID)이 없습니다.';
     $tid = trim($appr['pm_tid']);
 
+    $refunded = (int)$od['od_refund'];
+    $remain = (int)$od['od_total'] - $refunded;
+    if ($remain <= 0) return '이미 전액 환불된 주문입니다.';
+
+    $amount = (int)$amount;
+    if ($amount <= 0 || $amount > $remain) $amount = $remain;
+    $is_part = ($amount < $remain) || ($refunded > 0);
+
     if ($od['od_pay_method'] === 'inicis') {
-        $fail = cart_inicis_refund($od, $tid, $reason);
+        $fail = cart_inicis_refund($od, $tid, $reason,
+            $is_part ? array('price' => $amount, 'confirm' => $remain - $amount) : null);
     } elseif ($od['od_pay_method'] === 'toss') {
-        $fail = cart_toss_refund($od, $tid, $reason);
+        $fail = cart_toss_refund($od, $tid, $reason, $is_part ? $amount : 0);
     } else {
         return 'PG 결제 주문이 아닙니다.';
     }
 
-    cart_payment_log($od_id, $od['od_pay_method'], $tid, (int)$od['od_total'],
+    cart_payment_log($od_id, $od['od_pay_method'], $tid, $amount,
         $fail === '' ? 'refund' : 'failed',
-        array('step' => 'admin_refund', 'reason' => $reason, 'by' => $who, 'fail' => $fail));
+        array('step' => 'admin_refund', 'part' => $is_part ? 1 : 0, 'remain' => $remain - $amount,
+              'reason' => $reason, 'by' => $who, 'fail' => $fail));
     return $fail;
 }
 
