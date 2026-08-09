@@ -36,6 +36,10 @@ while ($r = sql_fetch_array($result)) {
     $r['next_action'] = ($r['od_status'] === 'shipping') ? 'delivered' : 'shipping';
     $r['next_label'] = ($r['od_status'] === 'shipping') ? '배송완료' : '발송(배송중)';
     $r['view_url'] = G5_CART_ADMIN_URL.'/order_view.php?od_id='.(int)$r['od_id'];
+    // 이 주문의 택배사가 목록에 없는데 행은 살아 있으면(나중에 사용을 끈 택배사) 그 하나를
+    // 목록에 끼워 넣어야 select 가 빈 채로 뜨지 않는다. 옛 자유입력 주문(od_dc_id = 0)은
+    // 끼울 행이 없으므로 select 를 비워 두고 화면이 이름만 따로 보여 준다.
+    $r['extra_dc'] = ((int)$r['od_dc_id'] > 0) ? cart_delivery_company_get((int)$r['od_dc_id']) : null;
     $orders[] = $r;
 }
 
@@ -46,6 +50,8 @@ while ($r = sql_fetch_array($result)) $tab_counts[$r['od_status']] = (int)$r['cn
 
 cadm_view('delivery_list', array(
     'orders' => $orders,
+    'companies' => cart_delivery_company_list(),
+    'default_dc' => cart_delivery_company_default(),
     'tabs' => $tabs,
     'tab' => $tab,
     'tab_counts' => $tab_counts,

@@ -101,16 +101,6 @@ function cart_order_set_delivery($od_id, $dc_id, $invoice, $note, $memo)
         where od_id = '$od_id' ", true);
 }
 
-// 옛 저장 경로 — 택배사 이름을 문자열로 받는다. 배송관리가 select 로 바뀌면 지운다.
-function cart_order_set_invoice($od_id, $company, $invoice)
-{
-    global $g5;
-    sql_query(" update `{$g5['ycart_order_table']}`
-        set od_dc_name = '".sql_real_escape_string(mb_substr(trim($company), 0, 50, 'utf-8'))."',
-            od_invoice = '".sql_real_escape_string(mb_substr(trim($invoice), 0, 50, 'utf-8'))."'
-        where od_id = '".(int)$od_id."' ", true);
-}
-
 // 관리 화면 저장 — 행 배열을 통째로 받아 한 번에 반영한다.
 // $rows        : array(행키 => array('name','url','invoice','order','use')). 행키는 dc_id 또는 'new1'
 // $default_key : 기본으로 고른 행키
