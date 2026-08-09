@@ -147,7 +147,7 @@ var g5_url = "{{ G5_URL }}", g5_bbs_url = "{{ G5_BBS_URL }}", g5_admin_url = "{{
                     {{-- 쇼핑몰이 설치된 경우에만 — 순정은 마이페이지에만 있어 진입점이 없었다.
                          장바구니는 헤더 아이콘으로 상시 노출하므로 여기 두지 않는다 --}}
                     @if ($cart)
-                    <a href="{{ G5_SHOP_URL }}/orderinquiry.php" class="sep">주문내역</a>
+                    <a href="{{ $cart['orders_href'] }}" class="sep">주문내역</a>
                     @endif
                     @if ($me['mb_level'] >= 10)
                     <a href="{{ G5_ADMIN_URL }}/">관리자</a>
