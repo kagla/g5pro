@@ -285,7 +285,15 @@ $(function () {
             $chips.append($b);
         });
 
-        $wrap.find('[data-role="pick"]').text(sel[i] == null ? '' : sel[i]);
+        // 고른 값을 축 이름 옆에 적는다. 아직 못 고르는 축이면 대신 이유를 적는다 —
+        // 칩만 회색이면 "왜 안 눌리지" 로 남는다
+        var $pick = $wrap.find('[data-role="pick"]');
+        if (locked) {
+            var prev = $picker.find('.opt-axis[data-axis="' + (i - 1) + '"] .opt-axis-name').text();
+            $pick.addClass('is-hint').text(prev + ' 먼저 고르세요');
+        } else {
+            $pick.removeClass('is-hint').text(sel[i] == null ? '' : sel[i]);
+        }
     }
 
     function drawFrom(i) { for (var k = i; k < axes; k++) drawAxis(k); }

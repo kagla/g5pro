@@ -14,6 +14,10 @@
     --line: #E2ECF8;
     --btn-line: #7C8EA6;   /* 버튼 테두리 — 카드 위에서 3:1 이상 보이게 (--line 은 1.19:1 이라 안 보인다) */
     --row-hover: #F5FAFF;
+    /* 고를 수 없는 옵션 칩 — 흐리게 지우지 않고 "눌리지 않는 버튼" 으로 칠한다.
+       글자는 채움 위에서 5.29:1 이라 무엇이 품절인지 읽을 수 있다 */
+    --chip-off: #DFE7F1;
+    --chip-off-fg: #4F5E74;
 
     /* 소다 블루 */
     --accent: #2E7CF6;
@@ -73,6 +77,8 @@
         --line: #23303F;
         --btn-line: #57718E;
         --row-hover: #1B2837;
+        --chip-off: #202C3C;
+        --chip-off-fg: #9BADC4;   /* 채움 위 6.17:1 */
 
         --accent: #4A90FF;
         --accent-fg: #FFFFFF;
@@ -111,6 +117,8 @@
     --line: #23303F;
     --btn-line: #57718E;
     --row-hover: #1B2837;
+    --chip-off: #202C3C;
+    --chip-off-fg: #9BADC4;   /* 채움 위 6.17:1 */
 
     --accent: #4A90FF;
     --accent-fg: #FFFFFF;
@@ -143,6 +151,10 @@
     --line: #E2ECF8;
     --btn-line: #7C8EA6;   /* 버튼 테두리 — 카드 위에서 3:1 이상 보이게 (--line 은 1.19:1 이라 안 보인다) */
     --row-hover: #F5FAFF;
+    /* 고를 수 없는 옵션 칩 — 흐리게 지우지 않고 "눌리지 않는 버튼" 으로 칠한다.
+       글자는 채움 위에서 5.29:1 이라 무엇이 품절인지 읽을 수 있다 */
+    --chip-off: #DFE7F1;
+    --chip-off-fg: #4F5E74;
 
     --accent: #2E7CF6;
     --accent-fg: #FFFFFF;
@@ -2473,7 +2485,10 @@ input[type=checkbox], input[type=radio] {
    쓰이므로 .shop-item-info 안에서만 오버레이를 해제한다 */
 /* ── 옵션 고르기 — 값을 칩으로 늘어놓고 눌러서 고른다(드롭다운을 열지 않는다) ── */
 .opt-picker { display: grid; gap: var(--s4); margin: var(--s4) 0; }
-.opt-axis.is-locked { opacity: .55; }
+/* 앞 축을 아직 안 골라 잠긴 축 — 예전엔 축 전체를 opacity 로 흐리게 했는데, 칩의 흐린 글자와
+   겹쳐 값이 읽히지 않았다. 흐리게 하지 않고 칩을 "눌리지 않는 버튼" 으로 칠하고,
+   왜 못 누르는지는 축 이름 옆에 글로 적는다 */
+.opt-axis-pick.is-hint { color: var(--muted); font-weight: 600; }
 .opt-axis-head { display: flex; align-items: baseline; gap: var(--s2); margin: 0 0 8px; }
 .opt-axis-name { font-size: var(--t-sm); font-weight: 800; letter-spacing: .02em; }
 .opt-axis-pick { font-size: var(--t-sm); color: var(--accent); font-weight: 700; }
@@ -2489,12 +2504,17 @@ input[type=checkbox], input[type=radio] {
     box-shadow: 0 0 0 3px rgba(46, 124, 246, .2); }
 .opt-chip.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
 .opt-chip.is-on .opt-chip-left { color: rgba(255, 255, 255, .85); }
-.opt-chip.is-off { color: var(--muted); border-style: dashed; cursor: not-allowed;
-    background: transparent; text-decoration: line-through; text-decoration-color: var(--line); }
+.opt-chip.is-off, .opt-chip:disabled {
+    background: var(--chip-off); border-color: var(--chip-off); color: var(--chip-off-fg);
+    border-style: solid; cursor: not-allowed; text-decoration: none;
+}
+.opt-chip.is-off .opt-chip-left { color: var(--chip-off-fg); }
 /* 칩에 붙는 남은 수량 — 값 뒤에 작게. 몇 개 안 남았으면 색으로 알린다 */
 .opt-chip-left { font-size: var(--t-xs); font-weight: 700; color: var(--muted);
     font-variant-numeric: tabular-nums; }
-.opt-chip-left.is-low { color: #C2452D; }
+/* 얼마 안 남았다는 빨강 — 어두운 모드에서 #C2452D 는 카드 위 3.27:1 이라 흐리다.
+   테마가 이미 가진 --danger-deep 이면 밝은 모드 6.47:1 / 어두운 모드 8.64:1 로 양쪽에서 읽힌다 */
+.opt-chip-left.is-low { color: var(--danger-deep); }
 .opt-chip.is-on .opt-chip-left.is-low { color: #FFE0D8; }
 @media (prefers-reduced-motion: reduce) {
     .opt-chip { transition: none; }
