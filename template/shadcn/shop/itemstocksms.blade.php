@@ -32,9 +32,15 @@
 <script>
 function fstocksms_submit(f) {
     if (!f.agree.checked) { alert("개인정보처리방침 안내에 동의해 주십시오."); return false; }
-    if (confirm("재입고 알림을 신청하시겠습니까?")) return true;
-    window.close();
-    return false;
+    if (f.dataset.confirmed !== '1') {
+        g5Confirm({
+            title: '재입고 알림을 신청할까요?',
+            message: '물건이 다시 들어오면 문자로 알려 드립니다.',
+            okText: '신청하기'
+        }, function () { f.dataset.confirmed = '1'; f.submit(); });
+        return false;
+    }
+    return true;
 }
 </script>
 @endsection

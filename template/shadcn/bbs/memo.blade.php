@@ -32,7 +32,7 @@
                     </td>
                     <td>{!! $it['name'] !!}</td>
                     <td>{{ $it['datetime'] }}</td>
-                    <td><a class="linklike" href="{!! $it['del_href'] !!}" onclick="return confirm('이 쪽지를 삭제하시겠습니까?');">삭제</a></td>
+                    <td><a class="linklike" href="{!! $it['del_href'] !!}" data-confirm="이 쪽지를 삭제하시겠습니까?" data-confirm-danger>삭제</a></td>
                 </tr>
                 @empty
                 <tr><td class="bbs-empty" colspan="4">쪽지가 없습니다.</td></tr>
@@ -52,7 +52,7 @@
             <div class="m">
                 <span>{!! $it['name'] !!}</span>
                 <span>{{ $it['datetime'] }}</span>
-                <span><a class="linklike" href="{!! $it['del_href'] !!}" onclick="return confirm('이 쪽지를 삭제하시겠습니까?');">삭제</a></span>
+                <span><a class="linklike" href="{!! $it['del_href'] !!}" data-confirm="이 쪽지를 삭제하시겠습니까?" data-confirm-danger>삭제</a></span>
             </div>
         </li>
         @empty

@@ -62,8 +62,13 @@
 <script>
 function fformmail_submit(f) {
     {!! $captcha_js !!}
-    if (f.file1.value || f.file2.value) {
-        if (!confirm("첨부파일이 크면 전송에 시간이 걸립니다.\n\n보내기가 끝나기 전에 창을 닫거나 새로고침 하지 마세요.")) return false;
+    if ((f.file1.value || f.file2.value) && f.dataset.confirmed !== '1') {
+        g5Confirm({
+            title: '첨부파일을 함께 보냅니다',
+            message: '파일이 크면 전송에 시간이 걸립니다.\n끝나기 전에 창을 닫거나 새로고침 하지 마세요.',
+            okText: '보내기'
+        }, function () { f.dataset.confirmed = '1'; f.submit(); });
+        return false;
     }
     document.getElementById('btn_submit').disabled = true;
     return true;

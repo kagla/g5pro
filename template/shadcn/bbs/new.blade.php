@@ -120,7 +120,16 @@ function visible() {
 function new_submit(f) {
     var n = visible().filter(function (c) { return c.checked; }).length;
     if (!n) { alert("삭제할 게시물을 하나 이상 고르세요."); return false; }
-    if (!confirm("선택한 게시물을 정말 삭제하시겠습니까?\n\n한번 삭제한 자료는 되돌릴 수 없습니다.")) return false;
+    // 확인은 우리 대화상자로 — 시스템 창은 CSS 가 안 먹는다. 값을 돌려주지 않으므로
+    // 여기서는 일단 제출을 막고, 확인을 받은 뒤에 다시 보낸다(f.dataset 로 두 번 묻지 않게).
+    if (f.dataset.confirmed !== '1') {
+        g5Confirm({
+            title: '선택한 게시물을 삭제할까요?',
+            message: n + '개를 삭제합니다.\n삭제한 자료는 되돌릴 수 없습니다.',
+            okText: '삭제', danger: true
+        }, function () { f.dataset.confirmed = '1'; f.submit(); });
+        return false;
+    }
     boxes().forEach(function (c) { c.disabled = (c.offsetParent === null); });   // 안 보이는 쪽은 전송에서 뺀다
     return true;
 }

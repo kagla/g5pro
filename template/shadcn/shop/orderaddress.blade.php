@@ -77,8 +77,12 @@ $(function () {
         window.close();
     });
 
-    $(".del_address").on("click", function () {
-        return confirm("이 배송지를 삭제하시겠습니까?");
+    $(".del_address").on("click", function (e) {
+        var a = this;
+        if (a.dataset.confirmed === '1') { a.dataset.confirmed = ''; return; }
+        e.preventDefault();
+        g5Confirm({ title: '배송지를 삭제할까요?', okText: '삭제', danger: true },
+            function () { a.dataset.confirmed = '1'; a.click(); });
     });
 
     $(".btn-submit").on("click", function () {

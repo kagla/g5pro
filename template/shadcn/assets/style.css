@@ -673,8 +673,14 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .bbs-search input:focus, .bbs-search select:focus { background: none; }
 /* 검색 버튼 — 흰 상자 안에 흰 버튼을 두면 어디를 눌러야 하는지 안 보인다.
    검색줄에서는 이 버튼이 유일한 조작점이므로 채워서 둔다 */
-.bbs-search .btn { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
-.bbs-search .btn:hover { background: var(--accent-deep); border-color: var(--accent-deep); color: var(--accent-fg); }
+/* .btn 이 아니라 button 을 잡는다 — 스토어홈 검색은 클래스 없는 맨 button 이라
+   .btn 기준으로 두면 브라우저 기본 회색 버튼이 그대로 남는다 */
+.bbs-search button {
+    background: var(--accent); border: 1px solid var(--accent); color: var(--accent-fg);
+    font: inherit; font-size: var(--t-sm); font-weight: 600; white-space: nowrap;
+    padding: 8px var(--s4); border-radius: var(--r-btn); cursor: pointer;
+}
+.bbs-search button:hover { background: var(--accent-deep); border-color: var(--accent-deep); }
 /* 장바구니 목록 아래 버튼 줄 — 목록 왼쪽 끝(체크박스 열)에 맞춘다 */
 .cart-acts { display: flex; justify-content: flex-start; gap: var(--s2); margin-top: var(--s3); }
 
@@ -729,20 +735,20 @@ textarea { line-height: 1.6; border-radius: var(--r-input); }
 .list-table-wrap { overflow-x: auto; overflow-y: hidden; }
 .list-table { width: 100%; border-collapse: collapse; }
 .list-table th {
-    font-size: var(--t-sm); font-weight: 700; color: var(--muted); letter-spacing: .03em;
+    font-size: var(--t-sm); font-weight: 600; color: var(--muted); letter-spacing: .02em;
     padding: var(--s3) var(--s4); text-align: center; white-space: nowrap;
     border-bottom: 1px solid var(--line);
 }
 .list-table th.col-subject { text-align: left; }
 .list-table td {
-    padding: var(--s3) var(--s4); text-align: center; white-space: nowrap;
-    font-size: var(--t-md); color: var(--muted); font-variant-numeric: tabular-nums;
+    padding: 14px var(--s4); text-align: center; white-space: nowrap;
+    font-size: var(--t-sm); color: var(--muted); font-variant-numeric: tabular-nums;
     border-top: 1px solid var(--line);
 }
 .list-table tbody tr:first-child td { border-top: 0; }
 .list-table tr:hover td { background: var(--row-hover); }
 .list-table td.col-subject {
-    text-align: left; color: var(--fg); font-size: var(--t-md); font-weight: 500;
+    text-align: left; color: var(--fg); font-size: var(--t-md); font-weight: 500; letter-spacing: -.01em;
     width: 100%; max-width: 1px; overflow: hidden; text-overflow: ellipsis;
 }
 .list-table .col-no { width: 60px; }

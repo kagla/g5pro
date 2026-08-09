@@ -12,7 +12,7 @@
         </div>
         <div class="m">
             <span>{{ $it['datetime'] }}</span>
-            <a class="linklike" href="{!! $it['del_href'] !!}" onclick="return confirm('이 스크랩을 삭제하시겠습니까?');">삭제</a>
+            <a class="linklike" href="{!! $it['del_href'] !!}" data-confirm="이 스크랩을 삭제하시겠습니까?" data-confirm-danger>삭제</a>
         </div>
     </li>
     @empty
