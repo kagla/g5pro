@@ -13,15 +13,19 @@ $to = (isset($_GET['to']) && !is_array($_GET['to'])) ? trim($_GET['to']) : '';
 $page = (isset($_GET['page']) && !is_array($_GET['page'])) ? max(1, (int)$_GET['page']) : 1;
 $rows_per = 30;
 
-// 관리자 화면이 다루는 상태 전부 — draft(결제 전 초안)는 주문이 아니므로 어디에도 없다
-$statuses = array(
-    'unpaid' => '입금대기', 'paid' => '결제완료', 'preparing' => '배송준비',
-    'shipping' => '배송중', 'delivered' => '배송완료', 'confirmed' => '구매확정', 'canceled' => '취소',
-);
+// 관리자 화면이 다루는 상태 전부 — 목록은 order.lib 한 곳에서 정한다(상태가 늘 때 여기서 빠지지 않게)
+$statuses = cart_order_statuses();
 
 $where = array(" od_status <> 'draft' ");
 if ($status !== '' && isset($statuses[$status])) {
     $where[] = " od_status = '".sql_real_escape_string($status)."' ";
+}
+// 반품 대기 — 주문 상태가 아니라 반품 신청 쪽 조건이라 상태 필터와 따로 둔다.
+// (부분 반품 주문은 배송완료 상태 그대로라 상태로는 못 걸러진다)
+$rt_only = (isset($_GET['rt']) && $_GET['rt'] === '1');
+if ($rt_only) {
+    $where[] = " od_id in (select od_id from `{$g5['ycart_return_table']}`
+        where rt_status in ('requested', 'approving')) ";
 }
 if ($q !== '') {
     $esc = sql_real_escape_string($q);
@@ -71,6 +75,8 @@ cadm_view('order_list', array(
     'page' => $page,
     'total_page' => $total_page,
     'self_url' => G5_CART_ADMIN_URL.'/order_list.php',
+    'rt_only' => $rt_only,
+    'rt_pending' => cart_return_pending_count(),
 ));
 
 include_once(G5_ADMIN_PATH.'/admin.tail.php');
