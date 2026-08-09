@@ -65,17 +65,41 @@ function cart_order_no()
     return $no;
 }
 
+// 관리자 화면이 다루는 상태 전부 — draft(결제 전 초안)는 주문이 아니므로 여기 없다.
+// 상태를 늘릴 때 고쳐야 할 곳이 한 군데뿐이도록 목록을 여기 모은다(예전엔 관리자 3화면에
+// 각각 복제돼 있어, 새 상태를 넣으면 어느 화면에서 조용히 빠지는 구조였다).
+function cart_order_statuses()
+{
+    return array(
+        'unpaid' => '입금대기', 'paid' => '결제완료', 'preparing' => '배송준비',
+        'shipping' => '배송중', 'delivered' => '배송완료', 'confirmed' => '구매확정',
+        'returned' => '반품', 'canceled' => '취소',
+    );
+}
+
+// 매출로 치는 상태 — 결제가 확정된 이후 전부(취소 제외). draft·unpaid 는 돈이 아니다.
+// 반품(returned)도 여기 든다: 반품은 돈이 오간 거래이고 돌려준 몫은 od_refund 로 따로 빼므로,
+// 상태로 통째로 제외하면 환불하지 않은 배송비까지 매출에서 사라진다. 순매출 = od_total - od_refund.
+// 대시보드·정산이 같은 판정을 쓰도록 SQL 조각까지 여기서 만든다.
+function cart_order_paid_statuses()
+{
+    return array('paid', 'preparing', 'shipping', 'delivered', 'confirmed', 'returned');
+}
+
+function cart_order_paid_where($alias = '')
+{
+    $col = ($alias !== '' ? $alias.'.' : '').'od_status';
+    return " $col in ('".implode("', '", cart_order_paid_statuses())."') ";
+}
+
 function cart_order_status_label($status, $pay_method = '')
 {
     // unpaid 는 수단에 따라 말이 다르다 — 무통장은 입금을 기다리고, 카드는 결제를 기다린다
     if ($status === 'unpaid') {
         return ($pay_method === '' || $pay_method === 'bank') ? '입금대기' : '결제대기';
     }
-    $map = array(
-        'paid' => '결제완료', 'preparing' => '배송준비',
-        'shipping' => '배송중', 'delivered' => '배송완료', 'confirmed' => '구매확정',
-        'canceled' => '취소됨',
-    );
+    $map = cart_order_statuses();
+    if ($status === 'canceled') return '취소됨';   // 목록 필터는 '취소', 상세 문장은 '취소됨'
     return isset($map[$status]) ? $map[$status] : $status;
 }
 
@@ -317,6 +341,7 @@ function cart_address_list($mb_id, $limit = 10)
 //   deposit  : unpaid(무통장) → paid (입금확인)
 //   cancel   : unpaid·paid·preparing → canceled (+재고 복원. PG 환불은 별도 — 화면이 안내)
 //   preparing: paid → preparing / shipping: paid·preparing → shipping / delivered: shipping → delivered
+//   confirm  : delivered → confirmed (구매확정 — 고객이 직접 누르거나 관리자가 대신)
 // 행을 잠그고 잠긴 상태로 재검증한다 — 결제 리턴(confirm_paid)과 같은 규율.
 // 성공 시 빈 문자열, 실패 시 사유 문자열 반환.
 function cart_order_transition($od_id, $action, $who = 'admin')
@@ -330,6 +355,9 @@ function cart_order_transition($od_id, $action, $who = 'admin')
         'preparing' => array('from' => array('paid'), 'to' => 'preparing'),
         'shipping' => array('from' => array('paid', 'preparing'), 'to' => 'shipping'),
         'delivered' => array('from' => array('shipping'), 'to' => 'delivered'),
+        // 구매확정은 배송완료에서만 — 아직 안 받은 물건을 확정할 수는 없다.
+        // 되돌리는 전이는 두지 않는다(확정은 매듭이고, 이후 포인트 적립·반품 마감의 기준이 된다)
+        'confirm' => array('from' => array('delivered'), 'to' => 'confirmed'),
     );
     if (!isset($rules[$action])) return '허용되지 않는 처리입니다.';
     $rule = $rules[$action];
@@ -345,6 +373,11 @@ function cart_order_transition($od_id, $action, $who = 'admin')
         $fail = '현재 상태('.cart_order_status_label($cur['od_status'], $cur['od_pay_method']).')에서는 할 수 없는 처리입니다.';
     } elseif ($action === 'deposit' && $cur['od_pay_method'] !== 'bank') {
         $fail = '무통장 주문만 입금확인 처리할 수 있습니다.';
+    } elseif ($action === 'confirm' && cart_return_blocks_confirm($od_id)) {
+        // 반품이 처리를 기다리는 동안은 확정할 수 없다. 확정은 "다 잘 받았다" 는 매듭이라
+        // 반품 진행 중에 찍히면 말이 어긋나고, 확정 뒤에는 반품 신청을 받지 않으므로
+        // 손님의 신청이 그대로 묻힌다. 화면이 아니라 여기서 막는다 — 관리자 버튼도 같은 문을 쓴다.
+        $fail = '반품 신청이 처리 중입니다. 처리를 마친 뒤에 구매확정할 수 있습니다.';
     }
 
     // 취소는 재고를 원장에 남기며 되돌린다 — 주문 생성(차감)의 정확한 역연산
@@ -361,6 +394,9 @@ function cart_order_transition($od_id, $action, $who = 'admin')
         $set = " od_status = '".$rule['to']."' ";
         if ($action === 'deposit') $set .= ", od_paid_at = '".G5_TIME_YMDHIS."' ";
         if ($action === 'shipping') $set .= ", od_shipped_at = '".G5_TIME_YMDHIS."' ";
+        // 반품 기한은 "받은 날부터" 세므로 배송완료 시각을 따로 남긴다
+        if ($action === 'delivered') $set .= ", od_delivered_at = '".G5_TIME_YMDHIS."' ";
+        if ($action === 'confirm') $set .= ", od_confirmed_at = '".G5_TIME_YMDHIS."' ";
         sql_query(" update `{$g5['ycart_order_table']}` set $set
             where od_id = '$od_id' and od_status = '".sql_real_escape_string($cur['od_status'])."' ", true);
         if (get_sql_affected_rows() < 1) $fail = '상태가 이미 바뀌었습니다. 다시 확인해 주세요.';
@@ -369,6 +405,80 @@ function cart_order_transition($od_id, $action, $who = 'admin')
     sql_query($fail === '' ? " commit " : " rollback ", true);
     sql_query(" set autocommit = 1 ", true);
     return $fail;
+}
+
+// 이 주문을 지금 요청자가 볼 수 있는가 — 회원 본인, 방금 주문한 세션, 비회원 조회 인증 세션.
+// 상세 화면과 구매확정 같은 처리 화면이 같은 판정을 쓰도록 한 곳에 둔다(둘이 어긋나면
+// 화면에는 보이는데 버튼은 안 먹거나, 그 반대가 된다).
+function cart_order_is_mine($order)
+{
+    global $member;
+    if (!$order) return false;
+    $mb_id = isset($member['mb_id']) ? $member['mb_id'] : '';
+    if ($mb_id !== '' && $mb_id === $order['mb_id']) return true;
+    if (!empty($_SESSION['ss_cart_last_od_no']) && $_SESSION['ss_cart_last_od_no'] === $order['od_no']) return true;
+    if (!empty($_SESSION['ss_cart_guest_od_no']) && $_SESSION['ss_cart_guest_od_no'] === $order['od_no']) return true;
+    return false;
+}
+
+// 송장 조회 주소 — 택배사 이름이 알아볼 만하면 조회 페이지로 잇고, 아니면 빈 문자열.
+// 택배사는 관리자가 자유 입력하는 값이라 못 알아보는 이름이 들어올 수 있다. 그때는 링크를
+// 만들지 않는다 — 엉뚱한 곳으로 가는 링크는 없느니만 못하다(화면은 번호만 보여 준다).
+// 조회 주소는 택배사 사정으로 바뀔 수 있는 값이라 여기 한 곳에만 적는다.
+function cart_delivery_track_url($company, $invoice)
+{
+    $invoice = preg_replace('/[^0-9]/', '', (string)$invoice);
+    if ($invoice === '') return '';
+
+    $company = str_replace(' ', '', (string)$company);
+    $map = array(
+        'CJ' => 'https://trace.cjlogistics.com/next/tracking.html?wblNo=',
+        '대한통운' => 'https://trace.cjlogistics.com/next/tracking.html?wblNo=',
+        '우체국' => 'https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=',
+        '한진' => 'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&schLang=KR&wblnumText2=',
+        '롯데' => 'https://www.lotteglogis.com/home/reservation/tracking/linkView?InvNo=',
+        '로젠' => 'https://www.ilogen.com/web/personal/trace/',
+    );
+    foreach ($map as $key => $url) {
+        if ($company !== '' && stripos($company, $key) !== false) return $url.$invoice;
+    }
+    return '';
+}
+
+// 무통장 입금 기한 초과 자동취소.
+// 무통장 주문은 생성 즉시 재고를 차감하므로(cart_order_create), 기한이 없으면 입금하지 않은
+// 주문이 재고를 무기한 잠근다 — 팔 수 있는 물건이 장부에만 없는 상태가 된다.
+// 취소는 관리자 취소와 같은 경로(cart_order_transition)를 타서 재고 복원·잠금 규율이 하나로 남는다.
+// PG 주문은 대상이 아니다: 초안(draft) 방식이라 승인 전 주문은 아예 조회에 안 잡히고,
+// unpaid 로 남는 PG 주문은 지금 흐름에서 생기지 않는다.
+// 한 번에 100건까지만 — 오래 밀린 몰에서 한 요청이 몇 분씩 붙잡지 않게 한다(다음 날 이어서 돈다).
+// 반환: 취소한 주문번호 배열.
+function cart_order_expire_unpaid()
+{
+    global $g5;
+    $cc = cart_config();
+    $days = (int)$cc['cc_unpaid_days'];
+    if ($days < 1) return array();          // 0 = 자동취소 안 함
+
+    $limit = date('Y-m-d H:i:s', G5_SERVER_TIME - $days * 86400);
+    $targets = array();
+    $result = sql_query(" select od_id, od_no from `{$g5['ycart_order_table']}`
+        where od_status = 'unpaid' and od_pay_method = 'bank'
+          and od_datetime < '$limit' order by od_id limit 100 ");
+    while ($r = sql_fetch_array($result)) $targets[] = $r;
+
+    $done = array();
+    $reason = '입금 기한('.$days.'일) 초과로 자동 취소되었습니다.';
+    foreach ($targets as $t) {
+        // 전이가 실패하면(그새 입금확인 등) 그 건만 건너뛴다 — 나머지는 계속 처리한다
+        if (cart_order_transition((int)$t['od_id'], 'cancel', 'system') !== '') continue;
+        sql_query(" update `{$g5['ycart_order_table']}`
+            set od_cancel_reason = '".sql_real_escape_string($reason)."',
+                od_canceled_at = '".G5_TIME_YMDHIS."', od_canceled_by = 'system'
+            where od_id = '".(int)$t['od_id']."' ", true);
+        $done[] = $t['od_no'];
+    }
+    return $done;
 }
 
 function cart_order_set_invoice($od_id, $company, $invoice)
