@@ -112,7 +112,7 @@
                         <option value="">옵션을 선택하세요</option>
 
                         @foreach ($buyable_skus as $s)
-                        <option value="{{ $s['sk_id'] }}" data-qty="{{ (int)$s['sk_qty'] }}">{{ $s['opt_label'] }} — {{ number_format($s['sk_price']) }}원</option>
+                        <option value="{{ $s['sk_id'] }}" data-qty="{{ (int)$s['sk_qty'] }}" data-price="{{ (int)$s['sk_price'] }}">{{ $s['opt_label'] }} — {{ number_format($s['sk_price']) }}원</option>
                         @endforeach
 
                     </select>
@@ -129,13 +129,18 @@
                     {{-- 단일 SKU 면 재고를 지금 알 수 있다. 선택칸이 있는 상품은 고르기 전엔 모르므로
                          -1(아직 모름)로 두고, 고른 뒤에 아래 스크립트가 그 SKU 의 재고를 심는다 --}}
                     <span class="cart-qty" id="cart_qty_box"
-                          data-max="{{ $single ? (int)$buyable_skus[0]['sk_qty'] : -1 }}">
+                          data-max="{{ $single ? (int)$buyable_skus[0]['sk_qty'] : -1 }}"
+                          data-price="{{ $single ? (int)$buyable_skus[0]['sk_price'] : -1 }}">
                         <button type="button" class="cart-qty-btn" data-d="-1" aria-label="수량 줄이기">−</button>
                         <input type="number" class="cart-qty-input" id="cart_qty_one" name="qty" value="1" min="1"
                                max="{{ $single ? max(1, (int)$buyable_skus[0]['sk_qty']) : 999 }}">
                         <button type="button" class="cart-qty-btn" data-d="1" aria-label="수량 늘리기">+</button>
                     </span>
                 </div>
+                {{-- 옵션 있는 상품은 고른 줄들이 합계를 보여 주는데 옵션 없는 상품만 없었다.
+                     수량을 올렸을 때 얼마가 되는지는 담기 전에 알아야 하는 값이라 같은 모양으로 둔다.
+                     단가를 모르는 동안(선택칸에서 아직 안 골랐을 때)은 감춘다. --}}
+                <p class="cart-picks-total" id="cart_buy_total" hidden></p>
                 @endif
 
                 <div class="cart-buy-btns">
@@ -765,25 +770,46 @@ $(function () {
 // 선택칸이 있는 상품은 고르기 전엔 재고를 모른다. 고르면 그 SKU 의 재고를 심고,
 // 이미 쳐 넣은 수량이 그보다 많으면 그 자리에서 잘라 준다(주문서까지 가서 퇴짜 맞지 않게).
 $(function () {
-    var $box = $('#cart_qty_box');
+    var $box = $('#cart_qty_box'), $total = $('#cart_buy_total');
     if (!$box.length) return;
+
+    function won(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+
+    // 소계 — 옵션 줄들의 합계와 같은 모양·같은 말투. 단가를 모르면(-1) 줄 자체를 감춘다.
+    // 단가는 data-price 로 싣되 읽을 때는 .data('price') 를 쓴다 — 선택칸에서 고르면
+    // .data('price', n) 으로 다시 심는데 그건 속성을 안 고친다(장바구니의 data-max 와 같은 규칙).
+    function retotal() {
+        var price = parseInt($box.data('price'), 10),
+            qty = parseInt($box.find('.cart-qty-input').val(), 10) || 0;
+        if (!$total.length) return;
+        if (isNaN(price) || price < 0 || qty < 1) { $total.attr('hidden', true); return; }
+        $total.removeAttr('hidden').html('')
+            .append($('<span></span>').text('총 ' + won(qty) + '개'))
+            .append($('<strong class="cart-total-sum"></strong>').text(won(price * qty) + '원'));
+    }
 
     $box.on('click', '.cart-qty-btn', function () {
         var next = g5QtyNext(this, '');
         if (next === null) return;
         $box.find('.cart-qty-input').val(next);
         g5QtyPaint($box);
+        retotal();
     });
-    $box.on('change', '.cart-qty-input', function () { g5QtyClamp($box); });
+    $box.on('change input', '.cart-qty-input', function () { g5QtyClamp($box); retotal(); });
 
     $('.cart-buy select[name=sk_id]').on('change', function () {
-        var q = parseInt($(this).find('option:selected').data('qty'), 10);
+        var $sel = $(this).find('option:selected'),
+            q = parseInt($sel.data('qty'), 10),
+            p = parseInt($sel.data('price'), 10);
         $box.data('max', isNaN(q) ? -1 : q)
+            .data('price', isNaN(p) ? -1 : p)
             .find('.cart-qty-input').attr('max', Math.max(1, isNaN(q) ? 999 : q));
         g5QtyClamp($box);
+        retotal();
     });
 
     g5QtyPaint($box);
+    retotal();
 });
 </script>
 <script>
