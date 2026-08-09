@@ -905,36 +905,69 @@ function g5_pro_profile_src($mb_id)
     return preg_match('/src="([^"]*)"/i', $html, $m) ? $m[1] : '';
 }
 
-// 커뮤니티 ↔ 쇼핑몰 전환 — 쇼핑몰이 설치된 경우에만.
-// 두 영역을 모두 돌려주고 현재 위치를 active 로 표시한다 (헤더 세그먼트 토글).
-// 하나만 보여주면 "갈 곳" 이름이 현재 위치처럼 읽히는 혼동이 있었다.
-// 헤더 장바구니 — 쇼핑몰이 설치된 경우에만. 비회원도 세션 장바구니를 쓰므로 로그인과 무관하다.
-// 개수는 cart.php 가 목록을 묶는 기준(상품 종류)과 같게 센다 — 옵션 줄 수가 아니다.
-function g5_pro_cart()
+// ── 사이트의 쇼핑몰 진입점은 영카트5 프로(cart 모듈)를 가리킨다 ──
+// 순정 영카트(/shop)는 손대지 않는다 — 그쪽 화면·데이터는 그대로 살아 있고 주소로 들어갈 수 있다.
+// 다만 헤더의 "쇼핑몰" 칸과 장바구니 뱃지처럼 **사이트가 손님을 데려가는 자리**는 프로 쪽이다.
+// 두 쇼핑몰이 헤더 하나를 나눠 쓰면 손님은 어느 장바구니에 담았는지 알 수 없다.
+//
+// cart 모듈이 설치돼 있는가 — core.lib 만 부른다(상수·테이블명 정의가 전부라 가볍다).
+// 나머지 lib 은 부르지 않는다: 헤더 때문에 모든 화면이 주문·결제 라이브러리를 지고 다닐 이유가 없다.
+function g5_pro_cart_ready()
 {
-    global $g5;
-    if (!defined('G5_USE_SHOP') || !G5_USE_SHOP) return null;
+    static $ok = null;
+    if ($ok !== null) return $ok;
 
-    $cart_id = function_exists('get_session') ? get_session('ss_cart_id') : '';
-    $cnt = 0;
-    if ($cart_id) {
-        $row = sql_fetch(" select count(distinct it_id) as cnt from `{$g5['g5_shop_cart_table']}`
-                            where od_id = '".sql_escape_string($cart_id)."' ", false);
-        $cnt = (int)(isset($row['cnt']) ? $row['cnt'] : 0);
-    }
-    return array('count' => $cnt, 'href' => G5_SHOP_URL.'/cart.php');
+    $lib = G5_PATH.'/cart/lib/core.lib.php';
+    if (!is_file($lib)) return $ok = false;
+    include_once($lib);
+    $ok = function_exists('cart_installed') ? (bool)cart_installed() : false;
+    return $ok;
 }
 
+// 헤더 장바구니 — 비회원도 세션 바구니를 쓰므로 로그인과 무관하다.
+// 개수는 cart.php 가 세는 것과 같은 기준(담긴 줄 수 = 옵션 조합 수)이다.
+//
+// **읽기만 한다.** cart_cart_owner() 를 부르면 세션 바구니 키가 그 자리에서 새로 생기는데,
+// 헤더는 모든 화면에 뜨므로 쇼핑몰 근처에도 안 간 손님까지 바구니를 갖게 된다.
+// 그래서 이미 있는 세션 키만 보고, 없으면 0 으로 둔다.
+function g5_pro_cart()
+{
+    global $g5, $member;
+    if (!g5_pro_cart_ready()) return null;
+
+    $mb_id = isset($member['mb_id']) ? trim($member['mb_id']) : '';
+    $sid = !empty($_SESSION['ss_cart_sid']) ? $_SESSION['ss_cart_sid'] : '';
+
+    // 소유자 판정은 cart_cart_where() 와 같은 모양이어야 한다 —
+    // 회원은 (mb_id, ''), 비회원은 ('', 세션키). 한쪽이 어긋나면 담았는데 0 으로 보인다.
+    $cnt = 0;
+    if ($mb_id !== '' || $sid !== '') {
+        $row = sql_fetch(" select count(*) as cnt from `{$g5['ycart_cart_table']}`
+            where mb_id = '".sql_real_escape_string($mb_id)."'
+              and ct_sid = '".sql_real_escape_string($mb_id !== '' ? '' : $sid)."' ", false);
+        $cnt = (int)(isset($row['cnt']) ? $row['cnt'] : 0);
+    }
+
+    return array(
+        'count' => $cnt,
+        'href'  => G5_CART_URL.'/cart.php',
+        // 비회원은 주문번호로 찾는 화면이 따로 있다 — 회원 주문내역으로 보내면 로그인 벽을 만난다
+        'orders_href' => G5_CART_URL.($mb_id !== '' ? '/order.php' : '/guest.php'),
+    );
+}
+
+// 커뮤니티 ↔ 쇼핑몰 전환 — 두 영역을 모두 돌려주고 현재 위치를 active 로 표시한다(헤더 세그먼트).
+// 하나만 보여주면 "갈 곳" 이름이 현재 위치처럼 읽히는 혼동이 있었다.
 function g5_pro_areas()
 {
-    if (!defined('G5_USE_SHOP') || !G5_USE_SHOP) return array();
+    if (!g5_pro_cart_ready()) return array();
 
     $script  = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '';
-    $in_shop = (strpos($script, '/'.G5_SHOP_DIR.'/') !== false);
+    $in_shop = (strpos($script, '/'.G5_CART_DIR.'/') !== false);
 
     return array(
         array('name' => '커뮤니티', 'href' => G5_URL.'/',      'icon' => 'home', 'active' => !$in_shop),
-        array('name' => '쇼핑몰',   'href' => G5_SHOP_URL.'/', 'icon' => 'bag',  'active' => $in_shop),
+        array('name' => '쇼핑몰',   'href' => G5_CART_URL.'/', 'icon' => 'bag',  'active' => $in_shop),
     );
 }
 
