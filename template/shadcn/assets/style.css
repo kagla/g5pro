@@ -2425,13 +2425,17 @@ input[type=checkbox], input[type=radio] {
 /* ── 헤더 장바구니 — 아이콘 + 담긴 개수 배지 ── */
 .cart-btn { position: relative; color: var(--fg); }
 .cart-btn:hover { color: var(--accent); }
+/* 담긴 개수 — 10px 로는 읽으려면 눈을 가까이 대야 했다. 화면에서 가장 작은 글자인데
+   숫자라 모양으로 짐작할 수도 없다. 12px 로 올리고 배지도 그만큼 키운다.
+   아이콘을 덜 가리도록 오른쪽 위로 조금 밀어 올린다(테두리는 아이콘과 겹쳐도 배지를 떼어 놓는다) */
 .cart-count {
-    position: absolute; top: 1px; right: 0;
-    min-width: 16px; height: 16px; padding: 0 4px;
+    position: absolute; top: -3px; right: -4px;
+    min-width: 19px; height: 19px; padding: 0 5px;
     display: flex; align-items: center; justify-content: center;
     border-radius: var(--r-full); border: 2px solid var(--card);
     background: var(--danger); color: #fff;
-    font-size: 10px; font-weight: 800; line-height: 1;
+    font-size: 12px; font-weight: 700; line-height: 1;
+    font-variant-numeric: tabular-nums;
     font-variant-numeric: tabular-nums;
 }
 
