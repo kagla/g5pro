@@ -46,6 +46,20 @@
         <th scope="row">상품 합계</th><td>{{ number_format($order['od_item_total']) }}원</td>
         <th scope="row">배송비</th><td>{{ number_format($order['od_ship_fee']) }}원</td>
     </tr>
+
+    {{-- 깎인 금액만 있으면 왜 깎였는지 알 수 없다 — 어느 쿠폰이었는지 함께 적는다 --}}
+    @if ((int)$order['od_coupon'] > 0)
+    <tr>
+        <th scope="row">쿠폰 할인</th>
+        <td colspan="3">-{{ number_format($order['od_coupon']) }}원
+
+            @if ($coupon)
+            <span class="txt_id">{{ $coupon['cp_name'] }}{{ $coupon['cp_code'] !== '' ? ' ('.$coupon['cp_code'].')' : '' }}</span>
+            @endif
+
+        </td>
+    </tr>
+    @endif
     </tbody>
     </table>
 </div>

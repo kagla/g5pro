@@ -19,6 +19,8 @@ if (!$cp) {
 }
 
 $stats = $cp_id ? cart_coupon_stats($cp_id) : array('issued' => 0, 'used' => 0, 'amount' => 0);
+// 발급 내역 — 많으면 최근 100장까지만. 그보다 많아지면 목록이 아니라 통계를 봐야 한다
+$holders = $cp_id ? cart_coupon_holders($cp_id, 100) : array();
 
 $g5['title'] = $cp_id ? '쿠폰 수정' : '쿠폰 등록';
 include_once(G5_ADMIN_PATH.'/admin.head.php');
@@ -27,6 +29,8 @@ cadm_view('coupon_form', array(
     'cp' => $cp,
     'cp_id' => $cp_id,
     'stats' => $stats,
+    'holders' => $holders,
+    'order_url' => G5_CART_ADMIN_URL.'/order_view.php',
     'samples' => cart_coupon_samples(),
     'issues' => cart_coupon_issues(),
     'types' => cart_coupon_types(),

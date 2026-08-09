@@ -160,6 +160,50 @@
 </table>
 </div>
 
+{{-- 발급 내역 — "발급 12장" 만 있으면 정작 누구에게 나갔는지, 그 사람이 썼는지를 못 본다.
+     안 쓴 장을 먼저(만료 임박 순) 보여 준다 — 곧 사라질 장이 눈에 먼저 들어와야 한다. --}}
+<h2 class="h2_frm">발급 내역</h2>
+<div class="tbl_head01 tbl_wrap">
+    <table>
+    <thead>
+    <tr>
+        <th scope="col">회원 아이디</th><th scope="col">발급일</th><th scope="col">사용 기한</th>
+        <th scope="col">상태</th><th scope="col">사용한 주문</th><th scope="col">할인액</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    @foreach ($holders as $h)
+    <tr class="bg{{ $loop->index % 2 }}">
+        <td>{{ $h['mb_id'] }}</td>
+        <td class="td_datetime">{{ substr($h['cm_issued_at'], 2, 8) }}</td>
+        <td class="td_datetime">{{ substr($h['cm_end'], 2) }}</td>
+        <td>{{ $h['state'] }}</td>
+        <td>
+
+            @if ($h['used'])
+            <a href="{{ $order_url }}?od_id={{ $h['cm_od_id'] }}">{{ $h['od_no'] }}</a>
+            @else
+            -
+            @endif
+
+        </td>
+        <td class="td_num">{{ $h['used'] ? number_format($h['cm_amount']).'원' : '-' }}</td>
+    </tr>
+    @endforeach
+
+    @if (!count($holders))
+    <tr><td colspan="6" class="empty_table">아직 발급된 장이 없습니다.</td></tr>
+    @endif
+
+    </tbody>
+    </table>
+</div>
+
+@if (count($holders) >= 100)
+<p class="txt_id">최근 100장까지만 보여 줍니다.</p>
+@endif
+
 {{-- 일괄 지급 — 회원 아이디를 붙여 넣는다. 이미 가진 사람은 조용히 건너뛴다(한 회원 한 장). --}}
 <form method="post" action="{{ $action_url }}">
 <input type="hidden" name="token" value="{{ $token }}">

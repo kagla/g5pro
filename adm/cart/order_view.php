@@ -70,6 +70,7 @@ $refundable = cart_return_refundable($order);
 
 cadm_view('order_view', array(
     'order' => $order,
+    'coupon' => cart_coupon_of_order($order),
     'items' => $items,
     'returns' => $returns,
     'refundable' => $refundable,

@@ -461,6 +461,40 @@ function cart_coupon_stats($cp_id)
     );
 }
 
+// 이 쿠폰을 누가 가지고 있나 — 관리자 화면이 "발급 12장" 만 보여 주면 정작 누구에게 나갔는지,
+// 그 사람이 썼는지는 어디에서도 못 본다. 안 쓴 장을 먼저(만료 임박 순), 쓴 장은 최근 순으로.
+function cart_coupon_holders($cp_id, $limit = 100)
+{
+    global $g5;
+    $rows = array();
+    $today = date('Y-m-d', G5_SERVER_TIME);
+    $result = sql_query(" select m.*, o.od_no, o.od_status
+        from `{$g5['ycart_coupon_mb_table']}` m
+        left join `{$g5['ycart_order_table']}` o on o.od_id = m.cm_od_id
+        where m.cp_id = '".(int)$cp_id."'
+        order by (m.cm_od_id > 0) asc, m.cm_end asc, m.cm_id desc
+        limit ".(int)$limit." ");
+    while ($r = sql_fetch_array($result)) {
+        $r['used'] = ((int)$r['cm_od_id'] > 0);
+        $r['expired'] = (!$r['used'] && $r['cm_end'] < $today);
+        $r['state'] = $r['used'] ? '사용' : ($r['expired'] ? '기한 지남' : '보유');
+        $rows[] = $r;
+    }
+    return $rows;
+}
+
+// 주문에 쓰인 쿠폰 한 장 — 관리자 주문 상세가 "쿠폰 3,000원" 뒤에 어느 쿠폰인지 적는다.
+// 쿠폰 정의가 남아 있어야 이름을 알 수 있으므로(발급된 쿠폰은 못 지운다) join 이 안전하다.
+function cart_coupon_of_order($od)
+{
+    global $g5;
+    if (empty($od['od_cm_id'])) return null;
+    return sql_fetch(" select c.cp_name, c.cp_code, m.cm_amount, m.mb_id
+        from `{$g5['ycart_coupon_mb_table']}` m
+        inner join `{$g5['ycart_coupon_table']}` c on c.cp_id = m.cp_id
+        where m.cm_id = '".(int)$od['od_cm_id']."' ");
+}
+
 function cart_coupon_save($data, $cp_id = 0)
 {
     global $g5;
