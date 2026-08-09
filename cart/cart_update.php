@@ -67,8 +67,29 @@ if ($mode === 'add') {
     goto_url($back);
 }
 
+// 수량 변경 — 장바구니 화면은 ajax=1 로 부른다(누르는 즉시 저장되고 화면만 고쳐 그린다).
+// 값이 바뀌면 그 줄이 재고를 넘길 수 있으므로, 바뀐 뒤의 상태를 함께 돌려준다 —
+// 화면이 경고와 선택 가능 여부를 다시 칠할 근거다.
 if ($mode === 'set') {
-    cart_cart_set_qty((int)$post('ct_id'), (int)$post('qty'));
+    $ct_id = (int)$post('ct_id');
+    cart_cart_set_qty($ct_id, (int)$post('qty'));
+
+    if ($is_ajax) {
+        $row = null;
+        foreach (cart_cart_items() as $r) {
+            if ((int)$r['ct_id'] === $ct_id) { $row = $r; break; }
+        }
+        // 수량을 0 으로 만들면 줄이 사라진다(set_qty 가 삭제로 넘긴다)
+        if (!$row) $out(array('ok' => true, 'removed' => true, 'ct_id' => $ct_id));
+        $out(array(
+            'ok' => true, 'ct_id' => $ct_id,
+            'qty' => (int)$row['ct_qty'],
+            'line_total' => (int)$row['sk_price'] * (int)$row['ct_qty'],
+            'avail' => (bool)$row['avail'],
+            'over_stock' => (bool)$row['over_stock'],
+            'sk_qty' => (int)$row['sk_qty'],
+        ));
+    }
     goto_url($back);
 }
 

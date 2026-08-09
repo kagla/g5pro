@@ -45,29 +45,28 @@
             <span class="cart-cart-opt">{{ $it['opt_label'] }}</span>
             @endif
 
-            @if (!$it['avail'])
-            <span class="cart-cart-warn">지금은 구매할 수 없는 상품입니다 (품절·판매중지)</span>
-            @elseif ($it['over_stock'])
-            <span class="cart-cart-warn">재고가 {{ number_format($it['sk_qty']) }}개뿐입니다 — 수량을 줄여 주세요</span>
-            @endif
+            <span class="cart-cart-warn" data-role="warn" {{ $blocked ? '' : 'hidden' }}>
+                @if (!$it['avail'])지금은 구매할 수 없는 상품입니다 (품절·판매중지)@elseif ($it['over_stock'])재고가 {{ number_format($it['sk_qty']) }}개뿐입니다 — 수량을 줄여 주세요@endif
+            </span>
 
             <span class="cart-cart-price">{{ number_format($it['sk_price']) }}<em>원</em></span>
         </div>
         <div class="cart-cart-ctrl">
-            <form method="post" action="{{ $action_url }}" class="cart-cart-qty">
-                <input type="hidden" name="token" value="{{ $token }}">
-                <input type="hidden" name="mode" value="set">
-                <input type="hidden" name="ct_id" value="{{ $it['ct_id'] }}">
-                <input type="number" name="qty" value="{{ $it['ct_qty'] }}" min="1" max="999">
-                <button type="submit" class="btn-ghost">변경</button>
-            </form>
+            {{-- 수량은 누르는 즉시 저장된다 — '변경' 버튼을 두었더니 수량만 고치고 누르지 않은 채
+                 주문해서 옛 수량으로 나갔다. 버튼을 없애고 저장을 자동으로 옮긴다. --}}
+            <div class="cart-qty" data-ct="{{ $it['ct_id'] }}">
+                <button type="button" class="cart-qty-btn" data-d="-1" aria-label="수량 줄이기">−</button>
+                <input type="number" class="cart-qty-input" value="{{ $it['ct_qty'] }}" min="1" max="999"
+                       aria-label="{{ $it['it_name'] }} 수량">
+                <button type="button" class="cart-qty-btn" data-d="1" aria-label="수량 늘리기">+</button>
+            </div>
             <form method="post" action="{{ $action_url }}" data-confirm="이 상품을 장바구니에서 뺄까요?" data-confirm-danger>
                 <input type="hidden" name="token" value="{{ $token }}">
                 <input type="hidden" name="mode" value="del">
                 <input type="hidden" name="ct_id" value="{{ $it['ct_id'] }}">
                 <button type="submit" class="btn-ghost">삭제</button>
             </form>
-            <span class="cart-cart-line">{{ number_format($it['line_total']) }}<em>원</em></span>
+            <span class="cart-cart-line" data-role="line">{{ number_format($it['line_total']) }}<em>원</em></span>
         </div>
     </div>
     @endforeach
@@ -150,6 +149,54 @@ $(function () {
 
     $(document).on('change', '.cart-pick', paint);
     $all.on('change', function () { picks().prop('checked', $all.prop('checked')); paint(); });
+
+    // ── 수량 — 누르는 즉시 저장한다 ──
+    // 연타를 매번 보내면 요청이 줄줄이 밀리고 마지막 응답이 먼저 온 것을 덮을 수 있다.
+    // 잠깐 기다렸다가 마지막 값 한 번만 보낸다.
+    var timers = {};
+    function saveQty($row) {
+        var $box = $row.find('.cart-qty'), ct = $box.data('ct'),
+            $in = $box.find('.cart-qty-input'),
+            qty = Math.max(1, Math.min(999, parseInt($in.val(), 10) || 1));
+        $in.val(qty);
+
+        clearTimeout(timers[ct]);
+        timers[ct] = setTimeout(function () {
+            $box.addClass('is-saving');
+            $.post('{{ $action_url }}', { token: '{{ $token }}', mode: 'set', ajax: '1', ct_id: ct, qty: qty },
+                null, 'json')
+            .done(function (res) {
+                if (!res || !res.ok) { alert('수량을 바꾸지 못했습니다. 새로고침해 주세요.'); return; }
+                if (res.removed) { $row.remove(); paint(); return; }
+
+                $row.find('[data-role=line]').html(won(res.line_total) + '<em>원</em>');
+                var $chk = $row.find('.cart-pick');
+                $chk.data('total', res.line_total);
+
+                // 수량을 올리다 재고를 넘길 수 있다 — 넘긴 줄은 그 자리에서 못 고르게 막고 이유를 적는다
+                var blocked = (!res.avail || res.over_stock);
+                $row.toggleClass('is-blocked', blocked);
+                $chk.prop('disabled', blocked);
+                if (blocked) $chk.prop('checked', false);
+                $row.find('[data-role=warn]')
+                    .text(!res.avail ? '지금은 구매할 수 없는 상품입니다 (품절·판매중지)'
+                                     : (res.over_stock ? '재고가 ' + won(res.sk_qty) + '개뿐입니다 — 수량을 줄여 주세요' : ''))
+                    .prop('hidden', !blocked);
+                paint();
+            })
+            .fail(function () { alert('수량을 바꾸지 못했습니다. 새로고침해 주세요.'); })
+            .always(function () { $box.removeClass('is-saving'); });
+        }, 350);
+    }
+
+    $(document).on('click', '.cart-qty-btn', function () {
+        var $box = $(this).closest('.cart-qty'), $in = $box.find('.cart-qty-input');
+        $in.val((parseInt($in.val(), 10) || 1) + parseInt($(this).data('d'), 10));
+        saveQty($box.closest('.cart-cart-row'));
+    });
+    $(document).on('change', '.cart-qty-input', function () {
+        saveQty($(this).closest('.cart-cart-row'));
+    });
 
     $('#cart_seldel').on('click', function () {
         var ids = checked().map(function () { return this.value; }).get();
