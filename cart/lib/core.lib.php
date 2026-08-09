@@ -36,6 +36,8 @@ function cart_table_defaults()
         'ycart_order_item_table' => 'ycart_order_item',
         'ycart_payment_table'    => 'ycart_payment',
         'ycart_address_table'    => 'ycart_address',
+        'ycart_wish_table'       => 'ycart_wish',
+        'ycart_return_table'     => 'ycart_return',
     );
     foreach ($tables as $key => $name) {
         if (!isset($g5[$key])) $g5[$key] = G5_TABLE_PREFIX.$name;
@@ -118,6 +120,27 @@ function cart_column_upgrades()
         // 작을수록 위. 화면에서 새로 저장한 조합은 맨 끝 번호를 받는다.
         array('ycart_option_preset_table', 'op_order',
             " ADD `op_order` int(11) NOT NULL DEFAULT '0' AFTER `op_name` "),
+        // 2026-08-09 구매확정 — 배송완료 뒤 고객이 "잘 받았다" 고 매듭짓는 시각.
+        // 반품 가능 기간과 포인트 적립 시점의 기준이 되므로 상태와 별도로 시각을 남긴다.
+        array('ycart_order_table', 'od_confirmed_at',
+            " ADD `od_confirmed_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00' AFTER `od_shipped_at` "),
+        // 2026-08-09 무통장 입금 기한 — 지나면 자동 취소하고 재고를 풀어 준다.
+        // 무통장은 주문 즉시 재고를 차감하므로(cart_order_create), 기한이 없으면
+        // 입금 안 된 주문이 재고를 무기한 잠근다. 0 이면 자동 취소하지 않는다.
+        array('ycart_config_table', 'cc_unpaid_days',
+            " ADD `cc_unpaid_days` tinyint(4) NOT NULL DEFAULT '3' AFTER `cc_bank` "),
+        // 2026-08-09 반품 — 환불 누계(부분 반품이 여러 번 쌓일 수 있어 합계로 둔다)와
+        // 품목이 속한 반품 신청. 배송완료 후 신청 가능 기간은 설정값.
+        array('ycart_order_table', 'od_refund',
+            " ADD `od_refund` int(11) NOT NULL DEFAULT '0' AFTER `od_total` "),
+        array('ycart_order_item_table', 'oi_rt_id',
+            " ADD `oi_rt_id` int(11) NOT NULL DEFAULT '0' AFTER `oi_status` "),
+        array('ycart_config_table', 'cc_return_days',
+            " ADD `cc_return_days` tinyint(4) NOT NULL DEFAULT '7' AFTER `cc_unpaid_days` "),
+        // 반품 기한의 기준 시각 — "받은 날부터 며칠" 을 세려면 배송완료 시각이 있어야 한다.
+        // 발송 시각(od_shipped_at)으로 대신하면 배송이 오래 걸린 손님이 기한을 손해 본다.
+        array('ycart_order_table', 'od_delivered_at',
+            " ADD `od_delivered_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00' AFTER `od_shipped_at` "),
     );
 }
 
@@ -240,6 +263,7 @@ function cart_table_ddl()
         `cc_ship_free` int(11) NOT NULL DEFAULT '50000',
         `cc_ship_jeju` int(11) NOT NULL DEFAULT '3000',
         `cc_bank` varchar(255) NOT NULL DEFAULT '',
+        `cc_unpaid_days` tinyint(4) NOT NULL DEFAULT '3',
         `cc_inicis_mid` varchar(20) NOT NULL DEFAULT '',
         `cc_inicis_signkey` varchar(100) NOT NULL DEFAULT '',
         `cc_inicis_apikey` varchar(100) NOT NULL DEFAULT '',
@@ -361,6 +385,7 @@ function cart_table_ddl()
         `od_coupon` int(11) NOT NULL DEFAULT '0',
         `od_point` int(11) NOT NULL DEFAULT '0',
         `od_total` int(11) NOT NULL DEFAULT '0',
+        `od_refund` int(11) NOT NULL DEFAULT '0',
         `od_status` varchar(20) NOT NULL DEFAULT 'unpaid',
         `od_pay_method` varchar(20) NOT NULL DEFAULT 'bank',
         `od_depositor` varchar(50) NOT NULL DEFAULT '',
@@ -369,6 +394,8 @@ function cart_table_ddl()
         `od_delivery_company` varchar(50) NOT NULL DEFAULT '',
         `od_invoice` varchar(50) NOT NULL DEFAULT '',
         `od_shipped_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+        `od_delivered_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+        `od_confirmed_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
         `od_cancel_reason` varchar(255) NOT NULL DEFAULT '',
         `od_canceled_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
         `od_canceled_by` varchar(20) NOT NULL DEFAULT '',
@@ -392,6 +419,7 @@ function cart_table_ddl()
         `oi_qty` int(11) NOT NULL DEFAULT '0',
         `oi_total` int(11) NOT NULL DEFAULT '0',
         `oi_status` varchar(20) NOT NULL DEFAULT 'normal',
+        `oi_rt_id` int(11) NOT NULL DEFAULT '0',
         PRIMARY KEY (`oi_id`), KEY `od_id` (`od_id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
     'ycart_address_table' => " CREATE TABLE IF NOT EXISTS `{$g5['ycart_address_table']}` (
@@ -418,6 +446,40 @@ function cart_table_ddl()
         `pm_approved_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
         PRIMARY KEY (`pm_id`), KEY `od_id` (`od_id`), KEY `pm_tid` (`pm_tid`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
+    // 찜(관심 상품) — 회원 하나가 상품 하나를 한 번만 찜한다(UNIQUE mb_item 이 곧 토글의 근거).
+    // 소유자는 mb_id 뿐이다 — 장바구니와 달리 비회원 세션을 받지 않는다(wish.lib.php 머리말 참고).
+    'ycart_wish_table' => " CREATE TABLE IF NOT EXISTS `{$g5['ycart_wish_table']}` (
+        `wi_id` int(11) NOT NULL AUTO_INCREMENT,
+        `mb_id` varchar(20) NOT NULL DEFAULT '',
+        `it_id` int(11) NOT NULL DEFAULT '0',
+        `wi_datetime` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+        PRIMARY KEY (`wi_id`),
+        UNIQUE KEY `mb_item` (`mb_id`, `it_id`),
+        KEY `mb_recent` (`mb_id`, `wi_id`),
+        KEY `it_id` (`it_id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
+    // 반품 신청 — 신청 한 번이 한 행이다. 한 주문에 신청이 여러 번 있을 수 있어(오늘 한 품목,
+    // 다음 주에 또 한 품목) 주문 컬럼에 담지 않는다. 어느 품목이 이 신청에 속하는지는
+    // 주문품목의 oi_rt_id 가 가리킨다 — 품목은 한 번만 반품되므로 컬럼 하나로 충분하다.
+    // rt_bank(환불 계좌)는 무통장 건에만 받고 환불을 마치면 비운다 — 쓸 일이 끝난 개인정보다.
+    'ycart_return_table' => " CREATE TABLE IF NOT EXISTS `{$g5['ycart_return_table']}` (
+        `rt_id` int(11) NOT NULL AUTO_INCREMENT,
+        `od_id` int(11) NOT NULL DEFAULT '0',
+        `mb_id` varchar(20) NOT NULL DEFAULT '',
+        `rt_status` varchar(10) NOT NULL DEFAULT 'requested',
+        `rt_oi_ids` varchar(255) NOT NULL DEFAULT '',
+        `rt_reason` varchar(255) NOT NULL DEFAULT '',
+        `rt_bank` varchar(100) NOT NULL DEFAULT '',
+        `rt_refund` int(11) NOT NULL DEFAULT '0',
+        `rt_restock` tinyint(4) NOT NULL DEFAULT '1',
+        `rt_memo` varchar(255) NOT NULL DEFAULT '',
+        `rt_requested_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+        `rt_done_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+        `rt_done_by` varchar(20) NOT NULL DEFAULT '',
+        PRIMARY KEY (`rt_id`),
+        KEY `od_id` (`od_id`, `rt_id`),
+        KEY `live` (`rt_status`, `rt_id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
     );
 }
 
@@ -433,6 +495,31 @@ function cart_config()
         $row = sql_fetch(" select * from `{$g5['ycart_config_table']}` where cc_id = 1 ");
     }
     return $row;
+}
+
+// 하루 한 번만 도는 뒷정리 — 그누보드에는 스케줄러가 없으므로 들어온 요청이 대신 태운다.
+// 마지막으로 돈 날짜를 파일에 적어 두고 날짜가 바뀌었을 때만 실제 일을 한다(그 외에는 파일 읽기 한 번).
+// 프론트·관리자 양쪽에서 부르지만 도장이 하나라 하루에 한 번만 돈다 — 손님이 안 와도
+// 관리자가 들어오면 돌고, 관리자가 안 와도 손님이 오면 돈다.
+//
+// 도장을 일보다 먼저 찍는다: 일이 실패하면 매 요청이 재시도하며 사이트를 느리게 만든다.
+// 하루 놓치는 편이 온종일 느린 것보다 낫고, 다음 날 어차피 다시 돈다.
+function cart_daily_sweep()
+{
+    static $done = false;
+    if ($done) return;
+    $done = true;
+
+    if (!is_dir(G5_CART_DATA_PATH)) {
+        @mkdir(G5_CART_DATA_PATH, G5_DIR_PERMISSION, true);
+        @chmod(G5_CART_DATA_PATH, G5_DIR_PERMISSION);
+    }
+    $file = G5_CART_DATA_PATH.'/sweep.dat';
+    $today = date('Ymd', G5_SERVER_TIME);
+    if (is_file($file) && trim((string)@file_get_contents($file)) === $today) return;
+    if (@file_put_contents($file, $today, LOCK_EX) === false) return;   // 못 적으면 아예 돌지 않는다
+
+    cart_order_expire_unpaid();
 }
 
 function cart_url($path = '', $qs = array())
@@ -472,6 +559,9 @@ function cart_item_image_url($file)
 // $crop=false 는 "비율 유지" 가 아니다 — 순정은 상자를 흰색으로 채우고 그 안에 앉힌다
 // (레터박스). 화면이 object-fit:cover 로 다시 채우는 자리라면 흰 여백까지 잘려 들어오므로
 // 그런 자리엔 $crop=true 를 쓴다.
+//
+// 진짜 비율 유지가 필요하면 한 변을 0 으로 준다(예: 폭 1600·높이 0). 순정이 나머지 한 변을
+// 원본 비율로 계산하므로 잘리지도, 여백이 끼지도 않는다 — 확대해 보기(라이트박스)가 이 방식.
 function cart_item_thumb_url($file, $w, $h, $crop = true)
 {
     $file = str_replace('\\', '/', (string)$file);
@@ -503,9 +593,13 @@ function cart_item_thumb_url($file, $w, $h, $crop = true)
     // 자를 때는 짧은 변이, 맞출 때는 긴 변이 크기를 정하므로 배율 식이 서로 반대다.
     $size = @getimagesize($dir.'/'.$name);
     if ($size && (int)$size[0] > 0 && (int)$size[1] > 0) {
-        $scale = $crop
-            ? max($w / $size[0], $h / $size[1])
-            : min($w / $size[0], $h / $size[1]);
+        // 한 변을 0 으로 주면 순정은 나머지 한 변을 원본 비율로 계산한다(잘림도 여백도 없음).
+        // 그때 배율은 값이 있는 변만 본다 — 0 을 그대로 식에 넣으면 배율이 늘 0 이 되어
+        // "줄어들지 않으면 만들지 않는다" 는 아래 판정이 통째로 무력해진다.
+        if (!(int)$h)        $scale = $w / $size[0];
+        elseif (!(int)$w)    $scale = $h / $size[1];
+        elseif ($crop)       $scale = max($w / $size[0], $h / $size[1]);
+        else                 $scale = min($w / $size[0], $h / $size[1]);
         if ($scale >= 1) return cart_item_image_url($file);
     }
 
