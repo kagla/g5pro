@@ -3,8 +3,19 @@
 {{-- 안내 문장이 길어 칸 옆에 붙이면 앞말과 이어져 읽힌다 — 특히 "사용 안 함" 라디오 뒤에
      "사용 안 함으로 두면…" 이 붙으면 한 문장처럼 보인다. 이 화면에서만 아래 줄로 내린다. --}}
 <style>
+/* 순정 admin.css 는 셀렉트·입력칸을 둘 다 35px 로 두는데(admin.css:253,256), 셀렉트는
+   테두리가 진하고 폭이 좁아 더 두툼해 보인다. 이 화면에서는 둘 다 30px 로 낮춘다 —
+   검색줄(.local_sch)이 이미 쓰는 높이라 관리자 안에서 낯설지 않다. */
+#cpn_adm .tbl_frm01 select,
+#cpn_adm .tbl_frm01 .frm_input { height: 30px; line-height: 28px; }
 #cpn_adm .tbl_frm01 td .txt_id { display: block; margin-top: 5px; }
 #cpn_adm .tbl_frm01 td label { margin-right: 12px; }
+/* 샘플 고르기 — 폼 위에 따로 떼어 둔다. 값을 채워 넣는 도구지 저장되는 값이 아니다 */
+#cpn_sample_bar { margin-bottom: 10px; padding: 10px 12px; border: 1px solid #C9DCFA;
+    border-radius: 6px; background: #F0F6FF; }
+#cpn_sample_bar label { font-weight: bold; color: #2753B0; margin-right: 8px; }
+#cpn_sample { height: 30px; line-height: 28px; min-width: 22em; }
+#cpn_sample_bar .txt_id { margin-left: 8px; }
 </style>
 <div id="cpn_adm">
 
@@ -12,6 +23,24 @@
     <p>할인은 <b>대상 상품 합계</b>에만 적용됩니다(배송비는 깎지 않습니다).
        정률 할인은 10원 단위로 절사합니다. 한 쿠폰은 회원당 한 장, 한 주문에 한 장만 쓸 수 있습니다.</p>
 </div>
+
+{{-- 자주 쓰는 쿠폰 열 가지 — 고르면 아래 칸이 채워진다. 정답이 아니라 출발점이라
+     이름·금액·기간을 고쳐 쓰는 것이 전제다. 수정 화면에서는 안 보인다(이미 쓰고 있는 값을
+     실수로 덮어쓰는 사고가 난다). --}}
+@if (!$cp_id)
+<div id="cpn_sample_bar">
+    <label for="cpn_sample">자주 쓰는 쿠폰</label>
+    <select id="cpn_sample">
+        <option value="">직접 입력</option>
+
+        @foreach ($samples as $sp)
+        <option value="{{ $sp['key'] }}">{{ $sp['title'] }}</option>
+        @endforeach
+
+    </select>
+    <span class="txt_id">고르면 아래 칸이 채워집니다. 그대로 저장해도 되고 고쳐 써도 됩니다.</span>
+</div>
+@endif
 
 <form method="post" action="{{ $action_url }}" id="cpn_form">
 <input type="hidden" name="token" value="{{ $token }}">
@@ -166,7 +195,26 @@
 @endif
 
 <script>
+var CPN_SAMPLES = {!! json_encode($samples, JSON_UNESCAPED_UNICODE) !!};
+
 jQuery(function ($) {
+    // 샘플 고르기 — 값을 칸에 넣고 나면 평범한 폼이다. 발급 기간은 안 건드린다:
+    // 언제부터 언제까지 뿌릴지는 이벤트마다 다르고, 화면이 정할 일이 아니다.
+    $('#cpn_sample').on('change', function () {
+        var key = $(this).val(), sp = null;
+        for (var i = 0; i < CPN_SAMPLES.length; i++) if (CPN_SAMPLES[i].key === key) sp = CPN_SAMPLES[i];
+        if (!sp) return;
+        $('[name=cp_name]').val(sp.cp_name);
+        $('[name=cp_code]').val(sp.cp_code);
+        $('#cp_issue').val(sp.cp_issue);
+        $('#cp_type').val(sp.cp_type);
+        $('[name=cp_value]').val(sp.cp_value);
+        $('[name=cp_max]').val(sp.cp_max);
+        $('[name=cp_min]').val(sp.cp_min);
+        $('[name=cp_days]').val(sp.cp_days);
+        paint();
+    });
+
     // 발급 방법·할인 방식에 따라 해당 없는 칸을 감춘다 — 자동 지급 쿠폰에 코드 칸이 남아 있으면
     // 채워 넣게 되고, 그러면 "가입 축하 쿠폰" 을 아무나 코드로 받아 갈 수 있다(서버도 비운다).
     function paint() {

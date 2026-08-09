@@ -27,6 +27,7 @@ cadm_view('coupon_form', array(
     'cp' => $cp,
     'cp_id' => $cp_id,
     'stats' => $stats,
+    'samples' => cart_coupon_samples(),
     'issues' => cart_coupon_issues(),
     'types' => cart_coupon_types(),
     'categories' => cart_category_list(),

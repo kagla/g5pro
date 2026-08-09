@@ -363,6 +363,46 @@ function cart_coupon_release($od_id)
 
 // ---------- 관리자 ----------
 
+// 자주 쓰는 쿠폰 열 가지 — 관리자 등록 화면에서 골라 칸을 채운다.
+// 값은 여기 한 곳에만 둔다(화면에 흩어 두면 문구와 숫자가 따로 논다).
+// 고르고 나서 이름·금액·기간을 고쳐 쓰는 것이 전제다 — 정답이 아니라 출발점이다.
+function cart_coupon_samples()
+{
+    return array(
+        array('key' => 'join10', 'title' => '가입 축하 10% (최대 5천원, 14일)',
+            'cp_name' => '가입 축하 10% 할인', 'cp_issue' => 'join', 'cp_code' => '',
+            'cp_type' => 'rate', 'cp_value' => 10, 'cp_max' => 5000, 'cp_min' => 0, 'cp_days' => 14),
+        array('key' => 'join3k', 'title' => '가입 축하 3천원 (2만원 이상, 30일)',
+            'cp_name' => '가입 축하 3,000원 할인', 'cp_issue' => 'join', 'cp_code' => '',
+            'cp_type' => 'fixed', 'cp_value' => 3000, 'cp_max' => 0, 'cp_min' => 20000, 'cp_days' => 30),
+        array('key' => 'first5', 'title' => '첫 구매 감사 5% (30일)',
+            'cp_name' => '첫 구매 감사 5% 할인', 'cp_issue' => 'firstbuy', 'cp_code' => '',
+            'cp_type' => 'rate', 'cp_value' => 5, 'cp_max' => 0, 'cp_min' => 0, 'cp_days' => 30),
+        array('key' => 'first5k', 'title' => '재구매 유도 5천원 (5만원 이상, 30일)',
+            'cp_name' => '다음 주문 5,000원 할인', 'cp_issue' => 'firstbuy', 'cp_code' => '',
+            'cp_type' => 'fixed', 'cp_value' => 5000, 'cp_max' => 0, 'cp_min' => 50000, 'cp_days' => 30),
+        array('key' => 'code10', 'title' => '코드 입력 10% (최대 1만원)',
+            'cp_name' => '이벤트 10% 할인', 'cp_issue' => 'code', 'cp_code' => 'EVENT10',
+            'cp_type' => 'rate', 'cp_value' => 10, 'cp_max' => 10000, 'cp_min' => 0, 'cp_days' => 0),
+        array('key' => 'code1k', 'title' => '코드 입력 1천원 (1만원 이상)',
+            'cp_name' => '1,000원 할인 코드', 'cp_issue' => 'code', 'cp_code' => 'SAVE1000',
+            'cp_type' => 'fixed', 'cp_value' => 1000, 'cp_max' => 0, 'cp_min' => 10000, 'cp_days' => 0),
+        array('key' => 'weekend', 'title' => '주말 특가 15% (최대 2만원, 3일)',
+            'cp_name' => '주말 특가 15% 할인', 'cp_issue' => 'code', 'cp_code' => 'WEEKEND15',
+            'cp_type' => 'rate', 'cp_value' => 15, 'cp_max' => 20000, 'cp_min' => 0, 'cp_days' => 3),
+        array('key' => 'bulk20', 'title' => '10만원 이상 2만원 (대량 구매)',
+            'cp_name' => '10만원 이상 20,000원 할인', 'cp_issue' => 'manual', 'cp_code' => '',
+            'cp_type' => 'fixed', 'cp_value' => 20000, 'cp_max' => 0, 'cp_min' => 100000, 'cp_days' => 0),
+        array('key' => 'sorry', 'title' => '사과·보상 5천원 (관리자 지급, 60일)',
+            'cp_name' => '불편을 드려 죄송합니다 5,000원', 'cp_issue' => 'manual', 'cp_code' => '',
+            'cp_type' => 'fixed', 'cp_value' => 5000, 'cp_max' => 0, 'cp_min' => 0, 'cp_days' => 60),
+        array('key' => 'vip20', 'title' => '단골 감사 20% (최대 3만원, 관리자 지급)',
+            'cp_name' => '단골 감사 20% 할인', 'cp_issue' => 'manual', 'cp_code' => '',
+            'cp_type' => 'rate', 'cp_value' => 20, 'cp_max' => 30000, 'cp_min' => 0, 'cp_days' => 30),
+    );
+}
+
+
 // 코드 중복 검사 — 빈 코드는 여러 장이 가질 수 있다(자동 지급 전용 쿠폰)
 function cart_coupon_code_error($code, $except_cp_id = 0)
 {
