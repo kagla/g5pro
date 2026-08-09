@@ -347,7 +347,9 @@ $(function () {
                 '<span class="cart-pick-price">' + won(s.price) + '원</span>' +
                 '<button type="button" class="cart-pick-del" aria-label="선택 취소">✕</button>' +
                 '<input type="hidden" name="sk_id[]" value="' + s.id + '">');
-            $('#cart_picks').append($li);
+            // 방금 고른 조합이 맨 위 — 목록이 길어져도 손이 간 줄이 눈앞에 있다.
+            // sk_id[]·qty[] 는 짝으로 읽히므로 순서가 바뀌어도 짝은 그대로다.
+            $('#cart_picks').prepend($li);
             retotal();
         }
 
