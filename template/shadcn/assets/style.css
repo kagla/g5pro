@@ -3050,6 +3050,20 @@ body.cart-lb-lock { overflow: hidden; }
    같이 쓰면 줄 안내에까지 상자가 번진다 */
 .cart-order-block { margin: 0 0 var(--s3); color: var(--danger-deep); font-weight: 700; }
 
+/* 고르기 도구 줄 — 목록 위에 전체 선택과 선택 삭제 */
+.cart-tools {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--s3);
+    margin-bottom: var(--s3); flex-wrap: wrap;
+}
+.cart-chk-all { display: flex; align-items: center; gap: var(--s2); font-size: var(--t-base); font-weight: 600; cursor: pointer; }
+.cart-chk-all b { color: var(--accent-deep); font-variant-numeric: tabular-nums; }
+/* 체크박스는 브라우저 기본을 쓰되 크기와 색만 맞춘다 — 직접 그리면 접근성 동작을 다시 만들어야 한다 */
+.cart-pick, .cart-chk-all input { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; flex: none; }
+.cart-pick-box { display: flex; align-items: center; align-self: flex-start; padding-top: 2px; }
+/* 고른 줄 — 계산에 든 것이 눈으로 보이게 테두리만 강조한다(면을 칠하면 사진이 죽는다) */
+.cart-cart-row.is-picked { border-color: var(--accent); }
+.cart-cart-row.is-blocked .cart-pick-box { opacity: .4; }
+
 .cart-cart { display: flex; flex-direction: column; gap: var(--s4); margin-bottom: var(--s5); }
 .cart-cart-row {
     display: flex; gap: var(--s4); align-items: center;
