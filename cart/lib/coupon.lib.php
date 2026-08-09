@@ -424,8 +424,16 @@ function cart_coupon_grant_many($cp_id, $mb_ids)
 {
     global $g5;
     $cp = cart_coupon_get($cp_id);
-    $out = array('issued' => 0, 'skipped' => 0, 'unknown' => array());
-    if (!$cp) return $out;
+    $out = array('issued' => 0, 'skipped' => 0, 'unknown' => array(), 'error' => '');
+    if (!$cp) { $out['error'] = '없는 쿠폰입니다.'; return $out; }
+
+    // 못 나가는 이유는 여기서 한 번에 가른다 — 아래 루프는 실패를 모두 "이미 가짐" 으로
+    // 세므로, 쿠폰 자체가 막혀 있으면 "전원이 이미 가지고 있다" 는 거짓말이 된다.
+    $today = date('Y-m-d', G5_SERVER_TIME);
+    if (!(int)$cp['cp_use']) $out['error'] = '이 쿠폰은 "사용 안 함" 상태라 지급할 수 없습니다.';
+    elseif ($cp['cp_begin'] > $today) $out['error'] = '발급 시작일('.$cp['cp_begin'].') 전이라 지급할 수 없습니다.';
+    elseif ($cp['cp_end'] < $today) $out['error'] = '발급 기간('.$cp['cp_end'].')이 끝나 지급할 수 없습니다.';
+    if ($out['error'] !== '') return $out;
 
     foreach ($mb_ids as $raw) {
         $mb_id = trim($raw);

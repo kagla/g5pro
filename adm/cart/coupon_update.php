@@ -27,6 +27,7 @@ if ($mode === 'grant') {
     if (!count($ids)) alert('지급할 회원 아이디를 입력해 주세요.', G5_CART_ADMIN_URL.'/coupon_form.php?cp_id='.$cp_id);
 
     $r = cart_coupon_grant_many($cp_id, $ids);
+    if ($r['error'] !== '') alert($r['error'], G5_CART_ADMIN_URL.'/coupon_form.php?cp_id='.$cp_id);
     $msg = $r['issued'].'명에게 지급했습니다.';
     if ($r['skipped']) $msg .= ' 이미 가진 회원 '.$r['skipped'].'명은 건너뛰었습니다.';
     if (count($r['unknown'])) {
