@@ -369,9 +369,9 @@ function cart_coupon_release($od_id)
 function cart_coupon_samples()
 {
     return array(
-        array('key' => 'join10', 'title' => '가입 축하 10% (최대 5천원, 14일)',
+        array('key' => 'join10', 'title' => '가입 축하 10% (5만원 이상, 최대 5천원, 14일)',
             'cp_name' => '가입 축하 10% 할인', 'cp_issue' => 'join', 'cp_code' => '',
-            'cp_type' => 'rate', 'cp_value' => 10, 'cp_max' => 5000, 'cp_min' => 0, 'cp_days' => 14),
+            'cp_type' => 'rate', 'cp_value' => 10, 'cp_max' => 5000, 'cp_min' => 50000, 'cp_days' => 14),
         array('key' => 'join3k', 'title' => '가입 축하 3천원 (2만원 이상, 30일)',
             'cp_name' => '가입 축하 3,000원 할인', 'cp_issue' => 'join', 'cp_code' => '',
             'cp_type' => 'fixed', 'cp_value' => 3000, 'cp_max' => 0, 'cp_min' => 20000, 'cp_days' => 30),
