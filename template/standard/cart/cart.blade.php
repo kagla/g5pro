@@ -160,8 +160,17 @@ $(function () {
     function paintQty($box) {
         var max = parseInt($box.data('max'), 10) || 0,
             v = parseInt($box.find('.cart-qty-input').val(), 10) || 1;
-        $box.find('[data-d="-1"]').prop('disabled', v <= 1);
-        $box.find('[data-d="1"]').prop('disabled', max > 0 && v >= max);
+        // disabled 를 쓰지 않는다 — 브라우저가 클릭 자체를 안 넘겨줘서 "왜 안 되는지" 를 말할 수 없다.
+        // 흐리게만 칠하고(is-limit) 누르면 이유를 알려 준다. aria-disabled 로 낭독기에도 같은 뜻을 준다.
+        function mark($b, off) { $b.toggleClass('is-limit', off).attr('aria-disabled', off ? 'true' : 'false'); }
+        mark($box.find('[data-d="-1"]'), v <= 1);
+        mark($box.find('[data-d="1"]'), max > 0 && v >= max);
+    }
+
+    // 한계에서 눌렀을 때 하는 말 — 숫자를 넣어 "얼마까지" 가 바로 읽히게
+    function limitMsg(max) {
+        return max > 0 ? '재고가 ' + won(max) + '개뿐이라 더 담을 수 없습니다'
+                       : '품절된 상품이라 더 담을 수 없습니다';
     }
 
     function saveQty($row, hitMax) {
@@ -171,13 +180,15 @@ $(function () {
             qty = Math.max(1, parseInt($in.val(), 10) || 1);
 
         if (max > 0 && qty > max) { qty = max; hitMax = true; }
-        if (hitMax) g5Toast('재고가 ' + won(max) + '개뿐입니다');
+        if (hitMax) g5Toast(limitMsg(max));
         $in.val(qty);
         paintQty($box);
 
         clearTimeout(timers[ct]);
         timers[ct] = setTimeout(function () {
-            $box.addClass('is-saving');
+            // 저장 중 표시는 늦어질 때만 켠다 — 요청마다 흐렸다 밝히면 누를 때마다 번쩍인다.
+            // 대부분은 500ms 안에 끝나 아무 일도 안 일어난 것처럼 보인다.
+            var slow = setTimeout(function () { $box.addClass('is-saving'); }, 500);
             $.post('{{ $action_url }}', { token: '{{ $token }}', mode: 'set', ajax: '1', ct_id: ct, qty: qty },
                 null, 'json')
             .done(function (res) {
@@ -188,7 +199,7 @@ $(function () {
                 // 담은 뒤 관리자가 재고를 줄였을 수 있다 — 서버가 알려 준 지금 재고로 한계를 다시 심는다
                 $box.data('max', res.max).find('.cart-qty-input').val(res.qty).attr('max', Math.max(1, res.max));
                 paintQty($box);
-                if (res.clamped) g5Toast('재고가 ' + won(res.max) + '개뿐입니다');
+                if (res.clamped) g5Toast(limitMsg(res.max));
                 var $chk = $row.find('.cart-pick');
                 $chk.data('total', res.line_total);
 
@@ -204,7 +215,7 @@ $(function () {
                 paint();
             })
             .fail(function () { g5Toast('수량을 바꾸지 못했습니다. 새로고침해 주세요.'); })
-            .always(function () { $box.removeClass('is-saving'); });
+            .always(function () { clearTimeout(slow); $box.removeClass('is-saving'); });
         }, 350);
     }
 
@@ -213,8 +224,8 @@ $(function () {
             max = parseInt($box.data('max'), 10) || 0,
             v = parseInt($in.val(), 10) || 1, d = parseInt($(this).data('d'), 10);
 
-        if (d > 0 && max > 0 && v >= max) { g5Toast('재고가 ' + won(max) + '개뿐입니다'); return; }
-        if (d < 0 && v <= 1) return;
+        if (d > 0 && (max <= 0 || v >= max)) { g5Toast(limitMsg(max)); return; }
+        if (d < 0 && v <= 1) { g5Toast('수량은 1개부터입니다. 빼시려면 삭제를 눌러 주세요'); return; }
         $in.val(v + d);
         saveQty($box.closest('.cart-cart-row'));
     });

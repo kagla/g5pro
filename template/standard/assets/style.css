@@ -3087,14 +3087,17 @@ body.cart-lb-lock { overflow: hidden; }
     border: 1px solid var(--btn-line); border-radius: var(--r-btn); background: var(--card);
     overflow: hidden; transition: opacity .15s;
 }
-.cart-qty.is-saving { opacity: .5; pointer-events: none; }
+/* 저장이 늦어질 때만 켜진다(500ms 넘게 걸릴 때) — 요청마다 켜면 누를 때마다 번쩍인다 */
+.cart-qty.is-saving { opacity: .55; }
 .cart-qty-btn {
     width: 32px; height: 34px; border: 0; background: none; color: var(--fg);
     font-size: var(--t-lg); line-height: 1; cursor: pointer; font-family: inherit;
 }
-.cart-qty-btn:hover:not(:disabled) { background: var(--row-hover); color: var(--accent); }
-/* 한계에 닿은 버튼 — 눌러도 안 되는 것이 손보다 눈에 먼저 보여야 한다 */
-.cart-qty-btn:disabled { color: var(--muted); opacity: .45; cursor: default; }
+.cart-qty-btn:hover:not(.is-limit) { background: var(--row-hover); color: var(--accent); }
+/* 한계에 닿은 버튼 — 흐리게 칠해 눈에 먼저 알리되, 누를 수는 있게 둔다.
+   disabled 로 막으면 브라우저가 클릭을 안 넘겨줘서 '왜 안 되는지' 를 말할 기회가 사라진다 */
+.cart-qty-btn.is-limit { color: var(--muted); opacity: .45; }
+.cart-qty-btn.is-limit:hover { background: var(--row-hover); opacity: .7; }
 .cart-qty-input {
     width: 46px; height: 34px; padding: 0; border: 0; border-radius: 0; background: none;
     text-align: center; font-size: var(--t-base); font-variant-numeric: tabular-nums;
