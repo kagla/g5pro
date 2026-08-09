@@ -311,6 +311,9 @@ function cart_return_approve($rt_id, $refund, $restock, $memo, $who)
         // 딸려 있어 단일 상태 전이 모델에 맞지 않는다. 대신 같은 규율(한 함수·잠금 안)을 지킨다.
         sql_query(" update `{$g5['ycart_order_table']}` set od_status = 'returned'
             where od_id = '".(int)$order['od_id']."' and od_status in ('delivered', 'confirmed') ", true);
+        // 전 품목이 돌아왔으면 쓴 쿠폰도 손님에게 돌려준다. 일부만 반품일 때는 돌려주지 않는다 —
+        // 남은 품목이 그 할인을 받은 채로 남아 있어서, 되살리면 한 장으로 두 번 깎이는 셈이 된다.
+        cart_coupon_release((int)$order['od_id']);
     }
 
     // 환불 계좌는 여기서 지운다 — 송금이 끝나면 더 쓸 데 없는 개인정보다

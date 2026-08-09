@@ -46,11 +46,22 @@ foreach ($lines as $i => $l) {
 $cc = cart_config();
 $is_member = isset($member['mb_id']) && $member['mb_id'] !== '';
 
+// 쿠폰 — 회원만. 주문서에 들어오는 이 순간이 "받을 자격이 있는데 아직 안 받은" 쿠폰의
+// 발급 시점이다(가입 축하·첫 구매). 순정 회원가입 코드를 건드리지 않으려는 방법이고,
+// 손님 눈에는 처음 열어 본 주문서에 이미 들어와 있는 것으로 보인다.
+$coupons = array();
+if ($is_member) {
+    cart_coupon_grant_auto($member['mb_id']);
+    $coupons = cart_coupon_choices($member['mb_id'], $lines, $item_total);
+}
+
 $g5['title'] = '주문서 작성';
 g5_view('cart.checkout', array(
     'lines' => $lines,
     'blocked_count' => count($picked['blocked']),
     'item_total' => $item_total,
+    'coupons' => $coupons,
+    'coupon_href' => cart_url('coupon.php'),
     'expect_ct_ids' => implode(',', array_map('intval', array_column($lines, 'ct_id'))),
     'buy' => count($only) ? implode(',', $only) : '',
     'is_member' => $is_member,

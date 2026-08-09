@@ -229,7 +229,7 @@ function cart_inicis_return()
         $sent = 'skip';
         $body = '';
         // 'code'(승인 거절)는 되돌릴 승인이 없다 — 망취소도, 아래 지연 경고도 해당 없음
-        $need_cancel = in_array($fail, array('http', 'parse', 'signature', 'moid', 'amount', 'amount2', 'duplicate', 'status', 'oid', 'update', 'missing', 'stock'), true);
+        $need_cancel = in_array($fail, array('http', 'parse', 'signature', 'moid', 'amount', 'amount2', 'duplicate', 'status', 'oid', 'update', 'missing', 'stock', 'coupon'), true);
         if ($net_url !== '' && $need_cancel) {
             $net_ts = $util->getTimestamp();
             $netMap = array(

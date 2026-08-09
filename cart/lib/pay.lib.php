@@ -115,6 +115,15 @@ function cart_order_confirm_paid($od_id, $oid, $method, $tid, $amount)
         }
     }
 
+    // 쿠폰 소진 — 재고와 같은 자리, 같은 무게다. 초안은 여러 개가 동시에 떠 있을 수 있어
+    // "아직 안 쓴 장일 때만 잠근다" 는 원자 갱신이 유일한 진짜 방어선이다.
+    // 실패하면 그 사이 다른 주문이 먼저 썼다는 뜻이므로 승인을 되돌린다(호출자가 망취소).
+    if ($payable && $fail === '' && (int)$cur['od_cm_id'] > 0) {
+        if (!cart_coupon_consume((int)$cur['od_cm_id'], (int)$od_id, (int)$cur['od_coupon'])) {
+            $fail = 'coupon';
+        }
+    }
+
     if ($payable && $fail === '') {
         sql_query(" update `{$g5['ycart_order_table']}`
             set od_status = 'paid', od_pay_method = '".sql_real_escape_string($method)."',

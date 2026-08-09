@@ -35,6 +35,8 @@ $input = array(
     'od_memo' => $post('od_memo'),
     'od_pay_method' => $post('pay'),
     'od_depositor' => $post('od_depositor'),
+    // 쿠폰은 장 번호만 받는다 — 깎일 금액은 서버가 다시 계산한다(화면 값은 안내일 뿐)
+    'cm_id' => (int)$post('cm_id'),
     'expect_ct_ids' => $post('expect_ct_ids'),
     'expect_item_total' => (int)str_replace(',', '', $post('expect_item_total')),
     // 바로구매 스코프 — 주문서가 보여준 행들만 주문한다(장바구니의 다른 상품 제외)

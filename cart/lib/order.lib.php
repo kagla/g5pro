@@ -165,7 +165,20 @@ function cart_order_create($input, $owner = null, $draft = false)
     $item_total = 0;
     foreach ($lines as $l) $item_total += (int)$l['sk_price'] * (int)$l['ct_qty'];
     $ship_fee = cart_shipping_fee($item_total, $input['od_zip']);
-    $total = $item_total + $ship_fee;
+
+    // 쿠폰 — 회원만, 주문당 한 장. 화면이 보낸 금액은 쓰지 않고 여기서 다시 계산한다
+    // (주문서의 숫자는 안내일 뿐이고, 결제창에 넘어갈 금액의 근거는 이 줄이어야 한다).
+    // 못 쓰는 쿠폰이면 조용히 빼지 않고 되돌려 보낸다 — 깎일 줄 알았던 금액이 말없이
+    // 사라지면 손님은 결제창의 금액을 보고서야 알게 된다.
+    $cm_id = 0;
+    $coupon = 0;
+    if (!empty($input['cm_id'])) {
+        $pick = cart_coupon_pick($mb_id, (int)$input['cm_id'], $lines, $item_total);
+        if (!is_array($pick)) return $pick;
+        $cm_id = (int)$pick['cm_id'];
+        $coupon = (int)$pick['amount'];
+    }
+    $total = $item_total + $ship_fee - $coupon;
 
     $od_no = cart_order_no();
     $who = $mb_id !== '' ? $mb_id : 'guest';
@@ -204,7 +217,7 @@ function cart_order_create($input, $owner = null, $draft = false)
     sql_query(" insert into `{$g5['ycart_order_table']}`
         (od_no, mb_id, od_name, od_hp, od_email, od_recv_name, od_recv_hp,
          od_zip, od_addr1, od_addr2, od_memo,
-         od_item_total, od_ship_fee, od_coupon, od_point, od_total,
+         od_item_total, od_ship_fee, od_coupon, od_cm_id, od_point, od_total,
          od_status, od_pay_method, od_depositor, od_guest_pw, od_ct_ids, od_ip, od_datetime)
         values ('".sql_real_escape_string($od_no)."',
                 '".sql_real_escape_string($mb_id)."',
@@ -217,7 +230,7 @@ function cart_order_create($input, $owner = null, $draft = false)
                 '".sql_real_escape_string(strip_tags(trim($input['od_addr1'])))."',
                 '".sql_real_escape_string(strip_tags(trim($input['od_addr2'])))."',
                 '".sql_real_escape_string(strip_tags(trim($input['od_memo'])))."',
-                '$item_total', '$ship_fee', 0, 0, '$total',
+                '$item_total', '$ship_fee', '$coupon', '$cm_id', 0, '$total',
                 '".($draft ? 'draft' : 'unpaid')."',
                 '".sql_real_escape_string($input['od_pay_method'])."',
                 '".sql_real_escape_string(strip_tags(trim($input['od_depositor'])))."',
@@ -240,6 +253,14 @@ function cart_order_create($input, $owner = null, $draft = false)
                     '".sql_real_escape_string($l['opt_label'])."',
                     '".(int)$l['sk_price']."', '".(int)$l['ct_qty']."',
                     '".((int)$l['sk_price'] * (int)$l['ct_qty'])."', 'normal') ", true);
+    }
+
+    // 쿠폰 소진 — 무통장은 지금이 확정이라 여기서 잠근다. PG 초안은 여기서 잠그지 않는다:
+    // 초안은 제출할 때마다 버려지고 다시 만들어지므로, 초안 시점에 소진하면 결제창을 닫고
+    // 이탈한 손님의 쿠폰이 그대로 묶인다. 재고와 똑같이 승인 확정(confirm_paid) 자리에서 잠근다.
+    if (!$draft && $cm_id > 0 && !cart_coupon_consume($cm_id, $od_id, $coupon)) {
+        sql_query(" ROLLBACK ", true);
+        return '쿠폰이 이미 사용되었습니다. 주문서를 다시 확인해 주세요.';
     }
 
     // 주문된 행만 바구니에서 비운다 — 구매 불가로 남겨둔 행은 유지. 초안은 결제 확정 때 비운다.
@@ -380,7 +401,8 @@ function cart_order_transition($od_id, $action, $who = 'admin')
         $fail = '반품 신청이 처리 중입니다. 처리를 마친 뒤에 구매확정할 수 있습니다.';
     }
 
-    // 취소는 재고를 원장에 남기며 되돌린다 — 주문 생성(차감)의 정확한 역연산
+    // 취소는 재고를 원장에 남기며 되돌린다 — 주문 생성(차감)의 정확한 역연산.
+    // 쿠폰도 같은 자리에서 되돌린다(아래 상태 갱신 뒤).
     if ($fail === '' && $action === 'cancel') {
         foreach (cart_order_items($od_id) as $it) {
             if (!cart_stock_move((int)$it['sk_id'], (int)$it['oi_qty'], 'cancel', $cur['od_no'], $who)) {
@@ -397,6 +419,9 @@ function cart_order_transition($od_id, $action, $who = 'admin')
         // 반품 기한은 "받은 날부터" 세므로 배송완료 시각을 따로 남긴다
         if ($action === 'delivered') $set .= ", od_delivered_at = '".G5_TIME_YMDHIS."' ";
         if ($action === 'confirm') $set .= ", od_confirmed_at = '".G5_TIME_YMDHIS."' ";
+        // 취소한 주문에 쓴 쿠폰은 손님에게 돌려준다. 기한이 이미 지났으면 되살려도 못 쓰지만
+        // 기한을 늘려 주는 것은 쿠폰 정책을 바꾸는 일이라 사람이 정할 몫이다.
+        if ($action === 'cancel') cart_coupon_release($od_id);
         sql_query(" update `{$g5['ycart_order_table']}` set $set
             where od_id = '$od_id' and od_status = '".sql_real_escape_string($cur['od_status'])."' ", true);
         if (get_sql_affected_rows() < 1) $fail = '상태가 이미 바뀌었습니다. 다시 확인해 주세요.';
