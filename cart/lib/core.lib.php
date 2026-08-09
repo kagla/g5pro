@@ -164,6 +164,10 @@ function cart_column_upgrades()
         // 조회주소와 같은 성격의 값이라 택배사 행에 함께 둔다.
         array('ycart_delivery_company_table', 'dc_tel',
             " ADD `dc_tel` varchar(30) NOT NULL DEFAULT '' AFTER `dc_name` "),
+        // 2026-08-10 이력에 접속 주소 — "누가" 만으로는 같은 계정을 여럿이 쓰는 몰에서
+        // 누구인지 갈리지 않는다. 자동 처리(cron)는 접속 주소가 없어 빈 값으로 남는다.
+        array('ycart_order_log_table', 'ol_ip',
+            " ADD `ol_ip` varchar(50) NOT NULL DEFAULT '' AFTER `ol_who` "),
     );
 }
 
@@ -584,6 +588,7 @@ function cart_table_ddl()
         `ol_from` varchar(20) NOT NULL DEFAULT '',
         `ol_to` varchar(20) NOT NULL DEFAULT '',
         `ol_who` varchar(50) NOT NULL DEFAULT '',
+        `ol_ip` varchar(50) NOT NULL DEFAULT '',
         `ol_memo` varchar(255) NOT NULL DEFAULT '',
         `ol_datetime` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
         PRIMARY KEY (`ol_id`),

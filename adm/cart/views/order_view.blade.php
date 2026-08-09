@@ -358,17 +358,20 @@ $(function () {
     <thead>
     <tr>
         <th scope="col">시각</th><th scope="col">처리</th>
-        <th scope="col">상태</th><th scope="col">누가</th><th scope="col">비고</th>
+        <th scope="col">상태</th><th scope="col">누가</th>
+        <th scope="col">접속 주소</th><th scope="col">비고</th>
     </tr>
     </thead>
     <tbody>
 
     @foreach ($logs as $l)
     <tr class="bg{{ $loop->index % 2 }}">
-        <td>{{ substr($l['ol_datetime'], 0, 16) }}</td>
+        {{-- yy-mm-dd hh:ii:ss — 앞의 "20" 만 떼어 낸다. 초까지 보여야 같은 분에 두 번 눌린 것이 갈린다 --}}
+        <td>{{ substr($l['ol_datetime'], 2) }}</td>
         <td>{{ $l['action_label'] }}</td>
         <td>{{ cart_order_status_label($l['ol_from'], $order['od_pay_method']) }} → {{ cart_order_status_label($l['ol_to'], $order['od_pay_method']) }}</td>
         <td>{{ $l['who_label'] }}</td>
+        <td>{{ $l['ol_ip'] !== '' ? $l['ol_ip'] : '-' }}</td>
         <td class="td_left">{{ $l['ol_memo'] }}</td>
     </tr>
     @endforeach

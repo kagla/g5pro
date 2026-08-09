@@ -497,6 +497,7 @@ function cart_order_transition($od_id, $action, $who = 'admin', $memo = '')
                 ol_from = '".sql_real_escape_string($cur['od_status'])."',
                 ol_to = '".sql_real_escape_string($rule['to'])."',
                 ol_who = '".sql_real_escape_string(mb_substr((string)$who, 0, 50, 'utf-8'))."',
+                ol_ip = '".sql_real_escape_string(isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '')."',
                 ol_memo = '".sql_real_escape_string(mb_substr(trim((string)$memo), 0, 255, 'utf-8'))."',
                 ol_datetime = '".G5_TIME_YMDHIS."' ", true);
     }
