@@ -9,6 +9,7 @@ include_once(G5_CART_LIB_PATH.'/stock.lib.php');
 include_once(G5_CART_LIB_PATH.'/csv.lib.php');
 include_once(G5_CART_LIB_PATH.'/order.lib.php');
 include_once(G5_CART_LIB_PATH.'/cart.lib.php');
+include_once(G5_CART_LIB_PATH.'/return.lib.php');
 include_once(G5_CART_LIB_PATH.'/pay.lib.php');
 
 if (function_exists('g5_check_data_htaccess')) {
@@ -29,6 +30,9 @@ if ($is_admin != 'super') {
 if (!cart_installed()) {
     cart_install();
 }
+
+// 프론트와 같은 하루 한 번 뒷정리 — 손님이 안 오는 몰에서도 관리자가 들어오면 돈다
+cart_daily_sweep();
 
 // adm/cart/views/ 를 루트로 하는 전용 BladeOne 렌더 — 화면은 순정 관리자 클래스
 // (tbl_head01·sidx 등)를 그대로 써서 기존 관리자와 같은 모습을 유지한다.
