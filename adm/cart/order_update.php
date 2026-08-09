@@ -14,8 +14,9 @@ $post = function ($key) {
 $od_id = (int)$post('od_id');
 $mode = $post('mode');
 $back = G5_CART_ADMIN_URL.'/order_view.php?od_id='.$od_id;
-// 배송관리 화면에서 온 요청은 그 목록으로 돌려보낸다
+// 목록 화면에서 온 요청은 그 목록으로 돌려보낸다 — 여러 건을 이어서 처리하는 화면들이다
 if ($post('ret') === 'delivery') $back = G5_CART_ADMIN_URL.'/delivery_list.php';
+if ($post('ret') === 'return') $back = G5_CART_ADMIN_URL.'/return_list.php';
 
 $order = cart_order_get($od_id);
 if (!$order || $order['od_status'] === 'draft') {
@@ -62,6 +63,30 @@ if ($mode === 'cancel') {
             od_canceled_at = '".G5_TIME_YMDHIS."',
             od_canceled_by = '".sql_real_escape_string($member['mb_id'])."'
         where od_id = '$od_id' ", true);
+    goto_url($back);
+}
+
+// 반품 승인 — [관리자 비밀번호 재확인 → 선점 → PG 부분환불 → 재고 복원 → 품목·주문 반영].
+// 주문취소와 같은 규칙으로 비밀번호를 받는다: 돈이 나가는 자리다.
+// 재고를 못 되돌린 품목이 있으면 경고로 알린다(환불은 이미 나갔으므로 중단하지 않는다).
+if ($mode === 'return_approve' || $mode === 'return_reject') {
+    $rt_id = (int)$post('rt_id');
+    if (!login_password_check($member, $post('admin_pw'), $member['mb_password'])) {
+        alert('관리자 비밀번호가 맞지 않습니다.', $back);
+    }
+    $memo = mb_substr($post('rt_memo'), 0, 255, 'utf-8');
+
+    if ($mode === 'return_reject') {
+        if (trim($memo) === '') alert('거절 사유를 입력하세요.', $back);
+        $err = cart_return_reject($rt_id, $memo, $member['mb_id']);
+        if ($err !== '') alert($err, $back);
+        goto_url($back);
+    }
+
+    $refund = (int)str_replace(',', '', $post('rt_refund'));
+    $res = cart_return_approve($rt_id, $refund, ($post('rt_restock') === '1'), $memo, $member['mb_id']);
+    if ($res['error'] !== '') alert($res['error'], $back);
+    if (count($res['warn'])) alert('반품을 처리했습니다. 다만 '.implode(' / ', $res['warn']), $back);
     goto_url($back);
 }
 
