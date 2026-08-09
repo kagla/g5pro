@@ -34,6 +34,13 @@ foreach ($skus as $i => $s) {
         function ($k, $v) { return $k.'='.$v; }, array_keys($opt), $opt)) : '단일';
 }
 
+// 이미지 격자 — 타일에 그릴 썸네일(100px 자리에 2배)과 확대 보기용 원본을 미리 붙인다.
+// 원본을 그대로 눌러 그리면 사진 열 장짜리 상품에서 이 화면 하나가 수십 MB 가 된다.
+foreach ($images as $i => $img) {
+    $images[$i]['thumb_url'] = cart_item_thumb_url($img['im_file'], 200, 200);
+    $images[$i]['full_url'] = cart_item_image_url($img['im_file']);
+}
+
 $ca_ids_now = $w === 'u' ? cart_item_ca_ids($it_id) : array();
 
 // 저장해 둔 옵션 조합 — 화면 JS 가 그대로 쓰도록 이름·묶음만 추려 넘긴다
@@ -53,7 +60,6 @@ cadm_view('item_form', array(
     'ca_ids' => $ca_ids_now,
     'editor_html' => $editor_html,
     'editor_js' => $editor_js,
-    'image_url_base' => G5_CART_DATA_URL.'/item/',
     'action_url' => G5_CART_ADMIN_URL.'/item_form_update.php',
     'list_url' => G5_CART_ADMIN_URL.'/item_list.php',
     // 분류 쪽에서 상품을 붙이는 화면들. 상품 연결은 이 상품을 들고 간다 —
