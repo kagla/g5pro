@@ -114,6 +114,10 @@ function cart_column_upgrades()
         // 되돌아갔다. 이름·연락처와 같은 자리에 담아 불러오기가 세 값을 함께 채운다.
         array('ycart_address_table', 'ad_email',
             " ADD `ad_email` varchar(100) NOT NULL DEFAULT '' AFTER `ad_hp` "),
+        // 2026-08-07 옵션 조합 정렬 — 이름순으로 두면 자주 쓰는 조합이 목록 아래로 밀린다.
+        // 작을수록 위. 화면에서 새로 저장한 조합은 맨 끝 번호를 받는다.
+        array('ycart_option_preset_table', 'op_order',
+            " ADD `op_order` int(11) NOT NULL DEFAULT '0' AFTER `op_name` "),
     );
 }
 
@@ -309,6 +313,7 @@ function cart_table_ddl()
     'ycart_option_preset_table' => " CREATE TABLE IF NOT EXISTS `{$g5['ycart_option_preset_table']}` (
         `op_id` int(11) NOT NULL AUTO_INCREMENT,
         `op_name` varchar(100) NOT NULL DEFAULT '',
+        `op_order` int(11) NOT NULL DEFAULT '0',
         `op_data` text NOT NULL,
         `op_datetime` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
         PRIMARY KEY (`op_id`),
@@ -458,4 +463,67 @@ function cart_item_image_dir($it_id)
 function cart_item_image_url($file)
 {
     return G5_CART_DATA_URL.'/item/'.$file;   // im_file 은 '003/1234_abc.jpg' 형태로 저장
+}
+
+// 줄여 놓은 이미지 주소. 화면에 64px 로 그릴 자리에 3MB 원본을 내려보내면 상세 화면 하나가
+// 수십 MB 가 된다 — 순정 thumbnail() 로 한 번 만들어 두고(원본보다 최신이면 다시 안 만든다)
+// 원본 옆 thumb/ 에 캐시한다. 만들지 못하면(GD 없음·권한 없음·애니메이션 GIF) 원본으로 돌아간다.
+//
+// $crop=false 는 "비율 유지" 가 아니다 — 순정은 상자를 흰색으로 채우고 그 안에 앉힌다
+// (레터박스). 화면이 object-fit:cover 로 다시 채우는 자리라면 흰 여백까지 잘려 들어오므로
+// 그런 자리엔 $crop=true 를 쓴다.
+function cart_item_thumb_url($file, $w, $h, $crop = true)
+{
+    $file = str_replace('\\', '/', (string)$file);
+    if ($file === '' || strpos($file, '..') !== false) return '';
+    if (!function_exists('thumbnail')) @include_once(G5_LIB_PATH.'/thumbnail.lib.php');
+    if (!function_exists('thumbnail')) return cart_item_image_url($file);
+
+    $sub = dirname($file);                       // '003' — 파일명만 저장된 옛 행이면 '.'
+    $sub = ($sub === '.' || $sub === '') ? '' : '/'.$sub;
+    $name = basename($file);
+    $dir = G5_CART_DATA_PATH.'/item'.$sub;
+    // 캐시 파일 이름은 크기만 담고 자르기 여부는 담지 않는다(순정 thumbnail() 규칙).
+    // 같은 크기를 자른 것과 맞춘 것이 한 폴더에 있으면 서로를 덮어쓴 채 재사용되므로
+    // 모드마다 폴더를 나눈다.
+    $sect = $crop ? '/thumb' : '/thumb-fit';
+    $thumb_dir = $dir.$sect;
+
+    // 이미 만들어 둔 게 있으면 그걸 쓴다. 순정 thumbnail() 은 폴더에 쓸 수 없으면 캐시가
+    // 있어도 빈 값을 주므로(다른 사용자가 만든 폴더일 때) 여기서 먼저 확인한다.
+    // 원본을 새로 올려 원본이 더 최신이면 건너뛰고 아래에서 다시 만든다.
+    $base = preg_replace('/\.[^.]+$/', '', $name);
+    $src_time = @filemtime($dir.'/'.$name);
+    foreach ((array)glob($thumb_dir.'/thumb-'.$base.'_'.(int)$w.'x'.(int)$h.'.*') as $hit) {
+        if (@filemtime($hit) >= $src_time) return G5_CART_DATA_URL.'/item'.$sub.$sect.'/'.basename($hit);
+    }
+
+    // 줄어들지 않을 일이면 만들지 않는다. 늘리면 흐려지는 데다 다시 인코딩하느라 파일이
+    // 오히려 커진다(800x800 짜리 116KB 원본이 900x900 으로 175KB 가 됐다).
+    // 자를 때는 짧은 변이, 맞출 때는 긴 변이 크기를 정하므로 배율 식이 서로 반대다.
+    $size = @getimagesize($dir.'/'.$name);
+    if ($size && (int)$size[0] > 0 && (int)$size[1] > 0) {
+        $scale = $crop
+            ? max($w / $size[0], $h / $size[1])
+            : min($w / $size[0], $h / $size[1]);
+        if ($scale >= 1) return cart_item_image_url($file);
+    }
+
+    $made = thumbnail($name, $dir, $thumb_dir, (int)$w, (int)$h, false, $crop);
+    if (!$made) return cart_item_image_url($file);
+    return G5_CART_DATA_URL.'/item'.$sub.$sect.'/'.$made;
+}
+
+// 원본을 지울 때 그 원본으로 만든 썸네일도 같이 지운다 — 안 지우면 크기를 바꿀 때마다
+// 쓰이지 않는 파일이 쌓이고, 같은 이름이 다시 올라오면 옛 썸네일이 나온다
+function cart_item_thumb_purge($file)
+{
+    $file = str_replace('\\', '/', (string)$file);
+    if ($file === '' || strpos($file, '..') !== false) return;
+    $sub = dirname($file);
+    $sub = ($sub === '.' || $sub === '') ? '' : '/'.$sub;
+    $base = preg_replace('/\.[^.]+$/', '', basename($file));
+    foreach (array('/thumb', '/thumb-fit') as $sect) {
+        foreach ((array)glob(G5_CART_DATA_PATH.'/item'.$sub.$sect.'/thumb-'.$base.'_*') as $f) @unlink($f);
+    }
 }

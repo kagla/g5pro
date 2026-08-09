@@ -9,18 +9,24 @@
 
     <header class="bbs-head">
         <h2>{{ $item['it_name'] }}</h2>
-        <div class="bbs-meta">
+        <div class="bbs-head-right">
+            <div class="bbs-meta">
 
-            @if ($category)
-            <a href="{{ $list_href }}">{{ $category['ca_name'] }}</a> ·
-            @endif
+                @if ($category)
+                <a href="{{ $list_href }}">{{ $category['ca_name'] }}</a> ·
+                @endif
 
-            상품코드 {{ $item['it_code'] }}
+                상품코드 {{ $item['it_code'] }}
 
+            </div>
+
+            {{-- 게시판·영카트 상품의 '관리' 톱니와 같은 모양·같은 자리.
+                 최고관리자에게만 URL 이 채워진다 --}}
             @if ($admin_edit_url !== '')
-            · <a href="{{ $admin_edit_url }}">관리자 수정</a>
+            <a class="icon-btn bbs-admin-link" href="{{ $admin_edit_url }}" title="상품 수정" aria-label="상품 수정">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.1 14.6a1.5 1.5 0 0 0 .3 1.7l.1.1a1.9 1.9 0 1 1-2.7 2.7l-.1-.1a1.5 1.5 0 0 0-1.7-.3 1.5 1.5 0 0 0-.9 1.4v.2a1.9 1.9 0 1 1-3.8 0v-.1a1.5 1.5 0 0 0-1-1.4 1.5 1.5 0 0 0-1.7.3l-.1.1a1.9 1.9 0 1 1-2.7-2.7l.1-.1a1.5 1.5 0 0 0 .3-1.7 1.5 1.5 0 0 0-1.4-.9h-.2a1.9 1.9 0 1 1 0-3.8h.1a1.5 1.5 0 0 0 1.4-1 1.5 1.5 0 0 0-.3-1.7l-.1-.1a1.9 1.9 0 1 1 2.7-2.7l.1.1a1.5 1.5 0 0 0 1.7.3h.1a1.5 1.5 0 0 0 .9-1.4v-.2a1.9 1.9 0 1 1 3.8 0v.1a1.5 1.5 0 0 0 .9 1.4 1.5 1.5 0 0 0 1.7-.3l.1-.1a1.9 1.9 0 1 1 2.7 2.7l-.1.1a1.5 1.5 0 0 0-.3 1.7v.1a1.5 1.5 0 0 0 1.4.9h.2a1.9 1.9 0 1 1 0 3.8h-.1a1.5 1.5 0 0 0-1.4.9Z"/></svg>
+            </a>
             @endif
-
         </div>
     </header>
 
@@ -28,13 +34,18 @@
         <div class="shop-item-gallery">
 
             @if (count($images))
-            <img src="{{ $images[0] }}" alt="{{ $item['it_name'] }}" id="cart_main_img">
+            <img src="{{ $images[0]['view'] }}" alt="{{ $item['it_name'] }}" id="cart_main_img"
+                 width="900" height="900">
 
             @if (count($images) > 1)
+            {{-- 한 줄로 늘어놓고 넘치면 옆으로 민다 — 줄바꿈으로 쌓이면 상품 정보가 화면 밖으로
+                 밀린다. 첫 장 말고는 lazy 로 두어 스크롤해야 받는다. --}}
             <div class="shop-item-thumbs">
 
-                @foreach ($images as $src)
-                <img src="{{ $src }}" alt="">
+                @foreach ($images as $i => $im)
+                <img src="{{ $im['thumb'] }}" data-view="{{ $im['view'] }}" alt=""
+                     width="64" height="64" loading="lazy"
+                     class="{{ $i === 0 ? 'is-on' : '' }}">
                 @endforeach
 
             </div>
@@ -192,7 +203,7 @@
             <a class="shop-card" href="{{ $r['href'] }}">
 
                 @if ($r['img'] !== '')
-                <img src="{{ $r['img'] }}" alt="{{ $r['it_name'] }}">
+                <img src="{{ $r['img'] }}" alt="{{ $r['it_name'] }}" loading="lazy">
                 @else
                 <span class="shop-card-noimg">{{ mb_substr($r['it_name'], 0, 1, 'utf-8') }}</span>
                 @endif
@@ -210,8 +221,11 @@
 
 @if (count($images) > 1)
 <script>
+// 누른 썸네일의 큰 사진을 위에 건다 — this.src 는 64px 짜리라 그대로 걸면 흐릿하다
 $('.shop-item-thumbs img').on('click', function () {
-    $('#cart_main_img').attr('src', this.src);
+    $('#cart_main_img').attr('src', $(this).data('view'));
+    $('.shop-item-thumbs img').removeClass('is-on');
+    $(this).addClass('is-on');
 });
 </script>
 @endif

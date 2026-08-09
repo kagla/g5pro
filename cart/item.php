@@ -32,8 +32,17 @@ if (!$item['it_show'] || ($item_cats && !$visible_cats)) {
         : '소속 분류가 모두 숨김이라 손님에게는 보이지 않습니다. 관리자에게만 보입니다.';
 }
 
+// 화면에 그릴 크기로 줄여서 내보낸다 — 큰 사진 자리는 480px(고해상도 화면까지 900),
+// 아래 썸네일 줄은 64px(같은 이유로 128). 원본은 상세 화면에서 쓰지 않는다.
+// 둘 다 잘라서 만든다 — 화면에서 두 자리 모두 정사각으로 잘라 보여 주므로(object-fit:cover)
+// 잘라 둔 것이 곧 보이는 그대로다. 자르지 않으면 순정은 흰 여백을 채워 넣어 그 여백까지 보인다.
 $images = array();
-foreach (cart_item_images($it_id) as $img) $images[] = cart_item_image_url($img['im_file']);
+foreach (cart_item_images($it_id) as $img) {
+    $images[] = array(
+        'view' => cart_item_thumb_url($img['im_file'], 900, 900, true),
+        'thumb' => cart_item_thumb_url($img['im_file'], 128, 128, true),
+    );
+}
 
 // SKU 목록 + 옵션 축(색상·사이즈 …) 을 함께 만든다.
 // 화면은 조합을 한 번에 늘어놓지 않고 축마다 선택칸을 두어, 앞의 선택에 맞는 값만 남긴다.
@@ -91,7 +100,8 @@ if (count($reco) < 8) {
 $reco_images = cart_item_main_images(array_column($reco, 'it_id'));
 foreach ($reco as $i => $r) {
     $rid = (int)$r['it_id'];
-    $reco[$i]['img'] = isset($reco_images[$rid]) ? cart_item_image_url($reco_images[$rid]) : '';
+    // 추천 카드도 줄여서 — 이 카드들 때문에 상세 화면이 원본 여러 장을 같이 받고 있었다
+    $reco[$i]['img'] = isset($reco_images[$rid]) ? cart_item_thumb_url($reco_images[$rid], 400, 400) : '';
     $reco[$i]['href'] = cart_url('item.php', array('it_id' => $rid));
 }
 

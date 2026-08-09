@@ -2606,11 +2606,21 @@ input[type=checkbox], input[type=radio] {
     aspect-ratio: 1 / 1; border-radius: var(--r-xl); background: var(--bg);
     display: flex; align-items: center; justify-content: center; color: var(--muted);
 }
-.shop-item-thumbs { display: flex; gap: var(--s2); margin-top: var(--s3); flex-wrap: wrap; }
-.shop-item-thumbs img {
-    width: 64px; height: 64px; object-fit: cover; border-radius: var(--r-md);
-    cursor: pointer; box-shadow: var(--sh-sm);
+/* 썸네일 줄 — 한 줄로 두고 넘치면 옆으로 민다. 줄바꿈으로 쌓으면 사진이 열 장만 돼도
+   화면 한 판을 잡아먹는다. overflow-x 만 주면 세로 스크롤바가 따라붙으므로
+   (이 파일 위쪽 .shop-tabs 와 같은 함정) overflow-y 를 눌러 둔다 */
+.shop-item-thumbs {
+    display: flex; gap: var(--s2); margin-top: var(--s3); flex-wrap: nowrap;
+    overflow-x: auto; overflow-y: hidden; padding: 2px 2px var(--s2);
+    scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
 }
+.shop-item-thumbs img {
+    flex: none; width: 64px; height: 64px; object-fit: cover; border-radius: var(--r-md);
+    cursor: pointer; box-shadow: var(--sh-sm); scroll-snap-align: start;
+    border: 2px solid transparent; background: var(--bg);
+}
+/* 지금 큰 자리에 걸린 사진 — 어느 장을 보고 있는지 표시한다 */
+.shop-item-thumbs img.is-on { border-color: var(--accent); }
 .shop-item-info { flex: 1 1 320px; min-width: 280px; }
 .shop-item-info .shop-price { margin: 0 0 var(--s4); font-size: var(--t-2xl); }
 .shop-sku-table { width: 100%; border-collapse: collapse; margin-bottom: var(--s4); }

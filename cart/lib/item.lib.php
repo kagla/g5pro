@@ -635,7 +635,9 @@ function cart_option_preset_list()
 {
     global $g5;
     $rows = array();
-    $result = sql_query(" select * from `{$g5['ycart_option_preset_table']}` order by op_name ", false);
+    // 자주 쓰는 조합이 위로 오게 op_order 우선(작을수록 위). 같은 번호끼리는 이름순
+    $result = sql_query(" select * from `{$g5['ycart_option_preset_table']}`
+        order by op_order, op_name ", false);
     if (!$result) return $rows;   // 아직 설치 전(옛 설치본)이면 조용히 빈 목록
     while ($r = sql_fetch_array($result)) {
         $sets = cart_option_preset_normalize(json_decode($r['op_data'], true));
@@ -647,8 +649,10 @@ function cart_option_preset_list()
 }
 
 // 같은 이름이면 덮어쓴다(이름이 곧 식별자 — 관리자가 "의류 기본" 을 갱신하는 흐름).
+// $order 는 목록 순서(작을수록 위). null 이면 기존 값을 그대로 두고, 새 조합은 맨 끝에 붙는다 —
+// 화면에서 저장한 조합이 자주 쓰는 기본 조합들을 밀어내지 않게.
 // 빈 문자열이면 성공, 아니면 사용자에게 보여줄 사유
-function cart_option_preset_save($name, $sets)
+function cart_option_preset_save($name, $sets, $order = null)
 {
     global $g5;
     $name = trim(strip_tags((string)$name));
@@ -662,12 +666,18 @@ function cart_option_preset_save($name, $sets)
     $now = G5_TIME_YMDHIS;
     $row = sql_fetch(" select op_id from `{$g5['ycart_option_preset_table']}` where op_name = '$esc_name' ");
     if ($row) {
+        $set_order = ($order === null) ? '' : ", op_order = '".(int)$order."'";
         sql_query(" update `{$g5['ycart_option_preset_table']}`
-            set op_data = '$data', op_datetime = '$now' where op_id = '".(int)$row['op_id']."' ", true);
+            set op_data = '$data', op_datetime = '$now' $set_order
+            where op_id = '".(int)$row['op_id']."' ", true);
         return '';
     }
-    sql_query(" insert into `{$g5['ycart_option_preset_table']}` (op_name, op_data, op_datetime)
-        values ('$esc_name', '$data', '$now') ", true);
+    if ($order === null) {
+        $max = sql_fetch(" select max(op_order) as mx from `{$g5['ycart_option_preset_table']}` ");
+        $order = ($max && $max['mx'] !== null) ? (int)$max['mx'] + 10 : 10;
+    }
+    sql_query(" insert into `{$g5['ycart_option_preset_table']}` (op_name, op_order, op_data, op_datetime)
+        values ('$esc_name', '".(int)$order."', '$data', '$now') ", true);
     return '';
 }
 
@@ -813,5 +823,6 @@ function cart_item_image_delete($im_id)
     $row = sql_fetch(" select * from `{$g5['ycart_item_image_table']}` where im_id = '".(int)$im_id."' ");
     if (!$row) return;
     @unlink(G5_CART_DATA_PATH.'/item/'.$row['im_file']);
+    cart_item_thumb_purge($row['im_file']);
     sql_query(" delete from `{$g5['ycart_item_image_table']}` where im_id = '".(int)$im_id."' ", true);
 }
