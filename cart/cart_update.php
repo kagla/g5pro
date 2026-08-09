@@ -77,4 +77,18 @@ if ($mode === 'del') {
     goto_url($back);
 }
 
+// 선택 삭제 — 체크한 줄만 한 번에 뺀다. 남의 ct_id 를 섞어 보내도 cart_cart_remove 가
+// 소유자 조건을 함께 걸어 아무 행에도 닿지 않는다(한 줄씩 지우는 것과 같은 방어).
+if ($mode === 'seldel') {
+    $ids = (isset($_POST['ct_id']) && is_array($_POST['ct_id'])) ? $_POST['ct_id'] : array();
+    $n = 0;
+    foreach (array_unique(array_map('intval', $ids)) as $ct_id) {
+        if ($ct_id < 1) continue;
+        cart_cart_remove($ct_id);
+        $n++;
+    }
+    if (!$n) alert('삭제할 상품을 선택해 주세요.', $back);
+    goto_url($back);
+}
+
 alert('잘못된 요청입니다.', $back);

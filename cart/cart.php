@@ -41,6 +41,9 @@ g5_view('cart.cart', array(
     'buyable' => $buyable,
     'blocked' => $blocked,
     'ship_base' => (int)$cc['cc_ship_base'],
+    // 고른 것만 주문할 수 있게 되면서 합계가 화면에서 바뀐다 — 무료배송 안내도 따라 바뀌어야
+    // 하므로 기준액을 함께 보낸다(첫 그림은 서버가, 이후는 화면이 같은 규칙으로 다시 쓴다)
+    'ship_free' => (int)$cc['cc_ship_free'],
     'ship_notice' => $ship_notice,
     'token' => get_token(),
     'action_url' => cart_url('cart_update.php'),
