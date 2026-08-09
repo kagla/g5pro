@@ -6,8 +6,8 @@ auth_check_menu($auth, $sub_menu, 'r');
 $g5['title'] = '카트 대시보드';
 include_once(G5_ADMIN_PATH.'/admin.head.php');
 
-// 매출로 치는 상태 — 결제가 확정된 이후 전부(취소 제외). draft·unpaid 는 돈이 아니다.
-$paid_in = " od_status in ('paid', 'preparing', 'shipping', 'delivered', 'confirmed') ";
+// 매출로 치는 상태 — 판정은 order.lib 한 곳에서만 정한다(정산 화면과 어긋나지 않게)
+$paid_in = cart_order_paid_where();
 $today0 = date('Y-m-d', G5_SERVER_TIME).' 00:00:00';
 
 $r = sql_fetch(" select count(*) cnt, coalesce(sum(od_total), 0) amt
@@ -116,6 +116,10 @@ cadm_view('dashboard', array(
     'recent' => $recent,
     'item_cnt' => $item_cnt,
     'cart_cnt' => $cart_cnt,
+    // 반품 신청은 손님이 기다리는 일이라 대시보드에서 먼저 눈에 띄어야 한다 —
+    // 주문 상세를 하나씩 열어 봐야 알 수 있으면 며칠씩 방치된다
+    'return_pending' => cart_return_pending_count(),
+    'return_url' => G5_CART_ADMIN_URL.'/order_list.php?rt=1',
     'item_list_url' => G5_CART_ADMIN_URL.'/item_list.php',
 ));
 
