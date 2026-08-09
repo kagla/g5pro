@@ -1,5 +1,13 @@
 {{-- 쿠폰 등록·수정. 발급 방법에 따라 필요한 칸이 달라지므로(코드 입력만 코드가 필요하다)
      아래 스크립트가 해당 없는 칸을 감춘다 — 안 쓰는 칸이 남아 있으면 뭘 채워야 할지 헷갈린다. --}}
+{{-- 안내 문장이 길어 칸 옆에 붙이면 앞말과 이어져 읽힌다 — 특히 "사용 안 함" 라디오 뒤에
+     "사용 안 함으로 두면…" 이 붙으면 한 문장처럼 보인다. 이 화면에서만 아래 줄로 내린다. --}}
+<style>
+#cpn_adm .tbl_frm01 td .txt_id { display: block; margin-top: 5px; }
+#cpn_adm .tbl_frm01 td label { margin-right: 12px; }
+</style>
+<div id="cpn_adm">
+
 <div class="local_desc01 local_desc">
     <p>할인은 <b>대상 상품 합계</b>에만 적용됩니다(배송비는 깎지 않습니다).
        정률 할인은 10원 단위로 절사합니다. 한 쿠폰은 회원당 한 장, 한 주문에 한 장만 쓸 수 있습니다.</p>
@@ -17,7 +25,7 @@
     <tr>
         <th scope="row">쿠폰 이름</th>
         <td><input type="text" name="cp_name" value="{{ $cp['cp_name'] }}" size="50" required
-                   placeholder="예) 첫 주문 감사 10% 할인">
+                   placeholder="예) 첫 주문 감사 10% 할인" class="frm_input">
             <span class="txt_id">회원 쿠폰함과 주문서에 이 이름이 보입니다.</span></td>
     </tr>
     <tr>
@@ -35,7 +43,7 @@
     <tr id="cpn_code_row">
         <th scope="row">쿠폰 코드</th>
         <td><input type="text" name="cp_code" value="{{ $cp['cp_code'] }}" size="24" maxlength="30"
-                   style="text-transform:uppercase" placeholder="WELCOME10">
+                   style="text-transform:uppercase" placeholder="WELCOME10" class="frm_input">
             <span class="txt_id">영문 대문자·숫자·- _ 로 3~30자. 코드 입력 쿠폰에만 씁니다.</span></td>
     </tr>
     <tr>
@@ -47,18 +55,18 @@
             @endforeach
 
             </select>
-            <input type="text" name="cp_value" value="{{ $cp['cp_value'] }}" size="8" style="text-align:right">
+            <input type="text" name="cp_value" value="{{ $cp['cp_value'] }}" size="8" style="text-align:right" class="frm_input">
             <span id="cpn_unit">%</span>
         </td>
     </tr>
     <tr id="cpn_max_row">
         <th scope="row">최대 할인액</th>
-        <td><input type="text" name="cp_max" value="{{ $cp['cp_max'] }}" size="10" style="text-align:right"> 원
+        <td><input type="text" name="cp_max" value="{{ $cp['cp_max'] }}" size="10" style="text-align:right" class="frm_input"> 원
             <span class="txt_id">정률 할인의 상한입니다. 0 이면 상한 없음.</span></td>
     </tr>
     <tr>
         <th scope="row">최소 주문금액</th>
-        <td><input type="text" name="cp_min" value="{{ $cp['cp_min'] }}" size="10" style="text-align:right"> 원 이상
+        <td><input type="text" name="cp_min" value="{{ $cp['cp_min'] }}" size="10" style="text-align:right" class="frm_input"> 원 이상
             <span class="txt_id">할인 전 상품 합계 기준입니다. 0 이면 제한 없음.</span></td>
     </tr>
     <tr>
@@ -75,13 +83,13 @@
     </tr>
     <tr>
         <th scope="row">발급 기간</th>
-        <td><input type="date" name="cp_begin" value="{{ $cp['cp_begin'] }}"> ~
-            <input type="date" name="cp_end" value="{{ $cp['cp_end'] }}">
+        <td><input type="date" name="cp_begin" value="{{ $cp['cp_begin'] }}" class="frm_input"> ~
+            <input type="date" name="cp_end" value="{{ $cp['cp_end'] }}" class="frm_input">
             <span class="txt_id">이 기간에만 발급됩니다.</span></td>
     </tr>
     <tr>
         <th scope="row">사용 기한</th>
-        <td>받은 날부터 <input type="text" name="cp_days" value="{{ $cp['cp_days'] }}" size="5" style="text-align:right"> 일
+        <td>받은 날부터 <input type="text" name="cp_days" value="{{ $cp['cp_days'] }}" size="5" style="text-align:right" class="frm_input"> 일
             <span class="txt_id">0 이면 위 발급 종료일까지 씁니다. 기한은 발급 시점에 굳어지므로,
             나중에 기간을 줄여도 이미 받은 회원의 기한은 줄지 않습니다.</span></td>
     </tr>
@@ -94,7 +102,7 @@
     <tr>
         <th scope="row">관리 메모</th>
         <td><input type="text" name="cp_memo" value="{{ $cp['cp_memo'] }}" size="60"
-                   placeholder="어떤 이벤트의 쿠폰인지 등 (관리자만 봅니다)"></td>
+                   placeholder="어떤 이벤트의 쿠폰인지 등 (관리자만 봅니다)" class="frm_input"></td>
     </tr>
     </tbody>
 </table>
@@ -171,3 +179,4 @@ jQuery(function ($) {
     paint();
 });
 </script>
+</div>
