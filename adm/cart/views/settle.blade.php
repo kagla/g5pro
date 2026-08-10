@@ -1,7 +1,10 @@
 <form method="get" action="{{ $self_url }}" class="local_sch01 local_sch">
-    <input type="text" name="from" value="{{ $from }}" class="frm_input" size="12">
+    {{-- 주문 목록과 같은 달력 칸(adm/cart/views/order_list.blade.php 주석 참고) --}}
+    <input type="date" name="from" value="{{ $from }}" class="frm_input cart-date" max="{{ $today }}"
+           title="시작일" aria-label="시작일">
     ~
-    <input type="text" name="to" value="{{ $to }}" class="frm_input" size="12">
+    <input type="date" name="to" value="{{ $to }}" class="frm_input cart-date" max="{{ $today }}"
+           title="종료일" aria-label="종료일">
     <button type="submit" class="btn_submit btn">조회</button>
     <span class="btn_ov01"><span class="ov_txt">결제 {{ number_format($sum['cnt']) }}건</span><span class="ov_num">{{ number_format($sum['total']) }}원</span></span>
     <span class="btn_ov01"><span class="ov_txt">기간 내 취소</span><span class="ov_num">{{ number_format($canceled['cnt']) }}건 · {{ number_format($canceled['amt']) }}원</span></span>

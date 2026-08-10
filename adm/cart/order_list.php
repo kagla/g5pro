@@ -71,6 +71,8 @@ cadm_view('order_list', array(
     'q' => $q,
     'from' => $from,
     'to' => $to,
+    // 달력에서 앞날은 못 고르게 — 주문은 미래에 생기지 않는다
+    'today' => date('Y-m-d', G5_SERVER_TIME),
     'total' => $total,
     'page' => $page,
     'total_page' => $total_page,

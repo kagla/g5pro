@@ -7,8 +7,15 @@
         @endforeach
 
     </select>
-    <input type="text" name="from" value="{{ $from }}" placeholder="시작일 2026-01-01" class="frm_input" size="12">
-    <input type="text" name="to" value="{{ $to }}" placeholder="종료일" class="frm_input" size="12">
+    {{-- 날짜는 달력에서 고른다 — 손으로 치면 형식이 어긋나 조건이 조용히 무시된다(서버가
+         Y-m-d 가 아니면 버린다). type=date 는 브라우저가 달력을 띄우고 형식도 보장한다.
+         라이브러리를 얹지 않는 이유: 순정 달력 플러그인은 jQuery UI 를 외부 CDN 에서 받아 와서
+         망이 막힌 곳에서는 조용히 안 뜬다. 순정도 회원 내보내기 화면에서 type=date 를 쓴다. --}}
+    <input type="date" name="from" value="{{ $from }}" class="frm_input cart-date" max="{{ $today }}"
+           title="시작일" aria-label="시작일">
+    ~
+    <input type="date" name="to" value="{{ $to }}" class="frm_input cart-date" max="{{ $today }}"
+           title="종료일" aria-label="종료일">
     <input type="text" name="q" value="{{ $q }}" placeholder="주문번호·주문자·연락처·회원ID" class="frm_input" size="24">
     {{-- 반품 대기는 검색 조건과 함께 유지된다 — 필터를 걸어 둔 채 날짜를 바꿔도 안 풀린다 --}}
     @if ($rt_only)

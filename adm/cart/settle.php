@@ -73,6 +73,8 @@ while ($r = sql_fetch_array($result)) {
 
 cadm_view('settle', array(
     'from' => $from,
+    // 달력에서 앞날은 못 고르게 — 정산할 매출이 미래에 있을 수 없다
+    'today' => date('Y-m-d', G5_SERVER_TIME),
     'to' => $to,
     'daily' => $daily,
     'sum' => $sum,
