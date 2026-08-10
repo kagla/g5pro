@@ -70,7 +70,8 @@
     </tr>
     <tr>
         <th scope="row">INIAPI 키</th>
-        <td><input type="text" name="cc_inicis_apikey" value="{{ $cc['cc_inicis_apikey'] }}" size="50" placeholder="주문취소(환불)용 — 가맹점관리자  class="frm_input"> INIAPI key. INIpayTest 는 비워두면 됩니다"></td>
+        <td><input type="text" name="cc_inicis_apikey" value="{{ $cc['cc_inicis_apikey'] }}" size="50" placeholder="가맹점관리자에서 발급한 INIAPI key" class="frm_input">
+            <span class="txt_id">주문취소(환불)에 씁니다. 테스트 상점(INIpayTest)은 비워 두면 됩니다.</span></td>
     </tr>
     </tbody>
 </table>
