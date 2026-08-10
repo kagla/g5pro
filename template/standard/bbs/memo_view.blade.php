@@ -18,7 +18,8 @@
     <div class="bbs-toolbar">
         <div class="bbs-actions">
             <a class="btn" href="{{ $list_href }}">목록</a>
-            @if ($reply_href)<a class="btn btn-primary" href="{!! $reply_href !!}">답장</a>@endif
+            {{-- 답장도 쪽지 쓰기 화면이라 새 창에서 연다(.win_memo → common.js) --}}
+            @if ($reply_href)<a class="btn btn-primary win_memo" href="{!! $reply_href !!}" target="_blank" rel="noopener">답장</a>@endif
         </div>
         <div class="bbs-actions">
             <a class="btn" href="{!! $del_href !!}" data-confirm="이 쪽지를 삭제하시겠습니까?" data-confirm-danger>삭제</a>

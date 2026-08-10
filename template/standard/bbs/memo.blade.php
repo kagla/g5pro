@@ -64,7 +64,8 @@
     <div class="bbs-toolbar">
         <span></span>
         <div class="bbs-actions">
-            <a class="btn btn-primary" href="{{ $form_href }}">쪽지 쓰기</a>
+            {{-- 쪽지 쓰기는 새 창 — common.js 가 .win_memo 를 win_memo() 로 연다 --}}
+            <a class="btn btn-primary win_memo" href="{{ $form_href }}" target="_blank" rel="noopener">쪽지 쓰기</a>
         </div>
     </div>
 </div>

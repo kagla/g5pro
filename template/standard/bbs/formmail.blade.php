@@ -1,6 +1,6 @@
 {{-- 메일 쓰기 (bbs/formmail.php) — 사이드뷰의 "메일보내기". 새 창으로 열린다 --}}
 @extends('layout.popup')
-@section('popup_class', 'popup--card')
+@section('popup_class', 'popup--card popup--form')
 @section('content')
 <p class="form-lead"><b>{!! $name !!}</b> 님께 메일을 보냅니다.</p>
 

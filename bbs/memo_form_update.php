@@ -104,7 +104,11 @@ if ($member_list) {
 
     run_event('memo_form_update_after', $member_list, $str_nick_list, $redirect_url, $_POST['me_memo']);
 
-    alert($str_nick_list." 님께 쪽지를 전달하였습니다.", $redirect_url, false);
+    // g5pro — 쪽지 쓰기는 새 창(win_memo)이다. 순정은 이 자리에서 쪽지함으로 보내는데,
+    // g5pro 의 쪽지함은 헤더·메뉴가 붙은 보통 화면이라 620x500 창에 들어가면 우스워진다.
+    // 메일 보내기(formmail_send.php)와 같이 알린 뒤 창을 닫는다. $redirect_url 은 위
+    // run_event 로 이미 넘어갔으므로 플러그인 쪽 계약은 그대로다.
+    alert_close($str_nick_list." 님께 쪽지를 전달하였습니다.");
 } else {
 
     $redirect_url = G5_HTTP_BBS_URL."/memo_form.php";

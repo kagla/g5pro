@@ -736,7 +736,7 @@ function g5_map_memo_view()
     ));
 }
 
-// ── 쪽지 쓰기 (bbs/memo_form.php)
+// ── 쪽지 쓰기 (bbs/memo_form.php) — 새 창(win_memo)에서만 열리는 화면이라 목록 링크가 없다
 function g5_map_memo_form()
 {
     global $me_recv_mb_id, $content, $memo_action_url;
@@ -745,7 +745,6 @@ function g5_map_memo_form()
         'action_url' => $memo_action_url,     // memo_form_update.php
         'recv_mb_id' => get_text($me_recv_mb_id),
         'content'    => get_text($content),   // 답장 인용문 (이스케이프 완료, textarea 값 → {!! !!})
-        'list_href'  => G5_BBS_URL.'/memo.php?kind=recv',
         'captcha_html' => captcha_html(),     // memo_form_update.php 가 항상 chk_captcha()
         'captcha_js'   => chk_captcha_js(),
     ));
