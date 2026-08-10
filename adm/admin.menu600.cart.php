@@ -22,5 +22,6 @@ $menu['menu600'] = array(
     array('600300', 'CSV 입출력', G5_CART_ADMIN_URL.'/csv.php', 'cart_csv', 'super'),
     array('600400', '환경설정', G5_CART_ADMIN_URL.'/config_form.php', 'cart_config', 'super'),
     array('600450', '택배사관리', G5_CART_ADMIN_URL.'/delivery_company.php', 'cart_dc', 'super'),
+    array('600460', '추가배송비', G5_CART_ADMIN_URL.'/ship_zone.php', 'cart_sz', 'super'),
     array('600900', '설치/업그레이드', G5_CART_ADMIN_URL.'/install.php', 'cart_install', 'super'),
 );

@@ -37,21 +37,5 @@ sql_query(" update `{$g5['ycart_config_table']}`
         cc_toss_ckey = '$toss_ckey', cc_toss_skey = '$toss_skey'
     where cc_id = 1 ", true);
 
-// 권역별 추가 배송비 — 같은 폼에서 함께 온다(배송비 정책의 일부라 저장도 한 번이어야 한다).
-// GPC addslashes 원복만 하고 넘긴다 — 이스케이프는 저장 지점(cart_ship_zone_save)이 한다.
-$zones = array();
-if (isset($_POST['sz']) && is_array($_POST['sz'])) {
-    foreach ($_POST['sz'] as $key => $row) {
-        if (!is_array($row)) continue;
-        $clean = array();
-        foreach (array('name', 'from', 'to', 'fee', 'use') as $f) {
-            $clean[$f] = (isset($row[$f]) && !is_array($row[$f]))
-                ? strip_tags(stripslashes(trim($row[$f]))) : '';
-        }
-        $zones[(string)$key] = $clean;
-    }
-}
-$zone_del = (isset($_POST['sz_del']) && is_array($_POST['sz_del'])) ? $_POST['sz_del'] : array();
-cart_ship_zone_save($zones, $zone_del);
 
 goto_url(G5_CART_ADMIN_URL.'/config_form.php');
