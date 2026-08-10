@@ -41,8 +41,15 @@ function cart_shipping_fee($item_total, $zip = '')
     return $b['total'];
 }
 
-// 이 우편번호가 걸리는 권역 — 겹치면 **가장 비싼 것 하나**. 설정이 겹쳐도 두 번 더해지지 않는다.
-// (겹치게 두는 것이 옳은 설정은 아니지만, 실수가 손님 청구서에 두 배로 나타나서는 안 된다.)
+// 이 우편번호가 걸리는 권역 — 겹치면 **좁은 구간 하나**. 절대 더하지 않는다.
+//
+// 좁은 쪽이 이기는 이유: 택배사 요금표는 "넓은 구간이 기본, 좁은 구간이 예외" 로 쓰인다.
+// 로젠 파일에 실제로 이런 줄이 있다 — 완도군 금일읍 전체가 6,000원인데 그 안의 충동리만
+// 5,000원. 비싼 쪽을 고르면 충동리에서 1,000원을 더 받게 된다. 반대로 제주도 전체 5,000원
+// 안의 추자면 6,000원 같은 경우는 좁은 쪽이 비싸므로 어느 규칙으로도 6,000원이 나온다.
+// 즉 "좁은 쪽" 이 요금표의 뜻을 그대로 옮기는 유일한 규칙이다.
+//
+// 폭이 같은데 요금이 다르면 비싼 쪽 — 설정이 모순일 때 덜 받아 손해 보지 않는 쪽으로 둔다.
 // 우편번호는 5자리 숫자 문자열 비교로 판정한다 — 앞자리 0 이 살아 있어야 구간이 맞는다.
 function cart_ship_zone_match($zip)
 {
@@ -53,7 +60,7 @@ function cart_ship_zone_match($zip)
     $row = sql_fetch(" select * from `{$g5['ycart_ship_zone_table']}`
         where sz_use = 1 and sz_zip_from <> '' and sz_zip_to <> ''
           and '$z' between sz_zip_from and sz_zip_to
-        order by sz_fee desc, sz_order, sz_id limit 1 ");
+        order by (sz_zip_to + 0) - (sz_zip_from + 0) asc, sz_fee desc, sz_order, sz_id limit 1 ");
     return $row ? $row : null;
 }
 

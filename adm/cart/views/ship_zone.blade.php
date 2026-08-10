@@ -38,16 +38,22 @@
 <div id="sz_tools">
     <h3>택배사 목록 붙여넣기</h3>
     <p class="txt_id" style="margin:0 0 8px">
-        거래하는 택배사가 주는 <strong>도서산간 추가운임 지역</strong> 파일을 열어 우편번호 열을 복사해 붙여넣으세요.
-        줄바꿈·쉼표·탭 아무거나 됩니다. 5자리 숫자만 골라 <strong>연속된 것끼리 구간으로 묶어</strong> 표에 넣습니다.
-        넣은 뒤에도 표에서 고칠 수 있고, <strong>저장을 눌러야 반영</strong>됩니다.
+        거래하는 택배사가 주는 <strong>도서산간 추가운임 지역</strong> 파일을 열어 복사해 붙여넣으세요.
+        두 가지 모양을 알아서 가려 읽습니다.
     </p>
-    <textarea id="sz_paste" placeholder="58800&#10;58801&#10;58802&#10;58805&#10;…"></textarea>
-    <div class="sz_row">
+    <ul class="txt_id" style="margin:0 0 10px; padding-left:18px; list-style:disc">
+        <li><strong>구간표 그대로</strong> — <code>지역명, 시작우편번호, 끝우편번호, 배송비</code> 네 칸.
+            로젠택배가 이 모양으로 줍니다. <strong>이름과 요금도 파일에서 가져옵니다</strong>(아래 칸은 안 씁니다).</li>
+        <li><strong>우편번호만</strong> — 번호가 죽 나열된 모양. 5자리만 골라
+            <strong>연속된 것끼리 구간으로 묶고</strong>, 이름과 요금은 아래 칸 값을 붙입니다.</li>
+    </ul>
+    <textarea id="sz_paste" placeholder='"제주도",63000,63644,"5000.00"&#10;"울릉군",40200,40240,"10000.00"&#10;&#10;— 또는 —&#10;&#10;58800&#10;58801&#10;58802'></textarea>
+    <div class="sz_row" id="sz_manual">
         구간 이름 <input type="text" id="sz_paste_name" value="도서산간" size="12" class="frm_input">
         추가 배송비 <input type="text" id="sz_paste_fee" value="5000" size="8" style="text-align:right" class="frm_input"> 원
-        <button type="button" class="btn btn_02" id="sz_paste_btn">표에 넣기</button>
+        <span class="txt_id" id="sz_manual_off" style="display:none; color:#1D5FD1">← 구간표를 붙여넣었으니 이 칸은 안 씁니다</span>
     </div>
+    <div class="sz_row"><button type="button" class="btn btn_02" id="sz_paste_btn">표에 넣기</button></div>
     <p id="sz_preview"></p>
 
     <h3 style="margin-top:16px">기본값 넣기</h3>
@@ -130,9 +136,47 @@ $(function () {
 
     $body.on('click', '.sz_rm', function () { $(this).closest('tr').remove(); });
 
-    // 붙여넣은 글에서 5자리 숫자만 골라 연속된 것끼리 묶는다.
-    // 엑셀에서 복사하면 줄바꿈·탭이 섞여 오고, "58800 (흑산면)" 처럼 설명이 붙기도 한다 —
-    // 5자리 숫자만 뽑으므로 그대로 붙여넣어도 된다. 6자리 옛 우편번호는 걸리지 않는다.
+    function pad5(s) { s = String(s).replace(/[^0-9]/g, ''); return s.length >= 5 ? s.slice(0, 5) : ('00000' + s).slice(-5); }
+
+    // 따옴표 안의 쉼표를 지키며 한 줄을 칸으로 가른다(지역명에 쉼표가 들어올 수 있다)
+    function splitCsv(line) {
+        var out = [], cur = '', q = false;
+        for (var i = 0; i < line.length; i++) {
+            var c = line.charAt(i);
+            if (c === '"') { q = !q; continue; }
+            if (c === ',' && !q) { out.push(cur); cur = ''; continue; }
+            cur += c;
+        }
+        out.push(cur);
+        return out;
+    }
+
+    // ── 모양 ①: 구간표 (지역명, 시작, 끝, 배송비). 이름과 요금까지 파일에서 가져온다.
+    // 머리글 줄과 꼬리의 빈 줄("",,,"")은 숫자가 아니라서 저절로 걸러진다.
+    // 요금은 "5000.00" 으로 오므로 parseFloat 로 읽는다 — 숫자만 남기면 500000 이 된다.
+    function parseTable(text) {
+        var lines = String(text).replace(/^﻿/, '').split(/\r?\n/);
+        var rows = [], skipped = 0;
+        for (var i = 0; i < lines.length; i++) {
+            var line = $.trim(lines[i]);
+            if (line === '') continue;
+            var f = splitCsv(line);
+            if (f.length < 4) { skipped += 1; continue; }
+            var a = $.trim(f[f.length - 3]).replace(/[^0-9]/g, '');
+            var b = $.trim(f[f.length - 2]).replace(/[^0-9]/g, '');
+            var fee = parseFloat($.trim(f[f.length - 1]).replace(/[",\s]/g, ''));
+            if (a === '' || b === '' || isNaN(fee)) { skipped += 1; continue; }
+            // 이름은 남은 앞칸 전부(쉼표로 잘렸으면 도로 붙인다)
+            var name = $.trim(f.slice(0, f.length - 3).join(',')) || '추가배송';
+            var from = pad5(a), to = pad5(b);
+            if (from > to) { var t = from; from = to; to = t; }
+            rows.push({ name: name, from: from, to: to, fee: Math.round(fee) });
+        }
+        return { rows: rows, skipped: skipped };
+    }
+
+    // ── 모양 ②: 우편번호만. 5자리만 골라 연속된 것끼리 묶는다.
+    // 엑셀에서 복사하면 줄바꿈·탭이 섞여 오고 "58805 (홍도)" 처럼 설명이 붙기도 한다.
     function parseZips(text) {
         var found = String(text).match(/\d+/g) || [];
         var set = {};
@@ -141,7 +185,6 @@ $(function () {
         var out = [];
         for (var j = 0; j < list.length; j++) {
             var from = list[j], to = list[j];
-            // 다음 번호가 바로 이어지면 한 구간으로 늘린다(문자열이라 숫자로 바꿔 견준다)
             while (j + 1 < list.length && parseInt(list[j + 1], 10) === parseInt(to, 10) + 1) {
                 j += 1; to = list[j];
             }
@@ -150,24 +193,76 @@ $(function () {
         return { zips: list.length, ranges: out };
     }
 
+    // 앞 2자리가 다른 구간은 십중팔구 원본 파일의 오타다. 로젠 목록 112줄 중 이 판별식에
+    // 걸리는 것은 26242~37246(11,005개를 덮는다) 한 줄뿐이었고, 나머지 111줄은 전부 같았다.
+    // 막지는 않는다 — 진짜로 도를 걸치는 구간이 있을 수 있으니 사람이 보고 정하게 한다.
+    function wideOnes(rows) {
+        var bad = [];
+        for (var i = 0; i < rows.length; i++) {
+            if (rows[i].from.slice(0, 2) !== rows[i].to.slice(0, 2)) bad.push(rows[i]);
+        }
+        return bad;
+    }
+
+    // 붙여넣은 것이 구간표인가 낱개 번호인가 — 4칸으로 읽히는 줄이 하나라도 있으면 구간표다
+    function read(text) {
+        var t = parseTable(text);
+        if (t.rows.length) return { mode: 'table', rows: t.rows, skipped: t.skipped };
+        var z = parseZips(text);
+        var rows = [];
+        for (var i = 0; i < z.ranges.length; i++) rows.push({ from: z.ranges[i].from, to: z.ranges[i].to });
+        return { mode: 'zips', rows: rows, zips: z.zips };
+    }
+
     $('#sz_paste').on('input', function () {
-        var r = parseZips($(this).val());
-        $('#sz_preview').html(!r.zips ? ''
-            : '우편번호 <b>' + r.zips + '</b>개 → 구간 <b>' + r.ranges.length + '</b>개로 묶입니다.');
+        var r = read($(this).val());
+        $('#sz_manual_off').toggle(r.mode === 'table' && r.rows.length > 0);
+        if (!r.rows.length) { $('#sz_preview').html('&nbsp;'); return; }
+        if (r.mode === 'zips') {
+            $('#sz_preview').html('우편번호 <b>' + r.zips + '</b>개 → 구간 <b>' + r.rows.length + '</b>개로 묶입니다.');
+            return;
+        }
+        var fees = {}, bad = wideOnes(r.rows);
+        for (var i = 0; i < r.rows.length; i++) fees[r.rows[i].fee] = true;
+        var list = Object.keys(fees).map(Number).sort(function (a, b) { return a - b; });
+        var msg = '구간표 <b>' + r.rows.length + '</b>줄 · 요금 <b>'
+            + list.map(function (f) { return f.toLocaleString() + '원'; }).join(' / ') + '</b>';
+        if (r.skipped) msg += ' <span style="color:#888">(머리글 등 ' + r.skipped + '줄은 건너뜀)</span>';
+        if (bad.length) {
+            msg += '<br><b style="color:#C4314B">⚠ 우편번호 앞 2자리가 다른 구간 ' + bad.length + '개</b> — '
+                + bad.map(function (x) { return x.from + '~' + x.to; }).join(', ')
+                + ' · 원본 파일의 오타일 수 있습니다. 넣은 뒤 표에서 확인하세요.';
+        }
+        $('#sz_preview').html(msg);
     });
 
     $('#sz_paste_btn').on('click', function () {
-        var name = $.trim($('#sz_paste_name').val());
-        if (name === '') { alert('구간 이름을 적어 주세요.'); $('#sz_paste_name').trigger('focus'); return; }
-        var fee = parseInt(String($('#sz_paste_fee').val()).replace(/[^0-9]/g, ''), 10) || 0;
-        var r = parseZips($('#sz_paste').val());
-        if (!r.zips) { alert('5자리 우편번호를 찾지 못했습니다.'); return; }
-        // 줄이 많으면 표가 길어지므로 미리 알린다 — 넣고 나서 놀라지 않게
-        if (!confirm('우편번호 ' + r.zips + '개를 구간 ' + r.ranges.length + '개로 묶어 표에 넣습니다.\n'
-            + '"' + name + '" · ' + fee.toLocaleString() + '원\n\n저장을 눌러야 반영됩니다. 계속할까요?')) return;
-        for (var i = 0; i < r.ranges.length; i++) addRow(name, r.ranges[i].from, r.ranges[i].to, fee);
-        $('#sz_paste').val('');
-        $('#sz_preview').text('구간 ' + r.ranges.length + '개를 표에 넣었습니다. 확인하고 저장하세요.');
+        var r = read($('#sz_paste').val());
+        if (!r.rows.length) { alert('읽을 수 있는 우편번호를 찾지 못했습니다.'); return; }
+
+        var msg, rows = r.rows;
+        if (r.mode === 'zips') {
+            var name = $.trim($('#sz_paste_name').val());
+            if (name === '') { alert('구간 이름을 적어 주세요.'); $('#sz_paste_name').trigger('focus'); return; }
+            var fee = parseInt(String($('#sz_paste_fee').val()).replace(/[^0-9]/g, ''), 10) || 0;
+            for (var i = 0; i < rows.length; i++) { rows[i].name = name; rows[i].fee = fee; }
+            msg = '우편번호 ' + r.zips + '개를 구간 ' + rows.length + '개로 묶어 표에 넣습니다.\n'
+                + '"' + name + '" · ' + fee.toLocaleString() + '원';
+        } else {
+            var bad = wideOnes(rows);
+            msg = '구간표 ' + rows.length + '줄을 표에 넣습니다. 이름과 요금은 파일 값을 씁니다.';
+            if (bad.length) {
+                msg += '\n\n⚠ 우편번호 앞 2자리가 다른 구간이 ' + bad.length + '개 있습니다:\n'
+                    + bad.slice(0, 5).map(function (x) { return '  ' + x.name + '  ' + x.from + '~' + x.to; }).join('\n')
+                    + (bad.length > 5 ? '\n  … 외 ' + (bad.length - 5) + '개' : '')
+                    + '\n원본 파일의 오타일 수 있습니다 — 넣은 뒤 표에서 확인하세요.';
+            }
+        }
+        if (!confirm(msg + '\n\n저장을 눌러야 반영됩니다. 계속할까요?')) return;
+
+        for (var j = 0; j < rows.length; j++) addRow(rows[j].name, rows[j].from, rows[j].to, rows[j].fee);
+        $('#sz_paste').val('').trigger('input');
+        $('#sz_preview').text(rows.length + '줄을 표에 넣었습니다. 확인하고 저장하세요.');
     });
 
     // 경계가 확실한 둘만 — 나머지를 지어 넣으면 틀린 값이 조용히 손님 청구서에 붙는다
