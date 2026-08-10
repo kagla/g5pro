@@ -19,7 +19,9 @@
 #sz_tools .sz_row { margin-top: 10px; font-size: 14px; }
 #sz_tools .sz_row input { height: 32px; line-height: 30px; font-size: 14px; }
 #sz_tools .btn { font-size: 14px; }
-#sz_preview { margin-top: 10px; color: #555; font-size: 14px; }
+/* 글자마다 미리보기가 생겼다 사라지면 아래 표가 그만큼 위아래로 튄다.
+   빈 줄일 때도 한 줄 높이를 잡아 두어 화면이 흔들리지 않게 한다. */
+#sz_preview { margin-top: 10px; color: #555; font-size: 14px; line-height: 22px; min-height: 22px; }
 #sz_preview b { color: #1D5FD1; }
 #cart_sz_add { margin: 10px 0 0; }
 </style>
