@@ -94,6 +94,7 @@ while ($row = sql_fetch_array($result)) {
         ? ($first['oi_name'].((int)$first['cnt'] > 1 ? ' 외 '.((int)$first['cnt'] - 1).'건' : ''))
         : '';
     $row['status_label'] = cart_order_status_label($row['od_status'], $row['od_pay_method']);
+    $row['view_url'] = G5_CART_ADMIN_URL.'/order_view.php?od_id='.(int)$row['od_id'];
     $recent[] = $row;
 }
 
@@ -119,8 +120,24 @@ cadm_view('dashboard', array(
     // 반품 신청은 손님이 기다리는 일이라 대시보드에서 먼저 눈에 띄어야 한다 —
     // 주문 상세를 하나씩 열어 봐야 알 수 있으면 며칠씩 방치된다
     'return_pending' => cart_return_pending_count(),
-    'return_url' => G5_CART_ADMIN_URL.'/order_list.php?rt=1',
+    // 반품 전용 화면이 생긴 뒤로는 그리로 보낸다 — 목록에서 바로 승인·거절할 수 있는 곳이다
+    'return_url' => G5_CART_ADMIN_URL.'/return_list.php',
     'item_list_url' => G5_CART_ADMIN_URL.'/item_list.php',
+
+    // 요약 칩에서 바로 갈 곳 — **누른 뒤 화면의 숫자가 칩과 같아야 한다.** 다르면 칩을
+    // 못 믿게 되므로, 같은 기준으로 거를 수 있는 것만 링크를 건다.
+    //   오늘 매출  : settle 은 od_paid_at 기준 + 같은 매출 판정(cart_order_paid_where) — 일치
+    //   오늘 주문  : order_list 의 from/to 는 od_datetime 기준 — 일치
+    //   판매 중 상품: item_list 의 show=1 이 it_show=1 — 일치
+    //   담긴 장바구니: 볼 화면이 없다. 죽은 링크를 만들지 않고 그대로 둔다
+    //   재고 임박  : 이 화면 아래 표가 바로 그 목록이라 앵커로 내린다
+    'today_sales_url' => G5_CART_ADMIN_URL.'/settle.php?from='.date('Y-m-d', G5_SERVER_TIME).'&to='.date('Y-m-d', G5_SERVER_TIME),
+    'today_orders_url' => G5_CART_ADMIN_URL.'/order_list.php?from='.date('Y-m-d', G5_SERVER_TIME).'&to='.date('Y-m-d', G5_SERVER_TIME),
+    'item_show_url' => G5_CART_ADMIN_URL.'/item_list.php?show=1',
+    // 주문 현황 표 — 상태 하나로 정확히 걸러지는 줄만 링크한다(결제완료는 구매확정을,
+    // 배송 진행은 준비·배송중·완료를 묶은 값이라 한 필터로는 같은 숫자가 안 나온다)
+    'status_url' => G5_CART_ADMIN_URL.'/order_list.php?status=',
+    'delivery_url' => G5_CART_ADMIN_URL.'/delivery_list.php',
 ));
 
 include_once(G5_ADMIN_PATH.'/admin.tail.php');
