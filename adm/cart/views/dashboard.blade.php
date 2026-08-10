@@ -13,7 +13,13 @@
 #cart_dash .tbl_head01 tbody a:hover,
 #cart_dash #sidx_graph_date a:hover { text-decoration: underline; }
 #cart_dash #sidx_graph_area .graph.order { cursor: pointer; }
-#cart_dash h2 .btn_02 { margin-left: 6px; vertical-align: middle; font-weight: normal; }
+/* 제목 옆 "더 보기" 는 제목보다 작아야 한다 — 순정 .btn 은 30px·1.09em 이라 h2 옆에 서면
+   제목만큼 커져서 그쪽이 먼저 읽힌다. 여기서만 한 급 낮춘다 */
+#cart_dash h2 .btn_02 {
+    margin-left: 8px; vertical-align: middle;
+    height: 22px; line-height: 22px; padding: 0 8px;
+    font-size: 0.72em; font-weight: normal; border-radius: 4px;
+}
 </style>
 <div id="cart_dash">
 
