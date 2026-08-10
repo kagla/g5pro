@@ -11,6 +11,7 @@ $menu['menu600'] = array(
     array('600000', '카트', G5_CART_ADMIN_URL.'/', 'cart'),
     array('600050', '대시보드', G5_CART_ADMIN_URL.'/', 'cart_dash', 'super'),
     array('600060', '주문관리', G5_CART_ADMIN_URL.'/order_list.php', 'cart_order', 'super'),
+    array('600065', '입금관리', G5_CART_ADMIN_URL.'/deposit_list.php', 'cart_deposit', 'super'),
     array('600070', '배송관리', G5_CART_ADMIN_URL.'/delivery_list.php', 'cart_delivery', 'super'),
     array('600075', '반품관리', G5_CART_ADMIN_URL.'/return_list.php', 'cart_return', 'super'),
     array('600077', '쿠폰관리', G5_CART_ADMIN_URL.'/coupon_list.php', 'cart_coupon', 'super'),
