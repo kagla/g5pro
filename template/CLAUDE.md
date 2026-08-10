@@ -58,6 +58,7 @@ cart_order_status_tone($od['od_status'])   // 'wait' | 'go' | 'ship' | 'done' | 
 | `--bg` / `--card` / `--row-hover` | `--bg` 바탕, `--card` 그 위에 올라가는 면, `--row-hover` 는 줄에 마우스가 닿았을 때. 카드 안의 옅은 면도 `--row-hover` 를 쓴다 |
 | `--sh-sm` / `--sh-md` / `--sh-lg` | 앞의 둘은 **평범한 면**, `--sh-lg` 는 **진짜로 떠 있는 것**(드롭다운·모달·라이트박스). 이 구분이 있어야 템플릿이 "그림자를 안 쓰는" 방향으로 갈 때 뜬 것만 남길 수 있다 |
 | `--accent` / `--accent-deep` / `--accent-soft` | 채움 / 그 위 글자·hover / 옅은 배경. 링크 글자는 `--accent-deep`(밝은 바탕에서 `--accent` 는 대비가 얕다) |
+| `--accent-fill` / `--accent-fill-fg` | **작은 글자를 얹는 채움.** `--accent` + `--accent-fg` 는 밝은 모드에서 3.94:1 이라 12~13px 글자에 모자란다. 큰 버튼은 `--accent` 로 두고, 뱃지처럼 작은 글자가 올라가는 채움만 이 짝을 쓴다 |
 | `--muted` | 흐린 글자 전용. 선이나 면에 쓰지 않는다 |
 
 ## 3. 대비는 계산해서 맞춘다

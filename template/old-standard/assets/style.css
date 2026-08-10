@@ -46,8 +46,10 @@
     --chip-fg: #4F5E74;        /* 면 위 5.65:1 */
     --notice-bg: #FEF3C7;
     --notice-fg: #B45309;      /* 4.51:1 */
-    --ok-bg: #DCFCE7;
-    --ok-fg: #166534;          /* 6.49:1 */
+    /* 이 템플릿의 "잘 끝났다" 는 자기 색인 민트·청록으로 간다(standard 는 초록).
+       --teal-deep(#0B8577)은 이 면 위에서 3.85:1 이라 한 단계 진하게 잡았다 — 5.22:1 */
+    --ok-bg: var(--teal-soft);
+    --ok-fg: #0A6E62;
     --accent-fill: #1D5FD1;    /* 채움 위 흰 글자 5.82:1 (--accent 는 3.94:1 로 모자라다) */
     --accent-fill-fg: #FFFFFF;
 
@@ -157,8 +159,8 @@
     --chip-fg: #CBD5E1;        /* 면 위 8.54:1 */
     --notice-bg: #382B0B;
     --notice-fg: #FBBF24;      /* 8.28:1 */
-    --ok-bg: #0C2A18;
-    --ok-fg: #4ADE80;          /* 8.86:1 */
+    --ok-bg: var(--teal-soft);
+    --ok-fg: var(--teal-deep);   /* 어두운 모드는 짝이 그대로 8.36:1 */
     --accent-fill: #4A90FF;
     --accent-fill-fg: #04121F; /* 6.05:1 — 어두운 모드는 강조가 밝아 글자가 검정 쪽이다 */
 
@@ -203,8 +205,10 @@
     --chip-fg: #4F5E74;        /* 면 위 5.65:1 */
     --notice-bg: #FEF3C7;
     --notice-fg: #B45309;      /* 4.51:1 */
-    --ok-bg: #DCFCE7;
-    --ok-fg: #166534;          /* 6.49:1 */
+    /* 이 템플릿의 "잘 끝났다" 는 자기 색인 민트·청록으로 간다(standard 는 초록).
+       --teal-deep(#0B8577)은 이 면 위에서 3.85:1 이라 한 단계 진하게 잡았다 — 5.22:1 */
+    --ok-bg: var(--teal-soft);
+    --ok-fg: #0A6E62;
     --accent-fill: #1D5FD1;    /* 채움 위 흰 글자 5.82:1 (--accent 는 3.94:1 로 모자라다) */
     --accent-fill-fg: #FFFFFF;
 
@@ -3090,8 +3094,10 @@ body.cart-lb-lock { overflow: hidden; }
 .cart-order-summary { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cart-order-total { flex: none; font-weight: 800; }
 /* 주문 상태 뱃지 — 갈래(is-*)는 모듈이 정하고 색은 이 템플릿이 정한다.
-   같은 '배송중' 이 standard 에서는 중성 팔레트의 파랑으로, 여기서는 소다 블루로 나온다.
-   클래스 이름은 두 템플릿이 같으므로 화면(blade)은 한 벌로 돌아간다. */
+   클래스 이름과 화면(blade)은 두 템플릿이 한 벌이고, 값만 여기서 갈린다:
+   "잘 끝났다" 는 standard 가 초록, 여기는 이 템플릿의 민트·청록이다. 중성 면도 소다 블루
+   바탕에 맞춰 한 단계 진하다. 나머지 갈래(앰버·강조·위험)는 두 템플릿이 같은 값을 쓴다 —
+   같아도 되는 것까지 억지로 다르게 만들 이유는 없다. */
 .cart-status {
     display: inline-block; padding: 2px var(--s2); border-radius: var(--r-full);
     font-size: var(--t-xs); font-weight: 800; white-space: nowrap;

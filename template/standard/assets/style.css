@@ -688,12 +688,16 @@ option:disabled { color: var(--muted); }
 .bbs-empty { padding: var(--s7) 0; text-align: center; color: var(--muted); }
 
 /* 페이징 — pill */
-.paging-wrap { display: flex; justify-content: center; }
-/* 가운데 정렬도, 목록과 띄우는 여백도 여기 둔다 — 게시판은 .paging-wrap 이 감싸지만 쇼핑몰
-   화면들은 <nav class="paging"> 만 쓴다. 감싸는 쪽에만 여백을 두면 주문 목록·상품 목록·찜에서
-   페이징이 목록 판에 딱 붙는다(실제로 붙어 있었다). 감싸는 태그가 있든 없든 같아진다 */
+.paging-wrap { display: flex; justify-content: center; margin-top: var(--s5); }
+/* 가운데 정렬도, 목록과 띄우는 여백도 감싸는 태그가 있든 없든 같아야 한다 — 게시판은
+   .paging-wrap 이 감싸지만 쇼핑몰 화면들은 <nav class="paging"> 만 쓰고 있어 페이징이
+   목록 판에 딱 붙어 있었다.
+   여백을 .paging 으로 옮기기만 하면 감싼 쪽이 망가진다: 바깥 마진은 앞 형제의 아래 마진과
+   상쇄되는데(검색 결과 묶음 32px, FAQ 꼬리말 16px) 안쪽으로 들어가면 상쇄가 안 돼 더해진다.
+   그래서 여백은 감싸는 쪽에 그대로 두고, 감싸이지 않은 .paging 만 스스로 띄운다. */
 .paging { display: flex; justify-content: center; gap: var(--s1); margin-top: var(--s5);
     font-size: var(--t-sm); font-variant-numeric: tabular-nums; }
+.paging-wrap > .paging { margin-top: 0; }
 .paging a, .paging-cur {
     min-width: 34px; text-align: center; padding: var(--s2) var(--s3);
     border-radius: var(--r-btn); background: var(--card); color: var(--muted); box-shadow: var(--sh-sm);
