@@ -81,10 +81,27 @@ $pg_paid = ($order['od_pay_method'] !== 'bank' && in_array($s, array('paid', 'pr
 
 // 반품 — 처리 대기 신청이 있으면 상세 위에 카드로 띄운다. 환불 기본값은 신청 품목 합계지만
 // 최종 금액은 관리자가 정한다(왕복 배송비 공제 같은 실무 변수를 사람이 흡수한다).
+// 반품 표의 품목도 상품 수정 화면으로 보낸다 — 어떤 상품이 돌아왔는지 이름만 보고 짐작하지
+// 않게. 링크와 생존 판정은 위에서 만든 주문 상품 줄을 그대로 쓴다(질의를 늘리지 않는다):
+// 반품 품목은 언제나 이 주문의 품목이라 $items 안에 반드시 있다.
+// 차례도 $items 를 따라간다 — 주문서에 적힌 순서와 반품 표의 순서가 어긋나지 않는다.
 $returns = cart_return_rows($od_id);
 foreach ($returns as $i => $rt) {
     $returns[$i]['item_total'] = cart_return_item_total($rt);
     $returns[$i]['status_label'] = cart_return_status_label($rt['rt_status']);
+
+    $in_rt = array_flip(array_filter(array_map('intval', explode(',', $rt['rt_oi_ids']))));
+    $rows = array();
+    foreach ($items as $r) {
+        if (!isset($in_rt[(int)$r['oi_id']])) continue;
+        $rows[] = array(
+            'name' => $r['oi_name'],
+            // 옵션·수량은 링크 밖에 둔다 — 누를 곳은 상품 이름이라고 화면이 말해야 한다
+            'suffix' => ($r['oi_option'] !== '' ? ' ('.$r['oi_option'].')' : '').' × '.$r['oi_qty'],
+            'edit_url' => $r['edit_url'],
+        );
+    }
+    $returns[$i]['items'] = $rows;
 }
 $refundable = cart_return_refundable($order);
 

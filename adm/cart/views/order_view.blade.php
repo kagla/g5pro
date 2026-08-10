@@ -279,8 +279,17 @@ $(function () {
         <td>{{ $rt['status_label'] }}</td>
         <td style="text-align:left">
 
-            @foreach ($rt['item_names'] as $nm)
-            {{ $nm }}<br>
+            {{-- 주문 상품 표와 같은 규칙으로 상품 수정 화면을 연다. 반품은 "무엇이 왜
+                 돌아왔나" 를 보는 자리라, 이름만 있으면 상품을 다시 찾으러 나가야 한다 --}}
+            @foreach ($rt['items'] as $ri)
+
+            @if ($ri['edit_url'] !== '')
+            <a href="{{ $ri['edit_url'] }}" target="_blank" class="oi-link" title="상품 수정 화면 열기">{{ $ri['name'] }}</a>
+            @else
+            {{ $ri['name'] }} <span class="oi-gone">삭제된 상품</span>
+            @endif
+
+            {{ $ri['suffix'] }}<br>
             @endforeach
 
             <span class="txt_id">품목 합계 {{ number_format($rt['item_total']) }}원</span>
@@ -620,13 +629,5 @@ $(function () {
 </script>
 @endif
 
-<style>
-/* 주문 상품 → 상품 수정 바로가기. 표 안에서 눌러도 되는 자리임을 색과 밑줄로 알린다.
-   순정 admin.css 의 `a:link`(특이도 0,1,1)가 링크 색·밑줄을 지우므로 여기서 더 좁게 잡는다 */
-a.oi-link:link, a.oi-link:visited {
-    color: #1D5FD1; text-decoration: underline; text-underline-offset: 2px;
-}
-a.oi-link:hover { color: #0f3f96; }
-/* 상품이 지워진 주문 — 링크가 없는 이유를 그 자리에서 알려 준다 */
-.oi-gone { margin-left: 6px; padding: 1px 6px; border-radius: 5px; background: #f2f4f7; color: #98a2b3; font-size: 11px; }
-</style>
+{{-- .oi-link · .oi-gone 는 반품관리도 함께 쓰므로 adm/css/admin_extend_cart.css 로 옮겼다
+     (여기 두면 그 화면에서만 링크가 맨 글자로 보인다) --}}

@@ -1,0 +1,18 @@
+/* 영카트 관리자 화면의 자잘한 규칙 — 순정 admin.css 를 안 고치고 얹는 훅(admin_extend_* 글롭).
+   이 파일을 지우면 원상복구되고, 카트 모듈을 안 쓰는 설치에서는 아무 데도 영향이 없다.
+   화면 하나에만 쓰는 규칙은 그 blade 안에 두고, 여기에는 여러 화면이 함께 쓰는 것만 모은다. */
+
+/* 표 안에서 상품 수정 화면으로 가는 문 — 주문 상세와 반품관리가 같이 쓴다.
+   눌러도 되는 자리임을 색과 밑줄로 알린다. 순정 admin.css 의 `a:link`(특이도 0,1,1)가
+   링크 색·밑줄을 지우므로 여기서 더 좁게 잡는다. */
+a.oi-link:link, a.oi-link:visited {
+    color: #1D5FD1; text-decoration: underline; text-underline-offset: 2px;
+}
+a.oi-link:hover { color: #0f3f96; }
+
+/* 상품이 지워진 줄 — 링크가 없는 이유를 그 자리에서 알려 준다.
+   주문서는 스냅샷이라 상품이 사라져도 이름·금액은 그대로 읽힌다. */
+.oi-gone {
+    margin-left: 6px; padding: 1px 6px; border-radius: 5px;
+    background: #f2f4f7; color: #98a2b3; font-size: 11px;
+}

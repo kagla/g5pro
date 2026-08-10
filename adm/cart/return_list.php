@@ -41,7 +41,6 @@ $result = sql_query(" select r.*, o.od_no, o.od_name, o.od_hp, o.od_pay_method, 
     join `{$g5['ycart_order_table']}` o on o.od_id = r.od_id
     where $where_sql order by r.rt_id desc limit $offset, $rows_per ");
 while ($r = sql_fetch_array($result)) {
-    $r['item_names'] = cart_return_item_names($r);
     $r['item_total'] = cart_return_item_total($r);
     $r['status_label'] = cart_return_status_label($r['rt_status']);
     // 환불 입력 상한 — 결제액에서 이미 환불한 누계를 뺀 값(주문마다 다르므로 행마다 싣는다)
@@ -49,6 +48,14 @@ while ($r = sql_fetch_array($result)) {
     $r['is_bank'] = ($r['od_pay_method'] === 'bank');
     $r['view_url'] = G5_CART_ADMIN_URL.'/order_view.php?od_id='.(int)$r['od_id'];
     $returns[] = $r;
+}
+
+// 반품 품목 → 상품 수정 화면 바로가기. 반품이 잦은 상품은 설명이나 옵션을 손봐야 하는
+// 상품이고, 그 판단을 하려면 결국 상품을 열어 봐야 한다. 목록의 품목을 두 방으로 모아 온다
+// (줄마다 묻지 않는다 — 한 화면에 30건이고 줄마다 품목이 여럿이다).
+$rt_items = cart_return_items_for_admin($returns);
+foreach ($returns as $i => $r) {
+    $returns[$i]['items'] = $rt_items[(int)$r['rt_id']];
 }
 
 // 상태 탭 건수 — 처리할 일이 몇 건인지 숫자로 본다

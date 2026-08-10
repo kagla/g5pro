@@ -85,6 +85,61 @@ function cart_return_item_names($rt)
     return $names;
 }
 
+// 관리자 목록용 반품 품목 — 여러 신청의 품목을 두 방으로 모아 [rt_id => [{name, suffix, edit_url}]] 로.
+//
+// 반품관리는 한 화면에 30건이 뜬다. 신청마다 cart_return_item_names() 를 부르면 질의가 줄 수만큼
+// 늘고, 그러고도 "어떤 상품이 돌아왔나" 를 이름으로 짐작해야 한다. 여기서 상품 수정 화면으로 가는
+// 문까지 함께 만든다 — 반품이 잦은 상품은 설명이나 옵션을 손봐야 하는 상품이고, 그 판단을 하려면
+// 결국 상품을 열어 봐야 한다.
+//
+// 링크는 살아 있는 상품에만 건다(주문 상세와 같은 규칙) — 없는 상품으로 보내면 수정 화면이
+// '없는 상품입니다' 로 튕긴다. 주문서는 스냅샷이라 상품 행이 사라져도 이름·금액은 그대로 읽힌다.
+function cart_return_items_for_admin(array $returns)
+{
+    global $g5;
+
+    $map = array();
+    $want = array();
+    foreach ($returns as $rt) {
+        $map[(int)$rt['rt_id']] = array();
+        foreach (array_filter(array_map('intval', explode(',', $rt['rt_oi_ids']))) as $id) $want[$id] = true;
+    }
+    if (!$want) return $map;
+
+    $rows = array();
+    $it_ids = array();
+    $res = sql_query(" select oi_id, it_id, oi_name, oi_option, oi_qty
+        from `{$g5['ycart_order_item_table']}` where oi_id in (".implode(',', array_keys($want)).") ");
+    while ($r = sql_fetch_array($res)) {
+        $rows[(int)$r['oi_id']] = $r;
+        if ((int)$r['it_id']) $it_ids[(int)$r['it_id']] = true;
+    }
+
+    $alive = array();
+    if ($it_ids) {
+        $res = sql_query(" select it_id from `{$g5['ycart_item_table']}`
+            where it_id in (".implode(',', array_keys($it_ids)).") ");
+        while ($r = sql_fetch_array($res)) $alive[(int)$r['it_id']] = true;
+    }
+
+    foreach ($returns as $rt) {
+        $ids = array_filter(array_map('intval', explode(',', $rt['rt_oi_ids'])));
+        sort($ids);   // 주문서에 적힌 차례 그대로(oi_id 순) — 표마다 순서가 달라지지 않게
+        foreach ($ids as $id) {
+            if (!isset($rows[$id])) continue;   // 품목 행이 없는 옛 자료 — 조용히 건너뛴다
+            $r = $rows[$id];
+            $iid = (int)$r['it_id'];
+            $map[(int)$rt['rt_id']][] = array(
+                'name' => $r['oi_name'],
+                // 옵션·수량은 링크 밖에 둔다 — 누를 곳은 상품 이름이라고 화면이 말해야 한다
+                'suffix' => ($r['oi_option'] !== '' ? ' ('.$r['oi_option'].')' : '').' × '.$r['oi_qty'],
+                'edit_url' => isset($alive[$iid]) ? G5_CART_ADMIN_URL.'/item_form.php?w=u&it_id='.$iid : '',
+            );
+        }
+    }
+    return $map;
+}
+
 // 신청에 걸린 품목 금액 합계 — 관리자 화면이 환불 입력의 기본값으로 제안한다(제안일 뿐이다)
 function cart_return_item_total($rt)
 {

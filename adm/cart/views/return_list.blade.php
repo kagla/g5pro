@@ -30,10 +30,21 @@
         <td class="td_datetime">{{ substr($rt['rt_requested_at'], 0, 16) }}</td>
         <td><a href="{{ $rt['view_url'] }}">{{ $rt['od_no'] }}</a></td>
         <td>{{ $rt['od_name'] }}</td>
+        {{-- 상품 이름을 누르면 그 상품의 수정 화면이 새 창으로 열린다 — 반품을 처리하다 말고
+             이 목록을 잃지 않게(여러 건을 이어서 처리하는 화면이다).
+             옵션·수량은 링크 밖에 둔다: 누를 곳은 상품 이름이라고 화면이 말해야 한다.
+             이미 지워진 상품은 링크 없이 이름만 남는다(서버가 판단해 내려준다) --}}
         <td class="td_left">
 
-            @foreach ($rt['item_names'] as $nm)
-            {{ $nm }}<br>
+            @foreach ($rt['items'] as $it)
+
+                @if ($it['edit_url'] !== '')
+                <a href="{{ $it['edit_url'] }}" target="_blank" class="oi-link" title="상품 수정 화면 열기">{{ $it['name'] }}</a>
+                @else
+                {{ $it['name'] }} <span class="oi-gone">삭제된 상품</span>
+                @endif
+
+            {{ $it['suffix'] }}<br>
             @endforeach
 
             <span class="txt_id">품목 합계 {{ number_format($rt['item_total']) }}원</span>
