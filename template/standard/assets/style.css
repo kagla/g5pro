@@ -45,6 +45,10 @@
        면 위 6.49:1 */
     --ok-bg: #DCFCE7;
     --ok-fg: #166534;
+    /* 채운 강조 — 12px 뱃지 글자가 얹히는 자리다. --accent 에 흰 글자는 3.94:1 로 모자라
+       한 단계 진한 값을 쓴다(5.82:1). 어두운 모드는 강조가 밝아지므로 글자가 검정 쪽이다. */
+    --accent-fill: #1D5FD1;
+    --accent-fill-fg: #FFFFFF;
 
     /* 보조색은 남겨 둔다 — standard 의 규칙들이 이름으로 참조하므로 지우면 화면이 깨진다.
        다만 값은 전부 중성으로 접어 실제로는 색이 나타나지 않는다 */
@@ -109,6 +113,8 @@
         --notice-fg: #FBBF24;      /* 8.28:1 */
         --ok-bg: #0C2A18;
         --ok-fg: #4ADE80;          /* 면 위 8.86:1 */
+        --accent-fill: #4A90FF;
+        --accent-fill-fg: #04121F;   /* 6.05:1 */
 
         --teal: #94A3B8;
         --teal-soft: #1E293B;
@@ -157,6 +163,8 @@
     --notice-fg: #FBBF24;
     --ok-bg: #0C2A18;
     --ok-fg: #4ADE80;      /* 면 위 8.86:1 */
+    --accent-fill: #4A90FF;
+    --accent-fill-fg: #04121F;   /* 6.05:1 */
     --teal: #94A3B8;
     --teal-soft: #1E293B;
     --teal-deep: #CBD5E1;
@@ -199,6 +207,10 @@
        면 위 6.49:1 */
     --ok-bg: #DCFCE7;
     --ok-fg: #166534;
+    /* 채운 강조 — 12px 뱃지 글자가 얹히는 자리다. --accent 에 흰 글자는 3.94:1 로 모자라
+       한 단계 진한 값을 쓴다(5.82:1). 어두운 모드는 강조가 밝아지므로 글자가 검정 쪽이다. */
+    --accent-fill: #1D5FD1;
+    --accent-fill-fg: #FFFFFF;
     --teal: #64748B;
     --teal-soft: #F1F5F9;
     --teal-deep: #475569;
@@ -676,10 +688,12 @@ option:disabled { color: var(--muted); }
 .bbs-empty { padding: var(--s7) 0; text-align: center; color: var(--muted); }
 
 /* 페이징 — pill */
-.paging-wrap { display: flex; justify-content: center; margin-top: var(--s5); }
-/* 가운데 정렬은 여기 둔다 — 게시판은 .paging-wrap 이 감싸 가운데로 가지만, 쇼핑몰 화면들은
-   <nav class="paging"> 만 쓰고 있어 왼쪽에 붙어 있었다. 감싸는 태그가 있든 없든 같아진다 */
-.paging { display: flex; justify-content: center; gap: var(--s1); font-size: var(--t-sm); font-variant-numeric: tabular-nums; }
+.paging-wrap { display: flex; justify-content: center; }
+/* 가운데 정렬도, 목록과 띄우는 여백도 여기 둔다 — 게시판은 .paging-wrap 이 감싸지만 쇼핑몰
+   화면들은 <nav class="paging"> 만 쓴다. 감싸는 쪽에만 여백을 두면 주문 목록·상품 목록·찜에서
+   페이징이 목록 판에 딱 붙는다(실제로 붙어 있었다). 감싸는 태그가 있든 없든 같아진다 */
+.paging { display: flex; justify-content: center; gap: var(--s1); margin-top: var(--s5);
+    font-size: var(--t-sm); font-variant-numeric: tabular-nums; }
 .paging a, .paging-cur {
     min-width: 34px; text-align: center; padding: var(--s2) var(--s3);
     border-radius: var(--r-btn); background: var(--card); color: var(--muted); box-shadow: var(--sh-sm);
@@ -3322,6 +3336,9 @@ body.cart-lb-lock { overflow: hidden; }
 }
 .cart-status.is-wait { background: var(--notice-bg); color: var(--notice-fg); }
 .cart-status.is-go   { background: var(--accent-soft); color: var(--accent-deep); }
+/* 배송중만 채워서 띄운다 — 옅은 파랑끼리는 결제완료·배송준비와 구별이 안 되는데,
+   지금 오는 중인지는 손님이 목록에서 가장 자주 찾는 것이다(면끼리 5.35:1 로 갈린다) */
+.cart-status.is-ship { background: var(--accent-fill); color: var(--accent-fill-fg); }
 .cart-status.is-done { background: var(--ok-bg); color: var(--ok-fg); }
 .cart-status.is-bad  { background: var(--danger-soft); color: var(--danger-deep); }
 .cart-status.is-end  { background: var(--chip-bg); color: var(--chip-fg); }

@@ -3,7 +3,7 @@
 <div class="cart-complete">
     <header class="cart-complete-head">
         <h2>주문이 접수됐습니다</h2>
-        <p>주문번호 <strong>{{ $order['od_no'] }}</strong> · {{ $status_label }}</p>
+        <p>주문번호 <strong>{{ $order['od_no'] }}</strong> · <span class="cart-status is-{{ cart_order_status_tone($order['od_status']) }}">{{ $status_label }}</span></p>
     </header>
 
     @if ($order['od_pay_method'] === 'bank')

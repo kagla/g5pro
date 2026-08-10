@@ -40,6 +40,16 @@
     --danger: #EF4444;
     --danger-soft: #FEE2E2;
     --danger-deep: #B91C1C;
+    /* 주문 상태 뱃지가 쓰는 짝 — 뜻은 모듈(cart_order_status_tone)이 정하고 값은 여기서 정한다.
+    이 템플릿은 소다 블루 바탕이라 standard 보다 면을 한 단계 진하게 잡는다. */
+    --chip-bg: #E8EEF6;
+    --chip-fg: #4F5E74;        /* 면 위 5.65:1 */
+    --notice-bg: #FEF3C7;
+    --notice-fg: #B45309;      /* 4.51:1 */
+    --ok-bg: #DCFCE7;
+    --ok-fg: #166534;          /* 6.49:1 */
+    --accent-fill: #1D5FD1;    /* 채움 위 흰 글자 5.82:1 (--accent 는 3.94:1 로 모자라다) */
+    --accent-fill-fg: #FFFFFF;
 
     --grad: linear-gradient(115deg, #38BDF8, #3B82F6 55%, #14B8A6);
 
@@ -95,6 +105,14 @@
         --danger: #F87171;
         --danger-soft: #4A1E1E;
         --danger-deep: #FCA5A5;
+        --chip-bg: #243447;
+        --chip-fg: #CBD5E1;        /* 면 위 8.54:1 */
+        --notice-bg: #382B0B;
+        --notice-fg: #FBBF24;      /* 8.28:1 */
+        --ok-bg: #0C2A18;
+        --ok-fg: #4ADE80;          /* 8.86:1 */
+        --accent-fill: #4A90FF;
+        --accent-fill-fg: #04121F; /* 6.05:1 — 어두운 모드는 강조가 밝아 글자가 검정 쪽이다 */
 
         --sh-sm: 0 4px 12px rgba(0,0,0,.30);
         --sh-md: 0 8px 22px rgba(0,0,0,.36);
@@ -135,6 +153,14 @@
     --danger: #F87171;
     --danger-soft: #4A1E1E;
     --danger-deep: #FCA5A5;
+    --chip-bg: #243447;
+    --chip-fg: #CBD5E1;        /* 면 위 8.54:1 */
+    --notice-bg: #382B0B;
+    --notice-fg: #FBBF24;      /* 8.28:1 */
+    --ok-bg: #0C2A18;
+    --ok-fg: #4ADE80;          /* 8.86:1 */
+    --accent-fill: #4A90FF;
+    --accent-fill-fg: #04121F; /* 6.05:1 — 어두운 모드는 강조가 밝아 글자가 검정 쪽이다 */
 
     --sh-sm: 0 4px 12px rgba(0,0,0,.30);
     --sh-md: 0 8px 22px rgba(0,0,0,.36);
@@ -171,6 +197,16 @@
     --danger: #EF4444;
     --danger-soft: #FEE2E2;
     --danger-deep: #B91C1C;
+    /* 주문 상태 뱃지가 쓰는 짝 — 뜻은 모듈(cart_order_status_tone)이 정하고 값은 여기서 정한다.
+    이 템플릿은 소다 블루 바탕이라 standard 보다 면을 한 단계 진하게 잡는다. */
+    --chip-bg: #E8EEF6;
+    --chip-fg: #4F5E74;        /* 면 위 5.65:1 */
+    --notice-bg: #FEF3C7;
+    --notice-fg: #B45309;      /* 4.51:1 */
+    --ok-bg: #DCFCE7;
+    --ok-fg: #166534;          /* 6.49:1 */
+    --accent-fill: #1D5FD1;    /* 채움 위 흰 글자 5.82:1 (--accent 는 3.94:1 로 모자라다) */
+    --accent-fill-fg: #FFFFFF;
 
     --sh-sm: 0 4px 12px rgba(50,100,180,.08);
     --sh-md: 0 8px 22px rgba(50,100,180,.10);
@@ -3053,8 +3089,21 @@ body.cart-lb-lock { overflow: hidden; }
 .cart-order-date { flex: none; font-size: var(--t-sm); color: var(--muted); }
 .cart-order-summary { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cart-order-total { flex: none; font-weight: 800; }
-.cart-order-status { flex: none; font-size: var(--t-sm); color: #1E9CC9; font-weight: 700; }
-.cart-status { color: #1E9CC9; font-weight: 700; }
+/* 주문 상태 뱃지 — 갈래(is-*)는 모듈이 정하고 색은 이 템플릿이 정한다.
+   같은 '배송중' 이 standard 에서는 중성 팔레트의 파랑으로, 여기서는 소다 블루로 나온다.
+   클래스 이름은 두 템플릿이 같으므로 화면(blade)은 한 벌로 돌아간다. */
+.cart-status {
+    display: inline-block; padding: 2px var(--s2); border-radius: var(--r-full);
+    font-size: var(--t-xs); font-weight: 800; white-space: nowrap;
+    background: var(--chip-bg); color: var(--chip-fg);
+}
+.cart-status.is-wait { background: var(--notice-bg); color: var(--notice-fg); }
+.cart-status.is-go   { background: var(--accent-soft); color: var(--accent-deep); }
+.cart-status.is-ship { background: var(--accent-fill); color: var(--accent-fill-fg); }
+.cart-status.is-done { background: var(--ok-bg); color: var(--ok-fg); }
+.cart-status.is-bad  { background: var(--danger-soft); color: var(--danger-deep); }
+.cart-status.is-end  { background: var(--chip-bg); color: var(--chip-fg); }
+.cart-order-status { flex: none; }
 .cart-guest-form { display: flex; flex-direction: column; gap: var(--s3); max-width: 420px; margin: 0 auto; }
 .cart-guest-form label { display: flex; align-items: center; gap: var(--s3); font-size: var(--t-sm); font-weight: 600; }
 .cart-guest-form input { flex: 1; min-width: 0; padding: var(--s2); }

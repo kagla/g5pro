@@ -13,7 +13,7 @@
         <span class="cart-order-date">{{ substr($od['od_datetime'], 0, 10) }}</span>
         <span class="cart-order-summary">{{ $od['summary'] }}</span>
         <span class="cart-order-total">{{ number_format($od['od_total']) }}원</span>
-        <span class="cart-order-status">{{ $od['status_label'] }}</span>
+        <span class="cart-order-status cart-status is-{{ cart_order_status_tone($od['od_status']) }}">{{ $od['status_label'] }}</span>
     </a>
     @endforeach
 

@@ -93,15 +93,22 @@ function cart_order_paid_where($alias = '')
 }
 
 // 상태 뱃지의 갈래 — 색이 말하는 것은 "무엇인가" 가 아니라 "봐야 하는가" 다.
-// 여덟 가지에 색 여덟을 주면 어느 색도 뜻을 갖지 못하므로 다섯 갈래로 접는다.
-// 화면(목록·상세·주문완료)이 모두 여기를 보므로 같은 상태가 화면마다 다른 색이 되지 않는다.
+// 여덟 가지에 색 여덟을 주면 어느 색도 뜻을 갖지 못하므로 여섯 갈래로 접는다.
+//
+// **여기가 뜻을 정하는 유일한 곳이고, 색은 템플릿이 정한다.**
+// 화면은 이 값을 CSS 클래스로 그대로 쓴다 — `class="cart-status is-<갈래>"`.
+// 그래서 템플릿마다 팔레트가 달라도(standard 는 중성+강조 하나, old-standard 는 소다 블루)
+// "배송중은 눈에 띄는 자리" 라는 뜻은 어디서나 같다. 새 화면·새 템플릿·관리자도 이 함수를 부른다.
+// 템플릿이 갖춰야 할 클래스는 여섯: is-wait / is-go / is-ship / is-done / is-bad / is-end.
 function cart_order_status_tone($status)
 {
     switch ($status) {
         case 'unpaid':                       // 손님이 아직 할 일이 남았다 — 여기만 튄다
             return 'wait';
-        case 'paid': case 'preparing': case 'shipping':
+        case 'paid': case 'preparing':
             return 'go';                     // 가게가 움직이는 중 — 기다리면 된다
+        case 'shipping':                     // 지금 오는 중 — 손님이 가장 자주 확인하는 상태라
+            return 'ship';                   // 진행 중 파랑에 묻지 않게 채워서 띄운다
         case 'delivered': case 'confirmed':
             return 'done';                   // 잘 받았다
         case 'returned':
@@ -451,6 +458,10 @@ function cart_order_transition($od_id, $action, $who = 'admin', $memo = '')
         // 구매확정된 주문은 대상이 아니다 — from 이 delivered 뿐이라 규칙만으로 막힌다.
         'unship' => array('from' => array('shipping'), 'to' => 'paid'),
         'undeliver' => array('from' => array('delivered'), 'to' => 'shipping'),
+        // 입금확인 되돌리기 — 입금관리에서 여러 건을 한 번에 넘기게 되면서 필요해졌다.
+        // 한 건을 잘못 누르는 것과 열 건을 잘못 넘기는 것은 무게가 다르다.
+        // 무통장만 대상이다(아래 pay_method 검사). 재고는 주문 때 이미 차감돼 있어 건드릴 것이 없다.
+        'undeposit' => array('from' => array('paid'), 'to' => 'unpaid'),
     );
     if (!isset($rules[$action])) return '허용되지 않는 처리입니다.';
     $rule = $rules[$action];
@@ -466,6 +477,10 @@ function cart_order_transition($od_id, $action, $who = 'admin', $memo = '')
         $fail = '현재 상태('.cart_order_status_label($cur['od_status'], $cur['od_pay_method']).')에서는 할 수 없는 처리입니다.';
     } elseif ($action === 'deposit' && $cur['od_pay_method'] !== 'bank') {
         $fail = '무통장 주문만 입금확인 처리할 수 있습니다.';
+    } elseif ($action === 'undeposit' && $cur['od_pay_method'] !== 'bank') {
+        // 카드·간편결제의 paid 는 승인이 난 것이라 되돌린다고 돈이 돌아오지 않는다.
+        // 그건 취소(자동 환불) 경로가 할 일이다.
+        $fail = '무통장 주문만 입금확인을 되돌릴 수 있습니다.';
     } elseif ($action === 'confirm' && cart_return_blocks_confirm($od_id)) {
         // 반품이 처리를 기다리는 동안은 확정할 수 없다. 확정은 "다 잘 받았다" 는 매듭이라
         // 반품 진행 중에 찍히면 말이 어긋나고, 확정 뒤에는 반품 신청을 받지 않으므로
@@ -498,6 +513,9 @@ function cart_order_transition($od_id, $action, $who = 'admin', $memo = '')
         // 되돌릴 때는 그 단계가 찍어 둔 시각도 지운다 — 남겨 두면 반품 기한이 헛 시각을 센다
         if ($action === 'unship') $set .= ", od_shipped_at = '1970-01-01 00:00:00' ";
         if ($action === 'undeliver') $set .= ", od_delivered_at = '1970-01-01 00:00:00' ";
+        // 입금 시각을 지운다 — 안 지우면 "입금대기인데 입금 시각이 있는" 주문이 되고,
+        // 무통장 만료 자동취소가 세는 기준(od_datetime)과 화면의 말이 어긋난다.
+        if ($action === 'undeposit') $set .= ", od_paid_at = '1970-01-01 00:00:00' ";
         // 취소한 주문에 쓴 쿠폰은 손님에게 돌려준다. 기한이 이미 지났으면 되살려도 못 쓰지만
         // 기한을 늘려 주는 것은 쿠폰 정책을 바꾸는 일이라 사람이 정할 몫이다.
         if ($action === 'cancel') cart_coupon_release($od_id);
@@ -550,6 +568,7 @@ function cart_order_action_label($action)
         'deposit' => '입금확인', 'preparing' => '배송준비', 'shipping' => '발송',
         'delivered' => '배송완료', 'confirm' => '구매확정', 'cancel' => '주문취소',
         'unship' => '발송 되돌림', 'undeliver' => '배송완료 되돌림',
+        'undeposit' => '입금확인 되돌림',
     );
     return isset($map[$action]) ? $map[$action] : $action;
 }
