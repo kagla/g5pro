@@ -1,14 +1,25 @@
 <style>
 #cart_sz .frm_input { height: 30px; line-height: 28px; }
-#cart_sz td { text-align: center; }
+/* 순정 admin.css 가 .tbl_head01 안의 .frm_input 을 width:100% 로 잡는다 — 한 칸에 입력이
+   둘(우편번호 시작~끝) 있으면 세로로 쌓인다. id 로 이겨서 칸마다 폭을 준다. */
+#cart_sz td { text-align: center; white-space: nowrap; }
+#cart_sz .sz_name { width: 130px; }
+#cart_sz .sz_zip { width: 76px; text-align: center; }
+#cart_sz .sz_fee { width: 92px; text-align: right; }
+#cart_sz .sz_tilde { display: inline-block; padding: 0 4px; color: #888; }
 #cart_sz .sz_rm { border: 0; background: none; color: #999; font-size: 15px; cursor: pointer; }
 #cart_sz tr.is-new td { background: #eef4ff; }
-#sz_tools { margin: 14px 0; padding: 14px; border: 1px solid #e0e0e0; border-radius: 6px; background: #fafafa; }
-#sz_tools h3 { margin: 0 0 8px; font-size: 1.05em; }
-#sz_tools textarea { width: 100%; height: 90px; font-family: monospace; }
-#sz_tools .sz_row { margin-top: 8px; }
-#sz_tools .sz_row input { height: 30px; line-height: 28px; }
-#sz_preview { margin-top: 8px; color: #555; font-size: 0.95em; }
+#sz_tools { margin: 14px 0; padding: 18px; border: 1px solid #e0e0e0; border-radius: 6px; background: #fafafa; }
+/* 관리자 기본 글씨가 12px 이고 .txt_id 는 더 작다. 여기 안내는 "무엇을 어디서 복사해 오는가"
+   를 처음 알려 주는 글이라 읽히는 크기여야 한다 — 표 안의 짧은 힌트와는 성격이 다르다.
+   em 은 monospace 에서 브라우저 기본 고정폭 크기에 걸려 되레 작아지므로 px 로 못 박는다. */
+#sz_tools h3 { margin: 0 0 10px; font-size: 16px; }
+#sz_tools .txt_id { display: block; font-size: 14px; line-height: 1.7; color: #555; }
+#sz_tools textarea { width: 100%; height: 110px; font-family: monospace; font-size: 14px; line-height: 1.6; }
+#sz_tools .sz_row { margin-top: 10px; font-size: 14px; }
+#sz_tools .sz_row input { height: 32px; line-height: 30px; font-size: 14px; }
+#sz_tools .btn { font-size: 14px; }
+#sz_preview { margin-top: 10px; color: #555; font-size: 14px; }
 #sz_preview b { color: #1D5FD1; }
 #cart_sz_add { margin: 10px 0 0; }
 </style>
@@ -65,10 +76,9 @@
 
     @foreach ($zones as $z)
     <tr>
-        <td><input type="text" name="sz[{{ $z['sz_id'] }}][name]" value="{{ $z['sz_name'] }}" size="12" class="frm_input"></td>
-        <td><input type="text" name="sz[{{ $z['sz_id'] }}][from]" value="{{ $z['sz_zip_from'] }}" size="6" class="frm_input"> ~
-            <input type="text" name="sz[{{ $z['sz_id'] }}][to]" value="{{ $z['sz_zip_to'] }}" size="6" class="frm_input"></td>
-        <td><input type="text" name="sz[{{ $z['sz_id'] }}][fee]" value="{{ $z['sz_fee'] }}" size="8" style="text-align:right" class="frm_input"> 원</td>
+        <td><input type="text" name="sz[{{ $z['sz_id'] }}][name]" value="{{ $z['sz_name'] }}" class="frm_input sz_name"></td>
+        <td><input type="text" name="sz[{{ $z['sz_id'] }}][from]" value="{{ $z['sz_zip_from'] }}" class="frm_input sz_zip"><span class="sz_tilde">~</span><input type="text" name="sz[{{ $z['sz_id'] }}][to]" value="{{ $z['sz_zip_to'] }}" class="frm_input sz_zip"></td>
+        <td><input type="text" name="sz[{{ $z['sz_id'] }}][fee]" value="{{ $z['sz_fee'] }}" class="frm_input sz_fee"> 원</td>
         <td><input type="checkbox" name="sz[{{ $z['sz_id'] }}][use]" value="1" {{ (int)$z['sz_use'] === 1 ? 'checked' : '' }}></td>
         <td><input type="checkbox" name="sz_del[]" value="{{ $z['sz_id'] }}" class="sz_del"></td>
     </tr>
@@ -101,10 +111,11 @@ $(function () {
         function esc(v) { return String(v == null ? '' : v).replace(/"/g, '&quot;'); }
         $body.append(
             '<tr class="is-new">'
-          + '<td><input type="text" name="sz[' + k + '][name]" value="' + esc(name) + '" size="12" class="frm_input" placeholder="예: 도서산간"></td>'
-          + '<td><input type="text" name="sz[' + k + '][from]" value="' + esc(from) + '" size="6" class="frm_input" placeholder="40200"> ~ '
-          + '<input type="text" name="sz[' + k + '][to]" value="' + esc(to) + '" size="6" class="frm_input" placeholder="40240"></td>'
-          + '<td><input type="text" name="sz[' + k + '][fee]" value="' + esc(fee) + '" size="8" style="text-align:right" class="frm_input"> 원</td>'
+          + '<td><input type="text" name="sz[' + k + '][name]" value="' + esc(name) + '" class="frm_input sz_name" placeholder="예: 도서산간"></td>'
+          + '<td><input type="text" name="sz[' + k + '][from]" value="' + esc(from) + '" class="frm_input sz_zip" placeholder="40200">'
+          + '<span class="sz_tilde">~</span>'
+          + '<input type="text" name="sz[' + k + '][to]" value="' + esc(to) + '" class="frm_input sz_zip" placeholder="40240"></td>'
+          + '<td><input type="text" name="sz[' + k + '][fee]" value="' + esc(fee) + '" class="frm_input sz_fee"> 원</td>'
           + '<td><input type="checkbox" name="sz[' + k + '][use]" value="1" checked></td>'
           + '<td><button type="button" class="sz_rm" title="이 줄 없애기">×</button></td>'
           + '</tr>');
