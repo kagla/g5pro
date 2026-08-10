@@ -10,7 +10,7 @@ $q = (isset($_GET['q']) && !is_array($_GET['q'])) ? trim($_GET['q']) : '';
 // 기본은 '접수' — 이 화면에 들어오는 이유는 처리할 일이 있어서다. 처리한 건은 골라서 본다.
 $status = (isset($_GET['status']) && !is_array($_GET['status'])) ? trim($_GET['status']) : 'requested';
 $page = (isset($_GET['page']) && !is_array($_GET['page'])) ? max(1, (int)$_GET['page']) : 1;
-$rows_per = 30;
+$rows_per = cart_rows_per();
 
 $statuses = array('requested' => '접수', 'approved' => '반품 완료', 'rejected' => '거절');
 

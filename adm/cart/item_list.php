@@ -11,7 +11,7 @@ $ca_id = (isset($_GET['ca_id']) && !is_array($_GET['ca_id'])) ? (int)$_GET['ca_i
 $page = (isset($_GET['page']) && !is_array($_GET['page'])) ? max(1, (int)$_GET['page']) : 1;
 // 한 페이지 개수 — 첫 값이 기본이고, 화이트리스트 밖 값은 기본으로 떨어뜨린다
 // (주소 조작으로 수만 행을 한 번에 뽑지 못하게)
-$per_options = array(20, 50, 100);
+$per_options = array(cart_rows_per(), 50, 100);   // 첫 값이 기본 — 다른 목록과 같은 곳에서 온다
 $per = (isset($_GET['per']) && !is_array($_GET['per'])) ? (int)$_GET['per'] : $per_options[0];
 if (!in_array($per, $per_options, true)) $per = $per_options[0];
 $rows_per = $per;

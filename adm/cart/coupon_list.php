@@ -8,7 +8,7 @@ include_once(G5_ADMIN_PATH.'/admin.head.php');
 
 $q = (isset($_GET['q']) && !is_array($_GET['q'])) ? trim($_GET['q']) : '';
 $page = (isset($_GET['page']) && !is_array($_GET['page'])) ? max(1, (int)$_GET['page']) : 1;
-$rows_per = 30;
+$rows_per = cart_rows_per();
 
 $where = array(' 1=1 ');
 if ($q !== '') {

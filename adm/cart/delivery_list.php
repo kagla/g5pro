@@ -15,7 +15,7 @@ $where = ($tab !== '') ? " od_status = '".sql_real_escape_string($tab)."' "
     : " od_status in ('paid', 'preparing', 'shipping') ";
 
 $page = (isset($_GET['page']) && !is_array($_GET['page'])) ? max(1, (int)$_GET['page']) : 1;
-$rows_per = 30;
+$rows_per = cart_rows_per();
 $cnt = sql_fetch(" select count(*) as cnt from `{$g5['ycart_order_table']}` where $where ");
 $total = (int)$cnt['cnt'];
 $total_page = max(1, (int)ceil($total / $rows_per));

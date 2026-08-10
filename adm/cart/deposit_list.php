@@ -26,7 +26,7 @@ if ($tab === 'due' && $days > 0) {
 }
 
 $page = (isset($_GET['page']) && !is_array($_GET['page'])) ? max(1, (int)$_GET['page']) : 1;
-$rows_per = 30;
+$rows_per = cart_rows_per();
 $cnt = sql_fetch(" select count(*) as cnt, sum(od_total) as amt
     from `{$g5['ycart_order_table']}` where $where ");
 $total = (int)$cnt['cnt'];

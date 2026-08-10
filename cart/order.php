@@ -89,7 +89,7 @@ if (!$is_member) {
     alert('비회원 주문은 주문번호로 조회할 수 있습니다.', cart_url('guest.php'));
 }
 
-$rows_per = 20;
+$rows_per = cart_rows_per();
 $mb_esc = sql_real_escape_string($member['mb_id']);
 
 // 기간은 자유 입력이 아니라 고른 값이다 — 손님이 날짜 두 개를 찍는 것보다 "최근 6개월" 한 번이

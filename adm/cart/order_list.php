@@ -11,7 +11,7 @@ $status = (isset($_GET['status']) && !is_array($_GET['status'])) ? trim($_GET['s
 $from = (isset($_GET['from']) && !is_array($_GET['from'])) ? trim($_GET['from']) : '';
 $to = (isset($_GET['to']) && !is_array($_GET['to'])) ? trim($_GET['to']) : '';
 $page = (isset($_GET['page']) && !is_array($_GET['page'])) ? max(1, (int)$_GET['page']) : 1;
-$rows_per = 30;
+$rows_per = cart_rows_per();
 
 // 관리자 화면이 다루는 상태 전부 — 목록은 order.lib 한 곳에서 정한다(상태가 늘 때 여기서 빠지지 않게)
 $statuses = cart_order_statuses();

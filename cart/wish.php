@@ -11,6 +11,8 @@ if ($mb_id === '') {
 }
 
 $page = (isset($_GET['page']) && !is_array($_GET['page'])) ? max(1, (int)$_GET['page']) : 1;
+// 표가 아니라 격자라 공용값(cart_rows_per)을 안 쓴다 — 24 는 열 수(2·3·4)의 공배수여서
+// 어느 화면 폭에서도 마지막 줄이 안 빈다. 20 으로 맞추면 3열에서 두 칸이 빈 채 끝난다.
 $rows_per = 24;
 
 $total = cart_wish_total($mb_id);
