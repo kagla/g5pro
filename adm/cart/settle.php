@@ -20,10 +20,12 @@ $daily = array();
 $sum = array('cnt' => 0, 'item' => 0, 'ship' => 0, 'total' => 0);
 // 환불(반품)은 결제일 기준으로 그 주문 줄에서 뺀다 — 순매출 = 총액 - 환불.
 // 반품은 결제와 다른 날 일어나지만, 여기서 보려는 것은 "이날 판 것이 결국 얼마였나" 다.
-$sum = array('cnt' => 0, 'item' => 0, 'ship' => 0, 'total' => 0, 'refund' => 0, 'net' => 0);
+// 쿠폰 할인도 열로 세운다 — 없으면 상품합계 + 배송비 가 총액과 안 맞아, 어디서 5천원이
+// 빠졌는지 화면만 보고는 알 수 없다(대사할 때 가장 먼저 막히는 자리다).
+$sum = array('cnt' => 0, 'item' => 0, 'ship' => 0, 'coupon' => 0, 'total' => 0, 'refund' => 0, 'net' => 0);
 $result = sql_query(" select date(od_paid_at) d, count(*) cnt,
-        sum(od_item_total) item_amt, sum(od_ship_fee) ship_amt, sum(od_total) total_amt,
-        sum(od_refund) refund_amt
+        sum(od_item_total) item_amt, sum(od_ship_fee) ship_amt, sum(od_coupon) coupon_amt,
+        sum(od_total) total_amt, sum(od_refund) refund_amt
     from `{$g5['ycart_order_table']}`
     where $paid_in and $range group by date(od_paid_at) order by d desc ");
 while ($r = sql_fetch_array($result)) {
@@ -32,6 +34,7 @@ while ($r = sql_fetch_array($result)) {
     $sum['cnt'] += (int)$r['cnt'];
     $sum['item'] += (int)$r['item_amt'];
     $sum['ship'] += (int)$r['ship_amt'];
+    $sum['coupon'] += (int)$r['coupon_amt'];
     $sum['total'] += (int)$r['total_amt'];
     $sum['refund'] += (int)$r['refund_amt'];
     $sum['net'] += (int)$r['net_amt'];
