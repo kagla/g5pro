@@ -112,8 +112,9 @@ function cart_order_paid_where($alias = '')
 // **여기가 뜻을 정하는 유일한 곳이고, 색은 템플릿이 정한다.**
 // 화면은 이 값을 CSS 클래스로 그대로 쓴다 — `class="cart-status is-<갈래>"`.
 // 그래서 템플릿마다 팔레트가 달라도(standard 는 중성+강조 하나, old-standard 는 소다 블루)
-// "배송중은 눈에 띄는 자리" 라는 뜻은 어디서나 같다. 새 화면·새 템플릿도 이 함수를 부른다.
-// 관리자(adm/)는 아직 상태를 맨 글자로만 찍는다 — 거기에 색을 넣을 때도 여기를 불러야 한다.
+// "배송중은 눈에 띄는 자리" 라는 뜻은 어디서나 같다. 손님 화면 두 템플릿과 관리자
+// (adm/cart/views — 색은 관리자 팔레트, 클래스는 .cart-od-status)가 모두 이 함수를 부른다.
+// 새 화면·새 템플릿도 색을 스스로 고르지 말고 여기를 부른다.
 // 템플릿이 갖춰야 할 클래스는 여섯: is-wait / is-go / is-ship / is-done / is-bad / is-end.
 function cart_order_status_tone($status)
 {

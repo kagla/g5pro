@@ -115,3 +115,24 @@ tfoot th, tfoot td { background: #E5EFFF; border-color: #C9DCFA; }
 .ul_01 li { border-color: #D9E7FB; }
 .visit_del_bt { border-color: #D9E7FB; }
 ul.de_pg_tab li a { background-color: #E7F0FF; color: #4A6FC4; }
+
+/* ── 주문 상태 뱃지 ────────────────────────────────────────────────────────
+   갈래(is-*)는 모듈이 정한다 — cart_order_status_tone($od_status). 손님 화면과 같은 함수라
+   같은 상태가 관리자와 손님 화면에서 다른 갈래로 갈리지 않는다(template/CLAUDE.md §1-1).
+   색은 여기서 정한다: 손님 화면의 토큰이 아니라 관리자 팔레트(파랑 #2563EB · 잉크 #2753B0 ·
+   연블루 면 #E5EFFF)를 쓴다. 표가 촘촘해 글자만으로는 상태가 안 잡혀서 뱃지로 세운다.
+   여덟 상태에 색 여덟을 주지 않는다 — 색이 말하는 것은 "무엇인가" 가 아니라 "봐야 하는가" 다.
+   모양은 관리자에 이미 있는 유일한 뱃지 선례(.dc_badge — 알약·11px)를 따른다. */
+.cart-od-status {
+    display: inline-block; padding: 1px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 700; line-height: 18px; white-space: nowrap;
+    background: #EEF1F5; color: #475569;   /* 6.69:1 */
+}
+.cart-od-status.is-wait { background: #FEF3C7; color: #B45309; }   /* 4.51:1 — 입금·결제를 기다린다 */
+.cart-od-status.is-go   { background: #E5EFFF; color: #2753B0; }   /* 6.14:1 — 가게가 처리 중 */
+.cart-od-status.is-ship { background: #2563EB; color: #FFFFFF; }   /* 5.17:1 — 지금 나가 있는 것 */
+.cart-od-status.is-done { background: #DCFCE7; color: #166534; }   /* 6.49:1 — 잘 받았다 */
+.cart-od-status.is-bad  { background: #FEE2E2; color: #B91C1C; }   /* 5.30:1 — 되돌아갔다 */
+.cart-od-status.is-end  { background: #EEF1F5; color: #475569; }   /* 6.69:1 — 끝났고 할 일 없다 */
+/* 주문 상세 머리말의 요약 칩 안에서는 상태만 색을 갖는다(옆의 결제수단·금액은 그대로) */
+.local_ov01 .ov_num .cart-od-status { font-size: 12px; }

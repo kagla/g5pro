@@ -81,7 +81,7 @@
         <td>{{ $o['od_no'] }}</td>
         <td class="td_left">{{ $o['summary'] }}</td>
         <td>{{ $o['od_name'] }}</td>
-        <td>{{ $o['status_label'] }}</td>
+        <td><span class="cart-od-status is-{{ cart_order_status_tone($o['od_status']) }}">{{ $o['status_label'] }}</span></td>
         <td class="td_num">{{ number_format($o['od_total']) }}</td>
         <td class="td_datetime">{{ substr($o['od_datetime'], 0, 16) }}</td>
     </tr>

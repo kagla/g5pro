@@ -52,7 +52,7 @@
         <td class="td_left">{{ $o['summary'] }}</td>
         <td>{{ $o['od_pay_method'] === 'bank' ? '무통장' : ($o['od_pay_method'] === 'inicis' ? '이니시스' : '토스') }}</td>
         <td class="td_num">{{ number_format($o['od_total']) }}</td>
-        <td>{{ $o['status_label'] }}</td>
+        <td><span class="cart-od-status is-{{ cart_order_status_tone($o['od_status']) }}">{{ $o['status_label'] }}</span></td>
         <td class="td_datetime">{{ substr($o['od_datetime'], 0, 16) }}</td>
         <td><a href="{{ $o['view_url'] }}" class="btn btn_02">상세</a></td>
     </tr>

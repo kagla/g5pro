@@ -47,7 +47,7 @@
         <td><a href="{{ $o['view_url'] }}">{{ $o['od_no'] }}</a></td>
         <td>{{ $o['od_recv_name'] !== '' ? $o['od_recv_name'] : $o['od_name'] }}</td>
         <td class="td_left">{{ $o['summary'] }}</td>
-        <td>{{ $o['status_label'] }}</td>
+        <td><span class="cart-od-status is-{{ cart_order_status_tone($o['od_status']) }}">{{ $o['status_label'] }}</span></td>
         <td>
             <select data-role="dc" class="frm_input">
                 <option value="">택배사 선택</option>

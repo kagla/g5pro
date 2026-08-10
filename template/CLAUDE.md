@@ -49,6 +49,9 @@ cart_order_status_tone($od['od_status'])   // 'wait' | 'go' | 'ship' | 'done' | 
 - **템플릿을 새로 만들면 갈래 전부를 그려야 한다.** 하나라도 빼면 그 상태만 맨 뱃지가 된다.
   주문 상태는 여섯이다: `is-wait` · `is-go` · `is-ship` · `is-done` · `is-bad` · `is-end`.
 - 갈래를 늘리거나 줄이는 것은 모듈 쪽 결정이다. 늘렸으면 **모든 템플릿**에 규칙을 추가한다.
+- 관리자(`adm/`)는 이 문서 소관 밖이지만 같은 방식을 쓴다 — 갈래는 같은 함수에서 오고,
+  색은 관리자 팔레트로 `adm/css/admin_extend_modern.css` 에 있다(클래스는 `.cart-od-status`).
+  갈래를 늘렸다면 거기도 함께 늘린다.
 
 ## 2. 비슷해 보이는 토큰 고르기
 

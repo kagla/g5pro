@@ -1,5 +1,5 @@
 <div class="local_ov01 local_ov">
-    <span class="btn_ov01"><span class="ov_txt">상태</span><span class="ov_num">{{ $status_label }}</span></span>
+    <span class="btn_ov01"><span class="ov_txt">상태</span><span class="ov_num"><span class="cart-od-status is-{{ cart_order_status_tone($order['od_status']) }}">{{ $status_label }}</span></span></span>
     <span class="btn_ov01"><span class="ov_txt">결제수단</span><span class="ov_num">{{ $order['od_pay_method'] === 'bank' ? '무통장' : ($order['od_pay_method'] === 'inicis' ? '이니시스' : '토스') }}</span></span>
     <span class="btn_ov01"><span class="ov_txt">결제 금액</span><span class="ov_num">{{ number_format($order['od_total']) }}원</span></span>
     <a href="{{ $list_url }}" class="btn btn_02">목록</a>
