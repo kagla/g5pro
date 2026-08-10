@@ -1,28 +1,8 @@
 <?php
 if (!defined('_GNUBOARD_')) exit;
 
-// ---------- 배송비 ----------
-// 몰 전역 단일 정책(설정 화면): 기본 배송비 + 조건부 무료(기준액 0 이면 없음) + 제주 추가비.
-// 조건부 무료를 충족해도 제주 추가비는 남는다 — 실제 택배 원가가 남는 구간이라 몰 관례를 따른다.
-function cart_shipping_fee($item_total, $zip = '')
-{
-    $cc = cart_config();
-    $fee = (int)$cc['cc_ship_base'];
-    if ((int)$cc['cc_ship_free'] > 0 && (int)$item_total >= (int)$cc['cc_ship_free']) {
-        $fee = 0;
-    }
-    if (cart_zip_is_jeju($zip)) {
-        $fee += (int)$cc['cc_ship_jeju'];
-    }
-    return $fee;
-}
-
-// 제주 판정 — 새 우편번호(5자리)는 제주 전역이 63000~63644, 프리픽스 '63' 으로 충분
-function cart_zip_is_jeju($zip)
-{
-    $zip = preg_replace('/[^0-9]/', '', (string)$zip);
-    return strlen($zip) === 5 && substr($zip, 0, 2) === '63';
-}
+// 배송비 계산은 delivery.lib.php 로 갔다(권역 표와 한 몸이라 그쪽이 자리다).
+// cart_shipping_fee() · cart_shipping_breakdown() · cart_ship_zone_* 를 그 파일에서 찾는다.
 
 // ---------- 주문 ----------
 
@@ -49,6 +29,40 @@ function cart_order_items($od_id)
     $result = sql_query(" select * from `{$g5['ycart_order_item_table']}`
         where od_id = '".(int)$od_id."' order by oi_id ");
     while ($r = sql_fetch_array($result)) $rows[] = $r;
+    return $rows;
+}
+
+// 손님 화면용 주문 상품 — 위 배열에 사진(img)과 상품으로 가는 문(href)을 얹는다.
+// 주문완료와 주문 상세가 같은 줄을 그리므로 여기 한 곳에서 만든다.
+//
+// 링크는 지금 손님이 열 수 있는 상품에만 건다 — 지워졌거나 노출이 꺼졌거나 소속 분류가 모두
+// 숨김인 상품으로 보내면 cart/item.php 가 "없는 상품입니다" 로 튕긴다. 그런 줄은 href 가 ''.
+// 존재 확인은 줄마다 묻지 않고 한 방에 — 주문 한 건에 상품이 여럿이다.
+function cart_order_items_for_view($od_id)
+{
+    global $g5;
+    $rows = cart_order_items($od_id);
+    $it_ids = array_filter(array_map(function ($r) { return (int)$r['it_id']; }, $rows));
+
+    $shown = array();
+    if ($it_ids) {
+        $res = sql_query(" select it_id, it_code, it_show from `{$g5['ycart_item_table']}`
+            where it_id in (".implode(',', array_unique($it_ids)).") ");
+        while ($r = sql_fetch_array($res)) {
+            if (!(int)$r['it_show'] || cart_item_is_hidden((int)$r['it_id'])) continue;
+            $shown[(int)$r['it_id']] = $r['it_code'];
+        }
+    }
+    $main_images = cart_item_main_images($it_ids);
+
+    foreach ($rows as $i => $r) {
+        $iid = (int)$r['it_id'];
+        // 주소는 상품코드(?code=)가 정식이다
+        $rows[$i]['href'] = isset($shown[$iid]) ? cart_url('item.php', array('code' => $shown[$iid])) : '';
+        // 64px 자리에 원본을 내려보내지 않는다(고해상도 화면까지 128px)
+        $rows[$i]['img'] = isset($main_images[$iid])
+            ? cart_item_thumb_url($main_images[$iid], 128, 128) : '';
+    }
     return $rows;
 }
 
@@ -190,7 +204,12 @@ function cart_order_create($input, $owner = null, $draft = false)
     // 금액 재계산 — 바구니 표시가가 아니라 지금 이 시점의 SKU 가격으로 확정한다
     $item_total = 0;
     foreach ($lines as $l) $item_total += (int)$l['sk_price'] * (int)$l['ct_qty'];
-    $ship_fee = cart_shipping_fee($item_total, $input['od_zip']);
+    // 내역까지 받아 둔다 — 어느 권역이 걸려 얼마가 붙었는지를 주문에 스냅샷으로 남긴다.
+    // 나중에 요금표를 고쳐도 이 주문의 근거는 그때 값 그대로여야 한다.
+    $ship = cart_shipping_breakdown($item_total, $input['od_zip']);
+    $ship_fee = $ship['total'];
+    $ship_zone = sql_real_escape_string(mb_substr($ship['zone'], 0, 50, 'utf-8'));
+    $ship_extra = (int)$ship['extra'];
 
     // 쿠폰 — 회원만, 주문당 한 장. 화면이 보낸 금액은 쓰지 않고 여기서 다시 계산한다
     // (주문서의 숫자는 안내일 뿐이고, 결제창에 넘어갈 금액의 근거는 이 줄이어야 한다).
@@ -243,7 +262,7 @@ function cart_order_create($input, $owner = null, $draft = false)
     sql_query(" insert into `{$g5['ycart_order_table']}`
         (od_no, mb_id, od_name, od_hp, od_email, od_recv_name, od_recv_hp,
          od_zip, od_addr1, od_addr2, od_memo,
-         od_item_total, od_ship_fee, od_coupon, od_cm_id, od_point, od_total,
+         od_item_total, od_ship_fee, od_ship_zone, od_ship_extra, od_coupon, od_cm_id, od_point, od_total,
          od_status, od_pay_method, od_depositor, od_guest_pw, od_ct_ids, od_ip, od_datetime)
         values ('".sql_real_escape_string($od_no)."',
                 '".sql_real_escape_string($mb_id)."',
@@ -256,7 +275,7 @@ function cart_order_create($input, $owner = null, $draft = false)
                 '".sql_real_escape_string(strip_tags(trim($input['od_addr1'])))."',
                 '".sql_real_escape_string(strip_tags(trim($input['od_addr2'])))."',
                 '".sql_real_escape_string(strip_tags(trim($input['od_memo'])))."',
-                '$item_total', '$ship_fee', '$coupon', '$cm_id', 0, '$total',
+                '$item_total', '$ship_fee', '$ship_zone', '$ship_extra', '$coupon', '$cm_id', 0, '$total',
                 '".($draft ? 'draft' : 'unpaid')."',
                 '".sql_real_escape_string($input['od_pay_method'])."',
                 '".sql_real_escape_string(strip_tags(trim($input['od_depositor'])))."',
@@ -570,8 +589,94 @@ function cart_order_action_label($action)
         'delivered' => '배송완료', 'confirm' => '구매확정', 'cancel' => '주문취소',
         'unship' => '발송 되돌림', 'undeliver' => '배송완료 되돌림',
         'undeposit' => '입금확인 되돌림',
+        'edit' => '정보 수정',
     );
     return isset($map[$action]) ? $map[$action] : $action;
+}
+
+// ---------- 부대 정보 수정 ----------
+// 주문에서 "무엇을 사는가"(품목·수량·금액)가 아니라 "어디로·누구 이름으로"에 해당하는 값만 고친다.
+// 손님 화면과 관리자 화면이 같은 문을 쓴다 — 허용 목록·자르기·이력이 한 곳에만 있으면
+// 한쪽에서 필드를 늘렸을 때 다른 쪽이 조용히 뒤처지지 않는다.
+//
+// "누가 언제까지 고칠 수 있나" 는 부르는 쪽이 정한다(손님은 발송 전 일부, 관리자는 발송 전 전부).
+// 여기서는 "무엇을 고칠 수 있나" 만 못 박는다.
+//
+// 반환: '' 이면 성공(바뀐 것이 없어도 성공), 아니면 사람이 읽을 오류.
+function cart_order_edit_fields($od_id, $fields, $who)
+{
+    global $g5;
+    $od_id = (int)$od_id;
+
+    // 컬럼 => (이력에 적을 이름, 최대 길이). 저장 때(cart_order_create)와 같은 길이로 자른다.
+    // 금액(od_total·od_ship_fee)·상태·재고에 걸린 값은 일부러 뺐다 — 그것들은 문자열 수정이
+    // 아니라 재계산·환불이 따라붙는 일이라 이 문으로 들어오면 안 된다.
+    $allow = array(
+        'od_depositor' => array('입금자명', 50),
+        'od_recv_name' => array('받는분', 50),
+        'od_recv_hp'   => array('받는분 연락처', 20),
+        'od_name'      => array('주문자', 50),
+        'od_hp'        => array('주문자 연락처', 20),
+        'od_email'     => array('이메일', 100),
+        'od_zip'       => array('우편번호', 10),
+        'od_addr1'     => array('주소', 255),
+        'od_addr2'     => array('상세주소', 255),
+        'od_memo'      => array('배송 요청', 255),
+    );
+
+    $cur = sql_fetch(" select * from `{$g5['ycart_order_table']}` where od_id = '$od_id' ");
+    if (!$cur) return '주문이 없습니다.';
+
+    $sets = array();
+    $diff = array();
+    foreach ((array)$fields as $col => $val) {
+        if (!isset($allow[$col]) || !isset($cur[$col])) continue;   // 허용 목록 밖은 조용히 버린다
+        list($label, $len) = $allow[$col];
+        $val = mb_substr(strip_tags(trim((string)$val)), 0, $len, 'utf-8');
+        if ((string)$cur[$col] === $val) continue;                  // 안 바뀐 값은 이력에도 안 남긴다
+        $sets[] = " `$col` = '".sql_real_escape_string($val)."' ";
+        $diff[] = $label.' '.($cur[$col] !== '' ? $cur[$col] : '(없음)').'→'.($val !== '' ? $val : '(없음)');
+    }
+    if (!count($sets)) return '';
+
+    sql_query(" update `{$g5['ycart_order_table']}` set ".implode(',', $sets)."
+        where od_id = '$od_id' ", true);
+
+    // 이력 — 배송지가 바뀐 주문은 나중에 반드시 "왜 이 주소로 갔나" 를 되짚게 된다.
+    // 상태는 안 바뀌므로 from·to 에 지금 상태를 그대로 적는다(전이가 아님이 표에서 드러난다).
+    sql_query(" insert into `{$g5['ycart_order_log_table']}`
+        set od_id = '$od_id', ol_action = 'edit',
+            ol_from = '".sql_real_escape_string($cur['od_status'])."',
+            ol_to = '".sql_real_escape_string($cur['od_status'])."',
+            ol_who = '".sql_real_escape_string(mb_substr((string)$who, 0, 50, 'utf-8'))."',
+            ol_ip = '".sql_real_escape_string(isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '')."',
+            ol_memo = '".sql_real_escape_string(mb_substr(implode(' / ', $diff), 0, 255, 'utf-8'))."',
+            ol_datetime = '".G5_TIME_YMDHIS."' ", true);
+    return '';
+}
+
+// 손님이 주문을 취소할 수 있나 — 배송 준비 전까지, 그리고 돈을 되돌릴 길이 있을 때만.
+// 반환: '' 이면 가능, 아니면 왜 안 되는지(화면이 그대로 보여 준다).
+//
+// 무통장 결제완료가 유일한 예외다. 통장에 들어온 돈은 자동으로 되돌릴 방법이 없어서,
+// 손님이 버튼 하나로 취소하면 "돌려줄 돈" 이 어디에도 안 남는다. 사람이 계좌를 받아야 한다.
+function cart_order_customer_cancel_why_not($order)
+{
+    if (!$order) return '주문을 찾을 수 없습니다.';
+    if ($order['od_status'] === 'unpaid') return '';
+    if ($order['od_status'] === 'paid') {
+        return ($order['od_pay_method'] === 'bank')
+            ? '입금이 확인된 주문은 환불 계좌가 필요해 화면에서 바로 취소할 수 없습니다. 판매자에게 문의해 주세요.'
+            : '';
+    }
+    return '배송 준비가 시작되어 취소할 수 없습니다. 판매자에게 문의해 주세요.';
+}
+
+// 손님이 고르는 취소 사유 — 빈 칸 앞에서 무슨 말을 적어야 할지 고민하지 않게 한다.
+// 관리자 쪽 목록(주문 취소 모달)과 문구가 다른 이유: 여기는 손님이 자기 사정을 말하는 자리다.
+function cart_cancel_reasons()
+{
+    return array('단순 변심', '주문 실수(수량·옵션)', '다시 주문하려고', '배송이 늦어져서', '다른 곳에서 구매');
 }
 
 // 이 주문을 지금 요청자가 볼 수 있는가 — 회원 본인, 방금 주문한 세션, 비회원 조회 인증 세션.

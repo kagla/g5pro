@@ -34,17 +34,29 @@
         <th scope="row">결제일시</th><td>{{ substr($order['od_paid_at'], 0, 4) !== '1970' ? $order['od_paid_at'] : '-' }}</td>
     </tr>
 
+    {{-- 누가 취소했는지가 대응을 가른다 — 손님이 스스로 누른 것과 판매자가 직권으로 자른 것,
+         기한이 지나 자동으로 풀린 것은 다음에 할 일이 서로 다르다 --}}
     @if ($order['od_status'] === 'canceled')
+    @php $by = $order['od_canceled_by']; @endphp
     <tr>
         <th scope="row">취소 사유</th><td>{{ $order['od_cancel_reason'] !== '' ? $order['od_cancel_reason'] : '-' }}</td>
         <th scope="row">취소 처리</th>
-        <td>관리자 직권 취소{{ $order['od_canceled_by'] !== '' ? ' ('.$order['od_canceled_by'].')' : '' }}{{ substr($order['od_canceled_at'], 0, 4) !== '1970' ? ' · '.$order['od_canceled_at'] : '' }}</td>
+        <td>{{ $by === 'customer' ? '손님이 취소' : ($by === 'system' ? '기한 초과 자동 취소' : '관리자 직권 취소'.($by !== '' ? ' ('.$by.')' : '')) }}{{ substr($order['od_canceled_at'], 0, 4) !== '1970' ? ' · '.$order['od_canceled_at'] : '' }}</td>
     </tr>
     @endif
 
     <tr>
         <th scope="row">상품 합계</th><td>{{ number_format($order['od_item_total']) }}원</td>
-        <th scope="row">배송비</th><td>{{ number_format($order['od_ship_fee']) }}원</td>
+        <th scope="row">배송비</th>
+        <td>{{ number_format($order['od_ship_fee']) }}원
+
+            {{-- 권역 추가비가 붙었으면 근거를 함께 적는다 — "왜 이 금액이냐" 는 문의가 잦은 자리다 --}}
+            @if ((int)$order['od_ship_extra'] > 0)
+            <span class="txt_id">기본 {{ number_format((int)$order['od_ship_fee'] - (int)$order['od_ship_extra']) }}원
+                + {{ $order['od_ship_zone'] !== '' ? $order['od_ship_zone'] : '권역' }} {{ number_format($order['od_ship_extra']) }}원</span>
+            @endif
+
+        </td>
     </tr>
 
     {{-- 깎인 금액만 있으면 왜 깎였는지 알 수 없다 — 어느 쿠폰이었는지 함께 적는다 --}}
@@ -63,6 +75,66 @@
     </tbody>
     </table>
 </div>
+
+{{-- 주문 정보 수정 — 발송 전까지. 손님 화면은 입금자명·받는분만 열지만 관리자는 주소까지 연다:
+     전화로 사정을 듣고 창고에 물어볼 수 있는 쪽이 관리자다.
+     배송비는 자동으로 다시 계산하지 않는다 — 이미 받은 돈이 있는 주문의 금액을 화면이 조용히
+     고치면 결제액과 장부가 갈린다. 우편번호가 바뀌어 기준이 달라지면 저장 뒤에 알려만 준다. --}}
+@if ($can_edit)
+<h2 class="h2_frm">주문 정보 수정</h2>
+<form method="post" action="{{ $update_url }}">
+<input type="hidden" name="token" value="{{ $token }}">
+<input type="hidden" name="od_id" value="{{ $order['od_id'] }}">
+<input type="hidden" name="mode" value="edit_info">
+<div class="tbl_frm01 tbl_wrap">
+    <table>
+    <tbody>
+    <tr>
+        <th scope="row"><label for="ed_name">주문자</label></th>
+        <td><input type="text" name="od_name" id="ed_name" value="{{ $order['od_name'] }}" class="frm_input" maxlength="50" required></td>
+        <th scope="row"><label for="ed_hp">연락처</label></th>
+        <td><input type="text" name="od_hp" id="ed_hp" value="{{ $order['od_hp'] }}" class="frm_input" maxlength="20"></td>
+    </tr>
+    <tr>
+        <th scope="row"><label for="ed_email">이메일</label></th>
+        <td><input type="text" name="od_email" id="ed_email" value="{{ $order['od_email'] }}" class="frm_input" maxlength="100"></td>
+        <th scope="row"><label for="ed_depositor">입금자명</label></th>
+        <td>
+            <input type="text" name="od_depositor" id="ed_depositor" value="{{ $order['od_depositor'] }}" class="frm_input" maxlength="50">
+
+            @if ($order['od_pay_method'] === 'bank' && $order['od_status'] !== 'unpaid')
+            <span class="txt_id">이미 입금이 확인된 주문입니다 — 통장 기록과 어긋나지 않게 확인하고 고치세요.</span>
+            @endif
+
+        </td>
+    </tr>
+    <tr>
+        <th scope="row"><label for="ed_recv_name">받는분</label></th>
+        <td><input type="text" name="od_recv_name" id="ed_recv_name" value="{{ $order['od_recv_name'] }}" class="frm_input" maxlength="50" placeholder="비우면 주문자와 같음"></td>
+        <th scope="row"><label for="ed_recv_hp">받는분 연락처</label></th>
+        <td><input type="text" name="od_recv_hp" id="ed_recv_hp" value="{{ $order['od_recv_hp'] }}" class="frm_input" maxlength="20" placeholder="비우면 주문자와 같음"></td>
+    </tr>
+    <tr>
+        <th scope="row"><label for="ed_zip">배송지</label></th>
+        <td colspan="3">
+            <input type="text" name="od_zip" id="ed_zip" value="{{ $order['od_zip'] }}" class="frm_input" size="8" maxlength="10" placeholder="우편번호">
+            <input type="text" name="od_addr1" value="{{ $order['od_addr1'] }}" class="frm_input" size="40" maxlength="255" placeholder="주소">
+            <input type="text" name="od_addr2" value="{{ $order['od_addr2'] }}" class="frm_input" size="24" maxlength="255" placeholder="상세주소">
+            <span class="txt_id">우편번호를 바꿔도 배송비({{ number_format($order['od_ship_fee']) }}원)는 자동으로 다시 계산하지 않습니다. 달라지면 저장 뒤에 알려 드립니다.</span>
+        </td>
+    </tr>
+    <tr>
+        <th scope="row"><label for="ed_memo">배송 요청</label></th>
+        <td colspan="3">
+            <input type="text" name="od_memo" id="ed_memo" value="{{ $order['od_memo'] }}" class="frm_input" size="50" maxlength="255">
+            <button type="submit" class="btn_submit btn">주문 정보 저장</button>
+        </td>
+    </tr>
+    </tbody>
+    </table>
+</div>
+</form>
+@endif
 
 <h2 class="h2_frm">주문 상품</h2>
 <div class="tbl_head01 tbl_wrap">
@@ -377,7 +449,9 @@ $(function () {
         {{-- yy-mm-dd hh:ii:ss — 앞의 "20" 만 떼어 낸다. 초까지 보여야 같은 분에 두 번 눌린 것이 갈린다 --}}
         <td>{{ substr($l['ol_datetime'], 2) }}</td>
         <td>{{ $l['action_label'] }}</td>
-        <td>{{ cart_order_status_label($l['ol_from'], $order['od_pay_method']) }} → {{ cart_order_status_label($l['ol_to'], $order['od_pay_method']) }}</td>
+        {{-- 상태가 안 바뀐 줄(정보 수정)에 "입금대기 → 입금대기" 를 적으면 무엇이 바뀐 줄 알고
+             두 번 읽게 된다. 전이가 아닌 것은 화살표 없이 지금 상태만 적는다 --}}
+        <td>{{ cart_order_status_label($l['ol_from'], $order['od_pay_method']) }}{{ $l['ol_from'] !== $l['ol_to'] ? ' → '.cart_order_status_label($l['ol_to'], $order['od_pay_method']) : '' }}</td>
         <td>{{ $l['who_label'] }}</td>
         <td>{{ $l['ol_ip'] !== '' ? $l['ol_ip'] : '-' }}</td>
         <td class="td_left">{{ $l['ol_memo'] }}</td>

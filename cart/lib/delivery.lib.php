@@ -7,6 +7,131 @@ if (!defined('_GNUBOARD_')) exit;
 // 이름 규칙: cart_delivery_company_* 는 업체 마스터를 다루고,
 // cart_delivery_track_url · cart_order_set_delivery 는 주문 한 건의 배송값을 다룬다.
 
+// ---------- 배송비 ----------
+// 몰 전역 단일 정책: 기본 배송비 + 조건부 무료(기준액 0 이면 없음) + 권역 추가비.
+// 조건부 무료를 충족해도 권역 추가비는 남는다 — 실제 택배 원가가 남는 구간이라 몰 관례를 따른다.
+//
+// 권역(제주·도서산간)은 코드가 아니라 ycart_ship_zone 에 있다. 택배사·계약마다 요금이 다르고
+// 섬 우편번호가 흩어져 있어, 한 몰에 맞춘 목록을 코드에 박으면 다음 몰에서 틀린다.
+
+// 배송비의 내역 — 화면과 주문 생성이 같은 함수를 쓴다.
+// array(base, free_applied, extra, zone, total)
+function cart_shipping_breakdown($item_total, $zip = '')
+{
+    $cc = cart_config();
+    $base = (int)$cc['cc_ship_base'];
+    $free = ((int)$cc['cc_ship_free'] > 0 && (int)$item_total >= (int)$cc['cc_ship_free']);
+    if ($free) $base = 0;
+
+    $zone = cart_ship_zone_match($zip);
+    $extra = $zone ? (int)$zone['sz_fee'] : 0;
+
+    return array(
+        'base' => $base,
+        'free_applied' => $free,
+        'extra' => $extra,
+        'zone' => $zone ? $zone['sz_name'] : '',
+        'total' => $base + $extra,
+    );
+}
+
+function cart_shipping_fee($item_total, $zip = '')
+{
+    $b = cart_shipping_breakdown($item_total, $zip);
+    return $b['total'];
+}
+
+// 이 우편번호가 걸리는 권역 — 겹치면 **가장 비싼 것 하나**. 설정이 겹쳐도 두 번 더해지지 않는다.
+// (겹치게 두는 것이 옳은 설정은 아니지만, 실수가 손님 청구서에 두 배로 나타나서는 안 된다.)
+// 우편번호는 5자리 숫자 문자열 비교로 판정한다 — 앞자리 0 이 살아 있어야 구간이 맞는다.
+function cart_ship_zone_match($zip)
+{
+    global $g5;
+    $zip = preg_replace('/[^0-9]/', '', (string)$zip);
+    if (strlen($zip) !== 5) return null;
+    $z = sql_real_escape_string($zip);
+    $row = sql_fetch(" select * from `{$g5['ycart_ship_zone_table']}`
+        where sz_use = 1 and sz_zip_from <> '' and sz_zip_to <> ''
+          and '$z' between sz_zip_from and sz_zip_to
+        order by sz_fee desc, sz_order, sz_id limit 1 ");
+    return $row ? $row : null;
+}
+
+// 상품 상세의 배송 안내에 쓰는 한 줄 — "제주 3,000원 · 도서산간 5,000원".
+// 한 이름에 구간이 여러 줄이므로 이름별로 접고, 같은 이름에 요금이 다르면 가장 비싼 것을 적는다
+// (손님에게 덜 받을 것처럼 말하지 않는다). 쓰는 권역이 없으면 빈 문자열.
+function cart_ship_zone_summary()
+{
+    $by = array();
+    foreach (cart_ship_zone_list() as $z) {
+        $name = $z['sz_name'];
+        $fee = (int)$z['sz_fee'];
+        if ($fee < 1) continue;
+        if (!isset($by[$name]) || $fee > $by[$name]) $by[$name] = $fee;
+    }
+    $out = array();
+    foreach ($by as $name => $fee) $out[] = $name.' '.number_format($fee).'원';
+    return implode(' · ', $out);
+}
+
+function cart_ship_zone_list($only_use = true)
+{
+    global $g5;
+    $where = $only_use ? " where sz_use = 1 " : '';
+    $rows = array();
+    $result = sql_query(" select * from `{$g5['ycart_ship_zone_table']}`
+        $where order by sz_order, sz_id ");
+    while ($r = sql_fetch_array($result)) $rows[] = $r;
+    return $rows;
+}
+
+// 환경설정 화면의 저장 — 택배사 저장과 같은 계약이다(배열 순서가 곧 화면 순서).
+// $rows : array(행키 => array('name','from','to','fee','use')). 행키는 sz_id 또는 'new1'
+function cart_ship_zone_save($rows, $del_ids)
+{
+    global $g5;
+    $table = $g5['ycart_ship_zone_table'];
+    $del = array_map('intval', (array)$del_ids);
+
+    foreach ($del as $id) {
+        if ($id > 0) sql_query(" delete from `$table` where sz_id = '$id' ", true);
+    }
+
+    $ord = 0;
+    foreach ((array)$rows as $key => $row) {
+        $name = mb_substr(trim((string)(isset($row['name']) ? $row['name'] : '')), 0, 50, 'utf-8');
+        // 이름이 빈 줄은 없는 셈 친다(택배사관리와 같은 규칙 — 지우려면 삭제 체크다)
+        if ($name === '') continue;
+
+        $id = (strpos((string)$key, 'new') === 0) ? 0 : (int)$key;
+        if ($id > 0 && in_array($id, $del, true)) continue;
+
+        // 우편번호는 5자리로 맞춘다. 짧게 적으면(예: 630) 문자열 비교가 엉뚱하게 걸리므로
+        // 앞을 0 으로 채우는 대신 뒤를 채운다: 시작은 0, 끝은 9 — "63" 이 63000~63999 가 된다.
+        $from = preg_replace('/[^0-9]/', '', (string)(isset($row['from']) ? $row['from'] : ''));
+        $to = preg_replace('/[^0-9]/', '', (string)(isset($row['to']) ? $row['to'] : ''));
+        if ($from === '' && $to === '') continue;              // 범위가 없으면 걸릴 일도 없다
+        if ($to === '') $to = $from;
+        if ($from === '') $from = $to;
+        $from = str_pad(substr($from, 0, 5), 5, '0');
+        $to = str_pad(substr($to, 0, 5), 5, '9');
+        if ($from > $to) { $swap = $from; $from = $to; $to = $swap; }   // 거꾸로 적었으면 바로잡는다
+
+        $fee = max(0, (int)str_replace(',', '', (string)(isset($row['fee']) ? $row['fee'] : 0)));
+        $use = (isset($row['use']) && $row['use'] !== '') ? 1 : 0;
+        $ord += 1;
+
+        $set = " sz_name = '".sql_real_escape_string($name)."',
+                 sz_zip_from = '".sql_real_escape_string($from)."',
+                 sz_zip_to = '".sql_real_escape_string($to)."',
+                 sz_fee = '$fee', sz_order = '$ord', sz_use = '$use' ";
+        if ($id > 0) sql_query(" update `$table` set $set where sz_id = '$id' ", true);
+        else sql_query(" insert into `$table` set $set ", true);
+    }
+}
+
+// ---------- 택배사 ----------
+
 // 택배사 목록. 기본은 쓰는 것만 — 관리 화면만 false 로 안 쓰는 것까지 가져간다.
 function cart_delivery_company_list($only_use = true)
 {

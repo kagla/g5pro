@@ -71,10 +71,14 @@ g5_view('cart.checkout', array(
     'default_hp' => $is_member ? cart_address_default($member, 'ad_hp', 'mb_hp') : '',
     'default_email' => $is_member ? cart_address_default($member, 'ad_email', 'mb_email') : '',
     'addresses' => $is_member ? cart_address_list($member['mb_id']) : array(),
+    // 배송비 미리보기의 재료 — 권역은 목록째 내려 준다. 규칙이 화면에 박히면 표를 고쳐도
+    // 주문서가 옛 규칙으로 계산하고, 손님이 본 금액과 서버가 매긴 금액이 갈린다.
     'ship' => array(
         'base' => (int)$cc['cc_ship_base'],
         'free' => (int)$cc['cc_ship_free'],
-        'jeju' => (int)$cc['cc_ship_jeju'],
+        'zones' => array_map(function ($z) {
+            return array('from' => $z['sz_zip_from'], 'to' => $z['sz_zip_to'], 'fee' => (int)$z['sz_fee']);
+        }, cart_ship_zone_list()),
     ),
     'pay_methods' => cart_pay_methods(),
     'token' => get_token(),

@@ -42,6 +42,7 @@ function cart_table_defaults()
         'ycart_coupon_mb_table'  => 'ycart_coupon_mb',
         'ycart_delivery_company_table' => 'ycart_delivery_company',
         'ycart_order_log_table'  => 'ycart_order_log',
+        'ycart_ship_zone_table'  => 'ycart_ship_zone',
     );
     foreach ($tables as $key => $name) {
         if (!isset($g5[$key])) $g5[$key] = G5_TABLE_PREFIX.$name;
@@ -168,6 +169,13 @@ function cart_column_upgrades()
         // 누구인지 갈리지 않는다. 자동 처리(cron)는 접속 주소가 없어 빈 값으로 남는다.
         array('ycart_order_log_table', 'ol_ip',
             " ADD `ol_ip` varchar(50) NOT NULL DEFAULT '' AFTER `ol_who` "),
+        // 2026-08-10 권역 추가 배송비의 스냅샷 — 어느 권역이 걸려 얼마가 붙었나.
+        // od_ship_fee 하나만 있으면 "배송비 6,320원" 의 근거를 나중에 되짚을 수 없다.
+        // 요금표를 고쳐도 옛 주문은 그때 값 그대로여야 한다(주문은 그 시점의 장부다).
+        array('ycart_order_table', 'od_ship_zone',
+            " ADD `od_ship_zone` varchar(50) NOT NULL DEFAULT '' AFTER `od_ship_fee` "),
+        array('ycart_order_table', 'od_ship_extra',
+            " ADD `od_ship_extra` int(11) NOT NULL DEFAULT '0' AFTER `od_ship_zone` "),
     );
 }
 
@@ -199,11 +207,15 @@ function cart_install()
     // 택배사 기본 목록은 테이블이 "방금 생겼을 때" 만 넣는다. "행이 0개면" 으로 하면
     // 관리자가 일부러 다 지운 뒤 업그레이드를 눌렀을 때 지운 것이 되살아난다.
     $dc_existed = (bool)sql_query(" DESC `{$g5['ycart_delivery_company_table']}` ", false);
+    $sz_existed = (bool)sql_query(" DESC `{$g5['ycart_ship_zone_table']}` ", false);
 
     $created = cart_create_tables();
 
     if (!$dc_existed && sql_query(" DESC `{$g5['ycart_delivery_company_table']}` ", false)) {
         cart_delivery_company_seed();
+    }
+    if (!$sz_existed && sql_query(" DESC `{$g5['ycart_ship_zone_table']}` ", false)) {
+        cart_ship_zone_seed();
     }
 
     // 2026-08-07 컬럼 접두사 개명(bk_* → ct_*) — 테이블 개명과 짝. 컬럼 추가(위 upgrades)보다
@@ -421,6 +433,8 @@ function cart_table_ddl()
         `od_memo` varchar(255) NOT NULL DEFAULT '',
         `od_item_total` int(11) NOT NULL DEFAULT '0',
         `od_ship_fee` int(11) NOT NULL DEFAULT '0',
+        `od_ship_zone` varchar(50) NOT NULL DEFAULT '',
+        `od_ship_extra` int(11) NOT NULL DEFAULT '0',
         `od_coupon` int(11) NOT NULL DEFAULT '0',
         `od_point` int(11) NOT NULL DEFAULT '0',
         `od_total` int(11) NOT NULL DEFAULT '0',
@@ -594,7 +608,51 @@ function cart_table_ddl()
         PRIMARY KEY (`ol_id`),
         KEY `od_id` (`od_id`, `ol_id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
+    // 2026-08-10 권역별 추가 배송비 — 제주·도서산간. 우편번호 구간으로 판정한다.
+    // 목록을 코드에 고정하지 않는 이유는 택배사·계약마다 다르고 섬이 흩어져 있어서다.
+    // 한 이름에 구간을 여러 줄 둔다(도서산간은 연속된 번호가 아니다).
+    'ycart_ship_zone_table' => " CREATE TABLE IF NOT EXISTS `{$g5['ycart_ship_zone_table']}` (
+        `sz_id` int(11) NOT NULL AUTO_INCREMENT,
+        `sz_name` varchar(50) NOT NULL DEFAULT '',
+        `sz_zip_from` varchar(5) NOT NULL DEFAULT '',
+        `sz_zip_to` varchar(5) NOT NULL DEFAULT '',
+        `sz_fee` int(11) NOT NULL DEFAULT '0',
+        `sz_order` int(11) NOT NULL DEFAULT '0',
+        `sz_use` tinyint(4) NOT NULL DEFAULT '1',
+        PRIMARY KEY (`sz_id`),
+        KEY `list` (`sz_use`, `sz_order`, `sz_id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ",
     );
+}
+
+// 권역 기본 목록 — 테이블이 방금 만들어졌을 때 한 번만(cart_install 참고).
+// **확실한 둘만 넣는다.** 제주는 63000~63644 가 연속이고 울릉도는 40200~40240 이 연속이라
+// 지어낼 여지가 없다. 흑산도·백령도·연평도처럼 흩어진 섬은 택배사가 주는 "도서산간 추가운임
+// 지역" 목록을 보고 관리자가 채워야 한다 — 여기서 우편번호를 지어내면 틀린 값이 조용히
+// 손님 청구서에 붙는다.
+// 제주 요금은 옛 설정(cc_ship_jeju)을 그대로 옮겨 온다. 같은 뜻이 두 곳에 남지 않게
+// 환경설정의 그 칸은 화면에서 걷어냈다.
+function cart_ship_zone_seed()
+{
+    global $g5;
+    $cc = cart_config();
+    $jeju = (int)$cc['cc_ship_jeju'];
+    if ($jeju < 1) $jeju = 3000;
+    $seed = array(
+        // 이름, 우편번호 시작, 끝, 추가비
+        array('제주', '63000', '63644', $jeju),
+        array('도서산간', '40200', '40240', 5000),   // 울릉군
+    );
+    $order = 0;
+    foreach ($seed as $s) {
+        list($name, $from, $to, $fee) = $s;
+        $order += 1;
+        sql_query(" insert into `{$g5['ycart_ship_zone_table']}`
+            set sz_name = '".sql_real_escape_string($name)."',
+                sz_zip_from = '".sql_real_escape_string($from)."',
+                sz_zip_to = '".sql_real_escape_string($to)."',
+                sz_fee = '".(int)$fee."', sz_order = '$order', sz_use = 1 ", true);
+    }
 }
 
 // 택배사 기본 목록 — 테이블이 방금 만들어졌을 때 한 번만 넣는다(cart_install 참고).

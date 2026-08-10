@@ -218,7 +218,7 @@
 
             <tr>
                 <th>배송비</th>
-                <td>{{ number_format($seller['ship_base']) }}원 · {{ number_format($seller['ship_free']) }}원 이상 무료{{ $seller['ship_jeju'] > 0 ? ' · 제주·도서 '.number_format($seller['ship_jeju']).'원 추가' : '' }}</td>
+                <td>{{ number_format($seller['ship_base']) }}원 · {{ number_format($seller['ship_free']) }}원 이상 무료{{ $seller['ship_zones'] !== '' ? ' · '.$seller['ship_zones'].' 추가' : '' }}</td>
             </tr>
             <tr><th>교환·반품</th><td>받으신 날부터 7일 안에 신청할 수 있습니다. 사용했거나 포장을 훼손한 상품은 어렵습니다.</td></tr>
 

@@ -121,7 +121,8 @@ $seller = array(
     'email' => isset($config['cf_admin_email']) ? $config['cf_admin_email'] : '',
     'ship_base' => (int)$cc['cc_ship_base'],
     'ship_free' => (int)$cc['cc_ship_free'],
-    'ship_jeju' => (int)$cc['cc_ship_jeju'],
+    // 권역 추가비 안내 — 요금표에서 뽑는다(화면이 규칙을 다시 적으면 표를 고쳐도 안 따라온다)
+    'ship_zones' => cart_ship_zone_summary(),
     'bank' => $cc['cc_bank'],
 );
 

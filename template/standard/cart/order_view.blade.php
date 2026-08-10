@@ -7,12 +7,15 @@
     </header>
 
     @if ($order['od_status'] === 'canceled')
+    {{-- 누가 취소했는지에 따라 말이 달라야 한다 — 손님이 스스로 누른 취소에 "판매자가 취소했습니다"
+         라고 적으면 문의 전화가 온다. 자동 만료도 마찬가지다(기한이 지났다는 사실이 답이다) --}}
+    @php $by = $order['od_canceled_by']; @endphp
     <section class="cart-co-sec cart-complete-bank">
         <h3>취소된 주문입니다</h3>
-        <p>관리자 직권으로 취소되었습니다{{ substr($order['od_canceled_at'], 0, 4) !== '1970' ? ' ('.substr($order['od_canceled_at'], 0, 16).')' : '' }}.</p>
+        <p>{{ $by === 'customer' ? '요청하신 대로 취소되었습니다' : ($by === 'system' ? '입금 기한이 지나 자동으로 취소되었습니다' : '판매자가 취소했습니다') }}{{ substr($order['od_canceled_at'], 0, 4) !== '1970' ? ' ('.substr($order['od_canceled_at'], 2).')' : '' }}.</p>
 
         @if ($order['od_cancel_reason'] !== '')
-        <p class="cart-co-note">취소 사유: {{ $order['od_cancel_reason'] }}</p>
+        <p class="cart-cancel-why">취소 사유: {{ $order['od_cancel_reason'] }}</p>
         @endif
 
         @if ($order['od_pay_method'] !== 'bank' && substr($order['od_paid_at'], 0, 4) !== '1970')
@@ -30,18 +33,9 @@
     </section>
     @endif
 
-    @if ($order['od_pay_method'] === 'bank' && $order['od_status'] === 'unpaid')
-    <section class="cart-co-sec cart-complete-bank">
-        <h3>입금 안내</h3>
-        <p class="cart-complete-amount">입금하실 금액 <strong>{{ number_format($order['od_total']) }}원</strong></p>
-
-        @if ($bank !== '')
-        <p>{{ $bank }}</p>
-        @endif
-
-        <p class="cart-co-note">입금자명: {{ $order['od_depositor'] }}</p>
-    </section>
-    @endif
+    @include('partials.order_bank', ['order' => $order, 'bank' => $bank,
+        'can_edit_depositor' => $can_edit_depositor, 'action_url' => $action_url,
+        'token' => $token, 'ret' => ''])
 
     {{-- 배송 정보 — 발송한 뒤에만. 관리자가 송장을 넣어도 고객이 볼 곳이 없으면
          "보냈다는데 어디쯤인가" 를 전화로 물어야 한다. 택배사를 알아본 경우에만 조회 링크를
@@ -92,43 +86,7 @@
     <p class="cart-co-note" style="text-align:center">{{ substr($order['od_confirmed_at'], 0, 16) }} 구매확정</p>
     @endif
 
-    <section class="cart-co-sec">
-        <h3>주문 상품</h3>
-
-        @foreach ($items as $it)
-        <div class="cart-complete-line">
-            <span>{{ $it['oi_name'] }}{{ $it['oi_option'] !== '' ? ' ('.$it['oi_option'].')' : '' }} × {{ $it['oi_qty'] }}
-                @if (cart_return_item_label($it['oi_status']) !== '')
-                <b class="cart-oi-flag">{{ cart_return_item_label($it['oi_status']) }}</b>
-                @endif
-            </span>
-            <span>{{ number_format($it['oi_total']) }}원</span>
-        </div>
-        @endforeach
-
-        <div class="cart-complete-line is-sub">
-            <span>배송비</span>
-            <span>{{ number_format($order['od_ship_fee']) }}원</span>
-        </div>
-        @if ((int)$order['od_coupon'] > 0)
-        <div class="cart-complete-line is-sub">
-            <span>쿠폰 할인</span>
-            <span>-{{ number_format($order['od_coupon']) }}원</span>
-        </div>
-        @endif
-        <div class="cart-complete-line is-total">
-            <span>결제 금액</span>
-            <span>{{ number_format($order['od_total']) }}원</span>
-        </div>
-
-        @if ((int)$order['od_refund'] > 0)
-        <div class="cart-complete-line is-sub">
-            <span>환불된 금액</span>
-            <span>-{{ number_format($order['od_refund']) }}원</span>
-        </div>
-        @endif
-
-    </section>
+    @include('partials.order_items', ['order' => $order, 'items' => $items])
 
     {{-- 반품 이력 — 접수·완료·거절을 모두 보여 준다. 거절도 남긴다: 왜 안 됐는지 모르면
          손님은 같은 신청을 다시 하거나 전화를 건다 --}}
@@ -231,16 +189,48 @@
     <p class="cart-co-note" style="text-align:center">{{ $return_why_not }}</p>
     @endif
 
-    <section class="cart-co-sec">
-        <h3>배송지</h3>
-        <p>받는분 {{ $order['od_recv_name'] !== '' ? $order['od_recv_name'] : $order['od_name'] }} · {{ $order['od_recv_hp'] !== '' ? $order['od_recv_hp'] : $order['od_hp'] }}</p>
-        <p>({{ $order['od_zip'] }}) {{ $order['od_addr1'] }} {{ $order['od_addr2'] }}</p>
+    @include('partials.order_address', ['order' => $order, 'can_edit_receiver' => $can_edit_receiver])
 
-        @if ($order['od_memo'] !== '')
-        <p class="cart-co-note">요청사항: {{ $order['od_memo'] }}</p>
+    {{-- 주문 취소 — 배송 준비 전까지. 결제된 카드는 자동으로 환불되고, 입금이 확인된 무통장은
+         돌려드릴 계좌가 필요해 여기서 열지 않는다(왜 안 되는지는 서버가 지어 준 한 줄이 말한다) --}}
+    @if ($cancel_zone)
+    <section class="cart-co-sec">
+        <h3>주문 취소</h3>
+
+        @if ($cancel_why_not === '')
+        <p class="cart-co-note">취소하면 주문이 곧바로 취소되고 되돌릴 수 없습니다.{{ $order['od_status'] === 'paid' ? ' 결제하신 금액은 카드사로 자동 환불됩니다(카드사에 따라 며칠 걸립니다).' : '' }}</p>
+        <form method="post" action="{{ $action_url }}" class="cart-edit is-stack"
+              data-confirm="주문을 취소하시겠습니까?&#10;되돌릴 수 없습니다.">
+            <input type="hidden" name="token" value="{{ $token }}">
+            <input type="hidden" name="mode" value="cancel">
+            <input type="hidden" name="od_no" value="{{ $order['od_no'] }}">
+            <label class="sound_only" for="cart_cancel_preset">사유 고르기</label>
+            <select id="cart_cancel_preset">
+                <option value="">사유를 고르거나 직접 입력</option>
+
+                @foreach ($cancel_reasons as $r)
+                <option>{{ $r }}</option>
+                @endforeach
+
+            </select>
+            <label class="sound_only" for="cart_cancel_reason">취소 사유</label>
+            <input type="text" name="cancel_reason" id="cart_cancel_reason" maxlength="100" required
+                   placeholder="취소 사유를 적어 주세요">
+            <button type="submit" class="cart-cta is-line">주문 취소</button>
+        </form>
+        <script>
+        // 반품 신청과 같은 규칙 — 골라서 채우고, 채운 뒤에는 손님이 고칠 수 있다(덮어쓰지 않는다)
+        $('#cart_cancel_preset').on('change', function () {
+            var v = $(this).val();
+            if (v !== '') $('#cart_cancel_reason').val(v).trigger('focus');
+        });
+        </script>
+        @else
+        <p class="cart-co-note">{{ $cancel_why_not }}</p>
         @endif
 
     </section>
+    @endif
 
     <p style="text-align:center"><a href="{{ $list_href }}" class="cart-cta is-line">{{ $is_member ? '주문 내역으로' : '스토어로' }}</a></p>
 </div>

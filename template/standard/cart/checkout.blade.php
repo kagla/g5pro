@@ -67,7 +67,7 @@
 
         <div class="cart-co-grid" style="margin-bottom: var(--s3)">
             <label><span class="req">이름</span> <input type="text" name="od_name" value="{{ $default_name }}" required data-req-msg="이름을 입력해 주세요."></label>
-            <label><span class="req">연락처</span> <input type="text" name="od_hp" value="{{ $default_hp }}" placeholder="010-0000-0000" required data-req-msg="연락처를 입력해 주세요."></label>
+            <label><span class="req">연락처</span> <input type="text" name="od_hp" value="{{ $default_hp }}" placeholder="010-0000-0000" data-hp required data-req-msg="연락처를 입력해 주세요."></label>
             {{-- autocomplete 를 끄는 이유: 아래 "주문 비밀번호"가 password 칸이라 브라우저가 이 폼을
                  로그인 폼으로 보고, 이메일 칸에 저장된 아이디를(예: admin) 비밀번호 칸에 저장된
                  비밀번호를 채워 넣었다. new-password 는 저장된 자격증명을 채우지 말라는 표준 신호다. --}}
@@ -100,6 +100,15 @@
             </select>
             <input type="text" name="od_memo" id="od_memo" value="" placeholder="요청사항을 입력해 주세요" style="display:none">
         </div>
+        {{-- 회원만 — 비회원에게는 저장할 회원 기록이 없다. 문구는 실제로 저장하는 것만 적는다
+             (이름·이메일은 로그인·본인확인에 얽혀 있어 주문서에서 바꾸지 않는다) --}}
+        @if ($is_member)
+        <label class="cart-co-save">
+            <input type="checkbox" name="save_member" value="1">
+            <span>이 연락처와 배송지를 <strong>회원정보에도 저장</strong></span>
+        </label>
+        @endif
+
         <p class="cart-co-note">* 표시는 필수 입력입니다.</p>
 
         @if (!$is_member)
@@ -167,7 +176,8 @@
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script>
 // 배송비 미리보기 — 서버 규칙(cart_shipping_fee)의 JS 거울. 확정은 항상 서버가 한다.
-var CART_SHIP = { base: {{ $ship['base'] }}, free: {{ $ship['free'] }}, jeju: {{ $ship['jeju'] }}, itemTotal: {{ $item_total }} };
+var CART_SHIP = { base: {{ $ship['base'] }}, free: {{ $ship['free'] }}, itemTotal: {{ $item_total }},
+    zones: {!! json_encode($ship['zones']) !!} };
 
 // 고른 쿠폰이 깎는 금액. 서버가 심어 둔 값을 그대로 읽는다 — 화면이 규칙을 다시 구현하면
 // 정률·상한·대상 분류를 두 곳에서 관리하게 되고, 그중 하나가 반드시 틀어진다.
@@ -177,11 +187,24 @@ function cartCouponAmount() {
     return parseInt($sel.find('option:selected').data('amount'), 10) || 0;
 }
 
+// 우편번호에 걸리는 권역의 추가비 — 겹치면 가장 비싼 것 하나(서버 cart_ship_zone_match 와 같은 규칙).
+// 우편번호는 문자열로 견준다: 숫자로 바꾸면 앞자리 0 이 사라져 구간이 어긋난다.
+function cartZoneExtra(zip) {
+    if (zip.length !== 5) return 0;
+    var extra = 0;
+    for (var i = 0; i < CART_SHIP.zones.length; i++) {
+        var z = CART_SHIP.zones[i];
+        if (zip >= z.from && zip <= z.to && z.fee > extra) extra = z.fee;
+    }
+    return extra;
+}
+
 function cartShipPreview() {
     var zip = $('#od_zip').val().replace(/[^0-9]/g, '');
     var fee = CART_SHIP.base;
     if (CART_SHIP.free > 0 && CART_SHIP.itemTotal >= CART_SHIP.free) fee = 0;
-    if (zip.length === 5 && zip.substring(0, 2) === '63') fee += CART_SHIP.jeju;
+    // 조건부 무료를 충족해도 권역 추가비는 남는다(서버와 같은 순서로 더한다)
+    fee += cartZoneExtra(zip);
     var cou = cartCouponAmount();
     $('#cart_ship_fee').text(fee.toLocaleString() + '원');
     $('#cart_coupon_dt').prop('hidden', cou <= 0);
@@ -245,18 +268,7 @@ $(function () {
     $('#cart_zip_btn').on('click', cartSearchZip);
     $('input[name="pay"]').on('change', cartPayToggle);
 
-    // 연락처 하이픈 자동 — 숫자만 남기고 02 는 2-х-4, 나머지는 3-х-4 로 끼워 넣는다
-    $('input[name="od_hp"]').on('input', function () {
-        var d = this.value.replace(/[^0-9]/g, '').substring(0, 11);
-        var head = d.substring(0, 2) === '02' ? 2 : 3;
-        var out = d;
-        if (d.length > head + 4) {
-            out = d.substring(0, head) + '-' + d.substring(head, d.length - 4) + '-' + d.substring(d.length - 4);
-        } else if (d.length > head) {
-            out = d.substring(0, head) + '-' + d.substring(head);
-        }
-        $(this).val(out);
-    });
+    // 연락처 하이픈은 theme.js 의 data-hp 규칙이 맡는다(칸에 표시만 달면 된다)
 
     // 저장된 배송지 선택 — 주문자(이름·연락처·이메일)와 주소를 한 번에 채우고 배송비 미리보기를
     // 갱신한다. 주문자 값은 저장돼 있을 때만 덮는다(옛 형식 주소록 보호).
