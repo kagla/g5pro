@@ -7,6 +7,13 @@
 #cart_sz .sz_zip { width: 76px; text-align: center; }
 #cart_sz .sz_fee { width: 92px; text-align: right; }
 #cart_sz .sz_tilde { display: inline-block; padding: 0 4px; color: #888; }
+/* 표 머리를 눌러 정렬한다. 순정 목록은 링크로 서버에 다시 묻지만 여기는 폼이라 그럴 수 없다 —
+   다시 불러오면 아직 저장 안 한 편집이 날아간다. 그래서 화면에서 줄만 옮긴다. */
+#cart_sz th .sz_sort { border: 0; background: none; padding: 0; font: inherit; color: inherit;
+    cursor: pointer; white-space: nowrap; }
+#cart_sz th .sz_sort:hover { text-decoration: underline; }
+#cart_sz th .sz_arrow { display: inline-block; width: 12px; color: #1D5FD1; }
+#sz_sorted { margin: 8px 0 0; font-size: 13px; color: #1D5FD1; min-height: 20px; }
 #cart_sz .sz_rm { border: 0; background: none; color: #999; font-size: 15px; cursor: pointer; }
 #cart_sz tr.is-new td { background: #eef4ff; }
 #sz_tools { margin: 14px 0; padding: 18px; border: 1px solid #e0e0e0; border-radius: 6px; background: #fafafa; }
@@ -73,10 +80,10 @@
     <caption>권역별 추가 배송비</caption>
     <thead>
     <tr>
-        <th scope="col">구간 이름</th>
-        <th scope="col">우편번호</th>
-        <th scope="col">추가 배송비</th>
-        <th scope="col">사용</th>
+        <th scope="col"><button type="button" class="sz_sort" data-key="name">구간 이름<span class="sz_arrow"></span></button></th>
+        <th scope="col"><button type="button" class="sz_sort" data-key="zip">우편번호<span class="sz_arrow"></span></button></th>
+        <th scope="col"><button type="button" class="sz_sort" data-key="fee">추가 배송비<span class="sz_arrow"></span></button></th>
+        <th scope="col"><button type="button" class="sz_sort" data-key="use">사용<span class="sz_arrow"></span></button></th>
         <th scope="col">삭제</th>
     </tr>
     </thead>
@@ -100,6 +107,7 @@
     </table>
 </div>
 
+<p id="sz_sorted"></p>
 <p id="cart_sz_add"><button type="button" class="btn btn_02" id="cart_sz_add_btn">+ 구간 직접 추가</button></p>
 
 <div class="btn_confirm01 btn_confirm" style="text-align:right">
@@ -271,6 +279,53 @@ $(function () {
         addRow('울릉군', '40200', '40240', 5000);
         $('#sz_preview').text('제주·울릉군을 표에 넣었습니다. 요금을 확인하고 저장하세요.');
     });
+
+    // ── 표 머리를 눌러 정렬. 서버에 다시 묻지 않고 줄만 옮기므로 편집 중인 값이 따라간다.
+    // 저장하면 이 순서가 그대로 sz_order 가 된다(cart_ship_zone_save 는 받은 순서로 매긴다) —
+    // 112줄을 이름순으로 정리해 두면 다음에 열 때도 그 순서다. 그래서 아래에 그렇게 적어 둔다.
+    var sortKey = '', sortAsc = true;
+    var LABEL = { name: '구간 이름', zip: '우편번호', fee: '추가 배송비', use: '사용' };
+
+    function cellVal(tr, key) {
+        var $tr = $(tr);
+        if (key === 'name') return $.trim($tr.find('input[name$="[name]"]').val() || '');
+        if (key === 'zip')  return $tr.find('input[name$="[from]"]').val() || '';
+        if (key === 'fee')  return parseInt(String($tr.find('input[name$="[fee]"]').val()).replace(/[^0-9]/g, ''), 10) || 0;
+        return $tr.find('input[name$="[use]"]').is(':checked') ? 1 : 0;
+    }
+
+    function sortBy(key) {
+        // 같은 칸을 다시 누르면 방향을 뒤집는다. 처음 누를 때는 그 칸에서 쓸모 있는 쪽으로 —
+        // 사용은 "켜진 것 먼저" 가 알고 싶은 것이지 꺼진 것 먼저가 아니다.
+        if (sortKey === key) sortAsc = !sortAsc;
+        else { sortKey = key; sortAsc = (key !== 'use'); }
+
+        var rows = $body.find('tr').filter(function () { return $(this).find('input').length > 0; }).get();
+        rows.sort(function (a, b) {
+            // 이름이 빈 줄(방금 추가한 빈 칸)은 어느 방향이든 늘 맨 아래 — 정렬하다 잃어버리지 않게
+            var an = cellVal(a, 'name'), bn = cellVal(b, 'name');
+            if (an === '' && bn !== '') return 1;
+            if (bn === '' && an !== '') return -1;
+
+            var x = cellVal(a, key), y = cellVal(b, key), r;
+            if (key === 'name') r = String(x).localeCompare(String(y), 'ko');
+            else if (key === 'zip') r = String(x).localeCompare(String(y));   // 5자리 문자열이라 앞자리 0 이 산다
+            else r = (x < y ? -1 : (x > y ? 1 : 0));
+            if (r === 0 && key !== 'zip') {
+                // 값이 같으면 우편번호로 갈라 순서가 튀지 않게 한다
+                r = String(cellVal(a, 'zip')).localeCompare(String(cellVal(b, 'zip')));
+            }
+            return sortAsc ? r : -r;
+        });
+        $body.append(rows);
+
+        $('#cart_sz .sz_arrow').text('');
+        $('#cart_sz .sz_sort[data-key="' + key + '"] .sz_arrow').text(sortAsc ? ' ▲' : ' ▼');
+        $('#sz_sorted').text(LABEL[key] + (sortAsc ? ' 오름차순' : ' 내림차순')
+            + '으로 정렬했습니다 — 저장하면 이 순서로 기억합니다.');
+    }
+
+    $('#cart_sz').on('click', '.sz_sort', function () { sortBy($(this).data('key')); });
 
     $('#cart_sz').on('submit', function () {
         var n = $body.find('.sz_del:checked').length;
