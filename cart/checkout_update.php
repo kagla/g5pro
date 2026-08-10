@@ -33,6 +33,8 @@ $input = array(
     'od_addr1' => $post('od_addr1'),
     'od_addr2' => $post('od_addr2'),
     'od_memo' => $post('od_memo'),
+    // 회원정보에도 저장 — 주문서에서 고친 연락처·배송지를 회원 기록에 반영할지(회원만)
+    'save_member' => ($post('save_member') === '1'),
     'od_pay_method' => $post('pay'),
     'od_depositor' => $post('od_depositor'),
     // 쿠폰은 장 번호만 받는다 — 깎일 금액은 서버가 다시 계산한다(화면 값은 안내일 뿐)
