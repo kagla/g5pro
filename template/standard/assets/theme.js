@@ -825,3 +825,23 @@
         return v;
     };
 })(jQuery);
+
+// 연락처 하이픈 자동 — 숫자만 남기고 02 는 2-x-4, 나머지는 3-x-4 로 끼워 넣는다.
+// data-hp 를 단 칸이면 어느 화면이든 이 규칙 하나를 쓴다(주문서·회원가입이 서로 다르게
+// 굴지 않게). 위임으로 걸어 나중에 그려지는 칸에도 그대로 붙는다.
+(function () {
+    if (!window.jQuery) return;
+    var $ = window.jQuery;
+
+    $(document).on('input', 'input[data-hp]', function () {
+        var d = this.value.replace(/[^0-9]/g, '').substring(0, 11);
+        var head = d.substring(0, 2) === '02' ? 2 : 3;
+        var out = d;
+        if (d.length > head + 4) {
+            out = d.substring(0, head) + '-' + d.substring(head, d.length - 4) + '-' + d.substring(d.length - 4);
+        } else if (d.length > head) {
+            out = d.substring(0, head) + '-' + d.substring(head);
+        }
+        if (out !== this.value) $(this).val(out);
+    });
+})();

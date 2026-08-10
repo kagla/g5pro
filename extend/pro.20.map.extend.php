@@ -605,15 +605,38 @@ function g5_map_confirm($script, $message, $heading, $url1, $url2, $url3)
 }
 
 // ── 회원정보 찾기 (bbs/password_lost.php) — 가입 이메일로 아이디·임시비밀번호 안내메일 받기.
-// 본인인증으로 찾기(cf_cert_find)를 켠 사이트는 호출부가 직통을 포기하고 순정 스킨을 쓴다.
+// 본인인증으로 찾기(cf_cert_find)도 여기서 함께 그린다. 예전에는 인증창 스크립트 때문에
+// 그 경우만 순정 스킨에 넘겼는데, 그러면 같은 화면이 사이트 설정에 따라 옛 디자인으로 나왔다.
+// 인증은 결국 provider 주소로 창을 여는 일이라(js/certify.js), 주소·유형만 여기서 정해 넘긴다.
 function g5_map_password_lost()
 {
-    global $action_url;
+    global $action_url, $config;
+
+    $cert_find = (!empty($config['cf_cert_use']) && !empty($config['cf_cert_find']));
+
+    // 휴대폰 본인확인은 업체마다 여는 주소·유형이 다르다(순정 스킨의 switch 를 그대로 옮겼다).
+    // 업체가 정해지지 않았으면 버튼을 아예 내보내지 않는다 — 눌러도 안내만 뜨는 버튼은 만들지 않는다.
+    $hp = null;
+    if ($cert_find && !empty($config['cf_cert_hp'])) {
+        $map = array(
+            'kcb'    => array(G5_OKNAME_URL.'/hpcert1.php',        'kcb-hp'),
+            'kcp'    => array(G5_KCPCERT_URL.'/kcpcert_form.php',  'kcp-hp'),
+            'kcp_v2' => array(G5_KCPCERT_V2_URL.'/kcpcert_form.php', 'kcp_v2-hp'),
+            'lg'     => array(G5_LGXPAY_URL.'/AuthOnlyReq.php',    'lg-hp'),
+        );
+        $key = $config['cf_cert_hp'];
+        if (isset($map[$key])) $hp = array('url' => $map[$key][0], 'type' => $map[$key][1]);
+    }
 
     g5_view('bbs.password_lost', array(
         'action_url'   => $action_url,        // password_lost2.php
         'captcha_html' => captcha_html(),     // password_lost2.php 가 항상 chk_captcha()
         'captcha_js'   => chk_captcha_js(),
+        'cert_find'    => $cert_find,
+        'cert_simple'  => ($cert_find && !empty($config['cf_cert_simple'])) ? G5_INICERT_URL.'/ini_request.php' : '',
+        'cert_ipin'    => ($cert_find && !empty($config['cf_cert_ipin'])) ? G5_OKNAME_URL.'/ipin1.php' : '',
+        'cert_hp'      => $hp,
+        'certify_js'   => $cert_find ? G5_JS_URL.'/certify.js?v='.G5_JS_VER : '',
     ));
 }
 
@@ -643,9 +666,20 @@ function g5_map_register()
 // ── 가입/정보수정 폼 (bbs/register_form.php)
 function g5_map_register_form()
 {
-    global $w, $register_action_url, $urlencode, $agree, $agree2, $member;
+    global $w, $register_action_url, $urlencode, $agree, $agree2, $member, $config,
+           $hp_required, $hp_readonly;
+
+    // 휴대폰·주소는 환경설정이 켤 때만 보이고, 필수 여부도 거기서 정한다(순정 규칙 그대로).
+    // $hp_required·$hp_readonly 는 register_form.php 가 본인확인 설정까지 따져 만들어 둔 값이라
+    // 여기서 다시 계산하지 않고 그대로 받는다 — 두 곳에서 계산하면 언젠가 서로 어긋난다.
+    $mb = function ($key) use ($member) { return isset($member[$key]) ? $member[$key] : ''; };
 
     g5_view('bbs.register_form', array(
+        'use_hp'      => !empty($config['cf_use_hp']),
+        'hp_required' => !empty($hp_required),
+        'hp_readonly' => !empty($hp_readonly),
+        'use_addr'    => !empty($config['cf_use_addr']),
+        'req_addr'    => !empty($config['cf_req_addr']),
         'w'          => $w,
         'action_url' => $register_action_url,   // register_form_update.php
         'url'        => isset($urlencode) ? $urlencode : '',
@@ -659,7 +693,14 @@ function g5_map_register_form()
             'mb_name'     => isset($member['mb_name']) ? get_text($member['mb_name']) : '',
             'mb_nick'     => isset($member['mb_nick']) ? get_text($member['mb_nick']) : '',
             'mb_email'    => isset($member['mb_email']) ? $member['mb_email'] : '',
-            'mb_homepage' => isset($member['mb_homepage']) ? get_text($member['mb_homepage']) : '',
+            'mb_hp'       => get_text($mb('mb_hp')),
+            // 우편번호는 DB 에 앞3·뒤2 로 나뉘어 있고 화면·저장은 한 칸(mb_zip)으로 다룬다
+            // (register_form_update.php 가 mb_zip 하나를 받아 다시 쪼갠다)
+            'mb_zip'      => get_text($mb('mb_zip1').$mb('mb_zip2')),
+            'mb_addr1'    => get_text($mb('mb_addr1')),
+            'mb_addr2'    => get_text($mb('mb_addr2')),
+            'mb_addr3'    => get_text($mb('mb_addr3')),
+            'mb_addr_jibeon' => get_text($mb('mb_addr_jibeon')),
         ),
         'captcha_html' => captcha_html(),
         'captcha_js'   => chk_captcha_js(),
@@ -667,13 +708,23 @@ function g5_map_register_form()
 }
 
 // ── 가입 결과 (bbs/register_result.php)
+// 메일인증을 안 쓰는 사이트는 register_form_update.php 가 가입과 동시에 로그인시킨다.
+// 그때는 "로그인 하세요" 가 거짓말이 되므로 화면이 상태를 알아야 한다.
 function g5_map_register_result()
 {
-    global $mb;
+    global $mb, $member, $config;
+
+    $new_id = isset($mb['mb_id']) ? $mb['mb_id'] : '';
 
     g5_view('bbs.register_result', array(
-        'mb_id'   => isset($mb['mb_id']) ? get_text($mb['mb_id']) : '',
+        'mb_id'   => get_text($new_id),
         'mb_nick' => isset($mb['mb_nick']) ? get_text($mb['mb_nick']) : '',
+        // 방금 가입한 그 사람으로 로그인돼 있는지 — 남의 계정으로 로그인한 채 이 화면을
+        // 볼 일은 없지만, 아이디까지 맞춰 봐야 "로그인됨" 이 참이 된다
+        'is_login' => ($new_id !== '' && isset($member['mb_id']) && $member['mb_id'] === $new_id),
+        // 메일인증을 쓰면 인증 전까지 로그인되지 않는다 — 할 일이 남았음을 알려야 한다
+        'need_certify' => !empty($config['cf_use_email_certify']),
+        'mb_email' => isset($mb['mb_email']) ? get_text($mb['mb_email']) : '',
     ));
 }
 

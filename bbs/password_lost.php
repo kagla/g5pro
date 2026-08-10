@@ -2,10 +2,10 @@
 include_once('./_common.php');
 include_once(G5_CAPTCHA_PATH.'/captcha.lib.php');
 
-// g5pro 직통 화면. 단 본인인증으로 찾기(cf_cert_find)를 켠 사이트는 순정 스킨 안의
-// 인증창 스크립트(간편·휴대폰·아이핀)가 그 화면의 동작이므로 직통을 포기하고 순정에 맡긴다.
-if (!($config['cf_cert_use'] && $config['cf_cert_find']))
-    define('G5_PRO_PAGE', true);
+// g5pro 직통 화면. 본인인증으로 찾기(cf_cert_find)도 뷰가 함께 그린다 —
+// 예전에는 인증창 스크립트 때문에 그 경우만 순정 스킨에 넘겼는데, 그러면 같은 화면이
+// 사이트 설정에 따라 옛 디자인으로 나왔다(g5_map_password_lost 주석 참고).
+define('G5_PRO_PAGE', true);
 
 if ($is_member) {
     alert("이미 로그인중입니다.", G5_URL);

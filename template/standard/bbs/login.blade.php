@@ -1,7 +1,13 @@
 @extends('layout.default')
 @section('content')
 <div class="member-box">
-    <h2>로그인</h2>
+
+    {{-- 가입 흐름(register)과 같은 제목단. 설명은 붙이지 않는다 — 칸 이름이 이미 '아이디'·'비밀번호'라
+         한 번 더 적으면 같은 말을 두 번 하는 것이 된다(설명은 알려 줄 것이 있을 때만). --}}
+    <header class="auth-head">
+        <h2>로그인</h2>
+    </header>
+
     <form name="flogin" method="post" action="{{ $login_action_url }}" autocomplete="off">
         <input type="hidden" name="url" value="{{ $url }}">
         <div class="field">
@@ -27,12 +33,14 @@
                 </button>
             </div>
         </div>
-        <label class="auto-login"><input type="checkbox" name="auto_login" value="1"> 자동로그인</label>
+        {{-- 자동로그인과 찾기 링크를 한 줄에 — 로그인 폼의 흔한 배치이고, 세로도 한 줄 줄어든다 --}}
+        <div class="login-row">
+            <label class="auto-login"><input type="checkbox" name="auto_login" value="1"> 자동로그인</label>
+            <a href="{{ G5_BBS_URL }}/password_lost.php">아이디·비밀번호 찾기</a>
+        </div>
         <button type="submit" class="btn btn-primary btn-block">로그인</button>
     </form>
-    <div class="login-links">
-        <a href="{{ G5_BBS_URL }}/register.php">회원가입</a>
-        <a href="{{ G5_BBS_URL }}/password_lost.php">아이디/비밀번호 찾기</a>
-    </div>
+
+    <p class="auth-foot">아직 회원이 아니신가요? <a href="{{ G5_BBS_URL }}/register.php">회원가입</a></p>
 </div>
 @endsection
