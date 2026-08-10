@@ -48,7 +48,8 @@ if ($od_no !== '') {
     $g5['title'] = '주문 상세';
     g5_view('cart.order_view', array(
         'order' => $order,
-        'items' => cart_order_items((int)$order['od_id']),
+        // 사진·상품 링크까지 얹은 줄 — 주문완료 화면과 같은 함수를 쓴다(같은 줄을 그린다)
+        'items' => cart_order_items_for_view((int)$order['od_id']),
         'status_label' => cart_order_status_label($order['od_status'], $order['od_pay_method']),
         'bank' => trim($cc['cc_bank']),
         'pay_href' => '',
@@ -68,6 +69,17 @@ if ($od_no !== '') {
         'returns' => cart_return_rows((int)$order['od_id']),
         'return_days' => cart_return_days(),
         'is_bank' => ($order['od_pay_method'] === 'bank'),
+        // 손님이 고칠 수 있는 것 — 처리 화면(order_update.php)과 같은 문턱이어야 한다.
+        // 어긋나면 화면에는 칸이 있는데 저장이 튕기거나, 그 반대가 된다.
+        'can_edit_depositor' => ($order['od_pay_method'] === 'bank' && $order['od_status'] === 'unpaid'),
+        // 배송지는 손님이 못 고친다 — 아직 고칠 수 있는 시기(발송 전)에만 어디에 물어야 하는지 알린다.
+        // 발송한 뒤에 "문의하세요" 는 헛말이라 그때는 안내도 내린다.
+        'can_edit_receiver' => in_array($order['od_status'], array('unpaid', 'paid', 'preparing'), true),
+        // 취소 — 아직 취소를 말할 자리인 상태에서만 칸을 연다. 그 안에서 되는지 안 되는지는
+        // 라이브러리가 정하고, 안 되는 이유는 그대로 화면에 나온다(무통장 결제완료).
+        'cancel_zone' => in_array($order['od_status'], array('unpaid', 'paid'), true),
+        'cancel_why_not' => cart_order_customer_cancel_why_not($order),
+        'cancel_reasons' => cart_cancel_reasons(),
     ));
     return;
 }

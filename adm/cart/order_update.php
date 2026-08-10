@@ -29,6 +29,37 @@ if ($mode === 'invoice') {
     goto_url($back);
 }
 
+// 주문 정보 수정 — 발송 전까지. 손님 화면보다 넓게 연다(주소·주문자까지): 관리자는 창고에
+// 물어보고 손님과 통화해 판단할 수 있지만 손님은 그럴 수 없다.
+//
+// 배송비는 다시 계산하지 않는다. 우편번호가 제주로 바뀌면 배송비가 달라지지만, 이미 받은 돈이
+// 있는 주문의 금액을 화면이 조용히 고치면 결제액과 장부가 갈린다 — 차액을 어떻게 할지(추가
+// 입금·부분취소·판매자 부담)는 사람이 정할 몫이라, 달라졌다는 사실만 알리고 멈춘다.
+if ($mode === 'edit_info') {
+    if (!in_array($order['od_status'], array('unpaid', 'paid', 'preparing'), true)) {
+        alert('발송한 뒤에는 주문 정보를 고칠 수 없습니다.', $back);
+    }
+
+    $fields = array();
+    foreach (array('od_name', 'od_hp', 'od_email', 'od_depositor', 'od_recv_name', 'od_recv_hp',
+                   'od_zip', 'od_addr1', 'od_addr2', 'od_memo') as $col) {
+        $fields[$col] = $post($col);
+    }
+    if (trim($fields['od_name']) === '') alert('주문자 이름은 비울 수 없습니다.', $back);
+
+    $err = cart_order_edit_fields($od_id, $fields, $member['mb_id']);
+    if ($err !== '') alert($err, $back);
+
+    // 우편번호가 바뀌어 배송비 기준이 달라졌으면 그 사실만 알린다(금액은 그대로 둔다)
+    $new_fee = cart_shipping_fee((int)$order['od_item_total'], $fields['od_zip']);
+    if ($fields['od_zip'] !== $order['od_zip'] && $new_fee !== (int)$order['od_ship_fee']) {
+        alert('저장했습니다. 다만 바뀐 우편번호의 배송비는 '.number_format($new_fee).'원으로'
+            .' 지금 주문의 '.number_format($order['od_ship_fee']).'원과 다릅니다.\\n'
+            .'금액은 자동으로 바꾸지 않았습니다 — 차액은 직접 처리하세요.', $back);
+    }
+    goto_url($back);
+}
+
 if ($mode === 'transition') {
     // 취소는 여기로 못 온다 — 사유·관리자 비밀번호를 받는 cancel 모드만 취소할 수 있다
     if ($post('action') === 'cancel') alert('취소는 사유와 비밀번호 확인이 필요합니다.', $back);

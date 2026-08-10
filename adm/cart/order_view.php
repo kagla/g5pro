@@ -106,6 +106,9 @@ cadm_view('order_view', array(
     'confirm_msg' => $confirm_msg,
     'logs' => cart_order_log_rows($od_id),
     'can_cancel' => $can_cancel,
+    // 주문 정보 수정은 발송 전까지 — 송장이 나간 뒤에 주소를 고치면 화면과 실제 물건이 갈린다.
+    // 처리 화면(order_update.php)과 같은 문턱이어야 한다(어긋나면 칸은 있는데 저장이 튕긴다).
+    'can_edit' => in_array($s, array('unpaid', 'paid', 'preparing'), true),
     'pg_paid' => $pg_paid,
     'token' => get_token(),
     'update_url' => G5_CART_ADMIN_URL.'/order_update.php',
