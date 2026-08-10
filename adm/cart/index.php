@@ -34,6 +34,8 @@ for ($i = 6; $i >= 0; $i--) {
         'label' => substr($d, 5, 5).' ('.get_yoil($d).')',
         'amt' => $amt,
         'cnt' => (int)$r['cnt'],
+        // 막대를 누르면 그날 정산으로 — 여기 숫자와 정확히 같은 기준으로 뽑는 화면이다
+        'url' => G5_CART_ADMIN_URL.'/settle.php?from='.$d.'&to='.$d,
     );
 }
 
@@ -95,6 +97,10 @@ while ($row = sql_fetch_array($result)) {
         : '';
     $row['status_label'] = cart_order_status_label($row['od_status'], $row['od_pay_method']);
     $row['view_url'] = G5_CART_ADMIN_URL.'/order_view.php?od_id='.(int)$row['od_id'];
+    // 회원 주문이면 이름에서 회원 정보로 — 문의 전화가 오면 바로 확인하는 자리다.
+    // 비회원은 볼 회원 정보가 없으므로 링크를 만들지 않는다(빈 값으로 둔다)
+    $row['member_url'] = trim($row['mb_id']) !== ''
+        ? G5_ADMIN_URL.'/member_form.php?w=u&mb_id='.urlencode($row['mb_id']) : '';
     $recent[] = $row;
 }
 
@@ -138,6 +144,10 @@ cadm_view('dashboard', array(
     // 배송 진행은 준비·배송중·완료를 묶은 값이라 한 필터로는 같은 숫자가 안 나온다)
     'status_url' => G5_CART_ADMIN_URL.'/order_list.php?status=',
     'delivery_url' => G5_CART_ADMIN_URL.'/delivery_list.php',
+    // 제목 옆 "더 보기" — 대시보드는 요약이라 10건·10 SKU 만 보여 준다. 나머지를 볼 곳으로 잇는다
+    'order_list_url' => G5_CART_ADMIN_URL.'/order_list.php',
+    'settle_week_url' => G5_CART_ADMIN_URL.'/settle.php?from='.date('Y-m-d', G5_SERVER_TIME - 6 * 86400)
+        .'&to='.date('Y-m-d', G5_SERVER_TIME),
 ));
 
 include_once(G5_ADMIN_PATH.'/admin.tail.php');
