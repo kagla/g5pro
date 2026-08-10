@@ -228,8 +228,12 @@ $(function () {
         <td>
 
             @if ($rt['rt_status'] === 'requested')
-            <button type="button" class="btn btn_02 cart-rt-open"
-                    data-rt="{{ $rt['rt_id'] }}" data-sum="{{ $rt['item_total'] }}">승인·거절</button>
+            {{-- 갈래를 목록에서 고르고 연다(반품관리 화면과 같은 규칙). 창 안의 제출 버튼은
+                 여전히 하나다 — 둘이면 입력칸에서 Enter 를 칠 때 늘 앞 버튼이 눌린다 --}}
+            <button type="button" class="btn btn_03 cart-rt-open" data-mode="return_approve"
+                    data-rt="{{ $rt['rt_id'] }}" data-sum="{{ $rt['item_total'] }}">승인</button>
+            <button type="button" class="btn btn_02 cart-rt-open" data-mode="return_reject"
+                    data-rt="{{ $rt['rt_id'] }}" data-sum="{{ $rt['item_total'] }}">거절</button>
             @else
             <span class="txt_id">{{ substr($rt['rt_done_at'], 0, 16) }} {{ $rt['rt_done_by'] }}</span>
             @endif
@@ -246,24 +250,18 @@ $(function () {
      환불 금액 기본값은 고른 품목 합계지만 고칠 수 있다 — 왕복 배송비 공제 같은 판단은 사람 몫 --}}
 <div id="cart_rt_modal" style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.45)">
     <div style="max-width:460px; margin:10vh auto 0; background:#fff; border-radius:8px; padding:24px">
-        <h3 style="margin:0 0 6px">반품 처리</h3>
-        <p style="margin:0 0 14px; color:#666; font-size:0.95em">
-            승인하면 {{ $is_bank ? '환불 기록이 남습니다(계좌 송금은 직접 하셔야 합니다)' : '전자결제가 그 금액만큼 부분취소됩니다' }}.
-            되돌릴 수 없습니다.
+        <h3 style="margin:0 0 6px" id="cart_rt_title">반품 승인</h3>
+        <p style="margin:0 0 14px; color:#666; font-size:0.95em" id="cart_rt_desc"
+           data-approve="{{ $is_bank ? '환불 기록이 남습니다. 계좌 송금은 직접 하셔야 합니다. 되돌릴 수 없습니다.' : '전자결제가 그 금액만큼 부분취소됩니다. 되돌릴 수 없습니다.' }}"
+           data-reject="반품 품목이 정상으로 돌아가고 손님에게 사유가 그대로 보입니다. 되돌릴 수 없습니다.">
         </p>
         <form method="post" action="{{ $update_url }}">
         <input type="hidden" name="token" value="{{ $token }}">
         <input type="hidden" name="od_id" value="{{ $order['od_id'] }}">
         <input type="hidden" name="rt_id" id="cart_rt_id" value="">
-        {{-- 갈래는 버튼이 아니라 select 로 뽑는다 — 승인·거절 버튼이 나란히 있으면 입력칸에서
-             Enter 를 쳤을 때 늘 앞 버튼이 눌린다. 돈이 나가는 화면이라 더더욱 --}}
-        <p style="margin:0 0 10px">
-            <label>처리<br>
-            <select name="mode" id="cart_rt_mode" class="frm_input" style="width:100%">
-                <option value="return_approve">승인 — 환불하고 반품 처리</option>
-                <option value="return_reject">거절 — 되돌려 보내고 원래대로</option>
-            </select></label>
-        </p>
+        {{-- 갈래는 목록에서 고르고 들어온다. 창 안에는 제출 버튼이 하나뿐이어야 한다 —
+             둘이면 입력칸에서 Enter 를 쳤을 때 늘 앞 버튼이 눌린다. 돈이 나가는 화면이다 --}}
+        <input type="hidden" name="mode" id="cart_rt_mode" value="return_approve">
         <p style="margin:0 0 10px" id="cart_rt_money">
             <label>환불 금액<br>
             <input type="text" name="rt_refund" id="cart_rt_refund" class="frm_input" style="width:100%"
@@ -275,9 +273,9 @@ $(function () {
             <span class="txt_id">물건이 훼손돼 다시 팔 수 없으면 체크를 해제하세요.</span>
         </p>
         <p style="margin:0 0 10px">
-            <label>메모 / 거절 사유<br>
-            <input type="text" name="rt_memo" class="frm_input" style="width:100%" maxlength="255"
-                   autocomplete="off" placeholder="거절할 때는 사유를 꼭 적어 주세요(고객에게 보입니다)"></label>
+            <label><span id="cart_rt_memo_name">메모</span><br>
+            <input type="text" name="rt_memo" id="cart_rt_memo" class="frm_input" style="width:100%" maxlength="255"
+                   autocomplete="off"></label>
         </p>
         <p style="margin:0 0 16px">
             <label>관리자 비밀번호 확인<br>
@@ -498,27 +496,31 @@ $(function () {
 
 @if (count($returns))
 <script>
-// 반품 모달 — 승인·거절을 select 로 가른다. 고른 갈래에 따라 필요한 칸만 남기고
-// 버튼 글자도 바꾼다: 무엇이 일어날지 버튼에 적혀 있어야 잘못 누르지 않는다.
+// 반품 모달 — 승인 창과 거절 창을 따로 연다. 갈래는 목록의 버튼이 정해 주고, 창은 그 갈래에
+// 필요한 칸만 남긴다. 제목·설명·버튼이 한 목소리로 말해야 잘못 누르지 않는다.
 $(function () {
-    var $modal = $('#cart_rt_modal'), $mode = $('#cart_rt_mode');
-
-    function paint() {
-        var approve = ($mode.val() === 'return_approve');
-        $('#cart_rt_money, #cart_rt_stock').toggle(approve);
-        $('#cart_rt_submit').text(approve ? '승인 · 환불' : '거절').toggleClass('btn_submit', approve);
-    }
+    var $modal = $('#cart_rt_modal'), $mode = $('#cart_rt_mode'), $desc = $('#cart_rt_desc');
 
     $('.cart-rt-open').on('click', function () {
+        var approve = ($(this).data('mode') === 'return_approve');
+
+        $mode.val($(this).data('mode'));
         $('#cart_rt_id').val($(this).data('rt'));
         // 환불 기본값은 고른 품목 합계 — 제안일 뿐이고 최종 금액은 사람이 정한다
         $('#cart_rt_refund').val($(this).data('sum'));
+
+        $('#cart_rt_title').text(approve ? '반품 승인' : '반품 거절');
+        $desc.text($desc.data(approve ? 'approve' : 'reject'));
+        $('#cart_rt_money, #cart_rt_stock').toggle(approve);
+        $('#cart_rt_memo_name').text(approve ? '메모' : '거절 사유');
+        $('#cart_rt_memo').attr('placeholder', approve
+            ? '처리 메모(선택) — 고객에게 보입니다'
+            : '거절 사유를 꼭 적어 주세요 — 고객에게 그대로 보입니다');
+        $('#cart_rt_submit').text(approve ? '승인 · 환불' : '거절');
+
         $modal.find('input[name="rt_memo"], input[name="admin_pw"]').val('');
-        $mode.val('return_approve');
-        paint();
         $modal.show();
     });
-    $mode.on('change', paint);
     // 닫기 버튼으로만 닫는다 — 배경 클릭에 닫히면 쓰던 값이 실수로 날아간다(취소 모달과 같은 규칙)
     $('#cart_rt_close').on('click', function () { $modal.hide(); });
 
